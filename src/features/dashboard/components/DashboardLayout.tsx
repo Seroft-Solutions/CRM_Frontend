@@ -76,7 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       </div>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut()}>
+                    <DropdownMenuItem onClick={() => signOut({redirect:true, redirectTo: '/'})}>
                       Sign out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
