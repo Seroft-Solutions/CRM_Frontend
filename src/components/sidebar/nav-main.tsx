@@ -1,6 +1,8 @@
 "use client"
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import {
   Collapsible,
@@ -17,56 +19,90 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { type SidebarItem } from "./sidebar-items"
 
 export function NavMain({
   items,
 }: {
-  items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
+  items: SidebarItem[]
 }) {
+  const pathname = usePathname();
+
+  // Helper function to check if the current path matches or is a child of the given path
+  const isActive = (item: SidebarItem): boolean => {
+    if (item.path && pathname === item.path) {
+      return true;
+    }
+    
+    // Check if any child item is active
+    if (item.children) {
+      return item.children.some(child => 
+        (child.path && pathname === child.path) || 
+        (child.path && pathname.startsWith(child.path + '/'))
+      );
+    }
+    
+    return false;
+  }
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>CRM Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+        {items.map((item) => {
+          const active = isActive(item);
+          
+          return item.children ? (
+            // Items with children - collapsible menu
+            // Now all items are expanded by default (defaultOpen={true})
+            <Collapsible
+              key={item.key}
+              asChild
+              defaultOpen={true}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={item.label} data-active={active}>
+                    {item.icon && <item.icon />}
+                    <span>{item.label}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.children?.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.key}>
+                        <SidebarMenuSubButton 
+                          asChild
+                          data-active={subItem.path && pathname === subItem.path}
+                        >
+                          <Link href={subItem.path || '#'}>
+                            <span>{subItem.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          ) : (
+            // Items without children - direct link
+            <SidebarMenuItem key={item.key}>
+              <SidebarMenuButton 
+                asChild
+                tooltip={item.label}
+                data-active={active}
+              >
+                <Link href={item.path || '#'}>
                   {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
-          </Collapsible>
-        ))}
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )
