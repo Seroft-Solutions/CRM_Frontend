@@ -1,0 +1,1 @@
+export { createStoreAdapter } from './storeAdapter';
