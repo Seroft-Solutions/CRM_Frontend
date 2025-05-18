@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coffee } from "lucide-react";
+import { signIn } from 'next-auth/react';
 import HeroSection from './HeroSection';
 import FeatureSection from './FeatureSection';
 import CtaSection from './CtaSection';
@@ -20,11 +21,11 @@ export default function HomePage() {
         return () => clearTimeout(timer);
     }, []);
     
-    // Handle Start Brewing click - navigate to login after brief loading animation
+    // Handle Start Brewing click - initiate Keycloak sign-in after brief loading animation
     const handleStartBrewing = () => {
         setIsLoading(true);
         setTimeout(() => {
-            router.push('/login');
+            signIn('keycloak', { redirectTo: '/dashboard' });
         }, 800); // Match the loading animation time for consistency
     };
 

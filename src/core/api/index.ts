@@ -8,9 +8,6 @@
 export * from './client/fetch-client';
 export * from './client/axios-client';
 
-// Re-export setup functions
-export * from './setup';
-
 // Export providers
 export * from './providers';
 
