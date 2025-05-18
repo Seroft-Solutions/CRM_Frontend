@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import client components with animations
@@ -52,7 +53,7 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => router.push('/register')}
+                onClick={() => signIn('keycloak', { redirectTo: '/dashboard' })}
                 className="border-primary text-primary hover:bg-primary/10"
               >
                 Create Account
