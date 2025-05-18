@@ -64,15 +64,23 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.17.47",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/yargs": "^17.0.33",
+    "change-case": "^5.4.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "fast-glob": "^3.3.3",
+    "fs-extra": "^11.3.0",
     "orval": "^7.9.0",
     "prettier": "^3.5.3",
     "tailwindcss": "^4",
+    "ts-morph": "^25.0.1",
+    "tsx": "^4.19.4",
     "tw-animate-css": "^1.2.9",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yargs": "^17.7.2"
   }
 }
