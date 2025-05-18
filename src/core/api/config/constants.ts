@@ -4,7 +4,7 @@ export const AUTH_REFRESH_TOKEN_KEY =
   process.env.NEXT_PUBLIC_AUTH_REFRESH_TOKEN_KEY || 'refresh_token';
 
 // API configuration
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // Request timeout in milliseconds
 export const REQUEST_TIMEOUT = 30000;
