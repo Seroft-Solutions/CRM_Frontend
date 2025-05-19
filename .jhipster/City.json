@@ -1,0 +1,41 @@
+{
+  "annotations": {
+    "changelogDate": "20250516063350"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "City entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "City",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "area",
+      "otherEntityRelationshipName": "city",
+      "relationshipName": "area",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "party",
+      "otherEntityRelationshipName": "city",
+      "relationshipName": "party",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "district",
+      "relationshipName": "district",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceImpl"
+}

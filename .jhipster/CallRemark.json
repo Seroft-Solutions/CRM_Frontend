@@ -1,0 +1,37 @@
+{
+  "annotations": {
+    "changelogDate": "20250516063050"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "CallRemark entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "remark",
+      "fieldType": "TextBlob",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateTime",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "tenantId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "CallRemark",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "call",
+      "relationshipName": "call",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceImpl"
+}

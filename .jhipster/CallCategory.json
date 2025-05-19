@@ -1,0 +1,41 @@
+{
+  "annotations": {
+    "changelogDate": "20250516062450"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "CallCategory entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "remark",
+      "fieldType": "TextBlob"
+    },
+    {
+      "fieldName": "tenantId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "CallCategory",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "call",
+      "otherEntityRelationshipName": "callCategory",
+      "relationshipName": "call",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceImpl"
+}

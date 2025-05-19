@@ -1,0 +1,41 @@
+{
+  "annotations": {
+    "changelogDate": "20250516062650"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "CallStatus entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "remark",
+      "fieldType": "TextBlob"
+    },
+    {
+      "fieldName": "tenantId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "CallStatus",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "call",
+      "otherEntityRelationshipName": "callStatus",
+      "relationshipName": "call",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceImpl"
+}
