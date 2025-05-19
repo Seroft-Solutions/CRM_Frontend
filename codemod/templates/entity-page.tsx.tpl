@@ -11,14 +11,7 @@ import { [[entity]]Table } from './table';
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-  CardDescription
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -28,7 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useDebounce } from '@/hooks/use-debounce';
+import { useDebounce } from "@/hooks/use-debounce";
 import { Loader2 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -46,7 +39,7 @@ export default function [[entity]]List() {
   const debouncedSearch = useDebounce(search, 500);
 
   // Fetch data
-  const { data, isLoading, error } = [[hooks.getAll]]({ 
+  const { data, isLoading } = [[hooks.getAll]]({ 
     query: { 
       page,
       size: PAGE_SIZE,
@@ -89,18 +82,6 @@ export default function [[entity]]List() {
     updateUrl({ page: String(newPage) });
   }, [updateUrl]);
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-red-500">
-            Error loading data: {error.message}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -142,70 +123,70 @@ export default function [[entity]]List() {
           order={order}
           onSort={handleSort}
         />
-      </CardContent>
 
-      {totalPages > 1 && (
-        <CardFooter>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page > 1) handlePageChange(page - 1);
-                  }}
-                  disabled={page === 1}
-                />
-              </PaginationItem>
-              
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                // Show first page, last page, and pages around current page
-                const show = p === 1 || p === totalPages ||
-                  (p >= page - 2 && p <= page + 2);
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page > 1) handlePageChange(page - 1);
+                    }}
+                    disabled={page === 1}
+                  />
+                </PaginationItem>
                 
-                if (!show) {
-                  // Show ellipsis for skipped pages
-                  if (p === 2 || p === totalPages - 1) {
-                    return (
-                      <PaginationItem key={p}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    );
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                  // Show first page, last page, and pages around current page
+                  const show = p === 1 || p === totalPages ||
+                    (p >= page - 2 && p <= page + 2);
+                  
+                  if (!show) {
+                    // Show ellipsis for skipped pages
+                    if (p === 2 || p === totalPages - 1) {
+                      return (
+                        <PaginationItem key={p}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
                   }
-                  return null;
-                }
 
-                return (
-                  <PaginationItem key={p}>
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(p);
-                      }}
-                      isActive={p === page}
-                    >
-                      {p}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
+                  return (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(p);
+                        }}
+                        isActive={p === page}
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
 
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page < totalPages) handlePageChange(page + 1);
-                  }}
-                  disabled={page === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </CardFooter>
-      )}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page < totalPages) handlePageChange(page + 1);
+                    }}
+                    disabled={page === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

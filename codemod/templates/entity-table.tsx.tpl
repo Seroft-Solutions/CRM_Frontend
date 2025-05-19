@@ -4,6 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 // Table imports
 import {
@@ -55,7 +56,6 @@ import {
   AlertDialogAction
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -98,20 +98,13 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
   const { mutate: deleteItem, isLoading: isDeleting } = [[hooks.del]]({
     mutation: {
       onSuccess: () => {
-        toast({
-          title: "[[entity]] deleted",
-          description: "The item has been successfully deleted."
-        });
+        toast.success('[[entity]] deleted successfully');
         router.refresh();
       },
       onError: (error) => {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
+        toast.error(error.message);
       }
-    },
+    }
   });
 
   // Delete selected items
