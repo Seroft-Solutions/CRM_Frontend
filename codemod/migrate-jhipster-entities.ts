@@ -1,373 +1,160 @@
-#!/usr/bin/env tsx
-/**
- * migrate-jhipster-entities.ts — v4.2
- * ================================================================
- * Hybrid codemod for migrating JHipster entity UIs to Next.js 15
- * app-router pages under src/app/(protected)/<entity>, using:
- *   • shadcn/ui, TanStack Table
- *   • Orval React-Query hooks
- *   • preserved Redux slices (synced)
- *
- * v4.2 fix:
- *  • Adds `import { PascalDTO } from '.../schemas/...DTO'` wherever
- *    the DTO type is referenced (List, Actions, Forms).
- *
- * Usage:
- *   pnpm add -D tsx fs-extra fast-glob change-case yargs
- *   npx tsx ./codemod/migrate-jhipster-entities.ts --force --force-table
- * ================================================================
- */
+/* ------------------------------------------------------------------
+ *  migrate-jhipster-entities.ts   v7   (2025-05-20)
+ *  – same features + robust tsconfig detection
+ * ----------------------------------------------------------------- */
 
-import path from 'path';
 import fs from 'fs-extra';
+import path from 'path';
+import mustache from 'mustache';
+import { Project } from 'ts-morph';
 import fg from 'fast-glob';
-import { pascalCase, capitalCase } from 'change-case';
-import yargs from 'yargs/yargs';
+import pluralize from 'pluralize';
+import { camelCase }  from 'camel-case';
+import { pascalCase } from 'pascal-case';
+import { paramCase }  from 'param-case';
+import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-// ----- CLI --------------------------------------------------------
+/* ---------- CLI -------------------------------------------------- */
 const argv = yargs(hideBin(process.argv))
-  .option('force',       { type: 'boolean', default: false, describe: 'Overwrite existing files' })
-  .option('force-table', { type: 'boolean', default: false, describe: 'Overwrite EntityDataTable' })
-  .help(false)
+  .options({
+    schemasDir: { type: 'string', default: './src/core/api/generated' },
+    jhipsterDir:{ type: 'string', default: './.jhipster' },
+    tplDir:     { type: 'string', default: './codemod/templates' },
+    out:        { type: 'string', default: './src/app/(protected)' },
+    tsConfig:   { type: 'string', describe: 'Optional path to tsconfig.json' },
+    entities:   { type: 'string', describe: 'Comma-list of entity names' },
+    dry:        { type: 'boolean', default: false },
+    force:      { type: 'boolean', default: false },
+  })
   .parseSync();
 
-// ----- Paths & Constants -----------------------------------------
-const repoRoot       = process.cwd();
-const entitiesRoot   = path.join(repoRoot, 'src', 'features', 'entities');
-const outputRoot     = path.join(repoRoot, 'src', 'app', '(protected)');
-const schemasRoot    = path.join(repoRoot, 'src', 'core', 'api', 'generated', 'schemas');
-const componentsRoot = path.join(repoRoot, 'src', 'components', 'data-table');
+/* ---------- paths ------------------------------------------------ */
+const SCHEMAS_DIR = path.resolve(argv.schemasDir);
+const JH_DIR      = path.resolve(argv.jhipsterDir);
+const TPL_DIR     = path.resolve(argv.tplDir);
+const OUT_ROOT    = path.resolve(argv.out);
 
-const ENDPOINT_BASE = '@/core/api/generated/endpoints';
-const SCHEMA_BASE   = '@/core/api/generated/schemas';
-const SLICE_BASE    = '@/features/entities';
-const HOOKS_IMPORT  = '@/app/hooks'; // must export useAppDispatch
-
-fs.ensureDirSync(componentsRoot);
-
-// ----- Helpers ---------------------------------------------------
-function readDtoFields(entity: string): string[] {
-  const dtoFile = path.join(schemasRoot, `${pascalCase(entity)}DTO.ts`);
-  if (!fs.existsSync(dtoFile)) return [];
-  const src = fs.readFileSync(dtoFile, 'utf8');
-  return Array.from(src.matchAll(/^\s*([A-Za-z0-9_]+)\??:/gm))
-    .map(m => m[1])
-    .filter(f => f !== 'id');
-}
-
-function writePretty(target: string, code: string, overwrite = false) {
-  if (!overwrite && fs.existsSync(target)) return;
-  try {
-    const prettier = require('prettier');
-    const cfg = prettier.resolveConfig.sync(repoRoot) || {};
-    code = prettier.format(code, { ...cfg, filepath: target });
-  } catch {
-    // skip formatting
+/* ---------- locate tsconfig.json -------------------------------- */
+function findTsConfig(): string | undefined {
+  if (argv.tsConfig) {
+    const abs = path.resolve(argv.tsConfig);
+    if (fs.existsSync(abs)) return abs;
+    console.warn('⚠️  --tsConfig not found:', abs);
   }
-  fs.outputFileSync(target, code, 'utf8');
-}
-
-// ----- Shared EntityDataTable -----------------------------------
-// Inside migrate-jhipster-entities.ts, replace scaffoldSharedTable() with:
-
-function scaffoldSharedTable() {
-  const file = path.join(componentsRoot, 'EntityDataTable.tsx');
-  const code = `"use client";
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-
-export interface Action<T> {
-  id: string;
-  icon: React.ReactNode;
-  tooltip: string;
-  onClick: (row: T) => void;
-  variant?: "default" | "destructive";
-  showConfirm?: boolean;
-  confirmTitle?: string;
-  confirmDescription?: string;
-}
-
-interface Props<T> {
-  title: string;
-  columns: ColumnDef<T, any>[];
-  data: T[];
-  isLoading?: boolean;
-  actions?: Action<T>[];
-  onAdd?: () => void;
-}
-
-export function EntityDataTable<T extends object>({
-  title,
-  columns,
-  data,
-  isLoading = false,
-  actions = [],
-  onAdd,
-}: Props<T>) {
-  const table = useReactTable({
-    data: data ?? [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {onAdd && <Button onClick={onAdd}>Add New</Button>}
-      </div>
-      {isLoading ? (
-        <div>Loading…</div>
-      ) : (
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-                {actions.length > 0 && <TableHead>Actions</TableHead>}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell ?? (cell.column.columnDef.accessorKey as string),
-                      cell.getContext()
-                    )}
-                  </TableCell>
-                ))}
-                {actions.length > 0 && (
-                  <TableCell className="flex gap-2">
-                    {actions.map(action =>
-                      action.showConfirm ? (
-                        // wrapping in AlertDialog if confirmation is requested
-                        <AlertDialog key={action.id}>
-                          <AlertDialogTrigger asChild>
-                            <Button variant={action.variant}>{action.icon}</Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{action.confirmTitle}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {action.confirmDescription}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => action.onClick(row.original)}>
-                                Confirm
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      ) : (
-                        <Button
-                          key={action.id}
-                          variant={action.variant}
-                          onClick={() => action.onClick(row.original)}
-                          title={action.tooltip}
-                        >
-                          {action.icon}
-                        </Button>
-                      )
-                    )}
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
-  );
-}
-`;
-  writePretty(file, code, argv['force-table']);
-}
-
-
-// ----- Main -------------------------------------------------------
-async function generate() {
-  scaffoldSharedTable();
-
-  const patterns = ['*/index.tsx', '*/**/*-update.tsx'];
-  const dirs = fg.sync(patterns, { cwd: entitiesRoot }).map(p => p.split('/')[0]);
-  const entities = Array.from(new Set(dirs));
-
-  if (entities.length === 0) {
-    console.error('No entities found under', entitiesRoot);
-    process.exitCode = 1;
-    return;
+  // 1) nearest up from schemasDir
+  let dir = SCHEMAS_DIR;
+  while (dir !== path.dirname(dir)) {
+    const p = path.join(dir, 'tsconfig.json');
+    if (fs.existsSync(p)) return p;
+    dir = path.dirname(dir);
   }
+  // 2) repo-root
+  const rootTs = path.join(process.cwd(), 'tsconfig.json');
+  if (fs.existsSync(rootTs)) return rootTs;
+  // 3) give up → undefined (ts-morph will use defaults)
+}
 
-  for (const kebab of entities) {
-    const Pascal = pascalCase(kebab);
-    const fields = readDtoFields(kebab);
+const TSCONFIG_PATH = findTsConfig();
+if (!TSCONFIG_PATH) console.warn('⚠️  No tsconfig.json found – proceeding with defaults');
 
-    // ── columns.tsx ─────────────────────────────────────────
-    const columnsCode = `import { ColumnDef } from "@tanstack/react-table";
-import { ${Pascal}DTO } from "${SCHEMA_BASE}";
+/* ---------- load templates (recursive) --------------------------- */
+const templates: Record<string,string> = Object.fromEntries(
+  fg.sync('**/*.tpl', { cwd: TPL_DIR }).map(rel => [
+    rel,
+    fs.readFileSync(path.join(TPL_DIR, rel), 'utf8'),
+  ]),
+);
 
-export const columns: ColumnDef<${Pascal}DTO>[] = [
-  { accessorKey: "id", header: "ID" },
-${fields.map(f => `  { accessorKey: "${f}", header: "${capitalCase(f)}" },`).join('\n')}
-];`;
-    writePretty(path.join(outputRoot, kebab, 'columns.tsx'), columnsCode, argv.force);
+/* ---------- main ------------------------------------------------- */
+(async function main () {
+  const wanted   = argv.entities?.split(',').map(s=>s.trim()).filter(Boolean);
+  const entities = wanted?.length ? wanted : fg.sync('*.json', { cwd: JH_DIR })
+    .map(f=>pascalCase(path.basename(f,'.json')));
+  if (!entities.length) { console.error('❌  No entities found'); process.exit(1); }
 
-    // ── list page ──────────────────────────────────────────
-    const listCode = `"use client";
-import { useRouter } from "next/navigation";
-import { EntityDataTable, Action } from "@/components/data-table/EntityDataTable";
-import { columns } from "./columns";
-import { ${Pascal}DTO } from "${SCHEMA_BASE}";
-import {
-  useGetAll${Pascal}s,
-  useDelete${Pascal},
-} from "${ENDPOINT_BASE}/${kebab}-resource/${kebab}-resource.gen";
-import { Eye, Edit, Trash2 } from "lucide-react";
+  const project = new Project(TSCONFIG_PATH ? { tsConfigFilePath: TSCONFIG_PATH } : {});
 
-export default function ${Pascal}List() {
-  const router = useRouter();
-  const q = useGetAll${Pascal}s();
-  const del = useDelete${Pascal}();
-  const data: ${Pascal}DTO[] = q.data ?? [];
+  // Set custom delimiters
+  mustache.tags = ['[[', ']]'];
 
-  const actions: Action<${Pascal}DTO>[] = [
-    {
-      id: "view",
-      icon: <Eye />,
-      tooltip: "View",
-      onClick: (row) => router.push(\`/${kebab}/\${row.id}\`),
+  for (const ent of entities) {
+    const ctx = await buildMeta(ent, project);
+    await scaffold(ctx);
+  }
+})();
+
+/* ---------- helper functions ------------------------------------ */
+async function buildMeta(entity: string, project: Project) {
+  const jh = JSON.parse(await fs.readFile(path.join(JH_DIR, `${entity}.json`),'utf8'));
+  const fields = (jh.fields as any[]).map(f=>({
+    name: camelCase(f.fieldName),
+    label: pascalCase(f.fieldName),
+    type:  mapType(f.fieldType, f.fieldValues),
+    enumValues: f.fieldValues?.split(',') ?? [],
+    isEnum: !!f.fieldValues,
+    isString: /^String/.test(f.fieldType),
+    isNumber: /^(Integer|Long|Float|Double|BigDecimal)/.test(f.fieldType),
+    isBoolean: /^Boolean/.test(f.fieldType),
+    isDate: /Date|Instant|ZonedDateTime/.test(f.fieldType),
+    isRequired: (f.fieldValidateRules || []).includes('required'),
+  }));
+  const kebab  = paramCase(entity);
+  const plural = pascalCase(pluralize(entity));
+  const dto    = `${entity}DTO`;
+
+  return {
+    entity, kebab, plural, dto, fields,
+    endpointImport: '@/core/api/generated/endpoints/' + kebab + '-resource/' + kebab + '-resource.gen',
+    hooks:{
+      getAll:`useGetAll${plural}`,
+      search:`useSearch${plural}`,
+      create:`useCreate${entity}`,
+      update:`useUpdate${entity}`,
+      del:`useDelete${entity}`,
+      find:`useGet${entity}`,
     },
-    {
-      id: "edit",
-      icon: <Edit />,
-      tooltip: "Edit",
-      onClick: (row) => router.push(\`/${kebab}/\${row.id}/edit\`),
-    },
-    {
-      id: "delete",
-      icon: <Trash2 />,
-      tooltip: "Delete",
-      variant: "destructive",
-      showConfirm: true,
-      confirmTitle: "Delete ${Pascal}",
-      confirmDescription: "This action cannot be undone.",
-      onClick: (row) => del.mutate({ id: row.id }, { onSuccess: () => q.refetch() }),
-    },
-  ];
-
-  return (
-    <EntityDataTable
-      title="${capitalCase(kebab)}"
-      columns={columns}
-      data={data}
-      isLoading={q.isLoading}
-      actions={actions}
-      onAdd={() => router.push("/${kebab}/new")}
-    />
-  );
+  };
 }
-`;
-    writePretty(path.join(outputRoot, kebab, 'page.tsx'), listCode, argv.force);
 
-    // ── detail page ─────────────────────────────────────────
-    const detailCode = `"use client";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useGet${Pascal} } from "${ENDPOINT_BASE}/${kebab}-resource/${kebab}-resource.gen";
-import { ${Pascal}DTO } from "${SCHEMA_BASE}";
-import { notFound } from "next/navigation";
-
-interface Props { params: { id: string } }
-
-export default function ${Pascal}Detail({ params }: Props) {
-  const { data, isLoading } = useGet${Pascal}(Number(params.id));
-  if (!isLoading && !data) notFound();
-  return (
-    <Card>
-      <CardHeader><CardTitle>${capitalCase(kebab)} Detail</CardTitle></CardHeader>
-      <CardContent>
-        {isLoading
-          ? "Loading…"
-          : <pre className="text-sm">{JSON.stringify(data as ${Pascal}DTO, null, 2)}</pre>}
-      </CardContent>
-    </Card>
-  );
+function mapType(jhType:string, vals?:string){
+  if(vals) return 'enum';
+  if(/^String/.test(jhType)) return 'string';
+  if(/^(Integer|Long|Float|Double|BigDecimal)/.test(jhType)) return 'number';
+  if(/^Boolean/.test(jhType)) return 'boolean';
+  if(/Date|Instant|ZonedDateTime/.test(jhType)) return 'date';
+  return 'string';
 }
-`;
-    writePretty(path.join(outputRoot, kebab, '[id]', 'page.tsx'), detailCode, argv.force);
 
-    // ── form pages ──────────────────────────────────────────
-    const makeForm = (isNew: boolean) => {
-      const hook = isNew ? `useCreate${Pascal}` : `useUpdate${Pascal}, useGet${Pascal}`;
-      const loadData = isNew
-        ? ''
-        : `const { data } = useGet${Pascal}(Number(params.id));`;
-      const init = isNew ? '{}' : 'data ?? {}';
-      const arg  = isNew ? '{ data: form as any }' : '{ id: Number(params.id), data: form as any }';
-      const after = `onSuccess: () => router.push('/${kebab}')`;
-
-      return `"use client";
-import { ${hook} } from "${ENDPOINT_BASE}/${kebab}-resource/${kebab}-resource.gen";
-import { ${Pascal}DTO } from "${SCHEMA_BASE}";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-interface Props { params: { id?: string } }
-export default function ${Pascal}${isNew ? 'Create' : 'Edit'}({ params }: Props) {
-  const router = useRouter();
-  const mutation = ${isNew ? `useCreate${Pascal}` : `useUpdate${Pascal}`}();
-  ${loadData}
-  const [form, setForm] = useState<Partial<${Pascal}DTO>>(${init});
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    mutation.mutate(${arg}, { ${after} });
+async function scaffold(ctx:any){
+  const dest = path.join(OUT_ROOT, ctx.kebab);
+  if (await fs.pathExists(dest) && !argv.force) {
+    console.warn(`⚠️  ${ctx.entity} exists – use --force to overwrite`); return;
   }
+  if (!argv.dry) { await fs.remove(dest); await fs.ensureDir(dest); }
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-${fields.map(f => `      <div>
-        <label className="block text-sm mb-1">${capitalCase(f)}</label>
-        <Input
-          value={(form as any).${f} ?? ""}
-          onChange={e => setForm({ ...form, ${f}: e.target.value })}
-        />
-      </div>`).join('\n')}
-      <Button type="submit" disabled={mutation.isLoading}>Save</Button>
-    </form>
-  );
-}
-`;
-    };
+  for (const [rel,tpl] of Object.entries(templates)) {
+    // Skip the entity-components templates as we're flattening the structure
+    if (rel.includes('entity-components/')) continue;
 
-    writePretty(path.join(outputRoot, kebab, 'new', 'page.tsx'), makeForm(true), argv.force);
-    writePretty(path.join(outputRoot, kebab, '[id]', 'edit', 'page.tsx'), makeForm(false), argv.force);
+    // Generate cleaner file paths
+    const outRel = rel
+      // Convert entity-context.tsx.tpl -> context.tsx
+      .replace(/^entity-([^\/]+)\.tsx\.tpl$/, '$1.tsx')
+      // Convert entity-[id]/page.tsx.tpl -> [id]/page.tsx
+      .replace(/^entity-(\[id\].*)/, '$1')
+      // Convert entity-new/page.tsx.tpl -> new/page.tsx
+      .replace(/^entity-new/, 'new')
+      // Remove .tpl extension
+      .replace(/\.tpl$/, '');
 
-    console.log(`✔︎ scaffolded ${kebab}`);
+    const target = path.join(dest, outRel);
+    const text = mustache.render(tpl, ctx, templates);
+
+    if (!argv.dry) {
+      await fs.ensureDir(path.dirname(target));
+      await fs.writeFile(target, text, 'utf8');
+    }
+    console.log(argv.dry ? 'would write' : 'write     ', path.relative(process.cwd(), target));
   }
-
-  console.log('\n✨ Migration complete! Pages are under src/app/(protected)');
 }
-generate().catch(err => {
-  console.error(err);
-  process.exitCode = 1;
-});

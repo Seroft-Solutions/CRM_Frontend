@@ -1,0 +1,28 @@
+{
+  "annotations": {
+    "changelogDate": "20250516063150"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "State entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "State",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "district",
+      "otherEntityRelationshipName": "state",
+      "relationshipName": "district",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceImpl"
+}

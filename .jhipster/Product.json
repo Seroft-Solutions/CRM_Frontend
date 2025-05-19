@@ -1,0 +1,33 @@
+{
+  "annotations": {
+    "changelogDate": "20250516062750"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "Product entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "remark",
+      "fieldType": "TextBlob"
+    },
+    {
+      "fieldName": "tenantId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Product",
+  "pagination": "pagination",
+  "relationships": [],
+  "service": "serviceImpl"
+}

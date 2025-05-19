@@ -1,0 +1,28 @@
+{
+  "annotations": {
+    "changelogDate": "20250516062050"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "Priority entity.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "remark",
+      "fieldType": "TextBlob"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Priority",
+  "pagination": "pagination",
+  "relationships": [],
+  "service": "serviceImpl"
+}
