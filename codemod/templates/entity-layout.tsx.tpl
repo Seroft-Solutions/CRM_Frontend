@@ -1,17 +1,11 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { [[entity]]Provider } from './context';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Card } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-export const metadata: Metadata = { 
-  title: '[[entity]]',
-  description: 'Manage [[plural]]'
-};
 
 function ErrorFallback({ error }: { error: Error }) {
   return (

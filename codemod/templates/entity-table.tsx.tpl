@@ -1,6 +1,7 @@
 'use client';
 
 // React and Next.js imports
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
