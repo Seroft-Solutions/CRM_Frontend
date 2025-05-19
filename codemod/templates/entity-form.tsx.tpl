@@ -3,6 +3,7 @@
 // React and Next.js imports
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 // Form and validation
 import { useForm } from 'react-hook-form';
@@ -41,14 +42,7 @@ import { CalendarIcon } from "lucide-react";
 // Validation schema built from JHipster metadata
 const schema = z.object({
 [[#fields]]
-  [[name]]: [[^isEnum]]
-    [[#isString]]z.string().nonempty({ message: "[[label]] is required" })[[/isString]]
-    [[#isNumber]]z.number({ required_error: "[[label]] is required" })[[/isNumber]]
-    [[#isBoolean]]z.boolean().optional()[[/isBoolean]]
-    [[#isDate]]z.date({ required_error: "[[label]] is required" })[[/isDate]]
-  [[/isEnum]][[#isEnum]]z.enum([[pascalCase name]]Values, {
-    required_error: "Please select a valid [[label]]"
-  })[[/isEnum]],
+  [[name]]: [[^isEnum]][[#isString]]z.string().nonempty({ message: "[[label]] is required" })[[/isString]][[#isNumber]]z.number({ required_error: "[[label]] is required" })[[/isNumber]][[#isBoolean]]z.boolean().optional()[[/isBoolean]][[#isDate]]z.date({ required_error: "[[label]] is required" })[[/isDate]][[/isEnum]][[#isEnum]]z.enum([[pascalCase name]]Values, { required_error: "Please select a valid [[label]]" })[[/isEnum]],
 [[/fields]]
 });
 
@@ -59,7 +53,6 @@ interface Props {
 
 export default function [[entity]]Form({ defaultValues }: Props) {
   const router = useRouter();
-  const [error, setError] = useState<string>();
   
   // Initialize form
   const form = useForm<FormValues>({
@@ -71,30 +64,30 @@ export default function [[entity]]Form({ defaultValues }: Props) {
   const { mutate: save, isLoading } = defaultValues?.id
     ? [[hooks.update]]({ 
         mutation: { 
-          onSuccess: () => router.back(),
-          onError: (err) => setError(err.message) 
+          onSuccess: () => {
+            toast.success('[[entity]] updated successfully');
+            router.back();
+          },
+          onError: (err) => toast.error(err.message)
         } 
       })
     : [[hooks.create]]({ 
         mutation: { 
-          onSuccess: () => router.back(),
-          onError: (err) => setError(err.message)
+          onSuccess: () => {
+            toast.success('[[entity]] created successfully');
+            router.back();
+          },
+          onError: (err) => toast.error(err.message)
         } 
       });
 
   const onSubmit = async (vals: FormValues) => {
-    setError(undefined);
     save(vals as any);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {error && (
-          <div className="bg-red-50 text-red-900 rounded-md p-3 text-sm">
-            {error}
-          </div>
-        )}
 [[#fields]]
         <FormField
           control={form.control}
