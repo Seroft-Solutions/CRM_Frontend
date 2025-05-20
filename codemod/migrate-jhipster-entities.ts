@@ -37,6 +37,9 @@ const templates: Record<string, string> = Object.fromEntries(
   ])
 );
 
+/* ---------- types ---------------------------------------------- */
+type ExtendedMustache = typeof mustache & { escape: (text: string) => string };
+
 /* ---------- main ---------------------------------------------- */
 (async function main() {
   const wanted = argv.entities?.split(',').map(s => s.trim()).filter(Boolean);
@@ -50,7 +53,7 @@ const templates: Record<string, string> = Object.fromEntries(
 
   mustache.tags = ['[[', ']]'];
   // Disable HTML escaping for all variables
-  mustache.escape = text => text;
+  (mustache as ExtendedMustache).escape = (text: string): string => text;
 
   for (const entity of entities) {
     const ctx = await buildMeta(entity);
@@ -66,9 +69,18 @@ interface JHipsterField {
   fieldValidateRules?: string[];
 }
 
+interface JHipsterRelationship {
+  relationshipName: string;
+  otherEntityName: string;
+  relationshipType: string;
+  relationshipSide: 'left' | 'right';
+  otherEntityRelationshipName?: string;
+}
+
 interface JHipsterEntity {
   name: string;
   fields: JHipsterField[];
+  relationships?: JHipsterRelationship[];
 }
 
 interface Field {
@@ -84,12 +96,28 @@ interface Field {
   isRequired: boolean;
 }
 
+interface Relationship {
+  name: string;
+  label: string;
+  type: 'one-to-one' | 'many-to-one' | 'one-to-many' | 'many-to-many';
+  targetEntity: string;
+  displayField: string;
+  required: boolean;
+  useSearch: string;
+  kebab: string;
+  targetKebab: string; // Adding explicit target kebab case
+  targetPlural: string;
+  isCollection: boolean;
+  helperText?: string;
+}
+
 interface EntityContext {
   entity: string;
   kebab: string;
   plural: string;
   dto: string;
   fields: Field[];
+  relationships: Relationship[];
   endpointImport: string;
   hooks: {
     getAll: string;
@@ -123,14 +151,53 @@ async function buildMeta(entity: string): Promise<EntityContext> {
   const plural = pascalCase(pluralize(entity));
   const dto = `${entity}DTO`;
 
+  const relationships: Relationship[] = (jh.relationships || []).map(r => {
+    const targetKebab = paramCase(r.otherEntityName);
+    const targetPlural = pascalCase(pluralize.plural(r.otherEntityName));
+    const isCollection = r.relationshipType === 'one-to-many' || r.relationshipType === 'many-to-many';
+    
+    // Determine the display field - fallback to 'name' but could be customized
+    let displayField = 'name';
+    if (r.otherEntityField) {
+      displayField = camelCase(r.otherEntityField);
+    }
+    
+    // Determine if field is required based on relationship type
+    const required = r.relationshipType === 'many-to-one' && !r.otherEntityRelationshipName;
+    
+    // Generate appropriate helper text based on relationship type
+    let helperText: string | undefined;
+    if (isCollection) {
+      helperText = `Select multiple ${pluralize.plural(r.otherEntityName.toLowerCase())}`;
+    }
+    
+    // Generate correct search hook name
+    const useSearch = `useSearch${targetPlural}`;
+    
+    return {
+      name: camelCase(r.relationshipName),
+      label: pascalCase(r.relationshipName),
+      type: r.relationshipType as 'one-to-one' | 'many-to-one' | 'one-to-many' | 'many-to-many',
+      targetEntity: pascalCase(r.otherEntityName),
+      displayField,
+      required,
+      useSearch,
+      kebab: `${targetKebab}-resource`, // Keep the same format as before
+      targetKebab, // Add the plain kebab case for the target entity
+      targetPlural,
+      isCollection,
+      helperText
+    };
+  });
+
   return {
     entity,
     kebab,
     plural,
     dto,
     fields,
-    // Use a safer way to construct the import path to prevent HTML encoding
-    endpointImport: String.raw`@/core/api/generated/endpoints/${kebab}-resource/${kebab}-resource.gen`,
+    relationships,
+    endpointImport: `@/core/api/generated/endpoints/${kebab}-resource/${kebab}-resource.gen`,
     hooks: {
       getAll: `useGetAll${plural}`,
       search: `useSearch${plural}`,

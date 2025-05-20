@@ -1,27 +1,27 @@
 'use client';
 
-// React and Next.js imports
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { toast } from 'sonner';
-
-// Form and validation
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 // API and types
-import { [[dto]] } from '@/core/api/generated/schemas';
-import { [[hooks.create]], [[hooks.update]] } from '[[endpointImport]]';
+import type { [[dto]] } from '@/core/api/generated/schemas';
+import { [[hooks.create]], [[hooks.update]] } from '@/core/api/generated/endpoints/[[kebab]]-resource/[[kebab]]-resource.gen';
 [[#fields]]
 [[#isEnum]]import { [[pascalCase name]]Values } from './enums';[[/isEnum]]
 [[/fields]]
+[[#relationships]]
+import { [[useSearch]] } from '@/core/api/generated/endpoints/[[targetKebab]]-resource/[[targetKebab]]-resource.gen';
+[[/relationships]]
 
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
 import { 
   Select, SelectTrigger, SelectValue, 
   SelectContent, SelectItem 
@@ -35,6 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { RelationshipField } from './relationship-field';
 import { cn } from '@/lib/utils';
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -44,9 +45,26 @@ const schema = z.object({
 [[#fields]]
   [[name]]: [[^isEnum]][[#isString]]z.string().nonempty({ message: "[[label]] is required" })[[/isString]][[#isNumber]]z.number({ required_error: "[[label]] is required" })[[/isNumber]][[#isBoolean]]z.boolean().optional()[[/isBoolean]][[#isDate]]z.date({ required_error: "[[label]] is required" })[[/isDate]][[/isEnum]][[#isEnum]]z.enum([[pascalCase name]]Values, { required_error: "Please select a valid [[label]]" })[[/isEnum]],
 [[/fields]]
+[[#relationships]]
+  [[#isCollection]]
+  [[name]]: z.array(
+    z.object({
+      id: z.number(),
+      [[displayField]]: z.string()
+    })
+  )[[^required]].optional()[[/required]],
+  [[/isCollection]]
+  [[^isCollection]]
+  [[name]]: z.object({
+    id: z.number(),
+    [[displayField]]: z.string()
+  })[[^required]].optional()[[/required]],
+  [[/isCollection]]
+[[/relationships]]
 });
 
 type FormValues = z.infer<typeof schema>;
+
 interface Props { 
   defaultValues?: Partial<[[dto]]>
 }
@@ -54,13 +72,11 @@ interface Props {
 export default function [[entity]]Form({ defaultValues }: Props) {
   const router = useRouter();
   
-  // Initialize form
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: defaultValues as any,
   });
 
-  // Setup API mutation
   const { mutate: save, isLoading } = defaultValues?.id
     ? [[hooks.update]]({ 
         mutation: { 
@@ -174,6 +190,19 @@ export default function [[entity]]Form({ defaultValues }: Props) {
           )}
         />
 [[/fields]]
+
+[[#relationships]]
+        <RelationshipField 
+          form={form}
+          name="[[name]]"
+          label="[[label]]"
+          useSearch={[[useSearch]]}
+          displayField="[[displayField]]"
+          required={[[required]]}
+          relationshipType="[[type]]"
+          [[#helperText]]helperText="[[helperText]]"[[/helperText]]
+        />
+[[/relationships]]
 
         <div className="flex justify-end space-x-4">
           <Button 
