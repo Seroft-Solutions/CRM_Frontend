@@ -1,22 +1,41 @@
 import { AxiosError, AxiosRequestConfig } from 'axios';
 import { axiosInstance } from './axios-client';
 import { API_URL } from '../config/constants';
+import { getSession } from 'next-auth/react';
+
+interface RequestConfig {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  data?: RequestData;
+  params?: Record<string, string | number | boolean>;
+  signal?: AbortSignal;
+}
+
+interface RequestData {
+  [key: string]: unknown;
+}
 
 /**
  * Custom fetch client for Orval-generated API clients
  * This function wraps the axios instance and is compatible with Orval's expected format
  */
 export const customFetch = async <T>(
-  requestConfig: {
-    url: string;
-    method?: string;
-    headers?: Record<string, string>;
-    data?: any;
-    params?: any;
-    signal?: AbortSignal;
-  },
+  requestConfig: RequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
+  // Get session token
+  try {
+    const session = await getSession();
+    if (session?.id_token) {
+      requestConfig.headers = {
+        ...requestConfig.headers,
+        Authorization: `Bearer ${session.id_token}`,
+      };
+    }
+  } catch (error) {
+    console.error('Error getting session token:', error);
+  }
   try {
     // Log request details in development
     if (process.env.NODE_ENV !== 'production') {
@@ -61,11 +80,19 @@ export const customFetch = async <T>(
         error.response?.data?.message || error.message || 'An error occurred during the API request'
       );
 
+      // Define enhanced error interface
+      interface EnhancedError extends Error {
+        data?: unknown;
+        status?: number;
+        url?: string;
+        method?: string;
+      }
+
       // Add response data to the error for more context
-      (enhancedError as any).data = error.response?.data;
-      (enhancedError as any).status = error.response?.status;
-      (enhancedError as any).url = requestConfig.url;
-      (enhancedError as any).method = requestConfig.method;
+      (enhancedError as EnhancedError).data = error.response?.data;
+      (enhancedError as EnhancedError).status = error.response?.status;
+      (enhancedError as EnhancedError).url = requestConfig.url;
+      (enhancedError as EnhancedError).method = requestConfig.method;
 
       throw enhancedError;
     }
