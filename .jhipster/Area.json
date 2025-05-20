@@ -1,5 +1,10 @@
 {
-  "name": "Area",
+  "annotations": {
+    "changelogDate": "20250516063450"
+  },
+  "applications": "*",
+  "documentation": "Area entity.",
+  "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "name",
@@ -7,32 +12,21 @@
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "code",
-      "fieldType": "String",
+      "fieldName": "pincode",
+      "fieldType": "Integer",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "status",
-      "fieldType": "String",
-      "fieldValues": "ACTIVE,INACTIVE,DELETED"
-    },
-    {
-      "fieldName": "isDefault",
-      "fieldType": "Boolean"
-    },
-    {
-      "fieldName": "createdDate",
-      "fieldType": "ZonedDateTime"
     }
   ],
-  "relationships": [],
-  "entityTableName": "area",
-  "dto": "mapstruct",
+  "jpaMetamodelFiltering": true,
+  "name": "Area",
   "pagination": "pagination",
-  "service": "serviceImpl",
-  "jpaMetamodelFiltering": false,
-  "readOnly": false,
-  "embedded": false,
-  "applications": "*",
-  "skipClient": true
+  "relationships": [
+    {
+      "otherEntityName": "city",
+      "relationshipName": "city",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceImpl"
 }
