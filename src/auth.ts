@@ -1,40 +1,161 @@
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
+import { jwtDecode } from "jwt-decode";
 
-// Extend the JWT interface to include id_token and provider
+// Extend the JWT interface to include token and role information
 declare module "next-auth/jwt" {
   interface JWT {
     id_token?: string;
+    access_token?: string;
+    refresh_token?: string;
+    expires_at?: number;
     provider?: string;
+    roles?: string[];
+  }
+}
+
+// Extend the Session interface to expose tokens and roles
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id?: string;
+      name?: string;
+      email?: string;
+      image?: string;
+      roles?: string[];
+    };
+    accessToken?: string;
+    idToken?: string;
+    error?: "RefreshAccessTokenError";
+  }
+}
+
+/**
+ * Refreshes the access token using the refresh token
+ */
+async function refreshAccessToken(token) {
+  try {
+    const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
+    
+    const response = await fetch(url, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      method: "POST",
+      body: new URLSearchParams({
+        client_id: process.env.AUTH_KEYCLOAK_ID || "",
+        client_secret: process.env.AUTH_KEYCLOAK_SECRET || "",
+        grant_type: "refresh_token",
+        refresh_token: token.refresh_token || "",
+      }),
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      throw refreshedTokens;
+    }
+
+    const decoded = jwtDecode(refreshedTokens.access_token);
+    
+    // Extract roles from token
+    const realmRoles = decoded.realm_access?.roles || [];
+    const resourceRoles = [];
+    
+    if (decoded.resource_access) {
+      Object.values(decoded.resource_access).forEach((resource) => {
+        if (resource.roles && Array.isArray(resource.roles)) {
+          resourceRoles.push(...resource.roles);
+        }
+      });
+    }
+
+    const allRoles = [...new Set([...realmRoles, ...resourceRoles])];
+    
+    return {
+      ...token,
+      access_token: refreshedTokens.access_token,
+      id_token: refreshedTokens.id_token,
+      refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + (refreshedTokens.expires_in || 3600),
+      roles: allRoles
+    };
+  } catch (error) {
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
   }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Keycloak],
   callbacks: {
-    jwt: async ({ token, account }) => {
-      if (account) {
-        token.id_token = account.id_token;
-        token.provider = account.provider;
-        console.log("JWT Callback - id_token:", token.id_token); // Debug log
+    async jwt({ token, account }) {
+      // Initial sign in
+      if (account && account.access_token) {
+        // Decode the token to extract roles
+        const decoded = jwtDecode(account.access_token);
+        
+        // Extract roles from the token
+        const realmRoles = decoded.realm_access?.roles || [];
+        const resourceRoles = [];
+        
+        if (decoded.resource_access) {
+          Object.values(decoded.resource_access).forEach((resource) => {
+            if (resource.roles && Array.isArray(resource.roles)) {
+              resourceRoles.push(...resource.roles);
+            }
+          });
+        }
+
+        const allRoles = [...new Set([...realmRoles, ...resourceRoles])];
+        
+        return {
+          ...token,
+          id_token: account.id_token,
+          access_token: account.access_token,
+          refresh_token: account.refresh_token,
+          expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
+          provider: account.provider,
+          roles: allRoles
+        };
       }
-      return token;
+      
+      // Return previous token if the access token has not expired yet
+      if (token.expires_at && Date.now() < token.expires_at * 1000) {
+        return token;
+      }
+      
+      // Access token has expired, try to refresh it
+      return refreshAccessToken(token);
     },
+    
+    async session({ session, token }) {
+      if (token) {
+        // Add user info to session
+        session.user.id = token.sub;
+        session.user.roles = token.roles;
+        
+        // Add tokens to session
+        session.accessToken = token.access_token;
+        session.idToken = token.id_token;
+        session.error = token.error;
+      }
+      
+      return session;
+    }
   },
   events: {
-    signOut: async ({ token }) => {
-      if (token.provider === "keycloak") {
+    async signOut({ token }) {
+      if (token?.provider === "keycloak" && token?.id_token) {
         const issuer = process.env.AUTH_KEYCLOAK_ISSUER;
         if (!issuer) {
-          console.error("AUTH_KEYCLOAK_ISSUER is not defined");
           return;
         }
+        
         const logoutUrl = `${issuer}/protocol/openid-connect/logout?id_token_hint=${token.id_token}`;
+        
         try {
-          const response = await fetch(logoutUrl);
-          if (!response.ok) {
-            throw new Error(`Failed to logout from Keycloak: ${response.statusText}`);
-          }
+          await fetch(logoutUrl);
         } catch (error) {
           console.error("Failed to logout from Keycloak", error);
         }

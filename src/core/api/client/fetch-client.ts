@@ -18,34 +18,28 @@ interface RequestData {
 
 /**
  * Custom fetch client for Orval-generated API clients
- * This function wraps the axios instance and is compatible with Orval's expected format
  */
 export const customFetch = async <T>(
   requestConfig: RequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  // Get session token
   try {
+    // Get auth session
     const session = await getSession();
-    if (session?.id_token) {
+    console.log("Usman "+session.accessToken);
+    // Add authorization header if we have an access token
+    if (session?.accessToken) {
       requestConfig.headers = {
         ...requestConfig.headers,
-        Authorization: `Bearer ${session.id_token}`,
+        Authorization: `Bearer ${session.accessToken}`,
       };
     }
   } catch (error) {
-    console.error('Error getting session token:', error);
+    console.error('Error getting session:', error);
   }
+  
   try {
-    // Log request details in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug(`API Request: ${requestConfig.method || 'GET'} ${requestConfig.url}`, {
-        params: requestConfig.params,
-        headers: requestConfig.headers,
-        baseURL: API_URL,
-      });
-    }
-
+    // Make API request
     const response = await axiosInstance({
       url: requestConfig.url,
       method: requestConfig.method ?? 'GET',
@@ -56,49 +50,25 @@ export const customFetch = async <T>(
       ...options,
     });
 
-    // Log successful responses in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug(`API Response: ${requestConfig.method || 'GET'} ${requestConfig.url}`, {
-        status: response.status,
-        statusText: response.statusText,
-      });
-    }
-
     return response.data as T;
   } catch (error) {
     if (error instanceof AxiosError) {
-      // Log detailed error information
-      console.error(`API Error: ${requestConfig.method || 'GET'} ${requestConfig.url}`, {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
-      });
-
-      // Enhance error with more details from the response
+      // Create enhanced error
       const enhancedError = new Error(
-        error.response?.data?.message || error.message || 'An error occurred during the API request'
+        error.response?.data?.message || error.message || 'API request failed'
       );
 
-      // Define enhanced error interface
-      interface EnhancedError extends Error {
-        data?: unknown;
-        status?: number;
-        url?: string;
-        method?: string;
-      }
-
-      // Add response data to the error for more context
-      (enhancedError as EnhancedError).data = error.response?.data;
-      (enhancedError as EnhancedError).status = error.response?.status;
-      (enhancedError as EnhancedError).url = requestConfig.url;
-      (enhancedError as EnhancedError).method = requestConfig.method;
+      // Add extra context to error
+      Object.assign(enhancedError, {
+        data: error.response?.data,
+        status: error.response?.status,
+        url: requestConfig.url,
+        method: requestConfig.method,
+      });
 
       throw enhancedError;
     }
     
-    // For non-Axios errors
-    console.error(`Unexpected API error: ${requestConfig.method || 'GET'} ${requestConfig.url}`, error);
     throw error;
   }
 };

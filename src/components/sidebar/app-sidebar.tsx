@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { GalleryVerticalEnd, Building2 } from "lucide-react"
+import { Building2 } from "lucide-react"
 
 import { NavMain } from "@/components/sidebar/nav-main"
 import { NavUser } from "@/components/sidebar/nav-user"
@@ -15,33 +15,26 @@ import {
 } from "@/components/ui/sidebar"
 import { sidebarItems } from "./sidebar-items"
 
-// This is sample data, you should replace it with real user data from authentication
-const userData = {
-  user: {
-    name: "User Name",
-    email: "user@example.com",
-    avatar: "/avatars/user.jpg",
+// Team data - this could also be fetched from the backend
+const teams = [
+  {
+    name: "CRM Cup",
+    logo: Building2,
+    plan: "Enterprise",
   },
-  teams: [
-    {
-      name: "CRM Cup",
-      logo: Building2,
-      plan: "Enterprise",
-    },
-  ],
-}
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={userData.teams} />
+        <TeamSwitcher teams={teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={sidebarItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
