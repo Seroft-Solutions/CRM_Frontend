@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250516062850"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "ChannelType entity.",
   "dto": "mapstruct",
   "fields": [
