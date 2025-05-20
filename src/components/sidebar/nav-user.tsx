@@ -7,7 +7,9 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  User,
 } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 import {
   Avatar,
@@ -29,17 +31,46 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { handleLogout } from "@/utils/auth/logout"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
+  const { data: session, status } = useSession()
+  
+  // Generate user initials for avatar fallback
+  const getInitials = (name: string) => {
+    if (!name) return "U"
+    const parts = name.split(' ')
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+  }
+  
+  // Use session data or fallback values
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    image: session?.user?.image || "",
+    initials: session?.user?.name ? getInitials(session.user.name) : "U",
+  }
+  
+  // Show loading state if session is loading
+  if (status === "loading") {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" disabled>
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarFallback className="rounded-lg">...</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Loading...</span>
+              <span className="truncate text-xs"></span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
 
   return (
     <SidebarMenu>
@@ -51,8 +82,10 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                {user.image ? (
+                  <AvatarImage src={user.image} alt={user.name} />
+                ) : null}
+                <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -70,8 +103,10 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  {user.image ? (
+                    <AvatarImage src={user.image} alt={user.name} />
+                  ) : null}
+                  <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -79,31 +114,36 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
+            {session?.user?.roles?.length ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
+                    Roles
+                  </DropdownMenuLabel>
+                  {session.user.roles.map((role) => (
+                    <DropdownMenuItem key={role} className="text-sm">
+                      <BadgeCheck className="h-4 w-4 mr-2" />
+                      {role}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            ) : null}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+                <User className="h-4 w-4 mr-2" />
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
+                <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
