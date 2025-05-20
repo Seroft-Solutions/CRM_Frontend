@@ -26,8 +26,6 @@ export const customFetch = async <T>(
   try {
     // Get auth session
     const session = await getSession();
-    console.log("Usman "+session.accessToken);
-    // Add authorization header if we have an access token
     if (session?.accessToken) {
       requestConfig.headers = {
         ...requestConfig.headers,
