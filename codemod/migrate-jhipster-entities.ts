@@ -49,6 +49,8 @@ const templates: Record<string, string> = Object.fromEntries(
   }
 
   mustache.tags = ['[[', ']]'];
+  // Disable HTML escaping for all variables
+  mustache.escape = text => text;
 
   for (const entity of entities) {
     const ctx = await buildMeta(entity);
@@ -127,7 +129,8 @@ async function buildMeta(entity: string): Promise<EntityContext> {
     plural,
     dto,
     fields,
-    endpointImport: '@/core/api/generated/endpoints/' + kebab + '-resource/' + kebab + '-resource.gen',
+    // Use a safer way to construct the import path to prevent HTML encoding
+    endpointImport: String.raw`@/core/api/generated/endpoints/${kebab}-resource/${kebab}-resource.gen`,
     hooks: {
       getAll: `useGetAll${plural}`,
       search: `useSearch${plural}`,
@@ -227,13 +230,21 @@ async function scaffold(ctx: EntityContext): Promise<void> {
     await fs.ensureDir(dest);
   }
 
+  // Check if we need to generate an enums file
+  const hasEnums = ctx.fields.some(field => field.isEnum);
+
   for (const [rel, tpl] of Object.entries(templates)) {
     if (rel.includes('entity-components/')) continue;
 
+    // Skip enum template if there are no enums
+    if (rel === 'entity-enums.ts.tpl' && !hasEnums) continue;
+
     const outRel = rel
       .replace(/^entity-([^\/]+)\.tsx\.tpl$/, '$1.tsx')
+      .replace(/^entity-([^\/]+)\.ts\.tpl$/, '$1.ts')
       .replace(/^entity-(\[id\].*)/, '$1')
       .replace(/^entity-new/, 'new')
+      .replace(/^entity-metadata/, 'metadata')
       .replace(/\.tpl$/, '');
 
     const target = path.join(dest, outRel);
