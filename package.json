@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-ui": "npx tsx ./codemod/migrate-jhipster-entities.ts --force"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
