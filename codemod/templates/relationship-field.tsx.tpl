@@ -1,7 +1,9 @@
 "use client"
 
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { useDebounce } from "@/hooks/use-debounce"
+import type { UseFormReturn } from "react-hook-form"
 import { 
   Command,
   CommandEmpty,
@@ -28,15 +30,31 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 interface RelationshipFieldProps {
-  form: any;
+  form: UseFormReturn<any>;
   name: string;
   label: string;
-  useSearch: any; // This uses the generated hooks
+  useSearch: (
+    params: Record<string, string | number | string[]>, 
+    options?: { 
+      query?: { 
+        enabled?: boolean; 
+        staleTime?: number;
+      } 
+    }
+  ) => { 
+    data: { content?: SearchItem[]; } | SearchItem[]; 
+    isLoading: boolean; 
+  };
   displayField?: string;
   required?: boolean;
   helperText?: string;
   relationshipType?: 'one-to-one' | 'many-to-one' | 'one-to-many' | 'many-to-many';
   disabled?: boolean;
+}
+
+interface SearchItem {
+  id: string | number;
+  [key: string]: any;
 }
 
 export function RelationshipField({
@@ -52,20 +70,49 @@ export function RelationshipField({
 }: RelationshipFieldProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const [selectedItems, setSelectedItems] = useState<any[]>([])
+  const debouncedSearch = useDebounce(search, 300)
+  const [selectedItems, setSelectedItems] = useState<SearchItem[]>([])
   
   const isMultiSelect = relationshipType === 'one-to-many' || relationshipType === 'many-to-many'
 
-  // Use the provided search hook with proper parameters
-  const { data: items = [], isLoading } = useSearch({
-    params: { query: search },
-    query: { enabled: open }
-  })
+  // Build search params correctly for the API
+  const searchParams = useMemo(() => {
+    // Create search params to match API expectations
+    const params: Record<string, string | number | string[]> = {
+      query: debouncedSearch || '*', // Use * as wildcard when empty
+      size: 20, // Reasonable limit
+      page: 0,
+      sort: ['id,asc']
+    };
+    
+    // Add specific search field if search term provided
+    if (debouncedSearch) {
+      params[`${displayField}.contains`] = debouncedSearch;
+    }
+    
+    return params;
+  }, [debouncedSearch, displayField]);
+
+  // Use the correct parameters for the search hook
+  const { data: apiResponse, isLoading } = useSearch(
+    searchParams, 
+    { 
+      query: { 
+        enabled: open,
+        staleTime: 10000
+      } 
+    }
+  );
+
+  // Handle both array and paginated responses and ensure type safety
+  const items: SearchItem[] = useMemo(() => (
+    Array.isArray(apiResponse) ? apiResponse : apiResponse?.content || []
+  ), [apiResponse]);
 
   // Update form value when selectedItems changes in multi-select mode
   useEffect(() => {
     if (isMultiSelect && selectedItems.length > 0) {
-      form.setValue(name, selectedItems, { shouldDirty: true })
+      form.setValue(name, selectedItems, { shouldDirty: true, shouldValidate: true })
     }
   }, [selectedItems, isMultiSelect, form, name])
 
@@ -78,7 +125,7 @@ export function RelationshipField({
   }, [form, name, isMultiSelect])
 
   // Handle selection/deselection in multi-select mode
-  const toggleSelection = (item: any) => {
+  const toggleSelection = (item: SearchItem) => {
     if (isMultiSelect) {
       const isSelected = selectedItems.some(selected => selected.id === item.id)
       
@@ -88,9 +135,27 @@ export function RelationshipField({
         setSelectedItems([...selectedItems, item])
       }
     } else {
-      form.setValue(name, item, { shouldDirty: true })
+      form.setValue(name, item, { shouldDirty: true, shouldValidate: true })
       setOpen(false)
     }
+  }
+
+  // Helper to format display text
+  const formatDisplayText = (item: SearchItem | null) => {
+    if (!item) return '';
+    
+    // Handle cases where the display field might be nested
+    if (displayField.includes('.')) {
+      const parts = displayField.split('.');
+      let value = item;
+      for (const part of parts) {
+        value = value?.[part];
+        if (value === undefined) return '';
+      }
+      return value;
+    }
+    
+    return item[displayField];
   }
 
   return (
@@ -110,7 +175,7 @@ export function RelationshipField({
                     variant="secondary"
                     className="flex items-center gap-1"
                   >
-                    {item[displayField]}
+                    {formatDisplayText(item)}
                     <button 
                       type="button" 
                       className="ml-1 rounded-full outline-none focus:ring-2"
@@ -158,7 +223,7 @@ export function RelationshipField({
                       <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
                       <CommandGroup>
                         {items?.map((item) => {
-                          const isSelected = selectedItems.some(selected => selected.id === item.id)
+                          const isSelected = selectedItems.some(selected => selected.id === item.id);
                           return (
                             <CommandItem
                               key={item.id}
@@ -171,7 +236,7 @@ export function RelationshipField({
                                   isSelected ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {item[displayField]}
+                              {formatDisplayText(item)}
                             </CommandItem>
                           )
                         })}
@@ -196,7 +261,7 @@ export function RelationshipField({
                     )}
                   >
                     {field.value
-                      ? items?.find((item) => item.id === field.value.id)?.[displayField] || field.value[displayField]
+                      ? formatDisplayText(field.value)
                       : `Select ${label}`}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -221,7 +286,7 @@ export function RelationshipField({
                         <CommandItem
                           key={item.id}
                           onSelect={() => {
-                            form.setValue(name, item, { shouldDirty: true })
+                            form.setValue(name, item, { shouldDirty: true, shouldValidate: true })
                             setOpen(false)
                           }}
                         >
@@ -233,7 +298,7 @@ export function RelationshipField({
                                 : "opacity-0"
                             )}
                           />
-                          {item[displayField]}
+                          {formatDisplayText(item)}
                         </CommandItem>
                       ))}
                     </CommandGroup>

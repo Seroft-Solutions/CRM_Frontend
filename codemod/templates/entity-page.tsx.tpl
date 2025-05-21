@@ -1,28 +1,27 @@
 'use client';
 
+/**
+ * [[entity]] List Page
+ * 
+ * This template handles API pagination with proper data shape handling.
+ */
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useTransition } from 'react';
 import Link from 'next/link';
 
-// API and Components
-import { [[hooks.getAll]], [[hooks.search]] } from '[[endpointImport]]';
-import { [[entity]]Table } from './table';
+import { useDebounce } from "@/hooks/use-debounce";
+import { Loader2 } from 'lucide-react';
+
+// API and Types
+import type { GetAll[[plural]]Params } from '@/core/api/generated/schemas';
+import { [[hooks.getAll]], [[hooks.del]], [[hooks.count]] } from '[[endpointImport]]';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useDebounce } from "@/hooks/use-debounce";
-import { Loader2 } from 'lucide-react';
+import { DataTable } from '@/components/datatable';
+import { columns } from './columns';
 
 const PAGE_SIZE = 10;
 
@@ -31,26 +30,62 @@ export default function [[entity]]List() {
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
   
+  // Delete mutation
+  const deleteEntity = [[hooks.del]]();
+
+  // Delete handler for DataTable
+  const handleDelete = useCallback(async (id: string | number) => {
+    if (window.confirm('Are you sure you want to delete this [[entity]]?')) {
+      try {
+        await deleteEntity.mutateAsync({ id });
+        // Refresh the list after deletion
+        router.refresh();
+      } catch (error) {
+        console.error('Failed to delete entity:', error);
+      }
+    }
+  }, [deleteEntity, router]);
+  
   // Get URL params with defaults
   const page = Number(params.get('page') ?? 1);
+  const size = Number(params.get('size') ?? PAGE_SIZE);
   const sort = params.get('sort') ?? 'id';
-  const order = params.get('order') ?? 'ASC';
+  const order = params.get('order') ?? 'asc';
   const [search, setSearch] = useState(params.get('q') ?? '');
   const debouncedSearch = useDebounce(search, 500);
 
-  // Fetch data
-  const { data, isLoading } = [[hooks.getAll]]({ 
-    query: { 
-      page,
-      size: PAGE_SIZE,
-      sort,
-      order,
-      q: debouncedSearch || undefined
-    },
-    options: {
-      keepPreviousData: true
+  // Build query parameters with proper typing
+  const buildQueryParams = (): GetAll[[plural]]Params => {
+    const queryParams: GetAll[[plural]]Params = {
+      page: page - 1, // Convert to 0-based indexing for the API
+      size: size,
+      sort: [`${sort},${order.toLowerCase()}`]
+    };
+
+    // Add search if provided - apply to all appropriate string fields
+    if (debouncedSearch) {
+      // Use first searchable field as primary search (typically "name")
+      [[#fields]][[#isString]]
+      queryParams['[[name]].contains'] = debouncedSearch;
+      [[/isString]][[/fields]]
     }
-  });
+
+    return queryParams;
+  };
+
+  // Fetch data and count
+  const queryParams = buildQueryParams();
+  const { data: apiResponse, isLoading: isLoadingData } = [[hooks.getAll]](queryParams);
+  const { data: countData, isLoading: isLoadingCount } = [[hooks.count]]();
+
+  // Handle response format detection
+  const items = Array.isArray(apiResponse) ? apiResponse : apiResponse?.content || [];
+  const totalItems = Array.isArray(apiResponse) 
+    ? countData || items.length
+    : (apiResponse?.totalElements || 0);
+
+  const total = totalItems;
+  const isLoading = isLoadingData || isLoadingCount;
 
   // URL updates
   const updateUrl = useCallback((updates: Record<string, string>) => {
@@ -69,9 +104,9 @@ export default function [[entity]]List() {
 
   // Event handlers
   const handleSort = useCallback((col: string) => {
-    const next = order === 'ASC' ? 'DESC' : 'ASC';
+    const next = sort === col && order === 'asc' ? 'desc' : 'asc';
     updateUrl({ sort: col, order: next, page: '1' });
-  }, [order, updateUrl]);
+  }, [sort, order, updateUrl]);
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -82,8 +117,7 @@ export default function [[entity]]List() {
     updateUrl({ page: String(newPage) });
   }, [updateUrl]);
 
-  const total = data?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(total / size);
 
   return (
     <Card>
@@ -102,90 +136,33 @@ export default function [[entity]]List() {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Input
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search [[plural]]..."
-              className="pr-8"
-            />
-            {isPending && (
-              <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
-            )}
-          </div>
-        </div>
-
-        <[[entity]]Table
-          data={data?.data ?? []}
+        <DataTable 
+          columns={columns} 
+          data={items}
+          pageCount={totalPages}
+          pagination={{
+            pageIndex: page - 1,
+            pageSize: size,
+            pageCount: totalPages,
+            onPageChange: (newPage) => handlePageChange(newPage + 1)
+          }}
+          sorting={{
+            sorting: [{ id: sort, desc: order === 'desc' }],
+            onSortingChange: (sorting) => {
+              if (sorting && sorting[0]) {
+                handleSort(sorting[0].id);
+              }
+            }
+          }}
+          search={{
+            value: search,
+            onChange: handleSearch,
+            placeholder: `Search [[plural]]...`,
+            debounce: 500
+          }}
           isLoading={isLoading}
-          sort={sort}
-          order={order}
-          onSort={handleSort}
+          onDelete={handleDelete}
         />
-
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-4">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page > 1) handlePageChange(page - 1);
-                    }}
-                    disabled={page === 1}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                  // Show first page, last page, and pages around current page
-                  const show = p === 1 || p === totalPages ||
-                    (p >= page - 2 && p <= page + 2);
-                  
-                  if (!show) {
-                    // Show ellipsis for skipped pages
-                    if (p === 2 || p === totalPages - 1) {
-                      return (
-                        <PaginationItem key={p}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      );
-                    }
-                    return null;
-                  }
-
-                  return (
-                    <PaginationItem key={p}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(p);
-                        }}
-                        isActive={p === page}
-                      >
-                        {p}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page < totalPages) handlePageChange(page + 1);
-                    }}
-                    disabled={page === totalPages}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
