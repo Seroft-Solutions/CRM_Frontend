@@ -96,14 +96,15 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
   const [sorting, setSorting] = useState<SortingState>([]);
 
   // Delete mutation
-  const { mutate: deleteItem, isLoading: isDeleting } = [[hooks.del]]({
+  const { mutate: deleteItem, isPending: isDeleting } = [[hooks.del]]({
     mutation: {
       onSuccess: () => {
         toast.success('[[entity]] deleted successfully');
         router.refresh();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error('Error deleting [[entity]]');
+        console.error(error);
       }
     }
   });
@@ -118,6 +119,34 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
           router.refresh();
         });
     });
+  };
+
+  // Format cells based on data type
+  const formatCellValue = (value: any, fieldType: string) => {
+    if (value === null || value === undefined) return '--';
+    
+    if (fieldType === 'date') {
+      return new Date(value).toLocaleString();
+    }
+    
+    if (fieldType === 'boolean') {
+      return value ? 'Yes' : 'No';
+    }
+    
+    return String(value);
+  };
+
+  // Handle relationship field display
+  const getRelationshipValue = (row: [[dto]], relationshipField: string, displayField: string) => {
+    const relationship = row[relationshipField as keyof [[dto]]];
+    if (!relationship) return '--';
+    
+    // Handle both direct objects and array relationships
+    if (Array.isArray(relationship)) {
+      return relationship.map(item => item[displayField as keyof typeof item]).join(', ');
+    }
+    
+    return relationship[displayField as keyof typeof relationship] || '--';
   };
 
   // Table columns configuration
@@ -175,7 +204,9 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
         return isLoading ? (
           <Skeleton className="h-4 w-[100px]" />
         ) : (
-          <div className="line-clamp-1">{value}</div>
+          <div className="line-clamp-1">
+            {formatCellValue(value, '[[type]]')}
+          </div>
         );
       },
       filterFn: (row, id, value) => {
@@ -183,6 +214,39 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
       },
     },
 [[/fields]]
+[[#relationships]]
+    {
+      id: '[[name]]',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => onSort('[[name]]Id')}
+          className="hover:bg-transparent"
+        >
+          [[label]]
+          <span className="ml-2">
+            {sort === '[[name]]Id' ? (
+              order === 'ASC' ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </span>
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const value = getRelationshipValue(row.original, '[[name]]', '[[displayField]]');
+        return isLoading ? (
+          <Skeleton className="h-4 w-[100px]" />
+        ) : (
+          <div className="line-clamp-1">{value}</div>
+        );
+      },
+    },
+[[/relationships]]
     {
       id: 'actions',
       cell: ({ row }) => {
@@ -252,9 +316,9 @@ export function [[entity]]Table({ data, isLoading, sort, order, onSort }: Props)
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter [[plural]]..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn('name')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

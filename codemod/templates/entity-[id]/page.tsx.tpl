@@ -1,7 +1,6 @@
 'use client';
 
-import { use[[entity]] } from '../context';
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { [[hooks.find]] } from '[[endpointImport]]';
 import { Button } from '@/components/ui/button';
 import { 
@@ -9,37 +8,50 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardContent,
-  CardFooter
+  CardContent
 } from '@/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import type { [[dto]] } from '@/core/api/generated/schemas';
 
-export default function View[[entity]]({ params }: { params: { id: string } }) {
-  const { current: item, setItem, setLoading, setError } = use[[entity]]();
+interface RelatedItem {
+  id: number;
+  [[#relationships]][[#isCollection]][[displayField]]: string;[[/isCollection]][[/relationships]]
+}
+
+interface Props {
+  params: { 
+    id: string;
+  };
+}
+
+export default function View[[entity]]({ params }: Props) {
+  const [notFound, setNotFound] = useState(false);
+  
+  // Use the find hook with correct parameters
   const { data, error, isLoading } = [[hooks.find]]({ 
     id: +params.id,
-    query: {
-      onSuccess: (data) => setItem(data),
-      onError: (err) => setError(err.message)
+    onError: (err: any) => {
+      if (err.status === 404) {
+        setNotFound(true);
+      } else {
+        toast.error(`Error loading [[entity]]: ${err.message}`);
+      }
     }
   });
 
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading, setLoading]);
-
-  if (error) {
+  if (notFound) {
     return (
       <Card className="p-6">
         <CardContent>
-          <div className="text-red-500">Error: {error.message}</div>
+          <div className="text-muted-foreground">[[entity]] not found</div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!data && isLoading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -96,6 +108,38 @@ export default function View[[entity]]({ params }: { params: { id: string } }) {
             <dd className="mt-1 text-sm">{data.[[name]] ?? 'N/A'}</dd>
           </div>
           [[/fields]]
+          
+          [[#relationships]]
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">[[label]]</dt>
+            <dd className="mt-1 text-sm">
+              {data.[[name]] ? (
+                [[#isCollection]]
+                <div className="flex flex-col gap-1">
+                  {(data.[[name]] as RelatedItem[]).map((item) => (
+                    <Link 
+                      href={`/[[targetKebab]]/${item.id}`}
+                      key={item.id}
+                      className="hover:underline text-blue-600"
+                    >
+                      {item.[[displayField]] || item.id}
+                    </Link>
+                  ))}
+                </div>
+                [[/isCollection]]
+                [[^isCollection]]
+                <Link 
+                  href={`/[[targetKebab]]/${(data.[[name]] as RelatedItem).id}`}
+                  className="hover:underline text-blue-600"
+                >
+                  {(data.[[name]] as RelatedItem).[[displayField]] || 
+                   (data.[[name]] as RelatedItem).id}
+                </Link>
+                [[/isCollection]]
+              ) : 'N/A'}
+            </dd>
+          </div>
+          [[/relationships]]
         </dl>
       </CardContent>
     </Card>

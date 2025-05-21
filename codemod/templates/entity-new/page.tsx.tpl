@@ -1,6 +1,5 @@
 'use client';
 
-import { use[[entity]] } from '../context';
 import [[entity]]Form from '../form';
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,8 +13,6 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function Create[[entity]]() {
-  const { setSuccess, setError } = use[[entity]]();
-
   return (
     <Card>
       <CardHeader>
