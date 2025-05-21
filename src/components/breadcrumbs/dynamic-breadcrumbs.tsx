@@ -48,7 +48,7 @@ export function DynamicBreadcrumbs() {
         {segments[0] !== 'dashboard' && (
           <>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
           </>
