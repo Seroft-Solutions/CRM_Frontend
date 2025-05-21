@@ -10,5 +10,14 @@
   "bracketSpacing": true,
   "bracketSameLine": false,
   "arrowParens": "avoid",
-  "endOfLine": "auto"
+  "endOfLine": "auto",
+  "overrides": [
+    {
+      "files": ["*.tpl", "*.ejs"],
+      "options": {
+        "parser": "flow",
+        "requirePragma": true
+      }
+    }
+  ]
 }
