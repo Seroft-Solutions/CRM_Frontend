@@ -249,11 +249,14 @@ export class NextJsGenerator {
       // Determine if this is a collection relationship
       const isCollection = rel.relationshipType === 'one-to-many' || rel.relationshipType === 'many-to-many';
       
-      // Determine display field - default to 'name' if not specified
-      const otherEntityField = rel.otherEntityField || 'name';
+      // Determine display field - use 'login' for built-in user entity, otherwise default to 'name'
+      const otherEntityField = rel.otherEntityField || (rel.relationshipWithBuiltInEntity ? 'login' : 'name');
       
       // Determine if relationship is required
       const relationshipRequired = rel.relationshipRequired || false;
+      
+      // Determine if this is a built-in user entity
+      const isBuiltInUser = rel.relationshipWithBuiltInEntity && otherEntityName === 'user';
       
       return {
         ...rel,
@@ -277,7 +280,7 @@ export class NextJsGenerator {
           entityFileName: otherEntityFileName,
           entityNamePlural: otherEntityInstancePlural,
           primaryKey: { name: 'id' }, // Default primary key
-          builtInUser: rel.relationshipWithBuiltInEntity || false,
+          builtInUser: Boolean(isBuiltInUser),
         }
       };
     });

@@ -16,14 +16,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { <%= entityClass %>Details } from "../components/<%= entityFileName %>-details";
-
-export const metadata = {
-  title: "<%= entityClass %> Details",
-};
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
 
 interface <%= entityClass %>PageProps {
   params: {
@@ -31,16 +30,39 @@ interface <%= entityClass %>PageProps {
   };
 }
 
+export const metadata = {
+  title: "<%= entityClass %> Details",
+};
+
 export default function <%= entityClass %>Page({ params }: <%= entityClass %>PageProps) {
   const id = parseInt(params.id, 10);
 
   return (
     <div className="space-y-6">
-      <PageHeader>
-        <PageTitle><%= entityClass %> Details</PageTitle>
-      </PageHeader>
+      <div className="flex items-center justify-between">
+        <PageHeader>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/<%= routePath %>">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to <%= entityClassPluralHumanized %>
+            </Link>
+          </Button>
+        </PageHeader>
+        <Button size="sm" asChild>
+          <Link href={`/<%= routePath %>/${id}/edit`}>
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit
+          </Link>
+        </Button>
+      </div>
 
-      <<%= entityClass %>Details id={id} />
+      <div className="max-w-4xl">
+        <PageTitle><%= entityClassHumanized %> Details</PageTitle>
+        
+        <div className="mt-6">
+          <<%= entityClass %>Details id={id} />
+        </div>
+      </div>
     </div>
   );
 }

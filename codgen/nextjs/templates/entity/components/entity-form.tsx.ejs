@@ -62,10 +62,19 @@ import {
   useUpdate<%= entityClass %>,
   useGet<%= entityClass %>,
 } from "@/core/api/generated/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
-<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship) { _%>
+<%_ 
+// Group relationships by built-in entities vs regular entities
+const userRelationships = persistableRelationships.filter(r => r.otherEntity.builtInUser);
+const regularRelationships = persistableRelationships.filter(r => !r.otherEntity.builtInUser);
+const hasUserRelationships = userRelationships.length > 0;
+_%>
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
 import { useGetAll<%= otherEntity.entityClassPlural %> } from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
 <%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
+<%_ if (hasUserRelationships) { _%>
+import type { UserDTO } from "@/core/api/generated/schemas/UserDTO";
+<%_ } _%>
 
 interface <%= entityClass %>FormProps {
   id?: number;
@@ -125,7 +134,17 @@ export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
     },
   });
 
-<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship) { _%>
+<%_ if (hasUserRelationships) { _%>
+  // For user relationships, you'll need to implement user fetching based on your user management setup
+  // This is a placeholder - replace with your actual user management API call
+  const users: UserDTO[] = []; // TODO: Implement user fetching
+  
+  // Example: If you have a user management hook, use it like:
+  // const { data: usersData } = useGetUsers();
+  // const users = usersData || [];
+<%_ } _%>
+
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
   // Fetch related <%= otherEntity.entityNamePlural %> for select options
   const { data: <%= otherEntity.entityNamePlural %>Data } = useGetAll<%= otherEntity.entityClassPlural %>({}, {
     query: {
@@ -183,7 +202,8 @@ _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
-    const otherEntityPkName = rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id';
+    // Use appropriate primary key based on entity type
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
 _%>
 <% if (rel.collection) { %>
         <%= relationshipFieldNamePlural %>: entity.<%= relationshipFieldNamePlural %>?.map(item => item.<%= otherEntityPkName %>),
@@ -207,7 +227,8 @@ _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
-    const otherEntityPkName = rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id';
+    // Use appropriate primary key based on entity type
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
 _%>
 <% if (rel.collection) { %>
       <%= relationshipFieldNamePlural %>: data.<%= relationshipFieldNamePlural %>?.map(id => ({ <%= otherEntityPkName %>: id })),
@@ -393,6 +414,9 @@ _%>
     const relationshipRequired = rel.relationshipRequired;
     const otherEntity = rel.otherEntity;
     const otherEntityField = rel.otherEntityField;
+    // Use appropriate options array and display field based on entity type
+    const optionsArray = otherEntity.builtInUser ? 'users' : otherEntity.entityNamePlural;
+    const displayField = otherEntity.builtInUser ? 'login' : otherEntityField;
 _%>
         <FormField
           control={form.control}
@@ -404,8 +428,8 @@ _%>
                 <RelationshipCombobox
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={<%= otherEntity.entityNamePlural %>}
-                  displayField="<%= otherEntityField %>"
+                  options={<%= optionsArray %>}
+                  displayField="<%= displayField %>"
                   placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>"
                   multiple={<%= rel.collection %>}
                 />
