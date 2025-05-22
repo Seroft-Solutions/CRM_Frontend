@@ -14,7 +14,9 @@
     "verify-directories": "node ./scripts/generate/verify-directories.js",
     "fix-directories": "node ./scripts/generate/verify-directories.js --fix",
     "verify-hooks": "node ./scripts/generate/verify-hooks.js",
-    "prebuild": "npm run verify-directories && npm run verify-hooks"
+    "prebuild": "npm run verify-directories && npm run verify-hooks",
+    "generate-nextjs": "npx ts-node codgen/nextjs/generator.ts",
+    "generate-nextjs:entity": "cd codgen/nextjs && npm run generate:entity"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -51,6 +53,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "ejs": "^3.1.9",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.12.0",
     "input-otp": "^1.4.2",
@@ -68,14 +71,17 @@
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
+    "ts-node": "^10.9.2",
     "vaul": "^1.1.2",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.17.47",
+    "@types/pluralize": "^0.0.33",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/yargs": "^17.0.33",
