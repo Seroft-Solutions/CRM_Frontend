@@ -53,21 +53,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format, parse } from "date-fns";
+<%_ if (persistableRelationships.length > 0) { _%>
+import { RelationshipCombobox } from "@/components/forms/relationship-combobox";
+<%_ } _%>
 
 import { 
   useCreate<%= entityClass %>,
   useUpdate<%= entityClass %>,
   useGet<%= entityClass %>,
-<%_ // Safely filter relationships to avoid undefined properties
-  const safeRelationships = (persistableRelationships || []).filter(
-    r => r && r.relationshipName && r.otherEntity
-  );
-  for (const rel of safeRelationships) { 
-    const otherEntity = rel.otherEntity; 
-    if (otherEntity && otherEntity.entityClassPlural) { _%>
-  useGetAll<%= otherEntity.entityClassPlural %>,
-<%_ }} _%>
 } from "@/core/api/generated/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship) { _%>
+import { useGetAll<%= otherEntity.entityClassPlural %> } from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
+<%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
 
 interface <%= entityClass %>FormProps {
@@ -83,7 +80,7 @@ const formSchema = z.object({
 _%>
   <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.number()<% if (fieldValidateRules.includes('min')) { %>.min(<%= field.fieldValidateRulesMin %>)<% } %><% if (fieldValidateRules.includes('max')) { %>.max(<%= field.fieldValidateRulesMax %>)<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.date()<% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
 <%_ } _%>
-<%_ for (const rel of safeRelationships) { 
+<%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipRequired = rel.relationshipRequired;
 _%>
@@ -121,28 +118,22 @@ export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
   });
 
   // Fetch entity for editing
-  const { data: entity, isLoading: isLoadingEntity } = useGet<%= entityClass %>(
-    id || 0,
-    {
-      query: {
-        enabled: !!id,
-      },
-    }
-  );
+  const { data: entity, isLoading: isLoadingEntity } = useGet<%= entityClass %>(id || 0, {
+    query: {
+      enabled: !!id,
+      queryKey: ["get-<%= entityFileName %>", id]
+    },
+  });
 
-<%_ for (const rel of safeRelationships) { 
-    const otherEntity = rel.otherEntity;
-    if (otherEntity && otherEntity.entityInstancePlural) {
-      const otherEntityNamePlural = rel.otherEntityNamePlural;
-_%>
-  // Fetch related <%= otherEntityNamePlural %> for select options
-  const { data: <%= otherEntityNamePlural %>Data } = useGetAll<%= otherEntity.entityClassPlural %>({}, {
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship) { _%>
+  // Fetch related <%= otherEntity.entityNamePlural %> for select options
+  const { data: <%= otherEntity.entityNamePlural %>Data } = useGetAll<%= otherEntity.entityClassPlural %>({}, {
     query: {
       enabled: true,
     }
   });
-  const <%= otherEntityNamePlural %> = <%= otherEntityNamePlural %>Data?.content || [];
-<%_ }} _%>
+  const <%= otherEntity.entityNamePlural %> = <%= otherEntity.entityNamePlural %>Data?.content || [];
+<%_ } _%>
 
   // Form initialization
   const form = useForm<z.infer<typeof formSchema>>({
@@ -163,7 +154,7 @@ _%>
       <%= fieldName %>: "",
 <% } %>
 <%_ } _%>
-<%_ for (const rel of safeRelationships) { 
+<%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
 _%>
@@ -189,7 +180,7 @@ _%>
         <%= fieldName %>: entity.<%= fieldName %>,
 <% } %>
 <%_ } _%>
-<%_ for (const rel of safeRelationships) { 
+<%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
     const otherEntityPkName = rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id';
@@ -213,7 +204,7 @@ _%>
 _%>
       <%= fieldName %>: data.<%= fieldName %>,
 <%_ } _%>
-<%_ for (const rel of safeRelationships) { 
+<%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
     const otherEntityPkName = rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id';
@@ -396,7 +387,7 @@ _%>
         />
 <%_ } _%>
 
-<%_ for (const rel of safeRelationships) { 
+<%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipNameHumanized = rel.relationshipNameHumanized;
     const relationshipRequired = rel.relationshipRequired;
@@ -407,89 +398,20 @@ _%>
           control={form.control}
           name="<%= relationshipFieldName %>"
           render={({ field }) => (
-<% if (rel.collection) { %>
             <FormItem>
               <FormLabel><%= relationshipNameHumanized %><% if (relationshipRequired) { %> *<% } %></FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  const values = [...(field.value || [])];
-                  const numValue = parseInt(value, 10);
-                  if (!values.includes(numValue)) {
-                    values.push(numValue);
-                    field.onChange(values);
-                  }
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {<%= otherEntity.entityInstancePlural %>.map((item) => (
-                    <SelectItem key={item.id} value={item.id.toString()}>
-                      {item.<%= otherEntityField %>}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="mt-2">
-                {field.value && field.value.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {field.value.map((id) => {
-                      const item = <%= otherEntity.entityInstancePlural %>.find(
-                        (i) => i.id === id
-                      );
-                      return (
-                        <div
-                          key={id}
-                          className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-sm"
-                        >
-                          {item?.<%= otherEntityField %>}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const values = field.value?.filter(
-                                (v) => v !== id
-                              );
-                              field.onChange(values);
-                            }}
-                            className="ml-1 rounded-full text-muted-foreground hover:text-foreground"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <FormControl>
+                <RelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={<%= otherEntity.entityNamePlural %>}
+                  displayField="<%= otherEntityField %>"
+                  placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>"
+                  multiple={<%= rel.collection %>}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
-<% } else { %>
-            <FormItem>
-              <FormLabel><%= relationshipNameHumanized %><% if (relationshipRequired) { %> *<% } %></FormLabel>
-              <Select
-                onValueChange={(value) => field.onChange(parseInt(value, 10))}
-                value={field.value?.toString()}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  {<%= otherEntity.entityInstancePlural %>.map((item) => (
-                    <SelectItem key={item.id} value={item.id.toString()}>
-                      {item.<%= otherEntityField %>}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-<% } %>
           )}
         />
 <%_ } _%>
