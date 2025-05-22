@@ -1,46 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
-
-// Simple pluralization function as fallback
-function simplePluralize(word) {
-  // Handle common irregular plurals
-  const irregulars = {
-    'city': 'cities',
-    'party': 'parties', 
-    'category': 'categories',
-    'priority': 'priorities',
-    'entity': 'entities',
-    'status': 'statuses'
-  };
-  
-  const lowerWord = word.toLowerCase();
-  if (irregulars[lowerWord]) {
-    // Preserve original case
-    if (word[0] === word[0].toUpperCase()) {
-      return irregulars[lowerWord].charAt(0).toUpperCase() + irregulars[lowerWord].slice(1);
-    }
-    return irregulars[lowerWord];
-  }
-  
-  // Standard rules
-  if (word.endsWith('y') && word.length > 1 && !'aeiou'.includes(word[word.length - 2])) {
-    return word.slice(0, -1) + 'ies';
-  }
-  if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') || word.endsWith('x') || word.endsWith('z')) {
-    return word + 'es';
-  }
-  return word + 's';
-}
-
-// Try to use pluralize library, fallback to simple implementation
-let pluralize;
-try {
-  pluralize = require('pluralize');
-} catch (error) {
-  console.log('Warning: pluralize library not found, using simple implementation');
-  pluralize = simplePluralize;
-}
+const pluralize = require('pluralize'); // Use the established pluralize library
 
 /**
  * Delete directories that might have been created with incorrect names
@@ -132,6 +93,12 @@ class NextJsGenerator {
     await this.generateFile('entity/components/entity-details.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-details.tsx`), vars);
     
+    // Generate the RelationshipCombobox component if there are relationships
+    if (vars.persistableRelationships.length > 0) {
+      await this.generateFile('entity/components/relationship-combobox.tsx.ejs', 
+        path.join(entityDir, 'components', 'relationship-combobox.tsx'), vars);
+    }
+    
     console.log(`Successfully generated components for ${entityName}`);
   }
 
@@ -191,7 +158,6 @@ class NextJsGenerator {
       const otherEntityInstance = this.lowerFirstCamelCase(otherEntityName);
       const otherEntityInstancePlural = pluralize(otherEntityInstance);
       const otherEntityFileName = this.camelToKebab(otherEntityName);
-      const otherEntityFileNamePlural = pluralize(otherEntityFileName);
       
       // Determine relationship field names
       const relationshipName = rel.relationshipName;
@@ -227,7 +193,6 @@ class NextJsGenerator {
           entityInstance: otherEntityInstance,
           entityInstancePlural: otherEntityInstancePlural,
           entityFileName: otherEntityFileName,
-          entityFileNamePlural: otherEntityFileNamePlural,
           entityNamePlural: otherEntityInstancePlural,
           primaryKey: { name: 'id' }, // Default primary key
           builtInUser: rel.relationshipWithBuiltInEntity || false,
