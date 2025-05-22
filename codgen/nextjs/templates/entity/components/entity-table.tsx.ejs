@@ -239,15 +239,18 @@ export function <%= entityClass %>Table() {
                 rel.otherEntityField
               );
               
-              for (const rel of tableRelationships) { %>
+              for (const rel of tableRelationships) { 
+                // Use appropriate display field based on entity type
+                const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+              %>
               <TableHead>
                 <Button
                   variant="ghost"
-                  onClick={() => handleSort("<%= rel.relationshipName %>.<%=rel.otherEntityField%>")}
+                  onClick={() => handleSort("<%= rel.relationshipName %>.<%=displayField%>")}
                   className="flex items-center gap-1"
                 >
                   <%= rel.relationshipNameHumanized %>
-                  {getSortIcon("<%= rel.relationshipName %>.<%=rel.otherEntityField%>")}
+                  {getSortIcon("<%= rel.relationshipName %>.<%=displayField%>")}
                 </Button>
               </TableHead>
               <% } %>
@@ -297,12 +300,13 @@ export function <%= entityClass %>Table() {
                   </TableCell>
                   <% } %>
                   <% for (const rel of tableRelationships) { 
-                       const otherEntityField = rel.otherEntityField;
+                       // Use appropriate display field based on entity type
+                       const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
                        const relationshipFieldName = rel.relationshipFieldName;
                   %>
                   <TableCell>
                     {<%= entityInstance %>.<%= relationshipFieldName %> ? 
-                      <%= entityInstance %>.<%= relationshipFieldName %>.<%= otherEntityField %> : ""}
+                      <%= entityInstance %>.<%= relationshipFieldName %>.<%= displayField %> : ""}
                   </TableCell>
                   <% } %>
                   <TableCell>
