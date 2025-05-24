@@ -1,11 +1,26 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_URL, DEFAULT_HEADERS, REQUEST_TIMEOUT } from '../config/constants';
+import { getSession } from 'next-auth/react';
 
 // Create axios instance
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_URL,
   timeout: REQUEST_TIMEOUT,
   headers: DEFAULT_HEADERS,
+});
+
+// Add request interceptor to inject auth token
+axiosInstance.interceptors.request.use(async (config) => {
+  try {
+    const session = await getSession();
+    if (session?.id_token) {
+      config.headers.Authorization = `Bearer ${session.id_token}`;
+    }
+    return config;
+  } catch (error) {
+    console.error('Error getting session token:', error);
+    return config;
+  }
 });
 
 // Generic request function with proper TypeScript types

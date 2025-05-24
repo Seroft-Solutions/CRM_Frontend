@@ -1,8 +1,7 @@
 import { AxiosError, AxiosRequestConfig } from 'axios';
 import { axiosInstance } from './axios-client';
-// API_URL is not used, can be removed if not needed elsewhere, but keeping for now.
-// import { API_URL } from '../config/constants'; 
-// Removed getSession import
+import { API_URL } from '../config/constants';
+import { getSession } from 'next-auth/react';
 
 interface RequestConfig {
   url: string;
@@ -24,9 +23,18 @@ export const customFetch = async <T>(
   requestConfig: RequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  // Headers from requestConfig.headers will be used by default if present.
-  // If options.headers is also present, axiosInstance will merge them,
-  // with options.headers taking precedence for any overlapping header keys.
+  try {
+    // Get auth session
+    const session = await getSession();
+    if (session?.accessToken) {
+      requestConfig.headers = {
+        ...requestConfig.headers,
+        Authorization: `Bearer ${session.accessToken}`,
+      };
+    }
+  } catch (error) {
+    console.error('Error getting session:', error);
+  }
   
   try {
     // Make API request
@@ -35,9 +43,9 @@ export const customFetch = async <T>(
       method: requestConfig.method ?? 'GET',
       data: requestConfig.data,
       params: requestConfig.params,
-      headers: requestConfig.headers, // Pass through headers from requestConfig
+      headers: requestConfig.headers,
       signal: requestConfig.signal,
-      ...options, // Spread options, which might include headers that override requestConfig.headers
+      ...options,
     });
 
     return response.data as T;
