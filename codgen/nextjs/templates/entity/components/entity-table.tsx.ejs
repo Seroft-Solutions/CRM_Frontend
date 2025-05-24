@@ -215,16 +215,16 @@ export function <%= entityClass %>Table() {
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-md border">
-        <Table className="min-w-full">
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
           <TableHeader>
             <TableRow>
               <% for (field of fields) { %>
-              <TableHead className="whitespace-nowrap px-2 py-2">
+              <TableHead>
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("<%= field.fieldName %>")}
-                  className="flex items-center gap-1 h-8 px-2"
+                  className="flex items-center gap-1"
                 >
                   <%= field.fieldNameHumanized || field.fieldName %>
                   {getSortIcon("<%= field.fieldName %>")}
@@ -243,18 +243,18 @@ export function <%= entityClass %>Table() {
                 // Use appropriate display field based on entity type
                 const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
               %>
-              <TableHead className="whitespace-nowrap px-2 py-2">
+              <TableHead>
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("<%= rel.relationshipName %>.<%=displayField%>")}
-                  className="flex items-center gap-1 h-8 px-2"
+                  className="flex items-center gap-1"
                 >
                   <%= rel.relationshipNameHumanized %>
                   {getSortIcon("<%= rel.relationshipName %>.<%=displayField%>")}
                 </Button>
               </TableHead>
               <% } %>
-              <TableHead className="w-[120px] sticky right-0 bg-background px-2 py-2">Actions</TableHead>
+              <TableHead className="w-[120px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -273,7 +273,7 @@ export function <%= entityClass %>Table() {
                   <% for (field of fields) { 
                        const fieldName = field.fieldName;
                        const fieldType = field.fieldType; %>
-                  <TableCell className="whitespace-nowrap px-2 py-2">
+                  <TableCell>
                     <% if (field.fieldTypeBoolean) { %>
                     {<%= entityInstance %>.<%= fieldName %> ? "Yes" : "No"}
                     <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
@@ -304,13 +304,13 @@ export function <%= entityClass %>Table() {
                        const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
                        const relationshipFieldName = rel.relationshipFieldName;
                   %>
-                  <TableCell className="whitespace-nowrap px-2 py-2">
+                  <TableCell>
                     {<%= entityInstance %>.<%= relationshipFieldName %> ? 
                       <%= entityInstance %>.<%= relationshipFieldName %>.<%= displayField %> : ""}
                   </TableCell>
                   <% } %>
-                  <TableCell className="sticky right-0 bg-background px-2 py-2">
-                    <div className="flex items-center gap-1">
+                  <TableCell>
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
