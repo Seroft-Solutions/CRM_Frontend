@@ -215,12 +215,12 @@ export function <%= entityClass %>Table() {
         </Button>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
+      <div className="overflow-x-auto rounded-md border">
+        <Table className="min-w-full">
           <TableHeader>
             <TableRow>
               <% for (field of fields) { %>
-              <TableHead>
+              <TableHead className="whitespace-nowrap">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("<%= field.fieldName %>")}
@@ -243,7 +243,7 @@ export function <%= entityClass %>Table() {
                 // Use appropriate display field based on entity type
                 const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
               %>
-              <TableHead>
+              <TableHead className="whitespace-nowrap">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("<%= rel.relationshipName %>.<%=displayField%>")}
@@ -254,7 +254,7 @@ export function <%= entityClass %>Table() {
                 </Button>
               </TableHead>
               <% } %>
-              <TableHead className="w-[120px]">Actions</TableHead>
+              <TableHead className="w-[120px] sticky right-0 bg-background">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -273,7 +273,7 @@ export function <%= entityClass %>Table() {
                   <% for (field of fields) { 
                        const fieldName = field.fieldName;
                        const fieldType = field.fieldType; %>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <% if (field.fieldTypeBoolean) { %>
                     {<%= entityInstance %>.<%= fieldName %> ? "Yes" : "No"}
                     <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
@@ -304,12 +304,12 @@ export function <%= entityClass %>Table() {
                        const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
                        const relationshipFieldName = rel.relationshipFieldName;
                   %>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {<%= entityInstance %>.<%= relationshipFieldName %> ? 
                       <%= entityInstance %>.<%= relationshipFieldName %>.<%= displayField %> : ""}
                   </TableCell>
                   <% } %>
-                  <TableCell>
+                  <TableCell className="sticky right-0 bg-background">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"

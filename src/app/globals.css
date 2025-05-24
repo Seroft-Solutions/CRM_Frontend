@@ -120,3 +120,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Responsive table scrolling utilities */
+  .table-scroll-container {
+    @apply overflow-x-auto rounded-md border;
+  }
+  
+  .table-responsive {
+    @apply min-w-full;
+  }
+  
+  .table-cell-nowrap {
+    @apply whitespace-nowrap;
+  }
+  
+  .table-actions-sticky {
+    @apply sticky right-0 bg-background;
+  }
+  
+  /* Layout container utilities */
+  .page-container {
+    @apply max-w-[1440px] mx-auto w-full px-4 overflow-x-hidden;
+  }
+  
+  .content-wrapper {
+    @apply space-y-4;
+  }
+  
+  .page-header-actions {
+    @apply flex items-center gap-2 shrink-0;
+  }
+}
