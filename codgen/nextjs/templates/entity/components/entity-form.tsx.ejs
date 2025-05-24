@@ -54,7 +54,7 @@ import {
 } from "@/components/ui/popover";
 import { format, parse } from "date-fns";
 <%_ if (persistableRelationships.length > 0) { _%>
-import { RelationshipCombobox } from "@/components/forms/relationship-combobox";
+import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 <%_ } _%>
 
 import { 
@@ -69,7 +69,10 @@ const regularRelationships = persistableRelationships.filter(r => !r.otherEntity
 const hasUserRelationships = userRelationships.length > 0;
 _%>
 <%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
-import { useGetAll<%= otherEntity.entityClassPlural %> } from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
+import { 
+  useGetAll<%= otherEntity.entityClassPlural %>Infinite,
+  useSearch<%= otherEntity.entityClassPlural %>Infinite 
+} from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
 <%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
 <%_ if (hasUserRelationships) { _%>
@@ -142,16 +145,6 @@ export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
   // Example: If you have a user management hook, use it like:
   // const { data: usersData } = useGetUsers();
   // const users = usersData || [];
-<%_ } _%>
-
-<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
-  // Fetch related <%= otherEntity.entityNamePlural %> for select options
-  const { data: <%= otherEntity.entityNamePlural %>Data } = useGetAll<%= otherEntity.entityClassPlural %>({}, {
-    query: {
-      enabled: true,
-    }
-  });
-  const <%= otherEntity.entityNamePlural %> = <%= otherEntity.entityNamePlural %>Data?.content || [];
 <%_ } _%>
 
   // Form initialization
@@ -358,6 +351,22 @@ _%>
 <% } %>
               <FormMessage />
             </FormItem>
+<% } else if (field.fieldType === 'TextBlob') { %>
+            <FormItem>
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Enter <%= fieldName %>"
+                />
+              </FormControl>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
 <% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
             <FormItem>
               <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
@@ -414,8 +423,7 @@ _%>
     const relationshipRequired = rel.relationshipRequired;
     const otherEntity = rel.otherEntity;
     const otherEntityField = rel.otherEntityField;
-    // Use appropriate options array and display field based on entity type
-    const optionsArray = otherEntity.builtInUser ? 'users' : otherEntity.entityNamePlural;
+    // Use appropriate display field based on entity type
     const displayField = otherEntity.builtInUser ? 'login' : otherEntityField;
 _%>
         <FormField
@@ -425,14 +433,24 @@ _%>
             <FormItem>
               <FormLabel><%= relationshipNameHumanized %><% if (relationshipRequired) { %> *<% } %></FormLabel>
               <FormControl>
-                <RelationshipCombobox
+<%_ if (otherEntity.builtInUser) { _%>
+                {/* TODO: Implement user relationships with appropriate infinite query hook */}
+                <div className="p-2 text-muted-foreground border rounded">
+                  User relationship support - Please implement user infinite query hook
+                </div>
+<%_ } else { _%>
+                <PaginatedRelationshipCombobox
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={<%= optionsArray %>}
                   displayField="<%= displayField %>"
                   placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>"
                   multiple={<%= rel.collection %>}
+                  useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                  searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                  entityName="<%= otherEntity.entityClassPlural %>"
+                  searchField="<%= displayField %>"
                 />
+<%_ } _%>
               </FormControl>
               <FormMessage />
             </FormItem>
