@@ -9,7 +9,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react"
-import type { Session } from "next-auth"; // Add this import
+import { useSession } from "next-auth/react"
 
 import {
   Avatar,
@@ -33,8 +33,9 @@ import {
 } from "@/components/ui/sidebar"
 import { handleLogout } from "@/utils/auth/logout"
 
-export function NavUser({ session }: { session: Session | null }) {
+export function NavUser() {
   const { isMobile } = useSidebar()
+  const { data: session, status } = useSession()
   
   // Generate user initials for avatar fallback
   const getInitials = (name: string) => {
@@ -50,6 +51,25 @@ export function NavUser({ session }: { session: Session | null }) {
     email: session?.user?.email || "",
     image: session?.user?.image || "",
     initials: session?.user?.name ? getInitials(session.user.name) : "U",
+  }
+  
+  // Show loading state if session is loading
+  if (status === "loading") {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" disabled>
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarFallback className="rounded-lg">...</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Loading...</span>
+              <span className="truncate text-xs"></span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
   }
 
   return (

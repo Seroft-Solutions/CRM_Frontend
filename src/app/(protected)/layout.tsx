@@ -1,3 +1,5 @@
+'use client';
+
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { DynamicBreadcrumbs } from "@/components/breadcrumbs/dynamic-breadcrumbs";
 import { Separator } from "@/components/ui/separator";
@@ -6,23 +8,38 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { auth } from "@/auth"; // Import server-side auth
-import { redirect } from "next/navigation"; // Ensure redirect is imported
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 
-export default async function DashboardLayout({ // Add async
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth(); // Fetch session server-side
-  if (!session) { // Check session
-    redirect("/login"); // Redirect if no session
+  const { data: session, status } = useSession();
+
+  // Check if the user is authenticated
+  if (status === "loading") {
+    // Return a loading state while checking authentication
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, redirect to login
+  if (status === "unauthenticated") {
+    redirect("/login");
   }
 
   // If authenticated, render the dashboard layout
   return (
     <SidebarProvider>
-      <AppSidebar session={session} />
+      <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -34,8 +51,10 @@ export default async function DashboardLayout({ // Add async
             <DynamicBreadcrumbs />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {children}
+        <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden">
+          <div className="container mx-auto ">
+            {children}
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
