@@ -1,0 +1,459 @@
+<%#
+ Copyright 2013-2025 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see https://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { CalendarIcon, Save } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format, parse } from "date-fns";
+<%_ if (persistableRelationships.length > 0) { _%>
+import { RelationshipCombobox } from "@/components/forms/relationship-combobox";
+<%_ } _%>
+
+import { 
+  useCreate<%= entityClass %>,
+  useUpdate<%= entityClass %>,
+  useGet<%= entityClass %>,
+} from "@/core/api/generated/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
+<%_ 
+// Group relationships by built-in entities vs regular entities
+const userRelationships = persistableRelationships.filter(r => r.otherEntity.builtInUser);
+const regularRelationships = persistableRelationships.filter(r => !r.otherEntity.builtInUser);
+const hasUserRelationships = userRelationships.length > 0;
+_%>
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
+import { useGetAll<%= otherEntity.entityClassPlural %> } from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
+<%_ } _%>
+import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
+<%_ if (hasUserRelationships) { _%>
+import type { UserDTO } from "@/core/api/generated/schemas/UserDTO";
+<%_ } _%>
+
+interface <%= entityClass %>FormProps {
+  id?: number;
+}
+
+// Create Zod schema for form validation
+const formSchema = z.object({
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+    const fieldValidateRules = field.fieldValidateRules || [];
+    const isRequired = fieldValidateRules.includes('required');
+_%>
+  <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.number()<% if (fieldValidateRules.includes('min')) { %>.min(<%= field.fieldValidateRulesMin %>)<% } %><% if (fieldValidateRules.includes('max')) { %>.max(<%= field.fieldValidateRulesMax %>)<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.date()<% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipRequired = rel.relationshipRequired;
+_%>
+  <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.number())<% } else { %>number()<% } %><% if (!relationshipRequired) { %>.optional()<% } %>,
+<%_ } _%>
+});
+
+export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
+  const router = useRouter();
+  const isNew = !id;
+
+  // Create or update mutation
+  const { mutate: createEntity, isPending: isCreating } = useCreate<%= entityClass %>({
+    mutation: {
+      onSuccess: () => {
+        toast.success("<%= entityClass %> created successfully");
+        router.push("/<%= entityRoute %>");
+      },
+      onError: (error) => {
+        toast.error(`Failed to create <%= entityClass %>: ${error}`);
+      },
+    },
+  });
+
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdate<%= entityClass %>({
+    mutation: {
+      onSuccess: () => {
+        toast.success("<%= entityClass %> updated successfully");
+        router.push("/<%= entityRoute %>");
+      },
+      onError: (error) => {
+        toast.error(`Failed to update <%= entityClass %>: ${error}`);
+      },
+    },
+  });
+
+  // Fetch entity for editing
+  const { data: entity, isLoading: isLoadingEntity } = useGet<%= entityClass %>(id || 0, {
+    query: {
+      enabled: !!id,
+      queryKey: ["get-<%= entityFileName %>", id]
+    },
+  });
+
+<%_ if (hasUserRelationships) { _%>
+  // For user relationships, you'll need to implement user fetching based on your user management setup
+  // This is a placeholder - replace with your actual user management API call
+  const users: UserDTO[] = []; // TODO: Implement user fetching
+  
+  // Example: If you have a user management hook, use it like:
+  // const { data: usersData } = useGetUsers();
+  // const users = usersData || [];
+<%_ } _%>
+
+<%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
+  // Fetch related <%= otherEntity.entityNamePlural %> for select options
+  const { data: <%= otherEntity.entityNamePlural %>Data } = useGetAll<%= otherEntity.entityClassPlural %>({}, {
+    query: {
+      enabled: true,
+    }
+  });
+  const <%= otherEntity.entityNamePlural %> = <%= otherEntity.entityNamePlural %>Data?.content || [];
+<%_ } _%>
+
+  // Form initialization
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+_%>
+<% if (field.fieldTypeBoolean) { %>
+      <%= fieldName %>: false,
+<% } else if (field.fieldTypeNumeric) { %>
+      <%= fieldName %>: 0,
+<% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
+      <%= fieldName %>: new Date(),
+<% } else if (field.fieldIsEnum) { %>
+      <%= fieldName %>: "<%= field.enumValues[0].name %>",
+<% } else { %>
+      <%= fieldName %>: "",
+<% } %>
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
+_%>
+<% if (rel.collection) { %>
+      <%= relationshipFieldNamePlural %>: [],
+<% } else { %>
+      <%= relationshipFieldName %>: undefined,
+<% } %>
+<%_ } _%>
+    },
+  });
+
+  // Update form values when entity data is loaded
+  useEffect(() => {
+    if (entity) {
+      const formValues = {
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+_%>
+<% if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
+        <%= fieldName %>: entity.<%= fieldName %> ? new Date(entity.<%= fieldName %>) : undefined,
+<% } else { %>
+        <%= fieldName %>: entity.<%= fieldName %>,
+<% } %>
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
+    // Use appropriate primary key based on entity type
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
+_%>
+<% if (rel.collection) { %>
+        <%= relationshipFieldNamePlural %>: entity.<%= relationshipFieldNamePlural %>?.map(item => item.<%= otherEntityPkName %>),
+<% } else { %>
+        <%= relationshipFieldName %>: entity.<%= relationshipFieldName %>?.<%= otherEntityPkName %>,
+<% } %>
+<%_ } _%>
+      };
+      form.reset(formValues);
+    }
+  }, [entity, form]);
+
+  // Form submission handler
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const entityToSave = {
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+_%>
+      <%= fieldName %>: data.<%= fieldName %>,
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
+    // Use appropriate primary key based on entity type
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
+_%>
+<% if (rel.collection) { %>
+      <%= relationshipFieldNamePlural %>: data.<%= relationshipFieldNamePlural %>?.map(id => ({ <%= otherEntityPkName %>: id })),
+<% } else { %>
+      <%= relationshipFieldName %>: data.<%= relationshipFieldName %> ? { <%= otherEntityPkName %>: data.<%= relationshipFieldName %> } : null,
+<% } %>
+<%_ } _%>
+    } as <%= entityClass %>DTO;
+
+    if (isNew) {
+      createEntity({ data: entityToSave });
+    } else if (id) {
+      updateEntity({ id, data: entityToSave });
+    }
+  };
+
+  if (id && isLoadingEntity) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+    const fieldNameHumanized = field.fieldNameHumanized || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+    const fieldValidateRules = field.fieldValidateRules || [];
+    const isRequired = fieldValidateRules.includes('required');
+_%>
+        <FormField
+          control={form.control}
+          name="<%= fieldName %>"
+          render={({ field }) => (
+<% if (field.fieldTypeBoolean) { %>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel><%= fieldNameHumanized %></FormLabel>
+<% if (field.documentation) { %>
+                <FormDescription>
+                  <%= field.documentation %>
+                </FormDescription>
+<% } %>
+              </div>
+              <FormMessage />
+            </FormItem>
+<% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
+            <FormItem className="flex flex-col">
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
+<% } else if (field.fieldIsEnum) { %>
+            <FormItem>
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select <%= fieldName %>" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <% for (const enumValue of field.enumValues) { %>
+                  <SelectItem value="<%= enumValue.name %>"><%= enumValue.name %></SelectItem>
+                  <% } %>
+                </SelectContent>
+              </Select>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
+<% } else if (field.fieldTypeBinary && field.blobContentTypeText) { %>
+            <FormItem>
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Enter <%= fieldName %>"
+                />
+              </FormControl>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
+<% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
+            <FormItem>
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  <% if (field.blobContentTypeImage) { %>accept="image/*"<% } %>
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          const base64 = event.target.result.toString().split(',')[1];
+                          field.onChange(base64);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </FormControl>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
+<% } else { %>
+            <FormItem>
+              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  placeholder="Enter <%= fieldName %>"
+                />
+              </FormControl>
+<% if (field.documentation) { %>
+              <FormDescription>
+                <%= field.documentation %>
+              </FormDescription>
+<% } %>
+              <FormMessage />
+            </FormItem>
+<% } %>
+          )}
+        />
+<%_ } _%>
+
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipNameHumanized = rel.relationshipNameHumanized;
+    const relationshipRequired = rel.relationshipRequired;
+    const otherEntity = rel.otherEntity;
+    const otherEntityField = rel.otherEntityField;
+    // Use appropriate options array and display field based on entity type
+    const optionsArray = otherEntity.builtInUser ? 'users' : otherEntity.entityNamePlural;
+    const displayField = otherEntity.builtInUser ? 'login' : otherEntityField;
+_%>
+        <FormField
+          control={form.control}
+          name="<%= relationshipFieldName %>"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel><%= relationshipNameHumanized %><% if (relationshipRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <RelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={<%= optionsArray %>}
+                  displayField="<%= displayField %>"
+                  placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>"
+                  multiple={<%= rel.collection %>}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+<%_ } _%>
+
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/<%= entityRoute %>")}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isCreating || isUpdating}>
+            <Save className="mr-2 h-4 w-4" />
+            Save
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
