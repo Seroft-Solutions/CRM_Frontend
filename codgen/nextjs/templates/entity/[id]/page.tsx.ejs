@@ -38,7 +38,7 @@ export default function <%= entityClass %>Page({ params }: <%= entityClass %>Pag
   const id = parseInt(params.id, 10);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <PageHeader>
           <Button variant="ghost" size="sm" asChild>
@@ -48,7 +48,7 @@ export default function <%= entityClass %>Page({ params }: <%= entityClass %>Pag
             </Link>
           </Button>
         </PageHeader>
-        <Button size="sm" asChild>
+        <Button size="sm" asChild className="shrink-0">
           <Link href={`/<%= routePath %>/${id}/edit`}>
             <Pencil className="h-4 w-4 mr-2" />
             Edit

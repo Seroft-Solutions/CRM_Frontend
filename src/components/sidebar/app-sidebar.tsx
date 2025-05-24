@@ -14,7 +14,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { sidebarItems } from "./sidebar-items"
-import type { Session } from "next-auth"; // Add this import
 
 // Team data - this could also be fetched from the backend
 const teams = [
@@ -25,7 +24,7 @@ const teams = [
   },
 ]
 
-export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Sidebar> & { session: Session | null }) {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -35,7 +34,7 @@ export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Si
         <NavMain items={sidebarItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser session={session} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
