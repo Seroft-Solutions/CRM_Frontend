@@ -4,11 +4,25 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Eye,
+  Pencil,
+  Trash2,
+  X
+} from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { 
@@ -19,6 +33,7 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +44,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
 
 import {
   useGetAll<%= entityClassPlural %>,
@@ -48,12 +64,6 @@ const displayableRelationships = relationships.filter(rel =>
   !rel.collection && 
   rel.otherEntityField
 );
-
-// Organize fields by type for better filter organization
-const enumFields = fields.filter(f => f.fieldIsEnum);
-const booleanFields = fields.filter(f => f.fieldTypeBoolean);
-const dateFields = fields.filter(f => f.fieldTypeLocalDate || f.fieldTypeTimed);
-const textFields = fields.filter(f => !f.fieldIsEnum && !f.fieldTypeBoolean && !f.fieldTypeLocalDate && !f.fieldTypeTimed && !f.fieldTypeBinary);
 %>
 
 // Define sort ordering constants
@@ -70,6 +80,7 @@ interface DateRange {
 }
 
 export function <%= entityClass %>Table() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("<%= primaryKey.name %>");
   const [order, setOrder] = useState(ASC);
@@ -101,14 +112,9 @@ export function <%= entityClass %>Table() {
     });
 
     // Add date range filters
-    <% if (dateFields.length > 0) { %>
-    if (dateRange.from) {
-      params[`<%= dateFields[0].fieldName %>GreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    if (dateRange.from && dateRange.to) {
+      // Add your date range logic here based on your API
     }
-    if (dateRange.to) {
-      params[`<%= dateFields[0].fieldName %>LessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
-    }
-    <% } %>
 
     return params;
   };
@@ -184,9 +190,9 @@ export function <%= entityClass %>Table() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return <ChevronsUpDown className="h-4 w-4" />;
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
   };
 
   // Handle delete

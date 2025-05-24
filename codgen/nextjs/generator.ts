@@ -142,8 +142,19 @@ export class NextJsGenerator {
     await this.generateFile('entity/[id]/page.tsx.ejs', path.join(entityDir, '[id]', 'page.tsx'), vars);
     await this.generateFile('entity/[id]/edit/page.tsx.ejs', path.join(entityDir, '[id]', 'edit', 'page.tsx'), vars);
     
+    // Generate main table component
     await this.generateFile('entity/components/entity-table.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-table.tsx`), vars);
+    
+    // Generate split table components
+    await this.generateFile('entity/components/table/entity-search-filters.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-search-filters.tsx`), vars);
+    await this.generateFile('entity/components/table/entity-table-header.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-table-header.tsx`), vars);
+    await this.generateFile('entity/components/table/entity-table-row.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-table-row.tsx`), vars);
+    
+    // Generate other components
     await this.generateFile('entity/components/entity-form.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-form.tsx`), vars);
     await this.generateFile('entity/components/entity-details.tsx.ejs', 
