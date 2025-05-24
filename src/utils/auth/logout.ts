@@ -7,11 +7,14 @@ import { signOut } from 'next-auth/react';
  */
 export async function handleLogout() {
   try {
-    await fetch('/api/auth/logout', { method: 'GET' });
-
+    // The signOut function from next-auth/react will trigger the
+    // NextAuth.js signout flow, which in turn executes the
+    // events.signOut callback in src/auth.ts for Keycloak SLO.
     await signOut({ redirectTo: '/login' });
   } catch (error) {
     console.error('Logout error:', error);
+    // Fallback signOut, though error during signOut itself is less common
+    // unless network fails entirely or there's a config issue.
     await signOut({ redirectTo: '/login' });
   }
 }

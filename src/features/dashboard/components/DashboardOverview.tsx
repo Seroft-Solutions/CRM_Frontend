@@ -9,10 +9,19 @@ import { useGetAllProducts } from '@/core/api/generated/endpoints/product-resour
 import { Area, AreaChart, Bar, BarChart, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Building, Phone, ShoppingCart, Users } from 'lucide-react';
 
-export function DashboardOverview() {
-  const { data: calls = [] } = useGetAllCalls({ size: 100 });
-  const { data: parties = [] } = useGetAllParties({ size: 100 });
-  const { data: products = [] } = useGetAllProducts({ size: 100 });
+export function DashboardOverview({ token }: { token?: string }) {
+  const { data: calls = [] } = useGetAllCalls(
+    { size: 100 },
+    { request: { headers: token ? { Authorization: `Bearer ${token}` } : undefined } }
+  );
+  const { data: parties = [] } = useGetAllParties(
+    { size: 100 },
+    { request: { headers: token ? { Authorization: `Bearer ${token}` } : undefined } }
+  );
+  const { data: products = [] } = useGetAllProducts(
+    { size: 100 },
+    { request: { headers: token ? { Authorization: `Bearer ${token}` } : undefined } }
+  );
   
   const [tabValue, setTabValue] = useState("overview");
 
