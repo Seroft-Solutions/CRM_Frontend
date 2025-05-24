@@ -160,6 +160,12 @@ export class NextJsGenerator {
     await this.generateFile('entity/components/entity-details.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-details.tsx`), vars);
     
+    // Generate paginated relationship combobox if there are relationships
+    if (vars.persistableRelationships.length > 0) {
+      await this.generateFile('entity/components/paginated-relationship-combobox.tsx.ejs', 
+        path.join(entityDir, 'components', 'paginated-relationship-combobox.tsx'), vars);
+    }
+    
     console.log(`Successfully generated components for ${entityName}`);
   }
 
