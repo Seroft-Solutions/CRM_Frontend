@@ -65,8 +65,8 @@ export function PermissionGuard({
   }
 
   // Check if user has the required permission
-  const userPermissions = session.user.permissions || [];
-  const hasPermission = userPermissions.includes(requiredPermission);
+  const userroles = session.user.roles || [];
+  const hasPermission = userroles.includes(requiredPermission);
 
   if (!hasPermission) {
     if (showUnauthorizedPage) {
@@ -123,40 +123,40 @@ export function usePermission(permission: string): boolean {
     return false;
   }
 
-  const userPermissions = session.user.permissions || [];
-  return userPermissions.includes(permission);
+  const userroles = session.user.roles || [];
+  return userroles.includes(permission);
 }
 
 /**
- * Hook to check if user has any of the specified permissions
+ * Hook to check if user has any of the specified roles
  * 
- * @param permissions - Array of permission strings to check
- * @returns boolean indicating if user has at least one of the permissions
+ * @param roles - Array of permission strings to check
+ * @returns boolean indicating if user has at least one of the roles
  */
-export function useAnyPermission(permissions: string[]): boolean {
+export function useAnyPermission(roles: string[]): boolean {
   const { data: session, status } = useSession();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userPermissions = session.user.permissions || [];
-  return permissions.some(permission => userPermissions.includes(permission));
+  const userroles = session.user.roles || [];
+  return roles.some(permission => userroles.includes(permission));
 }
 
 /**
- * Hook to check if user has all of the specified permissions
+ * Hook to check if user has all of the specified roles
  * 
- * @param permissions - Array of permission strings to check
- * @returns boolean indicating if user has all of the permissions
+ * @param roles - Array of permission strings to check
+ * @returns boolean indicating if user has all of the roles
  */
-export function useAllPermissions(permissions: string[]): boolean {
+export function useAllroles(roles: string[]): boolean {
   const { data: session, status } = useSession();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userPermissions = session.user.permissions || [];
-  return permissions.every(permission => userPermissions.includes(permission));
+  const userroles = session.user.roles || [];
+  return roles.every(permission => userroles.includes(permission));
 }
