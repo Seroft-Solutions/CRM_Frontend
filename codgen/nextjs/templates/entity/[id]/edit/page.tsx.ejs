@@ -25,17 +25,18 @@ import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 
 interface Edit<%= entityClass %>PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const metadata = {
   title: "Edit <%= entityClass %>",
 };
 
-export default function Edit<%= entityClass %>Page({ params }: Edit<%= entityClass %>PageProps) {
-  const id = parseInt(params.id, 10);
+export default async function Edit<%= entityClass %>Page({ params }: Edit<%= entityClass %>PageProps) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam, 10);
 
   return (
     <div className="space-y-6">
