@@ -9,7 +9,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { useOptimizedSession } from "@/providers/session-provider"
 
 import {
   Avatar,
@@ -35,7 +35,7 @@ import { handleLogout } from "@/utils/auth/logout"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { data: session, status } = useSession()
+  const { session, status } = useOptimizedSession()
   
   // Generate user initials for avatar fallback
   const getInitials = (name: string) => {

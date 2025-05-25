@@ -8,19 +8,26 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useSession } from "next-auth/react";
+import { useOptimizedSession } from "@/providers/session-provider";
 import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { session, status, isLoading } = useOptimizedSession();
 
-  // Check if the user is authenticated
-  if (status === "loading") {
-    // Return a loading state while checking authentication
+  // Handle authentication redirect
+  useEffect(() => {
+    if (!isLoading && status === "unauthenticated") {
+      redirect("/login");
+    }
+  }, [status, isLoading]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center">
@@ -31,9 +38,9 @@ export default function DashboardLayout({
     );
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, show nothing (redirect will happen)
   if (status === "unauthenticated") {
-    redirect("/login");
+    return null;
   }
 
   // If authenticated, render the dashboard layout

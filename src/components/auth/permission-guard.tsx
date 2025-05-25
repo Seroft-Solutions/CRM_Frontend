@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useSession } from "next-auth/react";
+import { useOptimizedSession } from "@/providers/session-provider";
 import { UnauthorizedPage } from "./unauthorized-page";
 
 interface PermissionGuardProps {
@@ -17,6 +17,7 @@ interface PermissionGuardProps {
  * Permission Guard Component
  * 
  * Renders children only if the user has the required permission.
+ * Uses the optimized session provider to reduce redundant session calls.
  * 
  * Permission naming convention:
  * - {entityName}:create - Can create new entities
@@ -39,10 +40,10 @@ export function PermissionGuard({
   unauthorizedTitle,
   unauthorizedDescription
 }: PermissionGuardProps) {
-  const { data: session, status } = useSession();
+  const { session, status, isLoading } = useOptimizedSession();
 
   // Loading state
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -65,8 +66,8 @@ export function PermissionGuard({
   }
 
   // Check if user has the required permission
-  const userroles = session.user.roles || [];
-  const hasPermission = userroles.includes(requiredPermission);
+  const userRoles = session.user.roles || [];
+  const hasPermission = userRoles.includes(requiredPermission);
 
   if (!hasPermission) {
     if (showUnauthorizedPage) {
@@ -112,51 +113,54 @@ export function InlinePermissionGuard({
 
 /**
  * Hook to check if user has a specific permission
+ * Uses the optimized session provider for better performance
  * 
  * @param permission - Permission string to check
  * @returns boolean indicating if user has the permission
  */
 export function usePermission(permission: string): boolean {
-  const { data: session, status } = useSession();
+  const { session, status } = useOptimizedSession();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userroles = session.user.roles || [];
-  return userroles.includes(permission);
+  const userRoles = session.user.roles || [];
+  return userRoles.includes(permission);
 }
 
 /**
  * Hook to check if user has any of the specified roles
+ * Uses the optimized session provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has at least one of the roles
  */
 export function useAnyPermission(roles: string[]): boolean {
-  const { data: session, status } = useSession();
+  const { session, status } = useOptimizedSession();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userroles = session.user.roles || [];
-  return roles.some(permission => userroles.includes(permission));
+  const userRoles = session.user.roles || [];
+  return roles.some(permission => userRoles.includes(permission));
 }
 
 /**
  * Hook to check if user has all of the specified roles
+ * Uses the optimized session provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has all of the roles
  */
-export function useAllroles(roles: string[]): boolean {
-  const { data: session, status } = useSession();
+export function useAllRoles(roles: string[]): boolean {
+  const { session, status } = useOptimizedSession();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userroles = session.user.roles || [];
-  return roles.every(permission => userroles.includes(permission));
+  const userRoles = session.user.roles || [];
+  return roles.every(permission => userRoles.includes(permission));
 }
