@@ -54,7 +54,7 @@ export const sidebarItems: SidebarItem[] = [
       { key: 'channelType', label: 'Channel Type Master', path: '/channel-types' },
       { key: 'party', label: 'Party Master', path: '/parties' },
       { key: 'product', label: 'Product Master', path: '/products' },
-    ],1
+    ],
   },
   {
     key: 'calls',
