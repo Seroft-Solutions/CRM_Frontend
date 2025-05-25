@@ -42,7 +42,7 @@ export const sidebarItems: SidebarItem[] = [
     icon: Settings,
     children: [
       { key: 'callType', label: 'Call Type Master', path: '/call-types' },
-      { key: 'subCallType', label: 'Sub Call Type Master', path: '/sub-call-typse' },
+      { key: 'subCallType', label: 'Sub Call Type Master', path: '/sub-call-types' },
       { key: 'callCategory', label: 'Call Category Master', path: '/call-categories' },
       { key: 'callStatus', label: 'Call Status Master', path: '/call-statuses' },
       { key: 'priority', label: 'Priority Master', path: '/priorities' },
