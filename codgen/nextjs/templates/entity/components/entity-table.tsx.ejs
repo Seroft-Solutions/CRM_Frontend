@@ -35,7 +35,7 @@ import {
   useDelete<%= entityClass %>,
   useCount<%= entityClassPlural %>,
   <% if (searchEngineAny) { %>useSearch<%= entityClassPlural %>,<% } %>
-} from "@/core/api/generated/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
+} from "@/core/api/generated/spring/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
 
 import { <%= entityClass %>SearchAndFilters } from "./<%= entityFileName %>-search-filters";
 import { <%= entityClass %>TableHeader } from "./<%= entityFileName %>-table-header";
