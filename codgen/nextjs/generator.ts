@@ -176,6 +176,7 @@ export class NextJsGenerator {
     this.ensureDir(path.join(entityDir, '[id]'));
     this.ensureDir(path.join(entityDir, '[id]', 'edit'));
     this.ensureDir(path.join(entityDir, 'components'));
+    this.ensureDir(path.join(entityDir, 'actions'));
     
     // Generate files from templates
     console.log(`Generating component files...`);
@@ -208,6 +209,10 @@ export class NextJsGenerator {
       await this.generateFile('entity/components/paginated-relationship-combobox.tsx.ejs', 
         path.join(entityDir, 'components', 'paginated-relationship-combobox.tsx'), vars);
     }
+    
+    // Generate server actions
+    await this.generateFile('entity/actions/entity-actions.ts.ejs', 
+      path.join(entityDir, 'actions', `${vars.entityFileName}-actions.ts`), vars);
     
     console.log(`Successfully generated components for ${entityName}`);
   }

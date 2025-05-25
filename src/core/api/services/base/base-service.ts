@@ -1,5 +1,4 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { getSession } from 'next-auth/react';
 
 export interface BaseServiceConfig {
   baseURL: string;
@@ -13,9 +12,63 @@ export interface RequestData {
   [key: string]: unknown;
 }
 
+// Token cache to avoid redundant session calls
+class TokenCache {
+  private token: string | null = null;
+  private expiry: number = 0;
+  private refreshPromise: Promise<string | null> | null = null;
+
+  async getToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
+    const now = Date.now();
+    
+    // If token is still valid, return it
+    if (this.token && now < this.expiry) {
+      return this.token;
+    }
+
+    // If there's already a refresh in progress, wait for it
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    // Start a new refresh
+    this.refreshPromise = this.refreshToken(refreshFn);
+    const newToken = await this.refreshPromise;
+    this.refreshPromise = null;
+    
+    return newToken;
+  }
+
+  private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
+    try {
+      const newToken = await refreshFn();
+      
+      if (newToken) {
+        this.token = newToken;
+        // Cache for 5 minutes (considering most JWTs expire in 15-30 minutes)
+        this.expiry = Date.now() + (5 * 60 * 1000);
+      }
+      
+      return newToken;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      this.token = null;
+      this.expiry = 0;
+      return null;
+    }
+  }
+
+  invalidate() {
+    this.token = null;
+    this.expiry = 0;
+    this.refreshPromise = null;
+  }
+}
+
 export class BaseService {
   protected instance: AxiosInstance;
   protected config: BaseServiceConfig;
+  private tokenCache = new TokenCache();
 
   constructor(config: BaseServiceConfig) {
     this.config = config;
@@ -36,7 +89,7 @@ export class BaseService {
     // Request interceptor for authentication
     this.instance.interceptors.request.use(
       async (config) => {
-        const token = await this.getAuthToken();
+        const token = await this.tokenCache.getToken(() => this.getAuthTokenFromSession());
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -48,16 +101,35 @@ export class BaseService {
     // Response interceptor for error handling
     this.instance.interceptors.response.use(
       (response) => response,
-      (error) => this.handleError(error)
+      (error) => {
+        // If unauthorized, invalidate token cache
+        if (error.response?.status === 401) {
+          this.tokenCache.invalidate();
+        }
+        return this.handleError(error);
+      }
     );
   }
 
-  protected async getAuthToken(): Promise<string | null> {
+  protected async getAuthTokenFromSession(): Promise<string | null> {
     try {
       switch (this.config.authType) {
         case 'bearer':
-          const session = await getSession();
-          return session?.id_token || session?.accessToken || null;
+          // For client-side, use browser's session storage or get from window
+          if (typeof window !== 'undefined') {
+            // Get token from session storage or make a fetch to session endpoint
+            const response = await fetch('/api/auth/session');
+            if (response.ok) {
+              const session = await response.json();
+              return session?.accessToken || session?.id_token || null;
+            }
+          } else {
+            // Server-side - use the DAL
+            const { auth } = await import('@/auth');
+            const session = await auth();
+            return session?.accessToken || session?.idToken || null;
+          }
+          return null;
         case 'api-key':
           // Handle API key authentication
           return process.env[this.config.authTokenKey || ''] || null;
@@ -91,6 +163,11 @@ export class BaseService {
 
     console.error('API Error:', enhancedError);
     return Promise.reject(enhancedError);
+  }
+
+  // Method to manually invalidate token cache (useful for logout)
+  public invalidateTokenCache() {
+    this.tokenCache.invalidate();
   }
 
   // Generic HTTP methods
