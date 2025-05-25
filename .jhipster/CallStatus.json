@@ -1,8 +1,8 @@
 {
   "annotations": {
-    "changelogDate": "20250516062650"
+    "changelogDate": "20250525054425"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "CallStatus entity.",
   "dto": "mapstruct",
   "fields": [
