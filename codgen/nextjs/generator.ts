@@ -96,9 +96,52 @@ export class NextJsGenerator {
   ) {}
 
   /**
+   * Generate shared components that are used across all entities
+   */
+  public async generateSharedComponents(): Promise<void> {
+    console.log('Generating shared components...');
+    
+    // Create components directory structure
+    const componentsDir = path.join(this.outputDir, 'components');
+    const authDir = path.join(componentsDir, 'auth');
+    
+    this.ensureDir(componentsDir);
+    this.ensureDir(authDir);
+    
+    // Generate PermissionGuard component
+    const permissionGuardTemplate = path.join(this.templateDir, 'components', 'auth', 'permission-guard.tsx');
+    const permissionGuardOutput = path.join(authDir, 'permission-guard.tsx');
+    
+    if (fs.existsSync(permissionGuardTemplate)) {
+      const template = fs.readFileSync(permissionGuardTemplate, 'utf8');
+      fs.writeFileSync(permissionGuardOutput, template);
+      console.log(`Generated shared component: ${permissionGuardOutput}`);
+    } else {
+      console.warn(`Permission guard template not found: ${permissionGuardTemplate}`);
+    }
+    
+    // Generate UnauthorizedPage component
+    const unauthorizedPageTemplate = path.join(this.templateDir, 'components', 'auth', 'unauthorized-page.tsx');
+    const unauthorizedPageOutput = path.join(authDir, 'unauthorized-page.tsx');
+    
+    if (fs.existsSync(unauthorizedPageTemplate)) {
+      const template = fs.readFileSync(unauthorizedPageTemplate, 'utf8');
+      fs.writeFileSync(unauthorizedPageOutput, template);
+      console.log(`Generated shared component: ${unauthorizedPageOutput}`);
+    } else {
+      console.warn(`Unauthorized page template not found: ${unauthorizedPageTemplate}`);
+    }
+    
+    console.log('Shared components generated successfully');
+  }
+
+  /**
    * Generate CRUD components for all entities
    */
   public async generateAll(): Promise<void> {
+    // Generate shared components first
+    await this.generateSharedComponents();
+    
     const entityFiles = fs.readdirSync(this.jhipsterDir).filter(file => file.endsWith('.json'));
     
     console.log(`Found ${entityFiles.length} entity definitions in ${this.jhipsterDir}`);
