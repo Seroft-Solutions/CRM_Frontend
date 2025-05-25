@@ -61,7 +61,7 @@ import {
   useCreate<%= entityClass %>,
   useUpdate<%= entityClass %>,
   useGet<%= entityClass %>,
-} from "@/core/api/generated/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
+} from "@/core/api/generated/spring/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
 <%_ 
 // Group relationships by built-in entities vs regular entities
 const userRelationships = persistableRelationships.filter(r => r.otherEntity.builtInUser);
@@ -72,7 +72,7 @@ _%>
 import { 
   useGetAll<%= otherEntity.entityClassPlural %>Infinite,
   useSearch<%= otherEntity.entityClassPlural %>Infinite 
-} from "@/core/api/generated/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
+} from "@/core/api/generated/spring/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
 <%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
 <%_ if (hasUserRelationships) { _%>
