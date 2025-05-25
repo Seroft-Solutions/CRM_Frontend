@@ -179,6 +179,9 @@ export class NextJsGenerator {
     const entityInstance = this.lowerFirstCamelCase(entityName);
     const pluralizedRoute = plural(entityFileName);
 
+    // Filter out tenantId fields from code generation
+    const filteredFields = this.filterFields(entityDefinition.fields);
+
     // Process relationships to add computed properties
     const processedRelationships = this.processRelationships(entityDefinition.relationships || []);
     const persistableRelationships = processedRelationships.filter((r) => r.relationshipType !== 'one-to-many');
@@ -197,14 +200,14 @@ export class NextJsGenerator {
       entityRoute: pluralizedRoute,
       routePath: pluralizedRoute,
       primaryKey: { name: 'id', type: 'number' },
-      fields: entityDefinition.fields,
+      fields: filteredFields,
       relationships: processedRelationships,
       persistableRelationships,
       otherEntitiesWithPersistableRelationship,
       searchEngineAny: entityDefinition.searchEngine,
-      anyFieldIsDateDerived: entityDefinition.fields.some((f) => 
+      anyFieldIsDateDerived: filteredFields.some((f) => 
         f.fieldTypeTimed || f.fieldTypeLocalDate || f.fieldTypeZonedDateTime || f.fieldTypeInstant),
-      anyFieldIsBlobDerived: entityDefinition.fields.some((f) => f.fieldTypeBinary),
+      anyFieldIsBlobDerived: filteredFields.some((f) => f.fieldTypeBinary),
       readOnly: entityDefinition.readOnly || false,
       pagination: entityDefinition.pagination || 'no',
       service: entityDefinition.service || 'no',
@@ -317,6 +320,21 @@ export class NextJsGenerator {
     });
     
     return Array.from(entityMap.values());
+  }
+
+  /**
+   * Filter out system fields that should not be included in code generation
+   */
+  private filterFields(fields: Field[]): Field[] {
+    const excludedFields = ['tenantId'];
+    
+    return fields.filter(field => {
+      const shouldExclude = excludedFields.includes(field.fieldName);
+      if (shouldExclude) {
+        console.log(`Excluding system field from code generation: ${field.fieldName}`);
+      }
+      return !shouldExclude;
+    });
   }
 
   /**
