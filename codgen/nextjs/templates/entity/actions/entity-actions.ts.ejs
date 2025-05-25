@@ -1,10 +1,10 @@
 <%#
  Server Actions template for CRUD operations
- Uses optimized session management with DAL
+ Uses optimized session management with DAL and organization context
 -%>
 'use server'
 
-import { verifySession, hasRole } from '@/lib/dal'
+import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
 import { springService } from '@/core/api/services/spring-service'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -46,6 +46,7 @@ export async function create<%= entityClass %>(
   try {
     // Verify session and check permissions
     const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
     
     if (!(await hasRole('<%= entityInstance %>:create'))) {
       return { error: 'Insufficient permissions to create <%= entityClassHumanized.toLowerCase() %>' }
@@ -71,8 +72,13 @@ export async function create<%= entityClass %>(
 
     const validatedData = <%= entityClass.toLowerCase() %>Schema.parse(rawData)
 
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
     // Create the entity
-    await springService.post('/<%= routePath %>', validatedData)
+    await springService.post('/<%= routePath %>', dataWithOrg)
 
     // Revalidate the list page
     revalidatePath('/<%= routePath %>')
@@ -103,6 +109,7 @@ export async function update<%= entityClass %>(
   try {
     // Verify session and check permissions
     const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
     
     if (!(await hasRole('<%= entityInstance %>:update'))) {
       return { error: 'Insufficient permissions to update <%= entityClassHumanized.toLowerCase() %>' }
@@ -128,8 +135,13 @@ export async function update<%= entityClass %>(
 
     const validatedData = <%= entityClass.toLowerCase() %>Schema.parse(rawData)
 
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
     // Update the entity
-    await springService.put(`/<%= routePath %>/${id}`, { id, ...validatedData })
+    await springService.put(`/<%= routePath %>/${id}`, { id, ...dataWithOrg })
 
     // Revalidate pages
     revalidatePath('/<%= routePath %>')
@@ -172,5 +184,28 @@ export async function delete<%= entityClass %>(id: number): Promise<{ success?: 
   } catch (error) {
     console.error('Error deleting <%= entityClass %>:', error)
     return { error: 'Failed to delete <%= entityClassHumanized.toLowerCase() %>. Please try again.' }
+  }
+}
+
+/**
+ * Get <%= entityClassPlural %> for current organization
+ */
+export async function get<%= entityClassPlural %>ForOrganization() {
+  try {
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('<%= entityInstance %>:read'))) {
+      throw new Error('Insufficient permissions to read <%= entityClassPluralHumanized.toLowerCase() %>')
+    }
+    
+    // Build query parameters with organization filter
+    const params = currentOrg ? { organizationId: currentOrg.id } : {}
+    
+    const response = await springService.get('/<%= routePath %>', { params })
+    return response
+  } catch (error) {
+    console.error('Error fetching <%= entityClassPlural %> for organization:', error)
+    throw error
   }
 }
