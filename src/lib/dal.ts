@@ -10,6 +10,11 @@ import { cache } from 'react'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 
+interface Organization {
+  name: string;
+  id: string;
+}
+
 /**
  * Verify user session with caching
  * 
@@ -29,7 +34,9 @@ export const verifySession = cache(async () => {
     user: session.user,
     accessToken: session.accessToken,
     idToken: session.idToken,
-    roles: session.user.roles || []
+    roles: session.user.roles || [],
+    organizations: session.user.organizations || [],
+    currentOrganization: session.user.currentOrganization
   }
 })
 
@@ -49,7 +56,9 @@ export const getSession = cache(async () => {
     user: session.user,
     accessToken: session.accessToken,
     idToken: session.idToken,
-    roles: session.user.roles || []
+    roles: session.user.roles || [],
+    organizations: session.user.organizations || [],
+    currentOrganization: session.user.currentOrganization
   }
 })
 
@@ -77,4 +86,77 @@ export const hasAnyRole = async (requiredRoles: string[]): Promise<boolean> => {
 export const getUserRoles = async (): Promise<string[]> => {
   const session = await getSession()
   return session?.roles || []
+}
+
+/**
+ * Get current user's organizations
+ */
+export const getUserOrganizations = async (): Promise<Organization[]> => {
+  const session = await getSession()
+  return session?.organizations || []
+}
+
+/**
+ * Get current user's active organization
+ */
+export const getCurrentOrganization = async (): Promise<Organization | null> => {
+  const session = await getSession()
+  return session?.currentOrganization || null
+}
+
+/**
+ * Check if user belongs to a specific organization
+ */
+export const hasOrganization = async (organizationId: string): Promise<boolean> => {
+  const session = await getSession()
+  if (!session?.organizations) return false
+  
+  return session.organizations.some(org => org.id === organizationId)
+}
+
+/**
+ * Check if user belongs to any of the specified organizations
+ */
+export const hasAnyOrganization = async (organizationIds: string[]): Promise<boolean> => {
+  const session = await getSession()
+  if (!session?.organizations) return false
+  
+  return organizationIds.some(orgId => 
+    session.organizations.some(org => org.id === orgId)
+  )
+}
+
+/**
+ * Get organization by name
+ */
+export const getOrganizationByName = async (organizationName: string): Promise<Organization | null> => {
+  const session = await getSession()
+  if (!session?.organizations) return null
+  
+  return session.organizations.find(org => org.name === organizationName) || null
+}
+
+/**
+ * Get organization by ID
+ */
+export const getOrganizationById = async (organizationId: string): Promise<Organization | null> => {
+  const session = await getSession()
+  if (!session?.organizations) return null
+  
+  return session.organizations.find(org => org.id === organizationId) || null
+}
+
+/**
+ * Check if user has role AND belongs to organization (combined check)
+ */
+export const hasRoleInOrganization = async (
+  requiredRole: string, 
+  organizationId: string
+): Promise<boolean> => {
+  const [roleCheck, orgCheck] = await Promise.all([
+    hasRole(requiredRole),
+    hasOrganization(organizationId)
+  ])
+  
+  return roleCheck && orgCheck
 }

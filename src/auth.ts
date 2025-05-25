@@ -11,10 +11,17 @@ declare module "next-auth/jwt" {
     expires_at?: number;
     provider?: string;
     roles?: string[];
+    organizations?: Record<string, { id: string }>;
   }
 }
 
-// Extend the Session interface to expose tokens and roles
+// Define organization type
+interface Organization {
+  name: string;
+  id: string;
+}
+
+// Extend the Session interface to expose tokens, roles, and organizations
 declare module "next-auth" {
   interface Session {
     user: {
@@ -23,6 +30,8 @@ declare module "next-auth" {
       email?: string;
       image?: string;
       roles?: string[];
+      organizations?: Organization[];
+      currentOrganization?: Organization;
     };
     accessToken?: string;
     idToken?: string;
@@ -31,9 +40,50 @@ declare module "next-auth" {
 }
 
 /**
+ * Extract organizations from decoded token
+ */
+function extractOrganizations(decoded: any): Organization[] {
+  const organizations: Organization[] = [];
+  
+  if (decoded.organizations && typeof decoded.organizations === 'object') {
+    Object.entries(decoded.organizations).forEach(([name, orgData]: [string, any]) => {
+      if (orgData && orgData.id) {
+        organizations.push({
+          name,
+          id: orgData.id
+        });
+      }
+    });
+  }
+  
+  return organizations;
+}
+
+/**
+ * Extract roles from decoded token (combining realm and resource roles)
+ */
+function extractRoles(decoded: any): string[] {
+  const realmRoles = decoded.realm_access?.roles || [];
+  const resourceRoles = [];
+  
+  if (decoded.resource_access) {
+    Object.values(decoded.resource_access).forEach((resource: any) => {
+      if (resource.roles && Array.isArray(resource.roles)) {
+        resourceRoles.push(...resource.roles);
+      }
+    });
+  }
+  
+  // Also include the direct roles array if it exists (as in your token)
+  const directRoles = decoded.roles || [];
+  
+  return [...new Set([...realmRoles, ...resourceRoles, ...directRoles])];
+}
+
+/**
  * Refreshes the access token using the refresh token
  */
-async function refreshAccessToken(token) {
+async function refreshAccessToken(token: any) {
   try {
     const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     
@@ -56,19 +106,9 @@ async function refreshAccessToken(token) {
 
     const decoded = jwtDecode(refreshedTokens.access_token);
     
-    // Extract roles from token
-    const realmRoles = decoded.realm_access?.roles || [];
-    const resourceRoles = [];
-    
-    if (decoded.resource_access) {
-      Object.values(decoded.resource_access).forEach((resource) => {
-        if (resource.roles && Array.isArray(resource.roles)) {
-          resourceRoles.push(...resource.roles);
-        }
-      });
-    }
-
-    const allRoles = [...new Set([...realmRoles, ...resourceRoles])];
+    // Extract roles and organizations from refreshed token
+    const allRoles = extractRoles(decoded);
+    const organizations = extractOrganizations(decoded);
     
     return {
       ...token,
@@ -76,9 +116,11 @@ async function refreshAccessToken(token) {
       id_token: refreshedTokens.id_token,
       refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
       expires_at: Math.floor(Date.now() / 1000) + (refreshedTokens.expires_in || 3600),
-      roles: allRoles
+      roles: allRoles,
+      organizations: decoded.organizations || {}
     };
   } catch (error) {
+    console.error("Token refresh failed:", error);
     return {
       ...token,
       error: "RefreshAccessTokenError",
@@ -92,32 +134,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, account }) {
       // Initial sign in
       if (account && account.access_token) {
-        // Decode the token to extract roles
-        const decoded = jwtDecode(account.access_token);
-        
-        // Extract roles from the token
-        const realmRoles = decoded.realm_access?.roles || [];
-        const resourceRoles = [];
-        
-        if (decoded.resource_access) {
-          Object.values(decoded.resource_access).forEach((resource) => {
-            if (resource.roles && Array.isArray(resource.roles)) {
-              resourceRoles.push(...resource.roles);
-            }
-          });
+        try {
+          // Decode the token to extract roles and organizations
+          const decoded = jwtDecode(account.access_token);
+          
+          // Extract roles and organizations
+          const allRoles = extractRoles(decoded);
+          const organizations = extractOrganizations(decoded);
+          
+          return {
+            ...token,
+            id_token: account.id_token,
+            access_token: account.access_token,
+            refresh_token: account.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
+            provider: account.provider,
+            roles: allRoles,
+            organizations: decoded.organizations || {}
+          };
+        } catch (error) {
+          console.error("Error decoding JWT token:", error);
+          return token;
         }
-
-        const allRoles = [...new Set([...realmRoles, ...resourceRoles])];
-        
-        return {
-          ...token,
-          id_token: account.id_token,
-          access_token: account.access_token,
-          refresh_token: account.refresh_token,
-          expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
-          provider: account.provider,
-          roles: allRoles
-        };
       }
       
       // Return previous token if the access token has not expired yet
@@ -134,6 +172,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Add user info to session
         session.user.id = token.sub;
         session.user.roles = token.roles;
+        
+        // Add organizations to session
+        const organizations = extractOrganizations({ organizations: token.organizations });
+        session.user.organizations = organizations;
+        
+        // Set current organization (first one if multiple, or null if none)
+        session.user.currentOrganization = organizations.length > 0 ? organizations[0] : undefined;
         
         // Add tokens to session
         session.accessToken = token.access_token;
@@ -162,4 +207,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     },
   },
+  pages: {
+    error: '/auth/error', // Custom error page
+  },
+  debug: process.env.NODE_ENV === 'development', // Enable debug in development
 });

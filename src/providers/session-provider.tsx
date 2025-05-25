@@ -11,6 +11,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { SessionProvider, useSession as useNextAuthSession } from 'next-auth/react'
 import type { Session } from 'next-auth'
 
+interface Organization {
+  name: string;
+  id: string;
+}
+
 interface SessionContextValue {
   session: Session | null
   status: 'loading' | 'authenticated' | 'unauthenticated'
@@ -108,6 +113,61 @@ export function useUserRoles() {
 }
 
 /**
+ * Hook for organization-based access control
+ */
+export function useUserOrganizations() {
+  const { session } = useOptimizedSession()
+  
+  const hasOrganization = useCallback((organizationId: string) => {
+    return session?.user?.organizations?.some(org => org.id === organizationId) ?? false
+  }, [session?.user?.organizations])
+  
+  const hasAnyOrganization = useCallback((organizationIds: string[]) => {
+    return organizationIds.some(orgId => 
+      session?.user?.organizations?.some(org => org.id === orgId)
+    ) ?? false
+  }, [session?.user?.organizations])
+  
+  const getOrganizationByName = useCallback((name: string) => {
+    return session?.user?.organizations?.find(org => org.name === name) || null
+  }, [session?.user?.organizations])
+  
+  const getOrganizationById = useCallback((id: string) => {
+    return session?.user?.organizations?.find(org => org.id === id) || null
+  }, [session?.user?.organizations])
+  
+  return {
+    organizations: session?.user?.organizations || [],
+    currentOrganization: session?.user?.currentOrganization || null,
+    hasOrganization,
+    hasAnyOrganization,
+    getOrganizationByName,
+    getOrganizationById
+  }
+}
+
+/**
+ * Hook for combined role and organization checks
+ */
+export function usePermissions() {
+  const { hasRole, hasAnyRole, hasAllRoles } = useUserRoles()
+  const { hasOrganization, hasAnyOrganization } = useUserOrganizations()
+  
+  const hasRoleInOrganization = useCallback((role: string, organizationId: string) => {
+    return hasRole(role) && hasOrganization(organizationId)
+  }, [hasRole, hasOrganization])
+  
+  const hasAnyRoleInOrganization = useCallback((roles: string[], organizationId: string) => {
+    return hasAnyRole(roles) && hasOrganization(organizationId)
+  }, [hasAnyRole, hasOrganization])
+  
+  return {
+    hasRoleInOrganization,
+    hasAnyRoleInOrganization
+  }
+}
+
+/**
  * Hook for user information
  */
 export function useUser() {
@@ -118,6 +178,9 @@ export function useUser() {
     isAuthenticated: status === 'authenticated',
     isLoading,
     accessToken: session?.accessToken,
-    idToken: session?.idToken
+    idToken: session?.idToken,
+    roles: session?.user?.roles || [],
+    organizations: session?.user?.organizations || [],
+    currentOrganization: session?.user?.currentOrganization || null
   }
 }
