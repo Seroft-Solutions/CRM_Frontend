@@ -1,15 +1,20 @@
-/**
- * API module exports
- *
- * Central export point for all API-related functionality.
- */
+// Export base service classes and types
+export { BaseService, type BaseServiceConfig } from './services/base/base-service';
+export * from './services/base/types';
 
-// Re-export utility functions
-export * from './client/fetch-client';
-export * from './client/axios-client';
+// Export specific services
+export { SpringService, springService } from './services/spring-service';
+export { KeycloakService, keycloakService } from './services/keycloak-service';
 
-// Export providers
-export * from './providers';
+// Export service mutators for Orval
+export { springServiceMutator } from './services/spring-service/service-mutator';
+export { keycloakServiceMutator } from './services/keycloak-service/service-mutator';
 
-// Export generated API clients
-export * from './generated';
+// Export React Query provider
+export { QueryClientProvider } from './providers/QueryClientProvider';
+
+// Default export for convenience
+export default {
+  spring: springService,
+  keycloak: keycloakService,
+};
