@@ -1,7 +1,7 @@
 import { BaseServiceConfig } from '../base/base-service';
 
 export const KEYCLOAK_SERVICE_CONFIG: BaseServiceConfig = {
-  baseURL: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080/auth',
+  baseURL: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:9080/auth',
   timeout: 15000,
   authType: 'bearer', // Could be 'client-credentials' for admin operations
   headers: {

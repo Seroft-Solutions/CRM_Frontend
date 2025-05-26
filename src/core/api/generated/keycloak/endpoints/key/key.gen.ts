@@ -5,26 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   KeysMetadataRepresentation
 } from '../../schemas';
@@ -35,148 +15,12 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-export const getAdminRealmsRealmKeys = (
+  export const getAdminRealmsRealmKeys = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<KeysMetadataRepresentation>(
-      {url: `/admin/realms/${realm}/keys`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/keys`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmKeysQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/keys`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmKeysInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmKeysQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>> = ({ signal }) => getAdminRealmsRealmKeys(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmKeysInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>
-export type GetAdminRealmsRealmKeysInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmKeysInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmKeysInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmKeysInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAdminRealmsRealmKeysInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmKeysInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmKeysQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmKeysQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>> = ({ signal }) => getAdminRealmsRealmKeys(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmKeysQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>
-export type GetAdminRealmsRealmKeysQueryError = unknown
-
-
-export function useGetAdminRealmsRealmKeys<TData = Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmKeys<TData = Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmKeys<TData = Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAdminRealmsRealmKeys<TData = Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmKeysQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
+  export type GetAdminRealmsRealmKeysResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmKeys>>>

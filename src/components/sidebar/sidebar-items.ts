@@ -25,7 +25,8 @@ export const sidebarItems: SidebarItem[] = [
     label: 'User Management',
     icon: Users,
     children: [
-      { key: 'users', label: 'Users', path: '/user-management' },
+      { key: 'organizationUsers', label: 'Organization Users', path: '/user-management/organization-users' },
+      { key: 'inviteUsers', label: 'Invite Users', path: '/user-management/invite-users' },
     ],
   },
   {
