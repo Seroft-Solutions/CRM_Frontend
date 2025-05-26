@@ -5,30 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   GetAdminRealmsRealmClientsClientUuidRolesParams,
   GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams,
@@ -47,429 +23,49 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-/**
+  /**
  * @summary Get all roles for the realm or client
  */
 export const getAdminRealmsRealmClientsClientUuidRoles = (
     realm: string,
     clientUuid: string,
     params?: GetAdminRealmsRealmClientsClientUuidRolesParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesQueryKey = (realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>, TError = void>(realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesQueryKey(realm,clientUuid,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmClientsClientUuidRoles(realm,clientUuid,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get all roles for the realm or client
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesInfiniteQueryOptions(realm,clientUuid,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError = void>(realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesQueryKey(realm,clientUuid,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRoles(realm,clientUuid,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get all roles for the realm or client
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesQueryOptions(realm,clientUuid,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Create a new role for the realm or client
  */
 export const postAdminRealmsRealmClientsClientUuidRoles = (
     realm: string,
     clientUuid: string,
     roleRepresentation: RoleRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: roleRepresentation, signal
+      data: roleRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidRolesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>, TError,{realm: string;clientUuid: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>, TError,{realm: string;clientUuid: string;data: RoleRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidRoles'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>, {realm: string;clientUuid: string;data: RoleRepresentation}> = (props) => {
-          const {realm,clientUuid,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidRoles(realm,clientUuid,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidRolesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>>
-    export type PostAdminRealmsRealmClientsClientUuidRolesMutationBody = RoleRepresentation
-    export type PostAdminRealmsRealmClientsClientUuidRolesMutationError = void
-
-    /**
- * @summary Create a new role for the realm or client
- */
-export const usePostAdminRealmsRealmClientsClientUuidRoles = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>, TError,{realm: string;clientUuid: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>,
-        TError,
-        {realm: string;clientUuid: string;data: RoleRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidRolesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get a role by name
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleName = (
     realm: string,
     clientUuid: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleName(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a role by name
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameInfiniteQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleName(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a role by name
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update a role by name
  */
 export const putAdminRealmsRealmClientsClientUuidRolesRoleName = (
@@ -478,8 +74,6 @@ export const putAdminRealmsRealmClientsClientUuidRolesRoleName = (
     roleName: string,
     roleRepresentation: RoleRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -487,55 +81,7 @@ export const putAdminRealmsRealmClientsClientUuidRolesRoleName = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmClientsClientUuidRolesRoleNameMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmClientsClientUuidRolesRoleName'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>, {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation}> = (props) => {
-          const {realm,clientUuid,roleName,data} = props ?? {};
-
-          return  putAdminRealmsRealmClientsClientUuidRolesRoleName(realm,clientUuid,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>>
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameMutationBody = RoleRepresentation
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameMutationError = void
-
-    /**
- * @summary Update a role by name
- */
-export const usePutAdminRealmsRealmClientsClientUuidRolesRoleName = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-        TError,
-        {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmClientsClientUuidRolesRoleNameMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete a role by name
  */
 export const deleteAdminRealmsRealmClientsClientUuidRolesRoleName = (
@@ -543,239 +89,25 @@ export const deleteAdminRealmsRealmClientsClientUuidRolesRoleName = (
     clientUuid: string,
     roleName: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmClientsClientUuidRolesRoleNameMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmClientsClientUuidRolesRoleName'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>, {realm: string;clientUuid: string;roleName: string}> = (props) => {
-          const {realm,clientUuid,roleName} = props ?? {};
-
-          return  deleteAdminRealmsRealmClientsClientUuidRolesRoleName(realm,clientUuid,roleName,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>>
-    
-    export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameMutationError = void
-
-    /**
- * @summary Delete a role by name
- */
-export const useDeleteAdminRealmsRealmClientsClientUuidRolesRoleName = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>, TError,{realm: string;clientUuid: string;roleName: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>,
-        TError,
-        {realm: string;clientUuid: string;roleName: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmClientsClientUuidRolesRoleNameMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get composites of the role
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
     realm: string,
     clientUuid: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get composites of the role
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesInfiniteQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get composites of the role
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Add a composite to the role
  */
 export const postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
@@ -783,66 +115,15 @@ export const postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
     clientUuid: string,
     roleName: string,
     roleRepresentation: RoleRepresentation[],
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: roleRepresentation, signal
+      data: roleRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}> = (props) => {
-          const {realm,clientUuid,roleName,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites(realm,clientUuid,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
-    export type PostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationBody = RoleRepresentation[]
-    export type PostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationError = void
-
-    /**
- * @summary Add a composite to the role
- */
-export const usePostAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-        TError,
-        {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Remove roles from the role's composite
  */
 export const deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
@@ -851,8 +132,6 @@ export const deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
     roleName: string,
     roleRepresentation: RoleRepresentation[],
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites`, method: 'DELETE',
       headers: {'Content-Type': 'application/json', },
@@ -860,421 +139,34 @@ export const deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = (
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}> = (props) => {
-          const {realm,clientUuid,roleName,data} = props ?? {};
-
-          return  deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites(realm,clientUuid,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
-    export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationBody = RoleRepresentation[]
-    export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationError = void
-
-    /**
- * @summary Remove roles from the role's composite
- */
-export const useDeleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>, TError,{realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>,
-        TError,
-        {realm: string;clientUuid: string;roleName: string;data: RoleRepresentation[]},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get client-level roles for the client that are in the role's composite
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid = (
     realm: string,
     clientUuid: string,
     roleName: string,
-    clientUuid: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+    compositeClientUuid: string,
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/clients/${clientUuid}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/clients/${compositeClientUuid}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/clients/${clientUuid}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryKey(realm,clientUuid,roleName,clientUuid);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid(realm,clientUuid,roleName,clientUuid, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName && clientUuid),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client-level roles for the client that are in the role's composite
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidInfiniteQueryOptions(realm,clientUuid,roleName,clientUuid,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryKey(realm,clientUuid,roleName,clientUuid);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid(realm,clientUuid,roleName,clientUuid, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName && clientUuid),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client-level roles for the client that are in the role's composite
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidQueryOptions(realm,clientUuid,roleName,clientUuid,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get realm-level roles of the role's composite
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm = (
     realm: string,
     clientUuid: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/realm`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/realm`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/realm`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get realm-level roles of the role's composite
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmInfiniteQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get realm-level roles of the role's composite
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Returns a stream of groups that have the specified role name
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups = (
@@ -1282,366 +174,27 @@ export const getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups = (
     clientUuid: string,
     roleName: string,
     params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<UserRepresentation[]>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/groups`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/groups`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryKey(realm,clientUuid,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups(realm,clientUuid,roleName,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of groups that have the specified role name
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsInfiniteQueryOptions(realm,clientUuid,roleName,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryKey(realm,clientUuid,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups(realm,clientUuid,roleName,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of groups that have the specified role name
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsQueryOptions(realm,clientUuid,roleName,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions = (
     realm: string,
     clientUuid: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ManagementPermissionReference>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/management/permissions`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/management/permissions`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/management/permissions`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsInfiniteQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryKey(realm,clientUuid,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions(realm,clientUuid,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsQueryOptions(realm,clientUuid,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
  */
 export const putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions = (
@@ -1650,8 +203,6 @@ export const putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissi
     roleName: string,
     managementPermissionReference: ManagementPermissionReference,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<ManagementPermissionReference>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/management/permissions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -1659,55 +210,7 @@ export const putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissi
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError,{realm: string;clientUuid: string;roleName: string;data: ManagementPermissionReference}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError,{realm: string;clientUuid: string;roleName: string;data: ManagementPermissionReference}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, {realm: string;clientUuid: string;roleName: string;data: ManagementPermissionReference}> = (props) => {
-          const {realm,clientUuid,roleName,data} = props ?? {};
-
-          return  putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions(realm,clientUuid,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsMutationBody = ManagementPermissionReference
-    export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsMutationError = void
-
-    /**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-export const usePutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>, TError,{realm: string;clientUuid: string;roleName: string;data: ManagementPermissionReference}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>,
-        TError,
-        {realm: string;clientUuid: string;roleName: string;data: ManagementPermissionReference},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Returns a stream of users that have the specified role name.
  */
 export const getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers = (
@@ -1715,585 +218,53 @@ export const getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers = (
     clientUuid: string,
     roleName: string,
     params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<UserRepresentation[]>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/users`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryKey = (realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/users`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryKey(realm,clientUuid,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers(realm,clientUuid,roleName,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of users that have the specified role name.
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersInfiniteQueryOptions(realm,clientUuid,roleName,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError = void>(realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryKey(realm,clientUuid,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers(realm,clientUuid,roleName,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>>
-export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryError = void
-
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of users that have the specified role name.
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    clientUuid: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersQueryOptions(realm,clientUuid,roleName,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get all roles for the realm or client
  */
 export const getAdminRealmsRealmRoles = (
     realm: string,
     params?: GetAdminRealmsRealmRolesParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
       {url: `/admin/realms/${realm}/roles`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesQueryKey = (realm: string,
-    params?: GetAdminRealmsRealmRolesParams,) => {
-    return [`/admin/realms/${realm}/roles`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, GetAdminRealmsRealmRolesParams['first']>, TError = void>(realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesQueryKey(realm,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmRoles(realm,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>>
-export type GetAdminRealmsRealmRolesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, GetAdminRealmsRealmRolesParams['first']>, TError = void>(
- realm: string,
-    params: undefined |  GetAdminRealmsRealmRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, GetAdminRealmsRealmRolesParams['first']>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, GetAdminRealmsRealmRolesParams['first']>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get all roles for the realm or client
- */
-
-export function useGetAdminRealmsRealmRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, GetAdminRealmsRealmRolesParams['first']>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, QueryKey, GetAdminRealmsRealmRolesParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesInfiniteQueryOptions(realm,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError = void>(realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesQueryKey(realm,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>> = ({ signal }) => getAdminRealmsRealmRoles(realm,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>>
-export type GetAdminRealmsRealmRolesQueryError = void
-
-
-export function useGetAdminRealmsRealmRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError = void>(
- realm: string,
-    params: undefined |  GetAdminRealmsRealmRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get all roles for the realm or client
- */
-
-export function useGetAdminRealmsRealmRoles<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError = void>(
- realm: string,
-    params?: GetAdminRealmsRealmRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesQueryOptions(realm,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Create a new role for the realm or client
  */
 export const postAdminRealmsRealmRoles = (
     realm: string,
     roleRepresentation: RoleRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/roles`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: roleRepresentation, signal
+      data: roleRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmRolesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>, TError,{realm: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>, TError,{realm: string;data: RoleRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmRoles'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>, {realm: string;data: RoleRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmRoles(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmRolesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>>
-    export type PostAdminRealmsRealmRolesMutationBody = RoleRepresentation
-    export type PostAdminRealmsRealmRolesMutationError = void
-
-    /**
- * @summary Create a new role for the realm or client
- */
-export const usePostAdminRealmsRealmRoles = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>, TError,{realm: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>,
-        TError,
-        {realm: string;data: RoleRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmRolesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get a role by name
  */
 export const getAdminRealmsRealmRolesRoleName = (
     realm: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation>(
-      {url: `/admin/realms/${realm}/roles/${roleName}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/roles/${roleName}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameQueryKey = (realm: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>> = ({ signal }) => getAdminRealmsRealmRolesRoleName(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>
-export type GetAdminRealmsRealmRolesRoleNameInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a role by name
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameInfiniteQueryOptions(realm,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>> = ({ signal }) => getAdminRealmsRealmRolesRoleName(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>
-export type GetAdminRealmsRealmRolesRoleNameQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a role by name
- */
-
-export function useGetAdminRealmsRealmRolesRoleName<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameQueryOptions(realm,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update a role by name
  */
 export const putAdminRealmsRealmRolesRoleName = (
@@ -2301,8 +272,6 @@ export const putAdminRealmsRealmRolesRoleName = (
     roleName: string,
     roleRepresentation: RoleRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/roles/${roleName}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -2310,348 +279,46 @@ export const putAdminRealmsRealmRolesRoleName = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmRolesRoleNameMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string;data: RoleRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmRolesRoleName'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>, {realm: string;roleName: string;data: RoleRepresentation}> = (props) => {
-          const {realm,roleName,data} = props ?? {};
-
-          return  putAdminRealmsRealmRolesRoleName(realm,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmRolesRoleNameMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>>
-    export type PutAdminRealmsRealmRolesRoleNameMutationBody = RoleRepresentation
-    export type PutAdminRealmsRealmRolesRoleNameMutationError = void
-
-    /**
- * @summary Update a role by name
- */
-export const usePutAdminRealmsRealmRolesRoleName = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string;data: RoleRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>,
-        TError,
-        {realm: string;roleName: string;data: RoleRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmRolesRoleNameMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete a role by name
  */
 export const deleteAdminRealmsRealmRolesRoleName = (
     realm: string,
     roleName: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/roles/${roleName}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmRolesRoleNameMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmRolesRoleName'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>, {realm: string;roleName: string}> = (props) => {
-          const {realm,roleName} = props ?? {};
-
-          return  deleteAdminRealmsRealmRolesRoleName(realm,roleName,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmRolesRoleNameMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>>
-    
-    export type DeleteAdminRealmsRealmRolesRoleNameMutationError = void
-
-    /**
- * @summary Delete a role by name
- */
-export const useDeleteAdminRealmsRealmRolesRoleName = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>, TError,{realm: string;roleName: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>,
-        TError,
-        {realm: string;roleName: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmRolesRoleNameMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get composites of the role
  */
 export const getAdminRealmsRealmRolesRoleNameComposites = (
     realm: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/roles/${roleName}/composites`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/roles/${roleName}/composites`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesQueryKey = (realm: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/composites`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameCompositesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameComposites(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get composites of the role
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesInfiniteQueryOptions(realm,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameComposites(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get composites of the role
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameComposites<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesQueryOptions(realm,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Add a composite to the role
  */
 export const postAdminRealmsRealmRolesRoleNameComposites = (
     realm: string,
     roleName: string,
     roleRepresentation: RoleRepresentation[],
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/roles/${roleName}/composites`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: roleRepresentation, signal
+      data: roleRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmRolesRoleNameCompositesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmRolesRoleNameComposites'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>, {realm: string;roleName: string;data: RoleRepresentation[]}> = (props) => {
-          const {realm,roleName,data} = props ?? {};
-
-          return  postAdminRealmsRealmRolesRoleNameComposites(realm,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmRolesRoleNameCompositesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>>
-    export type PostAdminRealmsRealmRolesRoleNameCompositesMutationBody = RoleRepresentation[]
-    export type PostAdminRealmsRealmRolesRoleNameCompositesMutationError = void
-
-    /**
- * @summary Add a composite to the role
- */
-export const usePostAdminRealmsRealmRolesRoleNameComposites = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>,
-        TError,
-        {realm: string;roleName: string;data: RoleRepresentation[]},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmRolesRoleNameCompositesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Remove roles from the role's composite
  */
 export const deleteAdminRealmsRealmRolesRoleNameComposites = (
@@ -2659,8 +326,6 @@ export const deleteAdminRealmsRealmRolesRoleNameComposites = (
     roleName: string,
     roleRepresentation: RoleRepresentation[],
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/roles/${roleName}/composites`, method: 'DELETE',
       headers: {'Content-Type': 'application/json', },
@@ -2668,740 +333,58 @@ export const deleteAdminRealmsRealmRolesRoleNameComposites = (
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmRolesRoleNameCompositesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmRolesRoleNameComposites'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>, {realm: string;roleName: string;data: RoleRepresentation[]}> = (props) => {
-          const {realm,roleName,data} = props ?? {};
-
-          return  deleteAdminRealmsRealmRolesRoleNameComposites(realm,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmRolesRoleNameCompositesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>>
-    export type DeleteAdminRealmsRealmRolesRoleNameCompositesMutationBody = RoleRepresentation[]
-    export type DeleteAdminRealmsRealmRolesRoleNameCompositesMutationError = void
-
-    /**
- * @summary Remove roles from the role's composite
- */
-export const useDeleteAdminRealmsRealmRolesRoleNameComposites = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>, TError,{realm: string;roleName: string;data: RoleRepresentation[]}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>,
-        TError,
-        {realm: string;roleName: string;data: RoleRepresentation[]},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmRolesRoleNameCompositesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get client-level roles for the client that are in the role's composite
  */
 export const getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid = (
     realm: string,
     roleName: string,
     clientUuid: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/roles/${roleName}/composites/clients/${clientUuid}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/roles/${roleName}/composites/clients/${clientUuid}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryKey = (realm: string,
-    roleName: string,
-    clientUuid: string,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/composites/clients/${clientUuid}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryKey(realm,roleName,clientUuid);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid(realm,roleName,clientUuid, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName && clientUuid),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client-level roles for the client that are in the role's composite
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidInfiniteQueryOptions(realm,roleName,clientUuid,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError = void>(realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryKey(realm,roleName,clientUuid);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid(realm,roleName,clientUuid, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName && clientUuid),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client-level roles for the client that are in the role's composite
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError = void>(
- realm: string,
-    roleName: string,
-    clientUuid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidQueryOptions(realm,roleName,clientUuid,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get realm-level roles of the role's composite
  */
 export const getAdminRealmsRealmRolesRoleNameCompositesRealm = (
     realm: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/roles/${roleName}/composites/realm`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/roles/${roleName}/composites/realm`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesRealmQueryKey = (realm: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/composites/realm`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameCompositesRealmInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesRealmQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameCompositesRealm(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesRealmInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesRealmInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get realm-level roles of the role's composite
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealmInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesRealmInfiniteQueryOptions(realm,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameCompositesRealmQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameCompositesRealmQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameCompositesRealm(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameCompositesRealmQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>
-export type GetAdminRealmsRealmRolesRoleNameCompositesRealmQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get realm-level roles of the role's composite
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameCompositesRealm<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameCompositesRealmQueryOptions(realm,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Returns a stream of groups that have the specified role name
  */
 export const getAdminRealmsRealmRolesRoleNameGroups = (
     realm: string,
     roleName: string,
     params?: GetAdminRealmsRealmRolesRoleNameGroupsParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<UserRepresentation[]>(
       {url: `/admin/realms/${realm}/roles/${roleName}/groups`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameGroupsQueryKey = (realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/groups`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameGroupsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>, TError = void>(realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameGroupsQueryKey(realm,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmRolesRoleNameGroups(realm,roleName,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameGroupsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>>
-export type GetAdminRealmsRealmRolesRoleNameGroupsInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmRolesRoleNameGroupsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of groups that have the specified role name
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, QueryKey, GetAdminRealmsRealmRolesRoleNameGroupsParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameGroupsInfiniteQueryOptions(realm,roleName,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError = void>(realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameGroupsQueryKey(realm,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameGroups(realm,roleName,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>>
-export type GetAdminRealmsRealmRolesRoleNameGroupsQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmRolesRoleNameGroupsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of groups that have the specified role name
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameGroups<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameGroupsQueryOptions(realm,roleName,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
  */
 export const getAdminRealmsRealmRolesRoleNameManagementPermissions = (
     realm: string,
     roleName: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ManagementPermissionReference>(
-      {url: `/admin/realms/${realm}/roles/${roleName}/management/permissions`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/roles/${roleName}/management/permissions`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryKey = (realm: string,
-    roleName: string,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/management/permissions`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameManagementPermissions(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameManagementPermissionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>
-export type GetAdminRealmsRealmRolesRoleNameManagementPermissionsInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameManagementPermissionsInfiniteQueryOptions(realm,roleName,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError = void>(realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryKey(realm,roleName);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameManagementPermissions(realm,roleName, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>
-export type GetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameManagementPermissions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError = void>(
- realm: string,
-    roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameManagementPermissionsQueryOptions(realm,roleName,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
  */
 export const putAdminRealmsRealmRolesRoleNameManagementPermissions = (
@@ -3409,8 +392,6 @@ export const putAdminRealmsRealmRolesRoleNameManagementPermissions = (
     roleName: string,
     managementPermissionReference: ManagementPermissionReference,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<ManagementPermissionReference>(
       {url: `/admin/realms/${realm}/roles/${roleName}/management/permissions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -3418,229 +399,45 @@ export const putAdminRealmsRealmRolesRoleNameManagementPermissions = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmRolesRoleNameManagementPermissionsMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError,{realm: string;roleName: string;data: ManagementPermissionReference}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError,{realm: string;roleName: string;data: ManagementPermissionReference}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmRolesRoleNameManagementPermissions'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>, {realm: string;roleName: string;data: ManagementPermissionReference}> = (props) => {
-          const {realm,roleName,data} = props ?? {};
-
-          return  putAdminRealmsRealmRolesRoleNameManagementPermissions(realm,roleName,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmRolesRoleNameManagementPermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>>
-    export type PutAdminRealmsRealmRolesRoleNameManagementPermissionsMutationBody = ManagementPermissionReference
-    export type PutAdminRealmsRealmRolesRoleNameManagementPermissionsMutationError = void
-
-    /**
- * @summary Return object stating whether role Authorization permissions have been initialized or not and a reference
- */
-export const usePutAdminRealmsRealmRolesRoleNameManagementPermissions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>, TError,{realm: string;roleName: string;data: ManagementPermissionReference}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>,
-        TError,
-        {realm: string;roleName: string;data: ManagementPermissionReference},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmRolesRoleNameManagementPermissionsMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Returns a stream of users that have the specified role name.
  */
 export const getAdminRealmsRealmRolesRoleNameUsers = (
     realm: string,
     roleName: string,
     params?: GetAdminRealmsRealmRolesRoleNameUsersParams,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<UserRepresentation[]>(
       {url: `/admin/realms/${realm}/roles/${roleName}/users`, method: 'GET',
-        params, signal
+        params
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmRolesRoleNameUsersQueryKey = (realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams,) => {
-    return [`/admin/realms/${realm}/roles/${roleName}/users`, ...(params ? [params]: [])] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmRolesRoleNameUsersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>, TError = void>(realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameUsersQueryKey(realm,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']> = ({ signal, pageParam }) => getAdminRealmsRealmRolesRoleNameUsers(realm,roleName,{...params, first: pageParam || params?.['first']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>>
-export type GetAdminRealmsRealmRolesRoleNameUsersInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmRolesRoleNameUsersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of users that have the specified role name.
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData, Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, QueryKey, GetAdminRealmsRealmRolesRoleNameUsersParams['first']>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameUsersInfiniteQueryOptions(realm,roleName,params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmRolesRoleNameUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError = void>(realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmRolesRoleNameUsersQueryKey(realm,roleName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>> = ({ signal }) => getAdminRealmsRealmRolesRoleNameUsers(realm,roleName,params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && roleName),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmRolesRoleNameUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>>
-export type GetAdminRealmsRealmRolesRoleNameUsersQueryError = void
-
-
-export function useGetAdminRealmsRealmRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    roleName: string,
-    params: undefined |  GetAdminRealmsRealmRolesRoleNameUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Returns a stream of users that have the specified role name.
- */
-
-export function useGetAdminRealmsRealmRolesRoleNameUsers<TData = Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError = void>(
- realm: string,
-    roleName: string,
-    params?: GetAdminRealmsRealmRolesRoleNameUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmRolesRoleNameUsersQueryOptions(realm,roleName,params,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
+  export type GetAdminRealmsRealmClientsClientUuidRolesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRoles>>>
+export type PostAdminRealmsRealmClientsClientUuidRolesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRoles>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleName>>>
+export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleName>>>
+export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleName>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
+export type PostAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
+export type DeleteAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientsClientUuidRolesRoleNameComposites>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuidResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsClientUuid>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealmResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesRealm>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameGroupsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameGroups>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>
+export type PutAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissionsResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientsClientUuidRolesRoleNameManagementPermissions>>>
+export type GetAdminRealmsRealmClientsClientUuidRolesRoleNameUsersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidRolesRoleNameUsers>>>
+export type GetAdminRealmsRealmRolesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRoles>>>
+export type PostAdminRealmsRealmRolesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmRoles>>>
+export type GetAdminRealmsRealmRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleName>>>
+export type PutAdminRealmsRealmRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleName>>>
+export type DeleteAdminRealmsRealmRolesRoleNameResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleName>>>
+export type GetAdminRealmsRealmRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameComposites>>>
+export type PostAdminRealmsRealmRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmRolesRoleNameComposites>>>
+export type DeleteAdminRealmsRealmRolesRoleNameCompositesResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmRolesRoleNameComposites>>>
+export type GetAdminRealmsRealmRolesRoleNameCompositesClientsClientUuidResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesClientsClientUuid>>>
+export type GetAdminRealmsRealmRolesRoleNameCompositesRealmResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameCompositesRealm>>>
+export type GetAdminRealmsRealmRolesRoleNameGroupsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameGroups>>>
+export type GetAdminRealmsRealmRolesRoleNameManagementPermissionsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameManagementPermissions>>>
+export type PutAdminRealmsRealmRolesRoleNameManagementPermissionsResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmRolesRoleNameManagementPermissions>>>
+export type GetAdminRealmsRealmRolesRoleNameUsersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmRolesRoleNameUsers>>>

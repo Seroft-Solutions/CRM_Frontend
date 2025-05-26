@@ -5,30 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   ClientScopeRepresentation
 } from '../../schemas';
@@ -39,391 +15,44 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-/**
+  /**
  * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
  */
 export const getAdminRealmsRealmClientScopes = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ClientScopeRepresentation[]>(
-      {url: `/admin/realms/${realm}/client-scopes`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/client-scopes`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientScopesQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/client-scopes`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientScopesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>, TError = void>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientScopesQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>> = ({ signal }) => getAdminRealmsRealmClientScopes(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientScopesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>
-export type GetAdminRealmsRealmClientScopesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientScopesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>, TError = void>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
- */
-
-export function useGetAdminRealmsRealmClientScopesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientScopesInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientScopesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError = void>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientScopesQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>> = ({ signal }) => getAdminRealmsRealmClientScopes(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientScopesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>
-export type GetAdminRealmsRealmClientScopesQueryError = void
-
-
-export function useGetAdminRealmsRealmClientScopes<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError = void>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopes<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopes<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
- */
-
-export function useGetAdminRealmsRealmClientScopes<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientScopesQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Create a new client scope Client Scope’s name must be unique!
  */
 export const postAdminRealmsRealmClientScopes = (
     realm: string,
     clientScopeRepresentation: ClientScopeRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-scopes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: clientScopeRepresentation, signal
+      data: clientScopeRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientScopesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientScopes'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>, {realm: string;data: ClientScopeRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientScopes(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientScopesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>>
-    export type PostAdminRealmsRealmClientScopesMutationBody = ClientScopeRepresentation
-    export type PostAdminRealmsRealmClientScopesMutationError = void
-
-    /**
- * @summary Create a new client scope Client Scope’s name must be unique!
- */
-export const usePostAdminRealmsRealmClientScopes = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>,
-        TError,
-        {realm: string;data: ClientScopeRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientScopesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get representation of the client scope
  */
 export const getAdminRealmsRealmClientScopesClientScopeId = (
     realm: string,
     clientScopeId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ClientScopeRepresentation>(
-      {url: `/admin/realms/${realm}/client-scopes/${clientScopeId}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/client-scopes/${clientScopeId}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientScopesClientScopeIdQueryKey = (realm: string,
-    clientScopeId: string,) => {
-    return [`/admin/realms/${realm}/client-scopes/${clientScopeId}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientScopesClientScopeIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>, TError = void>(realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientScopesClientScopeIdQueryKey(realm,clientScopeId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>> = ({ signal }) => getAdminRealmsRealmClientScopesClientScopeId(realm,clientScopeId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientScopeId),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientScopesClientScopeIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>
-export type GetAdminRealmsRealmClientScopesClientScopeIdInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientScopesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get representation of the client scope
- */
-
-export function useGetAdminRealmsRealmClientScopesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientScopesClientScopeIdInfiniteQueryOptions(realm,clientScopeId,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientScopesClientScopeIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError = void>(realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientScopesClientScopeIdQueryKey(realm,clientScopeId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>> = ({ signal }) => getAdminRealmsRealmClientScopesClientScopeId(realm,clientScopeId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientScopeId),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientScopesClientScopeIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>
-export type GetAdminRealmsRealmClientScopesClientScopeIdQueryError = void
-
-
-export function useGetAdminRealmsRealmClientScopesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientScopesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get representation of the client scope
- */
-
-export function useGetAdminRealmsRealmClientScopesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientScopesClientScopeIdQueryOptions(realm,clientScopeId,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update the client scope
  */
 export const putAdminRealmsRealmClientScopesClientScopeId = (
@@ -431,8 +60,6 @@ export const putAdminRealmsRealmClientScopesClientScopeId = (
     clientScopeId: string,
     clientScopeRepresentation: ClientScopeRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-scopes/${clientScopeId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -440,500 +67,56 @@ export const putAdminRealmsRealmClientScopesClientScopeId = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmClientScopesClientScopeIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmClientScopesClientScopeId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>, {realm: string;clientScopeId: string;data: ClientScopeRepresentation}> = (props) => {
-          const {realm,clientScopeId,data} = props ?? {};
-
-          return  putAdminRealmsRealmClientScopesClientScopeId(realm,clientScopeId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmClientScopesClientScopeIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>>
-    export type PutAdminRealmsRealmClientScopesClientScopeIdMutationBody = ClientScopeRepresentation
-    export type PutAdminRealmsRealmClientScopesClientScopeIdMutationError = void
-
-    /**
- * @summary Update the client scope
- */
-export const usePutAdminRealmsRealmClientScopesClientScopeId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>,
-        TError,
-        {realm: string;clientScopeId: string;data: ClientScopeRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmClientScopesClientScopeIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete the client scope
  */
 export const deleteAdminRealmsRealmClientScopesClientScopeId = (
     realm: string,
     clientScopeId: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-scopes/${clientScopeId}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmClientScopesClientScopeIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmClientScopesClientScopeId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>, {realm: string;clientScopeId: string}> = (props) => {
-          const {realm,clientScopeId} = props ?? {};
-
-          return  deleteAdminRealmsRealmClientScopesClientScopeId(realm,clientScopeId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmClientScopesClientScopeIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>>
-    
-    export type DeleteAdminRealmsRealmClientScopesClientScopeIdMutationError = void
-
-    /**
- * @summary Delete the client scope
- */
-export const useDeleteAdminRealmsRealmClientScopesClientScopeId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>,
-        TError,
-        {realm: string;clientScopeId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmClientScopesClientScopeIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
  */
 export const getAdminRealmsRealmClientTemplates = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ClientScopeRepresentation[]>(
-      {url: `/admin/realms/${realm}/client-templates`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/client-templates`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientTemplatesQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/client-templates`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientTemplatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>, TError = void>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientTemplatesQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>> = ({ signal }) => getAdminRealmsRealmClientTemplates(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientTemplatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>
-export type GetAdminRealmsRealmClientTemplatesInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>, TError = void>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
- */
-
-export function useGetAdminRealmsRealmClientTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>, TError = void>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientTemplatesInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError = void>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientTemplatesQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>> = ({ signal }) => getAdminRealmsRealmClientTemplates(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>
-export type GetAdminRealmsRealmClientTemplatesQueryError = void
-
-
-export function useGetAdminRealmsRealmClientTemplates<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError = void>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplates<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplates<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client scopes belonging to the realm Returns a list of client scopes belonging to the realm
- */
-
-export function useGetAdminRealmsRealmClientTemplates<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError = void>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientTemplatesQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Create a new client scope Client Scope’s name must be unique!
  */
 export const postAdminRealmsRealmClientTemplates = (
     realm: string,
     clientScopeRepresentation: ClientScopeRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: clientScopeRepresentation, signal
+      data: clientScopeRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientTemplatesMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientTemplates'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>, {realm: string;data: ClientScopeRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientTemplates(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>>
-    export type PostAdminRealmsRealmClientTemplatesMutationBody = ClientScopeRepresentation
-    export type PostAdminRealmsRealmClientTemplatesMutationError = void
-
-    /**
- * @summary Create a new client scope Client Scope’s name must be unique!
- */
-export const usePostAdminRealmsRealmClientTemplates = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>, TError,{realm: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>,
-        TError,
-        {realm: string;data: ClientScopeRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientTemplatesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get representation of the client scope
  */
 export const getAdminRealmsRealmClientTemplatesClientScopeId = (
     realm: string,
     clientScopeId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<ClientScopeRepresentation>(
-      {url: `/admin/realms/${realm}/client-templates/${clientScopeId}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/client-templates/${clientScopeId}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientTemplatesClientScopeIdQueryKey = (realm: string,
-    clientScopeId: string,) => {
-    return [`/admin/realms/${realm}/client-templates/${clientScopeId}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientTemplatesClientScopeIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>, TError = void>(realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientTemplatesClientScopeIdQueryKey(realm,clientScopeId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>> = ({ signal }) => getAdminRealmsRealmClientTemplatesClientScopeId(realm,clientScopeId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientScopeId),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientTemplatesClientScopeIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>
-export type GetAdminRealmsRealmClientTemplatesClientScopeIdInfiniteQueryError = void
-
-
-export function useGetAdminRealmsRealmClientTemplatesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get representation of the client scope
- */
-
-export function useGetAdminRealmsRealmClientTemplatesClientScopeIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientTemplatesClientScopeIdInfiniteQueryOptions(realm,clientScopeId,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientTemplatesClientScopeIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError = void>(realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientTemplatesClientScopeIdQueryKey(realm,clientScopeId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>> = ({ signal }) => getAdminRealmsRealmClientTemplatesClientScopeId(realm,clientScopeId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientScopeId),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientTemplatesClientScopeIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>
-export type GetAdminRealmsRealmClientTemplatesClientScopeIdQueryError = void
-
-
-export function useGetAdminRealmsRealmClientTemplatesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientTemplatesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get representation of the client scope
- */
-
-export function useGetAdminRealmsRealmClientTemplatesClientScopeId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError = void>(
- realm: string,
-    clientScopeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientTemplatesClientScopeIdQueryOptions(realm,clientScopeId,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update the client scope
  */
 export const putAdminRealmsRealmClientTemplatesClientScopeId = (
@@ -941,8 +124,6 @@ export const putAdminRealmsRealmClientTemplatesClientScopeId = (
     clientScopeId: string,
     clientScopeRepresentation: ClientScopeRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-templates/${clientScopeId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -950,114 +131,25 @@ export const putAdminRealmsRealmClientTemplatesClientScopeId = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmClientTemplatesClientScopeIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmClientTemplatesClientScopeId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>, {realm: string;clientScopeId: string;data: ClientScopeRepresentation}> = (props) => {
-          const {realm,clientScopeId,data} = props ?? {};
-
-          return  putAdminRealmsRealmClientTemplatesClientScopeId(realm,clientScopeId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmClientTemplatesClientScopeIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>>
-    export type PutAdminRealmsRealmClientTemplatesClientScopeIdMutationBody = ClientScopeRepresentation
-    export type PutAdminRealmsRealmClientTemplatesClientScopeIdMutationError = void
-
-    /**
- * @summary Update the client scope
- */
-export const usePutAdminRealmsRealmClientTemplatesClientScopeId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string;data: ClientScopeRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>,
-        TError,
-        {realm: string;clientScopeId: string;data: ClientScopeRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmClientTemplatesClientScopeIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete the client scope
  */
 export const deleteAdminRealmsRealmClientTemplatesClientScopeId = (
     realm: string,
     clientScopeId: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/client-templates/${clientScopeId}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmClientTemplatesClientScopeIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmClientTemplatesClientScopeId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>, {realm: string;clientScopeId: string}> = (props) => {
-          const {realm,clientScopeId} = props ?? {};
-
-          return  deleteAdminRealmsRealmClientTemplatesClientScopeId(realm,clientScopeId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmClientTemplatesClientScopeIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>>
-    
-    export type DeleteAdminRealmsRealmClientTemplatesClientScopeIdMutationError = void
-
-    /**
- * @summary Delete the client scope
- */
-export const useDeleteAdminRealmsRealmClientTemplatesClientScopeId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>, TError,{realm: string;clientScopeId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>,
-        TError,
-        {realm: string;clientScopeId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmClientTemplatesClientScopeIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    
+  export type GetAdminRealmsRealmClientScopesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopes>>>
+export type PostAdminRealmsRealmClientScopesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientScopes>>>
+export type GetAdminRealmsRealmClientScopesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientScopesClientScopeId>>>
+export type PutAdminRealmsRealmClientScopesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientScopesClientScopeId>>>
+export type DeleteAdminRealmsRealmClientScopesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientScopesClientScopeId>>>
+export type GetAdminRealmsRealmClientTemplatesResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplates>>>
+export type PostAdminRealmsRealmClientTemplatesResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientTemplates>>>
+export type GetAdminRealmsRealmClientTemplatesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientTemplatesClientScopeId>>>
+export type PutAdminRealmsRealmClientTemplatesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmClientTemplatesClientScopeId>>>
+export type DeleteAdminRealmsRealmClientTemplatesClientScopeIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmClientTemplatesClientScopeId>>>

@@ -50,22 +50,13 @@ module.exports = {
       workspace: 'src/core/api/generated/keycloak',
       target: './endpoints',
       schemas: './schemas',
-      client: 'react-query',
       clean: true,
       mock: false,
       override: {
         mutator: {
           path: '../../services/keycloak-service/service-mutator.ts',
           name: 'keycloakServiceMutator',
-        },
-        query: {
-          useQuery: true,
-          useInfinite: true,
-          useInfiniteQueryParam: 'first',
-          options: {
-            staleTime: 5000, // Shorter cache for auth-related data
-          },
-        },
+        }
       },
     },
     input: {

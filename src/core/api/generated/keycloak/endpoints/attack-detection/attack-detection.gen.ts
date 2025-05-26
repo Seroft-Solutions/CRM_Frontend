@@ -5,30 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   GetAdminRealmsRealmAttackDetectionBruteForceUsersUserId200
 } from '../../schemas';
@@ -39,293 +15,41 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-/**
+  /**
  * @summary Clear any user login failures for all users This can release temporary disabled users
  */
 export const deleteAdminRealmsRealmAttackDetectionBruteForceUsers = (
     realm: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/attack-detection/brute-force/users`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAttackDetectionBruteForceUsersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>, TError,{realm: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>, TError,{realm: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAttackDetectionBruteForceUsers'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>, {realm: string}> = (props) => {
-          const {realm} = props ?? {};
-
-          return  deleteAdminRealmsRealmAttackDetectionBruteForceUsers(realm,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>>
-    
-    export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersMutationError = unknown
-
-    /**
- * @summary Clear any user login failures for all users This can release temporary disabled users
- */
-export const useDeleteAdminRealmsRealmAttackDetectionBruteForceUsers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>, TError,{realm: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>,
-        TError,
-        {realm: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAttackDetectionBruteForceUsersMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get status of a username in brute force detection
  */
 export const getAdminRealmsRealmAttackDetectionBruteForceUsersUserId = (
     realm: string,
     userId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAttackDetectionBruteForceUsersUserId200>(
-      {url: `/admin/realms/${realm}/attack-detection/brute-force/users/${userId}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/attack-detection/brute-force/users/${userId}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryKey = (realm: string,
-    userId: string,) => {
-    return [`/admin/realms/${realm}/attack-detection/brute-force/users/${userId}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>, TError = unknown>(realm: string,
-    userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryKey(realm,userId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>> = ({ signal }) => getAdminRealmsRealmAttackDetectionBruteForceUsersUserId(realm,userId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && userId),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>
-export type GetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>, TError = unknown>(
- realm: string,
-    userId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get status of a username in brute force detection
- */
-
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdInfiniteQueryOptions(realm,userId,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError = unknown>(realm: string,
-    userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryKey(realm,userId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>> = ({ signal }) => getAdminRealmsRealmAttackDetectionBruteForceUsersUserId(realm,userId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && userId),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>
-export type GetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError = unknown>(
- realm: string,
-    userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get status of a username in brute force detection
- */
-
-export function useGetAdminRealmsRealmAttackDetectionBruteForceUsersUserId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError = unknown>(
- realm: string,
-    userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdQueryOptions(realm,userId,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Clear any user login failures for the user This can release temporary disabled user
  */
 export const deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId = (
     realm: string,
     userId: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/attack-detection/brute-force/users/${userId}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError,{realm: string;userId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError,{realm: string;userId: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, {realm: string;userId: string}> = (props) => {
-          const {realm,userId} = props ?? {};
-
-          return  deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId(realm,userId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>
-    
-    export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserIdMutationError = unknown
-
-    /**
- * @summary Clear any user login failures for the user This can release temporary disabled user
- */
-export const useDeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>, TError,{realm: string;userId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>,
-        TError,
-        {realm: string;userId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    
+  export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsers>>>
+export type GetAdminRealmsRealmAttackDetectionBruteForceUsersUserIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>
+export type DeleteAdminRealmsRealmAttackDetectionBruteForceUsersUserIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAttackDetectionBruteForceUsersUserId>>>

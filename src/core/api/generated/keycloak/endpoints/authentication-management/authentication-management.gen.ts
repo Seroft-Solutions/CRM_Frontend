@@ -5,30 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   AuthenticationExecutionInfoRepresentation,
   AuthenticationExecutionRepresentation,
@@ -56,711 +32,68 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-/**
+  /**
  * @summary Get authenticator providers Returns a stream of authenticator providers.
  */
 export const getAdminRealmsRealmAuthenticationAuthenticatorProviders = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationAuthenticatorProviders200Item[]>(
-      {url: `/admin/realms/${realm}/authentication/authenticator-providers`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/authenticator-providers`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/authenticator-providers`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationAuthenticatorProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>
-export type GetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator providers Returns a stream of authenticator providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationAuthenticatorProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>
-export type GetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator providers Returns a stream of authenticator providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationAuthenticatorProvidersQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get client authenticator providers Returns a stream of client authenticator providers.
  */
 export const getAdminRealmsRealmAuthenticationClientAuthenticatorProviders = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationClientAuthenticatorProviders200Item[]>(
-      {url: `/admin/realms/${realm}/authentication/client-authenticator-providers`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/client-authenticator-providers`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/client-authenticator-providers`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationClientAuthenticatorProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>
-export type GetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client authenticator providers Returns a stream of client authenticator providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationClientAuthenticatorProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>
-export type GetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get client authenticator providers Returns a stream of client authenticator providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationClientAuthenticatorProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @deprecated
  * @summary Create new authenticator configuration
  */
 export const postAdminRealmsRealmAuthenticationConfig = (
     realm: string,
     authenticatorConfigRepresentation: AuthenticatorConfigRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/config`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: authenticatorConfigRepresentation, signal
+      data: authenticatorConfigRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>, TError,{realm: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>, TError,{realm: string;data: AuthenticatorConfigRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationConfig'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>, {realm: string;data: AuthenticatorConfigRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationConfig(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationConfigMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>>
-    export type PostAdminRealmsRealmAuthenticationConfigMutationBody = AuthenticatorConfigRepresentation
-    export type PostAdminRealmsRealmAuthenticationConfigMutationError = unknown
-
-    /**
- * @deprecated
- * @summary Create new authenticator configuration
- */
-export const usePostAdminRealmsRealmAuthenticationConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>, TError,{realm: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>,
-        TError,
-        {realm: string;data: AuthenticatorConfigRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationConfigMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get authenticator provider's configuration description
  */
 export const getAdminRealmsRealmAuthenticationConfigDescriptionProviderId = (
     realm: string,
     providerId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticatorConfigInfoRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/config-description/${providerId}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/config-description/${providerId}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryKey = (realm: string,
-    providerId: string,) => {
-    return [`/admin/realms/${realm}/authentication/config-description/${providerId}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>, TError = unknown>(realm: string,
-    providerId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryKey(realm,providerId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationConfigDescriptionProviderId(realm,providerId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && providerId),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>
-export type GetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>, TError = unknown>(
- realm: string,
-    providerId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator provider's configuration description
- */
-
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdInfiniteQueryOptions(realm,providerId,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError = unknown>(realm: string,
-    providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryKey(realm,providerId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationConfigDescriptionProviderId(realm,providerId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && providerId),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>
-export type GetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError = unknown>(
- realm: string,
-    providerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator provider's configuration description
- */
-
-export function useGetAdminRealmsRealmAuthenticationConfigDescriptionProviderId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError = unknown>(
- realm: string,
-    providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdQueryOptions(realm,providerId,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get authenticator configuration
  */
 export const getAdminRealmsRealmAuthenticationConfigId = (
     realm: string,
     id: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticatorConfigRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/config/${id}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/config/${id}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationConfigIdQueryKey = (realm: string,
-    id: string,) => {
-    return [`/admin/realms/${realm}/authentication/config/${id}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationConfigIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>, TError = unknown>(realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationConfigIdQueryKey(realm,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationConfigId(realm,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && id),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationConfigIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>
-export type GetAdminRealmsRealmAuthenticationConfigIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>, TError = unknown>(
- realm: string,
-    id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationConfigIdInfiniteQueryOptions(realm,id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationConfigIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError = unknown>(realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationConfigIdQueryKey(realm,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationConfigId(realm,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && id),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationConfigIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>
-export type GetAdminRealmsRealmAuthenticationConfigIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError = unknown>(
- realm: string,
-    id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authenticator configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationConfigIdQueryOptions(realm,id,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update authenticator configuration
  */
 export const putAdminRealmsRealmAuthenticationConfigId = (
@@ -768,8 +101,6 @@ export const putAdminRealmsRealmAuthenticationConfigId = (
     id: string,
     authenticatorConfigRepresentation: AuthenticatorConfigRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/config/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -777,475 +108,72 @@ export const putAdminRealmsRealmAuthenticationConfigId = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmAuthenticationConfigIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string;data: AuthenticatorConfigRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmAuthenticationConfigId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>, {realm: string;id: string;data: AuthenticatorConfigRepresentation}> = (props) => {
-          const {realm,id,data} = props ?? {};
-
-          return  putAdminRealmsRealmAuthenticationConfigId(realm,id,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmAuthenticationConfigIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>>
-    export type PutAdminRealmsRealmAuthenticationConfigIdMutationBody = AuthenticatorConfigRepresentation
-    export type PutAdminRealmsRealmAuthenticationConfigIdMutationError = unknown
-
-    /**
- * @summary Update authenticator configuration
- */
-export const usePutAdminRealmsRealmAuthenticationConfigId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>,
-        TError,
-        {realm: string;id: string;data: AuthenticatorConfigRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmAuthenticationConfigIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete authenticator configuration
  */
 export const deleteAdminRealmsRealmAuthenticationConfigId = (
     realm: string,
     id: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/config/${id}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAuthenticationConfigIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAuthenticationConfigId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>, {realm: string;id: string}> = (props) => {
-          const {realm,id} = props ?? {};
-
-          return  deleteAdminRealmsRealmAuthenticationConfigId(realm,id,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAuthenticationConfigIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>>
-    
-    export type DeleteAdminRealmsRealmAuthenticationConfigIdMutationError = unknown
-
-    /**
- * @summary Delete authenticator configuration
- */
-export const useDeleteAdminRealmsRealmAuthenticationConfigId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>, TError,{realm: string;id: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>,
-        TError,
-        {realm: string;id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAuthenticationConfigIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Add new authentication execution
  */
 export const postAdminRealmsRealmAuthenticationExecutions = (
     realm: string,
     authenticationExecutionRepresentation: AuthenticationExecutionRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/executions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: authenticationExecutionRepresentation, signal
+      data: authenticationExecutionRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationExecutionsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>, TError,{realm: string;data: AuthenticationExecutionRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>, TError,{realm: string;data: AuthenticationExecutionRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationExecutions'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>, {realm: string;data: AuthenticationExecutionRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationExecutions(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationExecutionsMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>>
-    export type PostAdminRealmsRealmAuthenticationExecutionsMutationBody = AuthenticationExecutionRepresentation
-    export type PostAdminRealmsRealmAuthenticationExecutionsMutationError = unknown
-
-    /**
- * @summary Add new authentication execution
- */
-export const usePostAdminRealmsRealmAuthenticationExecutions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>, TError,{realm: string;data: AuthenticationExecutionRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>,
-        TError,
-        {realm: string;data: AuthenticationExecutionRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationExecutionsMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get Single Execution
  */
 export const getAdminRealmsRealmAuthenticationExecutionsExecutionId = (
     realm: string,
     executionId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticationExecutionRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/executions/${executionId}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/executions/${executionId}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryKey = (realm: string,
-    executionId: string,) => {
-    return [`/admin/realms/${realm}/authentication/executions/${executionId}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>, TError = unknown>(realm: string,
-    executionId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryKey(realm,executionId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationExecutionsExecutionId(realm,executionId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && executionId),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>, TError = unknown>(
- realm: string,
-    executionId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get Single Execution
- */
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdInfiniteQueryOptions(realm,executionId,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError = unknown>(realm: string,
-    executionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryKey(realm,executionId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationExecutionsExecutionId(realm,executionId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && executionId),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError = unknown>(
- realm: string,
-    executionId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get Single Execution
- */
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError = unknown>(
- realm: string,
-    executionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdQueryOptions(realm,executionId,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Delete execution
  */
 export const deleteAdminRealmsRealmAuthenticationExecutionsExecutionId = (
     realm: string,
     executionId: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/executions/${executionId}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAuthenticationExecutionsExecutionIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError,{realm: string;executionId: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAuthenticationExecutionsExecutionId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>, {realm: string;executionId: string}> = (props) => {
-          const {realm,executionId} = props ?? {};
-
-          return  deleteAdminRealmsRealmAuthenticationExecutionsExecutionId(realm,executionId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAuthenticationExecutionsExecutionIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>>
-    
-    export type DeleteAdminRealmsRealmAuthenticationExecutionsExecutionIdMutationError = unknown
-
-    /**
- * @summary Delete execution
- */
-export const useDeleteAdminRealmsRealmAuthenticationExecutionsExecutionId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>,
-        TError,
-        {realm: string;executionId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAuthenticationExecutionsExecutionIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Update execution with new configuration
  */
 export const postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig = (
     realm: string,
     executionId: string,
     authenticatorConfigRepresentation: AuthenticatorConfigRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/executions/${executionId}/config`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: authenticatorConfigRepresentation, signal
+      data: authenticatorConfigRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>, TError,{realm: string;executionId: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>, TError,{realm: string;executionId: string;data: AuthenticatorConfigRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>, {realm: string;executionId: string;data: AuthenticatorConfigRepresentation}> = (props) => {
-          const {realm,executionId,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig(realm,executionId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>>
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigMutationBody = AuthenticatorConfigRepresentation
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigMutationError = unknown
-
-    /**
- * @summary Update execution with new configuration
- */
-export const usePostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>, TError,{realm: string;executionId: string;data: AuthenticatorConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>,
-        TError,
-        {realm: string;executionId: string;data: AuthenticatorConfigRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @deprecated
  * @summary Get execution's configuration
  */
@@ -1253,754 +181,89 @@ export const getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId = (
     realm: string,
     executionId: string,
     id: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticatorConfigRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/config/${id}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/config/${id}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryKey = (realm: string,
-    executionId: string,
-    id: string,) => {
-    return [`/admin/realms/${realm}/authentication/executions/${executionId}/config/${id}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>, TError = unknown>(realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryKey(realm,executionId,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId(realm,executionId,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && executionId && id),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @deprecated
- * @summary Get execution's configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdInfiniteQueryOptions(realm,executionId,id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError = unknown>(realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryKey(realm,executionId,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId(realm,executionId,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && executionId && id),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>
-export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @deprecated
- * @summary Get execution's configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError = unknown>(
- realm: string,
-    executionId: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdQueryOptions(realm,executionId,id,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Lower execution's priority
  */
 export const postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority = (
     realm: string,
     executionId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
-      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/lower-priority`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/lower-priority`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriorityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>, TError,{realm: string;executionId: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>, {realm: string;executionId: string}> = (props) => {
-          const {realm,executionId} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority(realm,executionId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriorityMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>>
-    
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriorityMutationError = unknown
-
-    /**
- * @summary Lower execution's priority
- */
-export const usePostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>,
-        TError,
-        {realm: string;executionId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriorityMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Raise execution's priority
  */
 export const postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority = (
     realm: string,
     executionId: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
-      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/raise-priority`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/authentication/executions/${executionId}/raise-priority`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriorityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>, TError,{realm: string;executionId: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>, {realm: string;executionId: string}> = (props) => {
-          const {realm,executionId} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority(realm,executionId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>>
-    
-    export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriorityMutationError = unknown
-
-    /**
- * @summary Raise execution's priority
- */
-export const usePostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>, TError,{realm: string;executionId: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>,
-        TError,
-        {realm: string;executionId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriorityMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get authentication flows Returns a stream of authentication flows.
  */
 export const getAdminRealmsRealmAuthenticationFlows = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticationFlowRepresentation[]>(
-      {url: `/admin/realms/${realm}/authentication/flows`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/flows`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationFlowsQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/flows`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationFlowsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlows(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>
-export type GetAdminRealmsRealmAuthenticationFlowsInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlowsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication flows Returns a stream of authentication flows.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlowsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationFlowsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlows(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>
-export type GetAdminRealmsRealmAuthenticationFlowsQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlows<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlows<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlows<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication flows Returns a stream of authentication flows.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlows<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Create a new authentication flow
  */
 export const postAdminRealmsRealmAuthenticationFlows = (
     realm: string,
     authenticationFlowRepresentation: AuthenticationFlowRepresentation,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: authenticationFlowRepresentation, signal
+      data: authenticationFlowRepresentation
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationFlowsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>, TError,{realm: string;data: AuthenticationFlowRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>, TError,{realm: string;data: AuthenticationFlowRepresentation}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationFlows'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>, {realm: string;data: AuthenticationFlowRepresentation}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationFlows(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationFlowsMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>>
-    export type PostAdminRealmsRealmAuthenticationFlowsMutationBody = AuthenticationFlowRepresentation
-    export type PostAdminRealmsRealmAuthenticationFlowsMutationError = unknown
-
-    /**
- * @summary Create a new authentication flow
- */
-export const usePostAdminRealmsRealmAuthenticationFlows = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>, TError,{realm: string;data: AuthenticationFlowRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>,
-        TError,
-        {realm: string;data: AuthenticationFlowRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationFlowsMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Copy existing authentication flow under a new name The new name is given as 'newName' attribute of the passed JSON object
  */
 export const postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy = (
     realm: string,
     flowAlias: string,
     postAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/copy`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody, signal
+      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>, {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody}> = (props) => {
-          const {realm,flowAlias,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy(realm,flowAlias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>>
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyMutationBody = PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyMutationError = unknown
-
-    /**
- * @summary Copy existing authentication flow under a new name The new name is given as 'newName' attribute of the passed JSON object
- */
-export const usePostAdminRealmsRealmAuthenticationFlowsFlowAliasCopy = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>,
-        TError,
-        {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get authentication executions for a flow
  */
 export const getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions = (
     realm: string,
     flowAlias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticationExecutionInfoRepresentation[]>(
-      {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/executions`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/executions`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryKey = (realm: string,
-    flowAlias: string,) => {
-    return [`/admin/realms/${realm}/authentication/flows/${flowAlias}/executions`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>, TError = unknown>(realm: string,
-    flowAlias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryKey(realm,flowAlias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions(realm,flowAlias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && flowAlias),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>
-export type GetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication executions for a flow
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsInfiniteQueryOptions(realm,flowAlias,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError = unknown>(realm: string,
-    flowAlias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryKey(realm,flowAlias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions(realm,flowAlias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && flowAlias),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>
-export type GetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication executions for a flow
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError = unknown>(
- realm: string,
-    flowAlias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsQueryOptions(realm,flowAlias,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update authentication executions of a Flow
  */
 export const putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions = (
@@ -2008,8 +271,6 @@ export const putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions = (
     flowAlias: string,
     authenticationExecutionInfoRepresentation: AuthenticationExecutionInfoRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/executions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -2017,352 +278,49 @@ export const putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError,{realm: string;flowAlias: string;data: AuthenticationExecutionInfoRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError,{realm: string;flowAlias: string;data: AuthenticationExecutionInfoRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, {realm: string;flowAlias: string;data: AuthenticationExecutionInfoRepresentation}> = (props) => {
-          const {realm,flowAlias,data} = props ?? {};
-
-          return  putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions(realm,flowAlias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>
-    export type PutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsMutationBody = AuthenticationExecutionInfoRepresentation
-    export type PutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsMutationError = unknown
-
-    /**
- * @summary Update authentication executions of a Flow
- */
-export const usePutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>, TError,{realm: string;flowAlias: string;data: AuthenticationExecutionInfoRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>,
-        TError,
-        {realm: string;flowAlias: string;data: AuthenticationExecutionInfoRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Add new authentication execution to a flow
  */
 export const postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution = (
     realm: string,
     flowAlias: string,
     postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/executions/execution`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody, signal
+      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>, {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody}> = (props) => {
-          const {realm,flowAlias,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution(realm,flowAlias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>>
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionMutationBody = PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionMutationError = unknown
-
-    /**
- * @summary Add new authentication execution to a flow
- */
-export const usePostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>,
-        TError,
-        {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Add new flow with new execution to existing flow
  */
 export const postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow = (
     realm: string,
     flowAlias: string,
     postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${flowAlias}/executions/flow`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody, signal
+      data: postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>, {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody}> = (props) => {
-          const {realm,flowAlias,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow(realm,flowAlias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>>
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowMutationBody = PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody
-    export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowMutationError = unknown
-
-    /**
- * @summary Add new flow with new execution to existing flow
- */
-export const usePostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>, TError,{realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>,
-        TError,
-        {realm: string;flowAlias: string;data: PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get authentication flow for id
  */
 export const getAdminRealmsRealmAuthenticationFlowsId = (
     realm: string,
     id: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<AuthenticationFlowRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/flows/${id}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/flows/${id}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationFlowsIdQueryKey = (realm: string,
-    id: string,) => {
-    return [`/admin/realms/${realm}/authentication/flows/${id}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationFlowsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>, TError = unknown>(realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsIdQueryKey(realm,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlowsId(realm,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && id),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>
-export type GetAdminRealmsRealmAuthenticationFlowsIdInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlowsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>, TError = unknown>(
- realm: string,
-    id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication flow for id
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlowsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsIdInfiniteQueryOptions(realm,id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationFlowsIdQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError = unknown>(realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFlowsIdQueryKey(realm,id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFlowsId(realm,id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && id),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFlowsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>
-export type GetAdminRealmsRealmAuthenticationFlowsIdQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFlowsId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError = unknown>(
- realm: string,
-    id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFlowsId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get authentication flow for id
- */
-
-export function useGetAdminRealmsRealmAuthenticationFlowsId<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError = unknown>(
- realm: string,
-    id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFlowsIdQueryOptions(realm,id,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update an authentication flow
  */
 export const putAdminRealmsRealmAuthenticationFlowsId = (
@@ -2370,8 +328,6 @@ export const putAdminRealmsRealmAuthenticationFlowsId = (
     id: string,
     authenticationFlowRepresentation: AuthenticationFlowRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -2379,959 +335,89 @@ export const putAdminRealmsRealmAuthenticationFlowsId = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmAuthenticationFlowsIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string;data: AuthenticationFlowRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string;data: AuthenticationFlowRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmAuthenticationFlowsId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>, {realm: string;id: string;data: AuthenticationFlowRepresentation}> = (props) => {
-          const {realm,id,data} = props ?? {};
-
-          return  putAdminRealmsRealmAuthenticationFlowsId(realm,id,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmAuthenticationFlowsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>>
-    export type PutAdminRealmsRealmAuthenticationFlowsIdMutationBody = AuthenticationFlowRepresentation
-    export type PutAdminRealmsRealmAuthenticationFlowsIdMutationError = unknown
-
-    /**
- * @summary Update an authentication flow
- */
-export const usePutAdminRealmsRealmAuthenticationFlowsId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string;data: AuthenticationFlowRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>,
-        TError,
-        {realm: string;id: string;data: AuthenticationFlowRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmAuthenticationFlowsIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete an authentication flow
  */
 export const deleteAdminRealmsRealmAuthenticationFlowsId = (
     realm: string,
     id: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/flows/${id}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAuthenticationFlowsIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAuthenticationFlowsId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>, {realm: string;id: string}> = (props) => {
-          const {realm,id} = props ?? {};
-
-          return  deleteAdminRealmsRealmAuthenticationFlowsId(realm,id,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAuthenticationFlowsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>>
-    
-    export type DeleteAdminRealmsRealmAuthenticationFlowsIdMutationError = unknown
-
-    /**
- * @summary Delete an authentication flow
- */
-export const useDeleteAdminRealmsRealmAuthenticationFlowsId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>, TError,{realm: string;id: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>,
-        TError,
-        {realm: string;id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAuthenticationFlowsIdMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get form action providers Returns a stream of form action providers.
  */
 export const getAdminRealmsRealmAuthenticationFormActionProviders = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationFormActionProviders200Item[]>(
-      {url: `/admin/realms/${realm}/authentication/form-action-providers`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/form-action-providers`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationFormActionProvidersQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/form-action-providers`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationFormActionProvidersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFormActionProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFormActionProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFormActionProvidersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>
-export type GetAdminRealmsRealmAuthenticationFormActionProvidersInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFormActionProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormActionProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormActionProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get form action providers Returns a stream of form action providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFormActionProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFormActionProvidersInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationFormActionProvidersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFormActionProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFormActionProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFormActionProvidersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>
-export type GetAdminRealmsRealmAuthenticationFormActionProvidersQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFormActionProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormActionProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormActionProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get form action providers Returns a stream of form action providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFormActionProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFormActionProvidersQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get form providers Returns a stream of form providers.
  */
 export const getAdminRealmsRealmAuthenticationFormProviders = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationFormProviders200Item[]>(
-      {url: `/admin/realms/${realm}/authentication/form-providers`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/form-providers`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationFormProvidersQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/form-providers`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationFormProvidersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFormProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFormProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFormProvidersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>
-export type GetAdminRealmsRealmAuthenticationFormProvidersInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFormProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get form providers Returns a stream of form providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFormProvidersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFormProvidersInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationFormProvidersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationFormProvidersQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>> = ({ signal }) => getAdminRealmsRealmAuthenticationFormProviders(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationFormProvidersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>
-export type GetAdminRealmsRealmAuthenticationFormProvidersQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationFormProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationFormProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get form providers Returns a stream of form providers.
- */
-
-export function useGetAdminRealmsRealmAuthenticationFormProviders<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationFormProvidersQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get configuration descriptions for all clients
  */
 export const getAdminRealmsRealmAuthenticationPerClientConfigDescription = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationPerClientConfigDescription200>(
-      {url: `/admin/realms/${realm}/authentication/per-client-config-description`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/per-client-config-description`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/per-client-config-description`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>> = ({ signal }) => getAdminRealmsRealmAuthenticationPerClientConfigDescription(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>
-export type GetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get configuration descriptions for all clients
- */
-
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>> = ({ signal }) => getAdminRealmsRealmAuthenticationPerClientConfigDescription(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>
-export type GetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get configuration descriptions for all clients
- */
-
-export function useGetAdminRealmsRealmAuthenticationPerClientConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationPerClientConfigDescriptionQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Register a new required actions
  */
 export const postAdminRealmsRealmAuthenticationRegisterRequiredAction = (
     realm: string,
     postAdminRealmsRealmAuthenticationRegisterRequiredActionBody: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/register-required-action`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAdminRealmsRealmAuthenticationRegisterRequiredActionBody, signal
+      data: postAdminRealmsRealmAuthenticationRegisterRequiredActionBody
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationRegisterRequiredActionMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>, TError,{realm: string;data: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>, TError,{realm: string;data: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationRegisterRequiredAction'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>, {realm: string;data: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody}> = (props) => {
-          const {realm,data} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationRegisterRequiredAction(realm,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationRegisterRequiredActionMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>>
-    export type PostAdminRealmsRealmAuthenticationRegisterRequiredActionMutationBody = PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody
-    export type PostAdminRealmsRealmAuthenticationRegisterRequiredActionMutationError = unknown
-
-    /**
- * @summary Register a new required actions
- */
-export const usePostAdminRealmsRealmAuthenticationRegisterRequiredAction = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>, TError,{realm: string;data: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>,
-        TError,
-        {realm: string;data: PostAdminRealmsRealmAuthenticationRegisterRequiredActionBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationRegisterRequiredActionMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get required actions Returns a stream of required actions.
  */
 export const getAdminRealmsRealmAuthenticationRequiredActions = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RequiredActionProviderRepresentation[]>(
-      {url: `/admin/realms/${realm}/authentication/required-actions`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/required-actions`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActions(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get required actions Returns a stream of required actions.
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActions(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get required actions Returns a stream of required actions.
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get required action for alias
  */
 export const getAdminRealmsRealmAuthenticationRequiredActionsAlias = (
     realm: string,
     alias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RequiredActionProviderRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryKey = (realm: string,
-    alias: string,) => {
-    return [`/admin/realms/${realm}/authentication/required-actions/${alias}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAlias(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get required action for alias
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasInfiniteQueryOptions(realm,alias,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAlias(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAlias<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAlias<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAlias<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get required action for alias
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAlias<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasQueryOptions(realm,alias,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update required action
  */
 export const putAdminRealmsRealmAuthenticationRequiredActionsAlias = (
@@ -3339,8 +425,6 @@ export const putAdminRealmsRealmAuthenticationRequiredActionsAlias = (
     alias: string,
     requiredActionProviderRepresentation: RequiredActionProviderRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/required-actions/${alias}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -3348,282 +432,31 @@ export const putAdminRealmsRealmAuthenticationRequiredActionsAlias = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmAuthenticationRequiredActionsAliasMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string;data: RequiredActionProviderRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string;data: RequiredActionProviderRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmAuthenticationRequiredActionsAlias'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>, {realm: string;alias: string;data: RequiredActionProviderRepresentation}> = (props) => {
-          const {realm,alias,data} = props ?? {};
-
-          return  putAdminRealmsRealmAuthenticationRequiredActionsAlias(realm,alias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasMutationBody = RequiredActionProviderRepresentation
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasMutationError = unknown
-
-    /**
- * @summary Update required action
- */
-export const usePutAdminRealmsRealmAuthenticationRequiredActionsAlias = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string;data: RequiredActionProviderRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-        TError,
-        {realm: string;alias: string;data: RequiredActionProviderRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmAuthenticationRequiredActionsAliasMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete required action
  */
 export const deleteAdminRealmsRealmAuthenticationRequiredActionsAlias = (
     realm: string,
     alias: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/required-actions/${alias}`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAuthenticationRequiredActionsAliasMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAuthenticationRequiredActionsAlias'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>, {realm: string;alias: string}> = (props) => {
-          const {realm,alias} = props ?? {};
-
-          return  deleteAdminRealmsRealmAuthenticationRequiredActionsAlias(realm,alias,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
-    
-    export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasMutationError = unknown
-
-    /**
- * @summary Delete required action
- */
-export const useDeleteAdminRealmsRealmAuthenticationRequiredActionsAlias = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>,
-        TError,
-        {realm: string;alias: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAuthenticationRequiredActionsAliasMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get RequiredAction configuration
  */
 export const getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = (
     realm: string,
     alias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RequiredActionConfigRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryKey = (realm: string,
-    alias: string,) => {
-    return [`/admin/realms/${realm}/authentication/required-actions/${alias}/config`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get RequiredAction configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigInfiniteQueryOptions(realm,alias,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfig<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfig<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfig<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get RequiredAction configuration
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfig<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigQueryOptions(realm,alias,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Update RequiredAction configuration
  */
 export const putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = (
@@ -3631,8 +464,6 @@ export const putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = (
     alias: string,
     requiredActionConfigRepresentation: RequiredActionConfigRepresentation,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
@@ -3640,557 +471,101 @@ export const putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = (
     },
       options);
     }
-  
-
-
-export const getPutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string;data: RequiredActionConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string;data: RequiredActionConfigRepresentation}, TContext> => {
-    
-const mutationKey = ['putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, {realm: string;alias: string;data: RequiredActionConfigRepresentation}> = (props) => {
-          const {realm,alias,data} = props ?? {};
-
-          return  putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig(realm,alias,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationBody = RequiredActionConfigRepresentation
-    export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationError = unknown
-
-    /**
- * @summary Update RequiredAction configuration
- */
-export const usePutAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string;data: RequiredActionConfigRepresentation}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-        TError,
-        {realm: string;alias: string;data: RequiredActionConfigRepresentation},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Delete RequiredAction configuration
  */
 export const deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = (
     realm: string,
     alias: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
-      
-      
       return keycloakServiceMutator<void>(
       {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config`, method: 'DELETE'
     },
       options);
     }
-  
-
-
-export const getDeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string}, TContext> => {
-    
-const mutationKey = ['deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, {realm: string;alias: string}> = (props) => {
-          const {realm,alias} = props ?? {};
-
-          return  deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig(realm,alias,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
-    
-    export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationError = unknown
-
-    /**
- * @summary Delete RequiredAction configuration
- */
-export const useDeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>,
-        TError,
-        {realm: string;alias: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfigMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get RequiredAction provider configuration description
  */
 export const getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription = (
     realm: string,
     alias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RequiredActionConfigInfoRepresentation>(
-      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config-description`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/config-description`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryKey = (realm: string,
-    alias: string,) => {
-    return [`/admin/realms/${realm}/authentication/required-actions/${alias}/config-description`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get RequiredAction provider configuration description
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionInfiniteQueryOptions(realm,alias,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError = unknown>(realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryKey(realm,alias);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>> = ({ signal }) => getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription(realm,alias, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && alias),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>
-export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError = unknown>(
- realm: string,
-    alias: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get RequiredAction provider configuration description
- */
-
-export function useGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError = unknown>(
- realm: string,
-    alias: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionQueryOptions(realm,alias,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Lower required action's priority
  */
 export const postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority = (
     realm: string,
     alias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
-      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/lower-priority`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/lower-priority`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriorityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>, TError,{realm: string;alias: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>, {realm: string;alias: string}> = (props) => {
-          const {realm,alias} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority(realm,alias,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriorityMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>>
-    
-    export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriorityMutationError = unknown
-
-    /**
- * @summary Lower required action's priority
- */
-export const usePostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>,
-        TError,
-        {realm: string;alias: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriorityMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Raise required action's priority
  */
 export const postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority = (
     realm: string,
     alias: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<void>(
-      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/raise-priority`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/authentication/required-actions/${alias}/raise-priority`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriorityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>, TError,{realm: string;alias: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>, {realm: string;alias: string}> = (props) => {
-          const {realm,alias} = props ?? {};
-
-          return  postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority(realm,alias,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>>
-    
-    export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriorityMutationError = unknown
-
-    /**
- * @summary Raise required action's priority
- */
-export const usePostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>, TError,{realm: string;alias: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>,
-        TError,
-        {realm: string;alias: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriorityMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Get unregistered required actions Returns a stream of unregistered required actions.
  */
 export const getAdminRealmsRealmAuthenticationUnregisteredRequiredActions = (
     realm: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<GetAdminRealmsRealmAuthenticationUnregisteredRequiredActions200Item[]>(
-      {url: `/admin/realms/${realm}/authentication/unregistered-required-actions`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/authentication/unregistered-required-actions`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryKey = (realm: string,) => {
-    return [`/admin/realms/${realm}/authentication/unregistered-required-actions`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>, TError = unknown>(realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationUnregisteredRequiredActions(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>
-export type GetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>, TError = unknown>(
- realm: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get unregistered required actions Returns a stream of unregistered required actions.
- */
-
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsInfiniteQueryOptions(realm,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError = unknown>(realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryKey(realm);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>> = ({ signal }) => getAdminRealmsRealmAuthenticationUnregisteredRequiredActions(realm, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>
-export type GetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryError = unknown
-
-
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError = unknown>(
- realm: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get unregistered required actions Returns a stream of unregistered required actions.
- */
-
-export function useGetAdminRealmsRealmAuthenticationUnregisteredRequiredActions<TData = Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError = unknown>(
- realm: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsQueryOptions(realm,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
+  export type GetAdminRealmsRealmAuthenticationAuthenticatorProvidersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationAuthenticatorProviders>>>
+export type GetAdminRealmsRealmAuthenticationClientAuthenticatorProvidersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationClientAuthenticatorProviders>>>
+export type PostAdminRealmsRealmAuthenticationConfigResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationConfig>>>
+export type GetAdminRealmsRealmAuthenticationConfigDescriptionProviderIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigDescriptionProviderId>>>
+export type GetAdminRealmsRealmAuthenticationConfigIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationConfigId>>>
+export type PutAdminRealmsRealmAuthenticationConfigIdResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationConfigId>>>
+export type DeleteAdminRealmsRealmAuthenticationConfigIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationConfigId>>>
+export type PostAdminRealmsRealmAuthenticationExecutionsResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutions>>>
+export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionId>>>
+export type DeleteAdminRealmsRealmAuthenticationExecutionsExecutionIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationExecutionsExecutionId>>>
+export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdConfig>>>
+export type GetAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationExecutionsExecutionIdConfigId>>>
+export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriorityResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdLowerPriority>>>
+export type PostAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriorityResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationExecutionsExecutionIdRaisePriority>>>
+export type GetAdminRealmsRealmAuthenticationFlowsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlows>>>
+export type PostAdminRealmsRealmAuthenticationFlowsResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlows>>>
+export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasCopyResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasCopy>>>
+export type GetAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>
+export type PutAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsFlowAliasExecutions>>>
+export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecutionResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsExecution>>>
+export type PostAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlowResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationFlowsFlowAliasExecutionsFlow>>>
+export type GetAdminRealmsRealmAuthenticationFlowsIdResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFlowsId>>>
+export type PutAdminRealmsRealmAuthenticationFlowsIdResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationFlowsId>>>
+export type DeleteAdminRealmsRealmAuthenticationFlowsIdResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationFlowsId>>>
+export type GetAdminRealmsRealmAuthenticationFormActionProvidersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormActionProviders>>>
+export type GetAdminRealmsRealmAuthenticationFormProvidersResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationFormProviders>>>
+export type GetAdminRealmsRealmAuthenticationPerClientConfigDescriptionResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationPerClientConfigDescription>>>
+export type PostAdminRealmsRealmAuthenticationRegisterRequiredActionResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRegisterRequiredAction>>>
+export type GetAdminRealmsRealmAuthenticationRequiredActionsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActions>>>
+export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
+export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
+export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAlias>>>
+export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
+export type PutAdminRealmsRealmAuthenticationRequiredActionsAliasConfigResult = NonNullable<Awaited<ReturnType<typeof putAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
+export type DeleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfigResult = NonNullable<Awaited<ReturnType<typeof deleteAdminRealmsRealmAuthenticationRequiredActionsAliasConfig>>>
+export type GetAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescriptionResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationRequiredActionsAliasConfigDescription>>>
+export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriorityResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasLowerPriority>>>
+export type PostAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriorityResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmAuthenticationRequiredActionsAliasRaisePriority>>>
+export type GetAdminRealmsRealmAuthenticationUnregisteredRequiredActionsResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmAuthenticationUnregisteredRequiredActions>>>

@@ -5,30 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
-  DefinedUseQueryResult,
-  InfiniteData,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   CertificateRepresentation,
   KeyStoreConfig
@@ -40,185 +16,20 @@ import { keycloakServiceMutator } from '../../../../services/keycloak-service/se
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
-/**
+  /**
  * @summary Get key info
  */
 export const getAdminRealmsRealmClientsClientUuidCertificatesAttr = (
     realm: string,
     clientUuid: string,
     attr: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<CertificateRepresentation>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}`, method: 'GET', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}`, method: 'GET'
     },
       options);
     }
-  
-
-export const getGetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryKey = (realm: string,
-    clientUuid: string,
-    attr: string,) => {
-    return [`/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}`] as const;
-    }
-
-    
-export const getGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>, TError = unknown>(realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryKey(realm,clientUuid,attr);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidCertificatesAttr(realm,clientUuid,attr, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && attr),  staleTime: 5000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidCertificatesAttrInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>
-export type GetAdminRealmsRealmClientsClientUuidCertificatesAttrInfiniteQueryError = unknown
-
-
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get key info
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidCertificatesAttrInfiniteQueryOptions(realm,clientUuid,attr,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-export const getGetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError = unknown>(realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryKey(realm,clientUuid,attr);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>> = ({ signal }) => getAdminRealmsRealmClientsClientUuidCertificatesAttr(realm,clientUuid,attr, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(realm && clientUuid && attr),  staleTime: 5000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>
-export type GetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryError = unknown
-
-
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttr<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttr<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttr<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get key info
- */
-
-export function useGetAdminRealmsRealmClientsClientUuidCertificatesAttr<TData = Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError = unknown>(
- realm: string,
-    clientUuid: string,
-    attr: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>, TError, TData>>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAdminRealmsRealmClientsClientUuidCertificatesAttrQueryOptions(realm,clientUuid,attr,options)
-
-  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-/**
+  /**
  * @summary Get a keystore file for the client, containing private key and public certificate
  */
 export const postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload = (
@@ -226,131 +37,29 @@ export const postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload = (
     clientUuid: string,
     attr: string,
     keyStoreConfig: KeyStoreConfig,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<Blob>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/download`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: keyStoreConfig,
-        responseType: 'blob', signal
+        responseType: 'blob'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>, {realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}> = (props) => {
-          const {realm,clientUuid,attr,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload(realm,clientUuid,attr,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>>
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadMutationBody = KeyStoreConfig
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadMutationError = unknown
-
-    /**
- * @summary Get a keystore file for the client, containing private key and public certificate
- */
-export const usePostAdminRealmsRealmClientsClientUuidCertificatesAttrDownload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>,
-        TError,
-        {realm: string;clientUuid: string;attr: string;data: KeyStoreConfig},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Generate a new certificate with new key pair
  */
 export const postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate = (
     realm: string,
     clientUuid: string,
     attr: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<CertificateRepresentation>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/generate`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/generate`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>, {realm: string;clientUuid: string;attr: string}> = (props) => {
-          const {realm,clientUuid,attr} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate(realm,clientUuid,attr,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>>
-    
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateMutationError = unknown
-
-    /**
- * @summary Generate a new certificate with new key pair
- */
-export const usePostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>,
-        TError,
-        {realm: string;clientUuid: string;attr: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Generate a new keypair and certificate, and get the private key file
 
 Generates a keypair and certificate and serves the private key in a specified keystore format.
@@ -361,195 +70,44 @@ export const postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDow
     clientUuid: string,
     attr: string,
     keyStoreConfig: KeyStoreConfig,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<Blob>(
       {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/generate-and-download`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: keyStoreConfig,
-        responseType: 'blob', signal
+        responseType: 'blob'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>, {realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}> = (props) => {
-          const {realm,clientUuid,attr,data} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload(realm,clientUuid,attr,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>>
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadMutationBody = KeyStoreConfig
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadMutationError = unknown
-
-    /**
- * @summary Generate a new keypair and certificate, and get the private key file
-
-Generates a keypair and certificate and serves the private key in a specified keystore format.
-Only generated public certificate is saved in Keycloak DB - the private key is not.
- */
-export const usePostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>, TError,{realm: string;clientUuid: string;attr: string;data: KeyStoreConfig}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>,
-        TError,
-        {realm: string;clientUuid: string;attr: string;data: KeyStoreConfig},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Upload certificate and eventually private key
  */
 export const postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload = (
     realm: string,
     clientUuid: string,
     attr: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<CertificateRepresentation>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/upload`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/upload`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>, TError,{realm: string;clientUuid: string;attr: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>, {realm: string;clientUuid: string;attr: string}> = (props) => {
-          const {realm,clientUuid,attr} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload(realm,clientUuid,attr,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>>
-    
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadMutationError = unknown
-
-    /**
- * @summary Upload certificate and eventually private key
- */
-export const usePostAdminRealmsRealmClientsClientUuidCertificatesAttrUpload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>,
-        TError,
-        {realm: string;clientUuid: string;attr: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    /**
+  /**
  * @summary Upload only certificate, not private key
  */
 export const postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate = (
     realm: string,
     clientUuid: string,
     attr: string,
- options?: SecondParameter<typeof keycloakServiceMutator>,signal?: AbortSignal
-) => {
-      
-      
+ options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<CertificateRepresentation>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/upload-certificate`, method: 'POST', signal
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/certificates/${attr}/upload-certificate`, method: 'POST'
     },
       options);
     }
-  
-
-
-export const getPostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificateMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext> => {
-    
-const mutationKey = ['postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>, {realm: string;clientUuid: string;attr: string}> = (props) => {
-          const {realm,clientUuid,attr} = props ?? {};
-
-          return  postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate(realm,clientUuid,attr,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificateMutationResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>>
-    
-    export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificateMutationError = unknown
-
-    /**
- * @summary Upload only certificate, not private key
- */
-export const usePostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>, TError,{realm: string;clientUuid: string;attr: string}, TContext>, request?: SecondParameter<typeof keycloakServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>,
-        TError,
-        {realm: string;clientUuid: string;attr: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificateMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    
+  export type GetAdminRealmsRealmClientsClientUuidCertificatesAttrResult = NonNullable<Awaited<ReturnType<typeof getAdminRealmsRealmClientsClientUuidCertificatesAttr>>>
+export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrDownloadResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrDownload>>>
+export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerate>>>
+export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownloadResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrGenerateAndDownload>>>
+export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUpload>>>
+export type PostAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificateResult = NonNullable<Awaited<ReturnType<typeof postAdminRealmsRealmClientsClientUuidCertificatesAttrUploadCertificate>>>
