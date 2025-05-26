@@ -1,6 +1,6 @@
 /**
  * Updated User Management Service
- * Uses Next.js API routes to avoid CORS issues with Keycloak Admin API
+ * Uses the unified Keycloak admin service with generated endpoints for type safety
  */
 
 import type {
@@ -17,8 +17,16 @@ import type {
   RoleRepresentation,
   GroupRepresentation,
   MemberRepresentation,
+  UserRepresentation,
 } from '@/core/api/generated/keycloak';
 
+/**
+ * Unified User Management Service
+ * 
+ * This service provides a high-level API for user management operations
+ * while leveraging the unified Keycloak admin client and generated endpoints
+ * for type safety and consistency.
+ */
 export class UserManagementService {
   private baseUrl: string;
 
@@ -49,9 +57,26 @@ export class UserManagementService {
 
       const members: MemberRepresentation[] = await response.json();
 
+      // Transform MemberRepresentation to OrganizationUser
       const users: OrganizationUser[] = members.map((member) => ({
-        ...member,
+        id: member.id,
+        username: member.username,
+        email: member.email,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        enabled: member.enabled,
+        emailVerified: member.emailVerified,
+        createdTimestamp: member.createdTimestamp,
         organizationId,
+        assignedRoles: [], // Will be populated when fetching details
+        assignedGroups: [], // Will be populated when fetching details
+        attributes: member.attributes,
+        access: member.access,
+        // Map member-specific fields
+        membershipType: member.membershipType,
+        roles: member.roles,
+        applicationRoles: member.applicationRoles,
+        clientRoles: member.clientRoles,
       }));
 
       return {
@@ -68,7 +93,7 @@ export class UserManagementService {
 
   async getUserDetails(organizationId: string, userId: string): Promise<UserDetailData> {
     try {
-      // Get user details
+      // Get user details from our API route (which uses generated endpoints)
       const response = await fetch(`${this.baseUrl}/users/${userId}`);
 
       if (!response.ok) {
@@ -84,18 +109,19 @@ export class UserManagementService {
         this.getAvailableGroups()
       ]);
 
+      // Transform UserRepresentation to OrganizationUser
       const organizationUser: OrganizationUser = {
         ...data.user,
         organizationId,
-        assignedRoles: data.assignedRealmRoles,
-        assignedGroups: data.assignedGroups,
+        assignedRoles: data.assignedRealmRoles || [],
+        assignedGroups: data.assignedGroups || [],
       };
 
       return {
         user: organizationUser,
-        assignedRealmRoles: data.assignedRealmRoles,
+        assignedRealmRoles: data.assignedRealmRoles || [],
         assignedClientRoles: {},
-        assignedGroups: data.assignedGroups,
+        assignedGroups: data.assignedGroups || [],
         availableRealmRoles: availableRoles,
         availableClientRoles: {},
         availableGroups: availableGroups,
@@ -188,7 +214,7 @@ export class UserManagementService {
     }
   }
 
-  // Available Options
+  // Available Options with Type Safety
   async getAvailableRealmRoles(): Promise<RoleRepresentation[]> {
     try {
       const response = await fetch(`${this.baseUrl}/roles`);
@@ -198,7 +224,8 @@ export class UserManagementService {
         throw new Error(error.error || 'Failed to fetch available roles');
       }
 
-      return await response.json();
+      const roles: RoleRepresentation[] = await response.json();
+      return roles;
     } catch (error) {
       console.error('Failed to fetch available realm roles:', error);
       throw new Error('Failed to fetch available realm roles');
@@ -214,21 +241,59 @@ export class UserManagementService {
         throw new Error(error.error || 'Failed to fetch available groups');
       }
 
-      return await response.json();
+      const groups: GroupRepresentation[] = await response.json();
+      return groups;
     } catch (error) {
       console.error('Failed to fetch available groups:', error);
       throw new Error('Failed to fetch available groups');
     }
   }
 
-  // Placeholder methods for compatibility
+  // Enhanced methods with better error handling and type safety
+  async updateUser(userId: string, userData: Partial<UserRepresentation>): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update user');
+      }
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      throw new Error('Failed to update user');
+    }
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      throw new Error('Failed to delete user');
+    }
+  }
+
+  // Placeholder methods for future implementation
   async inviteExistingUser(organizationId: string, userId: string): Promise<void> {
-    // This would require additional implementation
+    // TODO: Implement when organization membership endpoints are available
     throw new Error('Invite existing user not implemented yet');
   }
 
   async removeUserFromOrganization(organizationId: string, userId: string): Promise<void> {
-    // This would require additional implementation
+    // TODO: Implement when organization membership endpoints are available
     throw new Error('Remove user from organization not implemented yet');
   }
 
@@ -238,13 +303,13 @@ export class UserManagementService {
     roles: RoleRepresentation[],
     action: 'assign' | 'unassign'
   ): Promise<void> {
-    // This would require additional implementation
+    // TODO: Implement when client role endpoints are added to API routes
     throw new Error('Client role assignment not implemented yet');
   }
 
   async getUserAvailableRealmRoles(userId: string): Promise<RoleRepresentation[]> {
+    // TODO: Implement to get roles not assigned to user
     // For now, return all roles minus assigned ones
-    // This would require additional API implementation
     return this.getAvailableRealmRoles();
   }
 
@@ -252,7 +317,7 @@ export class UserManagementService {
     userId: string,
     clientId: string
   ): Promise<RoleRepresentation[]> {
-    // This would require additional implementation
+    // TODO: Implement when client role endpoints are available
     return [];
   }
 }

@@ -1,0 +1,1814 @@
+{
+  "roles": {
+    "realm": [
+      {
+        "id": "3fbc5114-0b89-4881-9b99-503300859505",
+        "name": "area:create",
+        "description": "Permission to create Area records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Area"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "3ab35e25-f104-439f-a2f0-a2322c3a63ac",
+        "name": "area:read",
+        "description": "Permission to read Area records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Area"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "46e3c4a0-d1ba-4632-8d23-45458d7767d2",
+        "name": "area:update",
+        "description": "Permission to update Area records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Area"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "70aa2ada-d227-4f09-8726-a063a1d7156b",
+        "name": "area:delete",
+        "description": "Permission to delete Area records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Area"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ecedbb12-00fe-4a73-a69b-4305714a2b05",
+        "name": "area:admin",
+        "description": "Full administrative access to Area records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "area:create",
+            "area:read",
+            "area:update",
+            "area:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Area"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "d1da701c-00ab-4544-908e-c6940051e004",
+        "name": "call:create",
+        "description": "Permission to create Call records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Call"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "7f3f0a43-459a-4d5c-8400-0e3c5fac0927",
+        "name": "call:read",
+        "description": "Permission to read Call records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Call"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "3b1fabe1-072d-49ea-af0b-b880c891439b",
+        "name": "call:update",
+        "description": "Permission to update Call records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Call"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "5e70c548-305c-41e4-96f3-436bc0c0caca",
+        "name": "call:delete",
+        "description": "Permission to delete Call records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Call"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ba390ea4-2c25-4ede-ad14-d3c04404c768",
+        "name": "call:admin",
+        "description": "Full administrative access to Call records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "call:create",
+            "call:read",
+            "call:update",
+            "call:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Call"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "f54aa178-96d2-4d2d-939f-26ab74be2c1a",
+        "name": "callCategory:create",
+        "description": "Permission to create CallCategory records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallCategory"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "e2ba13df-43fa-499a-ada0-25e5c799c184",
+        "name": "callCategory:read",
+        "description": "Permission to read CallCategory records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallCategory"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "f8e87b3f-c1cd-48d2-9fd7-d04c64edc47e",
+        "name": "callCategory:update",
+        "description": "Permission to update CallCategory records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallCategory"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "5f33da8a-b223-40e5-9e85-5246abced720",
+        "name": "callCategory:delete",
+        "description": "Permission to delete CallCategory records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallCategory"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "8797bc64-f108-411e-bc83-aaecff0085ce",
+        "name": "callCategory:admin",
+        "description": "Full administrative access to CallCategory records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "callCategory:create",
+            "callCategory:read",
+            "callCategory:update",
+            "callCategory:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "CallCategory"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "9965c91c-0e3c-4a46-bf00-b4256b48a9e1",
+        "name": "callRemark:create",
+        "description": "Permission to create CallRemark records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallRemark"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "d6b1c932-1b49-4a06-baf1-f72cc75688eb",
+        "name": "callRemark:read",
+        "description": "Permission to read CallRemark records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallRemark"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "a8b0b686-dc3f-474d-ac48-391dd5d83e8f",
+        "name": "callRemark:update",
+        "description": "Permission to update CallRemark records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallRemark"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "8f52035a-fdbc-4d89-a819-b255712fc899",
+        "name": "callRemark:delete",
+        "description": "Permission to delete CallRemark records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallRemark"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "7bc7c65f-5f22-4197-9e60-87dfabe47d2b",
+        "name": "callRemark:admin",
+        "description": "Full administrative access to CallRemark records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "callRemark:create",
+            "callRemark:read",
+            "callRemark:update",
+            "callRemark:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "CallRemark"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "e1016994-6270-4df6-bc09-a8399d6f4f91",
+        "name": "callStatus:create",
+        "description": "Permission to create CallStatus records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallStatus"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "b5284d1a-b7a0-4974-9a33-6729317d1d90",
+        "name": "callStatus:read",
+        "description": "Permission to read CallStatus records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallStatus"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "cdf691ea-a25b-4c0b-bd8c-c2c40a1a3a71",
+        "name": "callStatus:update",
+        "description": "Permission to update CallStatus records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallStatus"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "1b6bff7c-8e30-4912-81eb-929d8ca4a4e6",
+        "name": "callStatus:delete",
+        "description": "Permission to delete CallStatus records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallStatus"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "9db686b2-d5a7-4aa0-bcc7-16a800624fc4",
+        "name": "callStatus:admin",
+        "description": "Full administrative access to CallStatus records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "callStatus:create",
+            "callStatus:read",
+            "callStatus:update",
+            "callStatus:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "CallStatus"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "1699d54f-bd86-48a9-9849-a619b8178772",
+        "name": "callType:create",
+        "description": "Permission to create CallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallType"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "efd46424-e4d1-4d1b-9011-cfc6f93bdde6",
+        "name": "callType:read",
+        "description": "Permission to read CallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallType"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ae380312-b085-4a78-8987-9ad81a2c434f",
+        "name": "callType:update",
+        "description": "Permission to update CallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallType"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "4aefd09c-a732-47d8-89ca-d4380541c59b",
+        "name": "callType:delete",
+        "description": "Permission to delete CallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "CallType"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "a65a5931-3fc0-4f82-af06-2c50bcc11a5a",
+        "name": "callType:admin",
+        "description": "Full administrative access to CallType records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "callType:create",
+            "callType:read",
+            "callType:update",
+            "callType:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "CallType"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "3d23d615-59dc-4a1e-aef7-4db4ba5064a4",
+        "name": "channelType:create",
+        "description": "Permission to create ChannelType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "ChannelType"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ca9a235e-fdf4-491d-a54f-7c49cdfb88d5",
+        "name": "channelType:read",
+        "description": "Permission to read ChannelType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "ChannelType"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "fc2bbdd0-b301-43af-be74-955c39a5cd77",
+        "name": "channelType:update",
+        "description": "Permission to update ChannelType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "ChannelType"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ae3e15f9-c404-4799-8bbb-4f4e73173351",
+        "name": "channelType:delete",
+        "description": "Permission to delete ChannelType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "ChannelType"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "44e2d2c1-ac01-441e-a5c8-032de887fe3d",
+        "name": "channelType:admin",
+        "description": "Full administrative access to ChannelType records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "channelType:create",
+            "channelType:read",
+            "channelType:update",
+            "channelType:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "ChannelType"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "e9318efd-667c-45b2-be8c-2cae1312205c",
+        "name": "city:create",
+        "description": "Permission to create City records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "City"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "f7b63871-b091-4589-a2b5-79f441432887",
+        "name": "city:read",
+        "description": "Permission to read City records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "City"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "5676fd24-b886-4ad5-a11f-0851649472cc",
+        "name": "city:update",
+        "description": "Permission to update City records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "City"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "5749437c-6af8-4123-8630-41a84088abb8",
+        "name": "city:delete",
+        "description": "Permission to delete City records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "City"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "dc34135d-5cec-42c1-ad20-f07e42f647b9",
+        "name": "city:admin",
+        "description": "Full administrative access to City records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "city:create",
+            "city:read",
+            "city:update",
+            "city:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "City"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "0b571cb6-1e7f-4ff5-a454-dc3882f96c92",
+        "name": "district:create",
+        "description": "Permission to create District records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "District"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "117a25d6-f02b-4a3f-977d-42e2ba7cfc83",
+        "name": "district:read",
+        "description": "Permission to read District records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "District"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "cadb34f8-d66a-4a0b-b6d0-52041942a4ea",
+        "name": "district:update",
+        "description": "Permission to update District records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "District"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "bf6f2e49-1c63-44b9-bbe8-b5b51ec46d39",
+        "name": "district:delete",
+        "description": "Permission to delete District records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "District"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "0171f30d-5eba-4163-a00c-261d141e15f1",
+        "name": "district:admin",
+        "description": "Full administrative access to District records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "district:create",
+            "district:read",
+            "district:update",
+            "district:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "District"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "7246d814-96da-4881-bf5e-7437e534e806",
+        "name": "party:create",
+        "description": "Permission to create Party records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Party"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "4da0c05e-7acd-499c-9b2a-e59e4f245fe4",
+        "name": "party:read",
+        "description": "Permission to read Party records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Party"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "c40a3dad-339f-4058-a318-fe8edc35258d",
+        "name": "party:update",
+        "description": "Permission to update Party records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Party"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "edfdeaa5-786b-4cc2-9e82-268310f410a8",
+        "name": "party:delete",
+        "description": "Permission to delete Party records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Party"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "58f14b6b-e0f4-4c49-8f86-2125b0582198",
+        "name": "party:admin",
+        "description": "Full administrative access to Party records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "party:create",
+            "party:read",
+            "party:update",
+            "party:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Party"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "9e3eb54a-ccd1-4f48-a414-845429dc14ac",
+        "name": "priority:create",
+        "description": "Permission to create Priority records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Priority"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "654f4577-9fb4-433d-bef6-66172c89549d",
+        "name": "priority:read",
+        "description": "Permission to read Priority records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Priority"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "dd7b885c-2a62-4e0b-9c58-85deaa8444d8",
+        "name": "priority:update",
+        "description": "Permission to update Priority records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Priority"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "1dc1fdbe-6b2e-44f7-b3e5-dc39a182e83d",
+        "name": "priority:delete",
+        "description": "Permission to delete Priority records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Priority"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "be9ce755-3c2d-4e11-a6d1-3e088b6adf7f",
+        "name": "priority:admin",
+        "description": "Full administrative access to Priority records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "priority:create",
+            "priority:read",
+            "priority:update",
+            "priority:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Priority"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "bf0507b1-7b20-40a9-bfa3-9e76c51b6bab",
+        "name": "product:create",
+        "description": "Permission to create Product records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Product"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "6a27d6fb-c91f-4f32-a336-ae38a297713f",
+        "name": "product:read",
+        "description": "Permission to read Product records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Product"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ffe0a106-1d70-42d9-8f9a-5071f24d51d3",
+        "name": "product:update",
+        "description": "Permission to update Product records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Product"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "0428cb04-b7ed-4323-8802-6915caca55d8",
+        "name": "product:delete",
+        "description": "Permission to delete Product records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Product"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "78c5c78a-fc36-450a-8591-4b573eb0e36f",
+        "name": "product:admin",
+        "description": "Full administrative access to Product records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "product:create",
+            "product:read",
+            "product:update",
+            "product:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Product"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "9d396b3c-13d4-48c4-822d-6a660d223d85",
+        "name": "source:create",
+        "description": "Permission to create Source records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Source"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "8bf16fe4-9c54-4a42-85b8-e42e063ac412",
+        "name": "source:read",
+        "description": "Permission to read Source records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Source"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "1637ca99-14fe-4551-9e63-275360c630de",
+        "name": "source:update",
+        "description": "Permission to update Source records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Source"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "6611f5c6-a5db-4851-a18d-b42aad87de3f",
+        "name": "source:delete",
+        "description": "Permission to delete Source records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "Source"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "baa67f6f-3404-4be2-ae1f-f9efac6bb4dc",
+        "name": "source:admin",
+        "description": "Full administrative access to Source records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "source:create",
+            "source:read",
+            "source:update",
+            "source:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "Source"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "00876fcd-c8bb-48a9-9442-2fe9ad9d6b01",
+        "name": "state:create",
+        "description": "Permission to create State records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "State"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "27cdf447-2ae9-417d-9fcb-996001a001c2",
+        "name": "state:read",
+        "description": "Permission to read State records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "State"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "352ccf1b-6d89-47cf-9970-6c9cbd753dd7",
+        "name": "state:update",
+        "description": "Permission to update State records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "State"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "027c0354-ec6c-4d4c-86e7-2de328f968cc",
+        "name": "state:delete",
+        "description": "Permission to delete State records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "State"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "14975561-99ab-4e39-b782-4206b3eee59a",
+        "name": "state:admin",
+        "description": "Full administrative access to State records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "state:create",
+            "state:read",
+            "state:update",
+            "state:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "State"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "4dd5084c-b124-47cb-8a14-02601ce31a52",
+        "name": "subCallType:create",
+        "description": "Permission to create SubCallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "SubCallType"
+          ],
+          "action": [
+            "create"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "c653908b-6a56-4ed8-a671-7bdbf754e872",
+        "name": "subCallType:read",
+        "description": "Permission to read SubCallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "SubCallType"
+          ],
+          "action": [
+            "read"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "31609dac-b3f1-4e84-8e1a-2eaccc380d78",
+        "name": "subCallType:update",
+        "description": "Permission to update SubCallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "SubCallType"
+          ],
+          "action": [
+            "update"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "ffb3c3a1-26a1-4e07-b796-f6cf54aaaef0",
+        "name": "subCallType:delete",
+        "description": "Permission to delete SubCallType records",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "crm",
+        "attributes": {
+          "entity": [
+            "SubCallType"
+          ],
+          "action": [
+            "delete"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "cfad53ae-789e-41d0-8619-03a70bdeeb3b",
+        "name": "subCallType:admin",
+        "description": "Full administrative access to SubCallType records",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "subCallType:create",
+            "subCallType:read",
+            "subCallType:update",
+            "subCallType:delete"
+          ]
+        },
+        "attributes": {
+          "entity": [
+            "SubCallType"
+          ],
+          "action": [
+            "admin"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      },
+      {
+        "id": "2b1ad2c0-9989-4ae6-aa3a-8932306d2ed8",
+        "name": "system:superadmin",
+        "description": "Full administrative access to all system entities",
+        "composite": true,
+        "clientRole": false,
+        "containerId": "crm",
+        "composites": {
+          "realm": [
+            "area:admin",
+            "call:admin",
+            "callCategory:admin",
+            "callRemark:admin",
+            "callStatus:admin",
+            "callType:admin",
+            "channelType:admin",
+            "city:admin",
+            "district:admin",
+            "party:admin",
+            "priority:admin",
+            "product:admin",
+            "source:admin",
+            "state:admin",
+            "subCallType:admin"
+          ]
+        },
+        "attributes": {
+          "systemRole": [
+            "true"
+          ],
+          "generated": [
+            "true"
+          ],
+          "generatedAt": [
+            "2025-05-26T11:39:54.917Z"
+          ]
+        }
+      }
+    ]
+  }
+}

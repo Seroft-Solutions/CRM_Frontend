@@ -55,7 +55,9 @@ import {
   Mail,
   Shield,
   UserCheck,
-  Filter
+  Filter,
+  AlertCircle,
+  Building2
 } from 'lucide-react';
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from './UserAvatar';
@@ -70,7 +72,15 @@ interface OrganizationUsersProps {
 
 export function OrganizationUsers({ className }: OrganizationUsersProps) {
   const router = useRouter();
-  const { organizationId, organizationName } = useOrganizationContext();
+  const { 
+    organizationId, 
+    organizationName, 
+    isLoading: isLoadingOrg,
+    availableOrganizations,
+    hasMultipleOrganizations,
+    switchOrganization
+  } = useOrganizationContext();
+  
   const { removeUser, isRemoving } = useRemoveUser();
   const {
     selectedUsers,
@@ -89,7 +99,7 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
   });
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
 
-  // Fetch organization users
+  // Fetch organization users - only when we have an organization ID
   const { users, totalCount, isLoading, error, refetch } = useOrganizationUsers(
     organizationId,
     filters
@@ -148,12 +158,68 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
     return new Date(timestamp).toLocaleDateString();
   };
 
+  // Loading state for organization context
+  if (isLoadingOrg) {
+    return (
+      <Card className={className}>
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              Loading organization...
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // No organization available
+  if (!organizationId) {
+    return (
+      <Card className={className}>
+        <CardContent className="p-6">
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">No Organization Available</h3>
+              <p className="text-muted-foreground">
+                You don't appear to be associated with any organization, or organization data is not available in your session.
+              </p>
+            </div>
+            {availableOrganizations.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Available organizations:</p>
+                {availableOrganizations.map((org) => (
+                  <Button
+                    key={org.id}
+                    variant="outline"
+                    onClick={() => switchOrganization(org.id)}
+                    className="mr-2"
+                  >
+                    <Building2 className="h-4 w-4 mr-2" />
+                    {org.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (error) {
     return (
       <Card className={className}>
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             <p>Failed to load organization users</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Organization ID: {organizationId}
+            </p>
             <Button variant="outline" onClick={() => refetch()} className="mt-2">
               Try Again
             </Button>
@@ -173,8 +239,23 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
             <p className="text-muted-foreground">
               Manage users in {organizationName} ({totalCount} users)
             </p>
+            {hasMultipleOrganizations && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm text-muted-foreground">Switch organization:</span>
+                {availableOrganizations.map((org) => (
+                  <Button
+                    key={org.id}
+                    variant={org.id === organizationId ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => switchOrganization(org.id)}
+                  >
+                    {org.name}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
-          <Button onClick={handleInviteUsers} className="gap-2">
+          <Button onClick={handleInviteUsers} className="gap-2" disabled={!organizationId}>
             <Plus className="h-4 w-4" />
             Invite Users
           </Button>

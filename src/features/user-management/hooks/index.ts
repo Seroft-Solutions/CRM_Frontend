@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userManagementService } from '../services/user-management.service';
 import type {
@@ -229,43 +230,66 @@ export function useGroupAssignment() {
   };
 }
 
-// Hook for organization context (this would be customized based on your auth system)
+// Hook for organization context - Gets organization from NextAuth session
 export function useOrganizationContext() {
+  const { data: session, status } = useSession();
   const [organizationId, setOrganizationId] = useState<string>('');
   const [organizationName, setOrganizationName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get organization context from your auth system
-    // This should come from session, JWT token, or API call
-    // For now, using a more realistic approach
-    const getOrganizationContext = async () => {
-      try {
-        // In a real app, you'd get this from your session provider
-        // For now, we'll use a placeholder that won't cause issues
-        setOrganizationId('org-placeholder');
-        setOrganizationName('Your Organization');
-        
-        // TODO: Replace with actual implementation:
-        // const { session } = useAuth();
-        // if (session?.user?.organizations?.length > 0) {
-        //   setOrganizationId(session.user.organizations[0].id);
-        //   setOrganizationName(session.user.organizations[0].name);
-        // }
-      } catch (error) {
-        console.error('Failed to get organization context:', error);
-        // Set fallback values
-        setOrganizationId('default-org');
-        setOrganizationName('Default Organization');
-      }
-    };
+    if (status === 'loading') {
+      setIsLoading(true);
+      return;
+    }
 
-    getOrganizationContext();
-  }, []);
+    if (status === 'unauthenticated' || !session) {
+      setOrganizationId('');
+      setOrganizationName('');
+      setIsLoading(false);
+      return;
+    }
+
+    // Get organization from NextAuth session
+    if (session.user?.organizations && session.user.organizations.length > 0) {
+      const primaryOrg = session.user.organizations[0]; // Use first organization as primary
+      setOrganizationId(primaryOrg.id);
+      setOrganizationName(primaryOrg.name);
+      
+      console.log('Organization context loaded:', {
+        id: primaryOrg.id,
+        name: primaryOrg.name,
+        totalOrgs: session.user.organizations.length
+      });
+    } else {
+      // User has no organizations - this might be an admin user
+      console.warn('User has no organizations in session, using fallback');
+      setOrganizationId('');
+      setOrganizationName('No Organization');
+    }
+
+    setIsLoading(false);
+  }, [session, status]);
+
+  // Function to switch organization (if user has multiple)
+  const switchOrganization = useCallback((orgId: string) => {
+    if (session?.user?.organizations) {
+      const org = session.user.organizations.find(o => o.id === orgId);
+      if (org) {
+        setOrganizationId(org.id);
+        setOrganizationName(org.name);
+      }
+    }
+  }, [session]);
 
   return {
     organizationId,
     organizationName,
-    setOrganizationId,
+    isLoading,
+    availableOrganizations: session?.user?.organizations || [],
+    hasMultipleOrganizations: (session?.user?.organizations?.length || 0) > 1,
+    switchOrganization,
+    setOrganizationId, // Keep for backward compatibility
   };
 }
 
