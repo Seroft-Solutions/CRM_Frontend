@@ -1,0 +1,71 @@
+"use client";
+
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+<%
+const displayableRelationships = relationships.filter(rel => 
+  rel.relationshipType !== 'one-to-many' && 
+  !rel.collection && 
+  rel.otherEntityField
+);
+%>
+
+interface <%= entityClass %>TableHeaderProps {
+  onSort: (column: string) => void;
+  getSortIcon: (column: string) => string;
+}
+
+export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entityClass %>TableHeaderProps) {
+  const renderSortIcon = (column: string) => {
+    const iconType = getSortIcon(column);
+    switch (iconType) {
+      case "ChevronUp":
+        return <ChevronUp className="h-4 w-4" />;
+      case "ChevronDown":
+        return <ChevronDown className="h-4 w-4" />;
+      default:
+        return <ChevronsUpDown className="h-4 w-4" />;
+    }
+  };
+
+  return (
+    <TableHeader>
+      <TableRow>
+        <% for (field of fields) { %>
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("<%= field.fieldName %>")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            <%= field.fieldNameHumanized || field.fieldName %>
+            {renderSortIcon("<%= field.fieldName %>")}
+          </Button>
+        </TableHead>
+        <% } %>
+        <% 
+        for (const rel of displayableRelationships) { 
+          const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+        %>
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("<%= rel.relationshipName %>.<%=displayField%>")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            <%= rel.relationshipNameHumanized %>
+            {renderSortIcon("<%= rel.relationshipName %>.<%=displayField%>")}
+          </Button>
+        </TableHead>
+        <% } %>
+        <TableHead className="w-[120px] sticky right-0 bg-background px-4 py-3">Actions</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+}

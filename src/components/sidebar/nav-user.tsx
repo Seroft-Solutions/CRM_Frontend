@@ -3,13 +3,14 @@
 import {
   BadgeCheck,
   Bell,
+  Building,
   ChevronsUpDown,
   CreditCard,
   LogOut,
   Sparkles,
   User,
 } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { useOptimizedSession } from "@/providers/session-provider"
 
 import {
   Avatar,
@@ -35,7 +36,7 @@ import { handleLogout } from "@/utils/auth/logout"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { data: session, status } = useSession()
+  const { session, status } = useOptimizedSession()
   
   // Generate user initials for avatar fallback
   const getInitials = (name: string) => {
@@ -114,6 +115,45 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            
+            {/* Current Organization */}
+            {session?.user?.currentOrganization && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
+                    Current Organization
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem className="text-sm">
+                    <Building className="h-4 w-4 mr-2" />
+                    {session.user.currentOrganization.name}
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
+            
+            {/* All Organizations */}
+            {session?.user?.organizations?.length && session.user.organizations.length > 1 ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
+                    Organizations
+                  </DropdownMenuLabel>
+                  {session.user.organizations.map((org) => (
+                    <DropdownMenuItem key={org.id} className="text-sm">
+                      <Building className="h-4 w-4 mr-2" />
+                      <div className="flex flex-col">
+                        <span>{org.name}</span>
+                        <span className="text-xs text-muted-foreground">{org.id}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            ) : null}
+            
+            {/* Roles */}
             {session?.user?.roles?.length ? (
               <>
                 <DropdownMenuSeparator />
@@ -130,6 +170,7 @@ export function NavUser() {
                 </DropdownMenuGroup>
               </>
             ) : null}
+            
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>

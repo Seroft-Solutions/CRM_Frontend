@@ -1,0 +1,111 @@
+"use client";
+
+import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
+
+<%
+const displayableRelationships = relationships.filter(rel => 
+  rel.relationshipType !== 'one-to-many' && 
+  !rel.collection && 
+  rel.otherEntityField
+);
+%>
+
+interface <%= entityClass %>TableRowProps {
+  <%= entityInstance %>: <%= entityClass %>DTO;
+  onDelete: (id: number) => void;
+  isDeleting: boolean;
+}
+
+export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, isDeleting }: <%= entityClass %>TableRowProps) {
+  return (
+    <TableRow>
+      <% for (field of fields) { 
+           const fieldName = field.fieldName;
+           const fieldType = field.fieldType; %>
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        <% if (field.fieldTypeBoolean) { %>
+        {<%= entityInstance %>.<%= fieldName %> ? "Yes" : "No"}
+        <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
+        {<%= entityInstance %>.<%= fieldName %> ? format(new Date(<%= entityInstance %>.<%= fieldName %>), "PPP") : ""}
+        <% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
+        {<%= entityInstance %>.<%= fieldName %> ? (
+          <>
+            <% if (field.blobContentTypeImage) { %>
+            <img
+              src={`data:${<%= entityInstance %>.<%= fieldName %>ContentType};base64,${<%= entityInstance %>.<%= fieldName %>}`}
+              alt=""
+              className="max-h-8 rounded"
+            />
+            <% } else { %>
+            <span className="text-muted-foreground">Binary data</span>
+            <% } %>
+          </>
+        ) : ""}
+        <% } else if (field.fieldIsEnum) { %>
+        <Badge variant="secondary">{<%= entityInstance %>.<%= fieldName %>}</Badge>
+        <% } else { %>
+        {<%= entityInstance %>.<%= fieldName %>}
+        <% } %>
+      </TableCell>
+      <% } %>
+      <% for (const rel of displayableRelationships) { 
+           const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+           const relationshipFieldName = rel.relationshipFieldName;
+      %>
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        {<%= entityInstance %>.<%= relationshipFieldName %> ? 
+          <%= entityInstance %>.<%= relationshipFieldName %>.<%= displayField %> : ""}
+      </TableCell>
+      <% } %>
+      <TableCell className="sticky right-0 bg-background px-4 py-3">
+        <div className="flex items-center gap-1">
+          <InlinePermissionGuard requiredPermission="<%= entityInstance %>:read">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-8 w-8 p-0"
+            >
+              <Link href={`/<%= entityRoute %>/${<%= entityInstance %>.<%= primaryKey.name %>}`}>
+                <Eye className="h-4 w-4" />
+                <span className="sr-only">View</span>
+              </Link>
+            </Button>
+          </InlinePermissionGuard>
+          <InlinePermissionGuard requiredPermission="<%= entityInstance %>:update">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-8 w-8 p-0"
+            >
+              <Link href={`/<%= entityRoute %>/${<%= entityInstance %>.<%= primaryKey.name %>}/edit`}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Link>
+            </Button>
+          </InlinePermissionGuard>
+          <InlinePermissionGuard requiredPermission="<%= entityInstance %>:delete">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-destructive"
+              onClick={() => onDelete(<%= entityInstance %>.<%= primaryKey.name %>)}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Delete</span>
+            </Button>
+          </InlinePermissionGuard>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}

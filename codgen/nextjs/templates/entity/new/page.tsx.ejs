@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { <%= entityClass %>Form } from "../components/<%= entityFileName %>-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export const metadata = {
   title: "Create <%= entityClass %>",
@@ -30,25 +31,31 @@ export const metadata = {
 
 export default function Create<%= entityClass %>Page() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/<%= routePath %>">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to <%= entityClassPluralHumanized %>
-            </Link>
-          </Button>
-        </PageHeader>
-      </div>
+    <PermissionGuard 
+      requiredPermission="<%= entityInstance %>:create"
+      unauthorizedTitle="Access Denied to Create <%= entityClassHumanized %>"
+      unauthorizedDescription="You don't have permission to create new <%= entityClassHumanized.toLowerCase() %> records."
+    >
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <PageHeader>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/<%= routePath %>">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to <%= entityClassPluralHumanized %>
+              </Link>
+            </Button>
+          </PageHeader>
+        </div>
 
-      <div className="max-w-2xl">
-        <PageTitle>Create <%= entityClassHumanized %></PageTitle>
-        
-        <div className="mt-6">
-          <<%= entityClass %>Form />
+        <div className="max-w-2xl">
+          <PageTitle>Create <%= entityClassHumanized %></PageTitle>
+          
+          <div className="mt-6">
+            <<%= entityClass %>Form />
+          </div>
         </div>
       </div>
-    </div>
+    </PermissionGuard>
   );
 }
