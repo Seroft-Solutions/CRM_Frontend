@@ -8,7 +8,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useOptimizedSession } from "@/providers/session-provider";
+import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 
@@ -17,17 +17,17 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { session, status, isLoading } = useOptimizedSession();
+  const { data: session, status } = useSession();
 
   // Handle authentication redirect
   useEffect(() => {
-    if (!isLoading && status === "unauthenticated") {
+    if (status === "unauthenticated") {
       redirect("/login");
     }
-  }, [status, isLoading]);
+  }, [status]);
 
   // Show loading state while checking authentication
-  if (isLoading) {
+  if (status === "loading") {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center">

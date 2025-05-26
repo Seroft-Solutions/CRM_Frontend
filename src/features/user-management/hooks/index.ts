@@ -246,10 +246,10 @@ export function useOrganizationContext() {
         setOrganizationName('Your Organization');
         
         // TODO: Replace with actual implementation:
-        // const { session } = useOptimizedSession();
-        // if (session?.user?.currentOrganization) {
-        //   setOrganizationId(session.user.currentOrganization.id);
-        //   setOrganizationName(session.user.currentOrganization.name);
+        // const { session } = useAuth();
+        // if (session?.user?.organizations?.length > 0) {
+        //   setOrganizationId(session.user.organizations[0].id);
+        //   setOrganizationName(session.user.organizations[0].name);
         // }
       } catch (error) {
         console.error('Failed to get organization context:', error);
