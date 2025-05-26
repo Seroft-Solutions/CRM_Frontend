@@ -181,6 +181,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Fields from account object
             expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
             provider: account.provider,
+            id_token: account.id_token, // Persist id_token
             // Extracted and processed data
             roles: essentialRoles,
             organizations: organizationsArray, // Use the processed array
@@ -200,6 +201,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             sub: token.sub,
             email: token.email,
             name: token.name,
+            id_token: token.id_token, // Persist id_token
             roles: token.roles,
             organizations: token.organizations,
             expires_at: token.expires_at,
@@ -240,30 +242,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     }
-  },
-  
-  events: {
-    async signOut({ token }) {
-      if (token?.provider === "keycloak" && token?.access_token) {
-        const issuer = process.env.AUTH_KEYCLOAK_ISSUER;
-        if (!issuer) {
-          return;
-        }
-        
-        // Use access token to construct logout URL instead of id_token
-        const logoutUrl = `${issuer}/protocol/openid-connect/logout?post_logout_redirect_uri=${encodeURIComponent(process.env.NEXTAUTH_URL || '')}`;
-        
-        try {
-          await fetch(logoutUrl, {
-            headers: {
-              'Authorization': `Bearer ${token.access_token}`
-            }
-          });
-        } catch (error) {
-          console.error("Failed to logout from Keycloak", error);
-        }
-      }
-    },
   },
   
   pages: {
