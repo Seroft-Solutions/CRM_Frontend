@@ -32,8 +32,6 @@ export const verifySession = cache(async () => {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    accessToken: session.accessToken,
-    idToken: session.idToken,
     roles: session.user.roles || [],
     organizations: session.user.organizations || [],
     currentOrganization: session.user.currentOrganization
@@ -54,8 +52,6 @@ export const getSession = cache(async () => {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    accessToken: session.accessToken,
-    idToken: session.idToken,
     roles: session.user.roles || [],
     organizations: session.user.organizations || [],
     currentOrganization: session.user.currentOrganization

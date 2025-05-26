@@ -10,7 +10,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react"
-import { useOptimizedSession } from "@/providers/session-provider"
+import { useAuth } from "@/providers/session-provider"
 
 import {
   Avatar,
@@ -32,11 +32,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { handleLogout } from "@/utils/auth/logout"
+import { logout } from "@/lib/auth-utils"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { session, status } = useOptimizedSession()
+  const { session, status, isAuthenticated, isLoading } = useAuth()
   
   // Generate user initials for avatar fallback
   const getInitials = (name: string) => {
@@ -55,7 +55,7 @@ export function NavUser() {
   }
   
   // Show loading state if session is loading
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -116,24 +116,8 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             
-            {/* Current Organization */}
-            {session?.user?.currentOrganization && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
-                    Current Organization
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem className="text-sm">
-                    <Building className="h-4 w-4 mr-2" />
-                    {session.user.currentOrganization.name}
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </>
-            )}
-            
             {/* All Organizations */}
-            {session?.user?.organizations?.length && session.user.organizations.length > 1 ? (
+            {session?.user?.organizations?.length ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -183,7 +167,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={() => logout()}>
               <LogOut className="h-4 w-4 mr-2" />
               Log out
             </DropdownMenuItem>

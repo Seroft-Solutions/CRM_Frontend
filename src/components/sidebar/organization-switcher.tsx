@@ -22,11 +22,11 @@ import {
 
 export function OrganizationSwitcher() {
   const { isMobile } = useSidebar()
-  const { organizations, currentOrganization } = useUserOrganizations()
+  const { organizations = [], currentOrganization } = useUserOrganizations()
   const [activeOrganization, setActiveOrganization] = React.useState(currentOrganization)
 
   // Use current organization or first available organization as fallback
-  const displayOrg = activeOrganization || currentOrganization || organizations[0]
+  const displayOrg = activeOrganization || currentOrganization || (organizations.length > 0 ? organizations[0] : null)
 
   // Don't render if no organizations
   if (!organizations.length || !displayOrg) {
