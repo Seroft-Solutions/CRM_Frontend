@@ -1,9 +1,20 @@
-import React from "react";
+/**
+ * Page title component
+ */
+
+'use client'
+
+import { ReactNode } from 'react'
 
 interface PageTitleProps {
-  children: React.ReactNode;
+  children: ReactNode
+  className?: string
 }
 
-export function PageTitle({ children }: PageTitleProps) {
-  return <h1 className="text-2xl font-semibold tracking-tight">{children}</h1>;
+export function PageTitle({ children, className = '' }: PageTitleProps) {
+  return (
+    <h1 className={`text-2xl font-bold tracking-tight ${className}`}>
+      {children}
+    </h1>
+  )
 }

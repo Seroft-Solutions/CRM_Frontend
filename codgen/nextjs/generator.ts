@@ -96,9 +96,52 @@ export class NextJsGenerator {
   ) {}
 
   /**
+   * Generate shared components that are used across all entities
+   */
+  public async generateSharedComponents(): Promise<void> {
+    console.log('Generating shared components...');
+    
+    // Create components directory structure
+    const componentsDir = path.join(this.outputDir, 'components');
+    const authDir = path.join(componentsDir, 'auth');
+    
+    this.ensureDir(componentsDir);
+    this.ensureDir(authDir);
+    
+    // Generate PermissionGuard component
+    const permissionGuardTemplate = path.join(this.templateDir, 'components', 'auth', 'permission-guard.tsx');
+    const permissionGuardOutput = path.join(authDir, 'permission-guard.tsx');
+    
+    if (fs.existsSync(permissionGuardTemplate)) {
+      const template = fs.readFileSync(permissionGuardTemplate, 'utf8');
+      fs.writeFileSync(permissionGuardOutput, template);
+      console.log(`Generated shared component: ${permissionGuardOutput}`);
+    } else {
+      console.warn(`Permission guard template not found: ${permissionGuardTemplate}`);
+    }
+    
+    // Generate UnauthorizedPage component
+    const unauthorizedPageTemplate = path.join(this.templateDir, 'components', 'auth', 'unauthorized-page.tsx');
+    const unauthorizedPageOutput = path.join(authDir, 'unauthorized-page.tsx');
+    
+    if (fs.existsSync(unauthorizedPageTemplate)) {
+      const template = fs.readFileSync(unauthorizedPageTemplate, 'utf8');
+      fs.writeFileSync(unauthorizedPageOutput, template);
+      console.log(`Generated shared component: ${unauthorizedPageOutput}`);
+    } else {
+      console.warn(`Unauthorized page template not found: ${unauthorizedPageTemplate}`);
+    }
+    
+    console.log('Shared components generated successfully');
+  }
+
+  /**
    * Generate CRUD components for all entities
    */
   public async generateAll(): Promise<void> {
+    // Generate shared components first
+    await this.generateSharedComponents();
+    
     const entityFiles = fs.readdirSync(this.jhipsterDir).filter(file => file.endsWith('.json'));
     
     console.log(`Found ${entityFiles.length} entity definitions in ${this.jhipsterDir}`);
@@ -133,6 +176,7 @@ export class NextJsGenerator {
     this.ensureDir(path.join(entityDir, '[id]'));
     this.ensureDir(path.join(entityDir, '[id]', 'edit'));
     this.ensureDir(path.join(entityDir, 'components'));
+    this.ensureDir(path.join(entityDir, 'actions'));
     
     // Generate files from templates
     console.log(`Generating component files...`);
@@ -142,12 +186,33 @@ export class NextJsGenerator {
     await this.generateFile('entity/[id]/page.tsx.ejs', path.join(entityDir, '[id]', 'page.tsx'), vars);
     await this.generateFile('entity/[id]/edit/page.tsx.ejs', path.join(entityDir, '[id]', 'edit', 'page.tsx'), vars);
     
+    // Generate main table component
     await this.generateFile('entity/components/entity-table.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-table.tsx`), vars);
+    
+    // Generate split table components
+    await this.generateFile('entity/components/table/entity-search-filters.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-search-filters.tsx`), vars);
+    await this.generateFile('entity/components/table/entity-table-header.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-table-header.tsx`), vars);
+    await this.generateFile('entity/components/table/entity-table-row.tsx.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-table-row.tsx`), vars);
+    
+    // Generate other components
     await this.generateFile('entity/components/entity-form.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-form.tsx`), vars);
     await this.generateFile('entity/components/entity-details.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-details.tsx`), vars);
+    
+    // Generate paginated relationship combobox if there are relationships
+    if (vars.persistableRelationships.length > 0) {
+      await this.generateFile('entity/components/paginated-relationship-combobox.tsx.ejs', 
+        path.join(entityDir, 'components', 'paginated-relationship-combobox.tsx'), vars);
+    }
+    
+    // Generate server actions
+    await this.generateFile('entity/actions/entity-actions.ts.ejs', 
+      path.join(entityDir, 'actions', `${vars.entityFileName}-actions.ts`), vars);
     
     console.log(`Successfully generated components for ${entityName}`);
   }
@@ -161,6 +226,9 @@ export class NextJsGenerator {
     const entityClassPlural = plural(entityName);
     const entityInstance = this.lowerFirstCamelCase(entityName);
     const pluralizedRoute = plural(entityFileName);
+
+    // Filter out tenantId fields from code generation
+    const filteredFields = this.filterFields(entityDefinition.fields);
 
     // Process relationships to add computed properties
     const processedRelationships = this.processRelationships(entityDefinition.relationships || []);
@@ -180,14 +248,14 @@ export class NextJsGenerator {
       entityRoute: pluralizedRoute,
       routePath: pluralizedRoute,
       primaryKey: { name: 'id', type: 'number' },
-      fields: entityDefinition.fields,
+      fields: filteredFields,
       relationships: processedRelationships,
       persistableRelationships,
       otherEntitiesWithPersistableRelationship,
       searchEngineAny: entityDefinition.searchEngine,
-      anyFieldIsDateDerived: entityDefinition.fields.some((f) => 
+      anyFieldIsDateDerived: filteredFields.some((f) => 
         f.fieldTypeTimed || f.fieldTypeLocalDate || f.fieldTypeZonedDateTime || f.fieldTypeInstant),
-      anyFieldIsBlobDerived: entityDefinition.fields.some((f) => f.fieldTypeBinary),
+      anyFieldIsBlobDerived: filteredFields.some((f) => f.fieldTypeBinary),
       readOnly: entityDefinition.readOnly || false,
       pagination: entityDefinition.pagination || 'no',
       service: entityDefinition.service || 'no',
@@ -300,6 +368,21 @@ export class NextJsGenerator {
     });
     
     return Array.from(entityMap.values());
+  }
+
+  /**
+   * Filter out system fields that should not be included in code generation
+   */
+  private filterFields(fields: Field[]): Field[] {
+    const excludedFields = ['tenantId'];
+    
+    return fields.filter(field => {
+      const shouldExclude = excludedFields.includes(field.fieldName);
+      if (shouldExclude) {
+        console.log(`Excluding system field from code generation: ${field.fieldName}`);
+      }
+      return !shouldExclude;
+    });
   }
 
   /**

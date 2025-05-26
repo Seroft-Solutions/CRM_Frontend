@@ -23,40 +23,48 @@ import { Button } from "@/components/ui/button";
 import { <%= entityClass %>Form } from "../../components/<%= entityFileName %>-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 interface Edit<%= entityClass %>PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const metadata = {
   title: "Edit <%= entityClass %>",
 };
 
-export default function Edit<%= entityClass %>Page({ params }: Edit<%= entityClass %>PageProps) {
-  const id = parseInt(params.id, 10);
+export default async function Edit<%= entityClass %>Page({ params }: Edit<%= entityClass %>PageProps) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam, 10);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/<%= routePath %>">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to <%= entityClassPluralHumanized %>
-            </Link>
-          </Button>
-        </PageHeader>
-      </div>
+    <PermissionGuard 
+      requiredPermission="<%= entityInstance %>:update"
+      unauthorizedTitle="Access Denied to Edit <%= entityClassHumanized %>"
+      unauthorizedDescription="You don't have permission to edit <%= entityClassHumanized.toLowerCase() %> records."
+    >
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <PageHeader>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/<%= routePath %>">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to <%= entityClassPluralHumanized %>
+              </Link>
+            </Button>
+          </PageHeader>
+        </div>
 
-      <div className="max-w-2xl">
-        <PageTitle>Edit <%= entityClassHumanized %></PageTitle>
-        
-        <div className="mt-6">
-          <<%= entityClass %>Form id={id} />
+        <div className="max-w-2xl">
+          <PageTitle>Edit <%= entityClassHumanized %></PageTitle>
+          
+          <div className="mt-6">
+            <<%= entityClass %>Form id={id} />
+          </div>
         </div>
       </div>
-    </div>
+    </PermissionGuard>
   );
 }

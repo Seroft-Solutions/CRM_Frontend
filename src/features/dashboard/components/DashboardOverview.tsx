@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useGetAllCalls } from '@/core/api/generated/endpoints/call-resource/call-resource.gen';
-import { useGetAllParties } from '@/core/api/generated/endpoints/party-resource/party-resource.gen';
-import { useGetAllProducts } from '@/core/api/generated/endpoints/product-resource/product-resource.gen';
+import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { useGetAllParties } from '@/core/api/generated/spring/endpoints/party-resource/party-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { Area, AreaChart, Bar, BarChart, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Building, Phone, ShoppingCart, Users } from 'lucide-react';
 

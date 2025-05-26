@@ -1,0 +1,211 @@
+<%#
+ Server Actions template for CRUD operations
+ Uses optimized session management with DAL and organization context
+-%>
+'use server'
+
+import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
+import { springService } from '@/core/api/services/spring-service'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+
+// Define validation schema for <%= entityClass %>
+const <%= entityClass.toLowerCase() %>Schema = z.object({
+  <% fields.forEach((field) => { %>
+  <% if (field.fieldType === 'String') { %>
+  <%= field.fieldName %>: z.string()<% if (field.fieldValidateRules && field.fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (field.fieldValidateRules && field.fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } else if (field.fieldType === 'Integer' || field.fieldType === 'Long') { %>
+  <%= field.fieldName %>: z.number()<% if (field.fieldValidateRules && field.fieldValidateRules.includes('min')) { %>.min(<%= field.fieldValidateRulesMin %>)<% } %><% if (field.fieldValidateRules && field.fieldValidateRules.includes('max')) { %>.max(<%= field.fieldValidateRulesMax %>)<% } %><% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } else if (field.fieldType === 'Boolean') { %>
+  <%= field.fieldName %>: z.boolean()<% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } else if (field.fieldType === 'LocalDate' || field.fieldType === 'ZonedDateTime' || field.fieldType === 'Instant') { %>
+  <%= field.fieldName %>: z.string().datetime()<% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } else if (field.fieldIsEnum) { %>
+  <%= field.fieldName %>: z.enum([<% field.enumValues.forEach((enumValue, index) => { %>'<%= enumValue.name %>'<% if (index < field.enumValues.length - 1) { %>, <% } %><% }); %>])<% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } else { %>
+  <%= field.fieldName %>: z.any()<% if (!field.fieldValidateRules || !field.fieldValidateRules.includes('required')) { %>.optional()<% } %>,
+  <% } %>
+  <% }); %>
+  <% persistableRelationships.forEach((relationship) => { %>
+  <% if (relationship.relationshipType === 'many-to-one') { %>
+  <%= relationship.relationshipName %>Id: z.number()<% if (!relationship.relationshipRequired) { %>.optional()<% } %>,
+  <% } %>
+  <% }); %>
+})
+
+export type <%= entityClass %>FormData = z.infer<typeof <%= entityClass.toLowerCase() %>Schema>
+
+/**
+ * Create a new <%= entityClass %>
+ */
+export async function create<%= entityClass %>(
+  prevState: any,
+  formData: FormData
+): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+  try {
+    // Verify session and check permissions
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('<%= entityInstance %>:create'))) {
+      return { error: 'Insufficient permissions to create <%= entityClassHumanized.toLowerCase() %>' }
+    }
+
+    // Parse and validate form data
+    const rawData = {
+      <% fields.forEach((field) => { %>
+      <% if (field.fieldType === 'Boolean') { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') === 'true',
+      <% } else if (field.fieldType === 'Integer' || field.fieldType === 'Long') { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') ? Number(formData.get('<%= field.fieldName %>')) : undefined,
+      <% } else { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') || undefined,
+      <% } %>
+      <% }); %>
+      <% persistableRelationships.forEach((relationship) => { %>
+      <% if (relationship.relationshipType === 'many-to-one') { %>
+      <%= relationship.relationshipName %>Id: formData.get('<%= relationship.relationshipName %>Id') ? Number(formData.get('<%= relationship.relationshipName %>Id')) : undefined,
+      <% } %>
+      <% }); %>
+    }
+
+    const validatedData = <%= entityClass.toLowerCase() %>Schema.parse(rawData)
+
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
+    // Create the entity
+    await springService.post('/<%= routePath %>', dataWithOrg)
+
+    // Revalidate the list page
+    revalidatePath('/<%= routePath %>')
+    
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        errors: error.flatten().fieldErrors
+      }
+    }
+    
+    console.error('Error creating <%= entityClass %>:', error)
+    return { error: 'Failed to create <%= entityClassHumanized.toLowerCase() %>. Please try again.' }
+  }
+
+  // Redirect to the list page on success
+  redirect('/<%= routePath %>')
+}
+
+/**
+ * Update an existing <%= entityClass %>
+ */
+export async function update<%= entityClass %>(
+  id: number,
+  prevState: any,
+  formData: FormData
+): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+  try {
+    // Verify session and check permissions
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('<%= entityInstance %>:update'))) {
+      return { error: 'Insufficient permissions to update <%= entityClassHumanized.toLowerCase() %>' }
+    }
+
+    // Parse and validate form data
+    const rawData = {
+      <% fields.forEach((field) => { %>
+      <% if (field.fieldType === 'Boolean') { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') === 'true',
+      <% } else if (field.fieldType === 'Integer' || field.fieldType === 'Long') { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') ? Number(formData.get('<%= field.fieldName %>')) : undefined,
+      <% } else { %>
+      <%= field.fieldName %>: formData.get('<%= field.fieldName %>') || undefined,
+      <% } %>
+      <% }); %>
+      <% persistableRelationships.forEach((relationship) => { %>
+      <% if (relationship.relationshipType === 'many-to-one') { %>
+      <%= relationship.relationshipName %>Id: formData.get('<%= relationship.relationshipName %>Id') ? Number(formData.get('<%= relationship.relationshipName %>Id')) : undefined,
+      <% } %>
+      <% }); %>
+    }
+
+    const validatedData = <%= entityClass.toLowerCase() %>Schema.parse(rawData)
+
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
+    // Update the entity
+    await springService.put(`/<%= routePath %>/${id}`, { id, ...dataWithOrg })
+
+    // Revalidate pages
+    revalidatePath('/<%= routePath %>')
+    revalidatePath(`/<%= routePath %>/${id}`)
+    
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        errors: error.flatten().fieldErrors
+      }
+    }
+    
+    console.error('Error updating <%= entityClass %>:', error)
+    return { error: 'Failed to update <%= entityClassHumanized.toLowerCase() %>. Please try again.' }
+  }
+
+  // Redirect to the details page on success
+  redirect(`/<%= routePath %>/${id}`)
+}
+
+/**
+ * Delete a <%= entityClass %>
+ */
+export async function delete<%= entityClass %>(id: number): Promise<{ success?: boolean; error?: string }> {
+  try {
+    // Verify session and check permissions
+    const session = await verifySession()
+    
+    if (!(await hasRole('<%= entityInstance %>:delete'))) {
+      return { error: 'Insufficient permissions to delete <%= entityClassHumanized.toLowerCase() %>' }
+    }
+
+    // Delete the entity
+    await springService.delete(`/<%= routePath %>/${id}`)
+
+    // Revalidate the list page
+    revalidatePath('/<%= routePath %>')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting <%= entityClass %>:', error)
+    return { error: 'Failed to delete <%= entityClassHumanized.toLowerCase() %>. Please try again.' }
+  }
+}
+
+/**
+ * Get <%= entityClassPlural %> for current organization
+ */
+export async function get<%= entityClassPlural %>ForOrganization() {
+  try {
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('<%= entityInstance %>:read'))) {
+      throw new Error('Insufficient permissions to read <%= entityClassPluralHumanized.toLowerCase() %>')
+    }
+    
+    // Build query parameters with organization filter
+    const params = currentOrg ? { organizationId: currentOrg.id } : {}
+    
+    const response = await springService.get('/<%= routePath %>', { params })
+    return response
+  } catch (error) {
+    console.error('Error fetching <%= entityClassPlural %> for organization:', error)
+    throw error
+  }
+}

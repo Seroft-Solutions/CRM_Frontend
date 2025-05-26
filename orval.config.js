@@ -1,25 +1,27 @@
 /**
- * Orval configuration for CRM API
- *
- * Generates TypeScript clients from OpenAPI specification
- * Each API endpoint is generated in its own directory organized by tag
+ * Multi-Service Orval Configuration for CRM API
+ * 
+ * Generates TypeScript clients for different services:
+ * - Spring Backend API (CRM business logic)
+ * - Keycloak Admin API (Authentication & user management)
  */
 module.exports = {
-  crmApi: {
+  // Spring Backend API Configuration
+  springService: {
     output: {
-      mode: 'tags-split', // Generate in separate directories for each API tag
+      mode: 'tags-split',
       namingConvention: 'PascalCase',
       fileExtension: '.gen.ts',
-      workspace: 'src/core/api/generated',
+      workspace: 'src/core/api/generated/spring',
       target: './endpoints',
       schemas: './schemas',
       client: 'react-query',
-      clean: true, // Clean the output directory before generation
-      mock: false, // Disable mock generation
+      clean: true,
+      mock: false,
       override: {
         mutator: {
-          path: '../client/fetch-client.ts',
-          name: 'customFetch',
+          path: '../../services/spring-service/service-mutator.ts',
+          name: 'springServiceMutator',
         },
         query: {
           useQuery: true,
@@ -33,6 +35,32 @@ module.exports = {
     },
     input: {
       target: './openapi/openapi.json',
+    },
+    hooks: {
+      afterAllFilesWrite: 'prettier --write',
+    },
+  },
+
+  // Keycloak Admin API Configuration  
+  keycloakService: {
+    output: {
+      mode: 'tags-split',
+      namingConvention: 'PascalCase', 
+      fileExtension: '.gen.ts',
+      workspace: 'src/core/api/generated/keycloak',
+      target: './endpoints',
+      schemas: './schemas',
+      clean: true,
+      mock: false,
+      override: {
+        mutator: {
+          path: '../../services/keycloak-service/service-mutator.ts',
+          name: 'keycloakServiceMutator',
+        }
+      },
+    },
+    input: {
+      target: './openapi/keycloak_openapi.json',
     },
     hooks: {
       afterAllFilesWrite: 'prettier --write',

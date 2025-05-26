@@ -24,6 +24,7 @@ import Link from "next/link";
 import { <%= entityClass %>Table } from "./components/<%= entityFileName %>-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
 
 export const metadata = {
   title: "<%= entityClassPlural %>",
@@ -31,37 +32,45 @@ export const metadata = {
 
 export default function <%= entityClass %>Page() {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <PageHeader>
-          <PageTitle><%= entityClassPluralHumanized %></PageTitle>
-        </PageHeader>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1"
-            aria-label="Refresh List"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Refresh List
-            </span>
-          </Button>
-          <Button asChild size="sm" className="h-8 gap-1">
-            <Link href="/<%= routePath %>/new">
-              <Plus className="h-3.5 w-3.5" />
+    <PermissionGuard 
+      requiredPermission="<%= entityInstance %>:read"
+      unauthorizedTitle="Access Denied to <%= entityClassPluralHumanized %>"
+      unauthorizedDescription="You don't have permission to view <%= entityClassPluralHumanized.toLowerCase() %>."
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <PageHeader>
+            <PageTitle><%= entityClassPluralHumanized %></PageTitle>
+          </PageHeader>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              aria-label="Refresh List"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Create
+                Refresh List
               </span>
-            </Link>
-          </Button>
+            </Button>
+            <InlinePermissionGuard requiredPermission="<%= entityInstance %>:create">
+              <Button asChild size="sm" className="h-8 gap-1">
+                <Link href="/<%= routePath %>/new">
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Create
+                  </span>
+                </Link>
+              </Button>
+            </InlinePermissionGuard>
+          </div>
         </div>
-      </div>
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <<%= entityClass %>Table />
-      </Suspense>
-    </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <<%= entityClass %>Table />
+        </Suspense>
+      </div>
+    </PermissionGuard>
   );
 }

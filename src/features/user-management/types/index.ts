@@ -1,0 +1,141 @@
+/**
+ * User Management Types
+ * These types define the data structures used in the user management feature
+ */
+
+import type { 
+  UserRepresentation, 
+  RoleRepresentation, 
+  GroupRepresentation,
+  OrganizationRepresentation,
+  MemberRepresentation 
+} from '@/core/api/generated/keycloak';
+
+// Extended user representation with organization context
+export interface OrganizationUser extends MemberRepresentation {
+  // User basic info
+  id?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  enabled?: boolean;
+  emailVerified?: boolean;
+  createdTimestamp?: number;
+  
+  // Organization context
+  organizationId: string;
+  organizationName?: string;
+  membershipId?: string;
+  
+  // Role and group assignments (loaded separately)
+  assignedRoles?: RoleRepresentation[];
+  assignedGroups?: GroupRepresentation[];
+}
+
+// User invitation data
+export interface UserInvitation {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId: string;
+  sendWelcomeEmail?: boolean;
+}
+
+// Bulk user invitation
+export interface BulkUserInvitation {
+  invitations: UserInvitation[];
+  organizationId: string;
+}
+
+// Role assignment data
+export interface RoleAssignment {
+  userId: string;
+  organizationId: string;
+  roles: RoleRepresentation[];
+  action: 'assign' | 'unassign';
+}
+
+// Group assignment data  
+export interface GroupAssignment {
+  userId: string;
+  organizationId: string;
+  groups: GroupRepresentation[];
+  action: 'assign' | 'unassign';
+}
+
+// User management filters
+export interface UserFilters {
+  search?: string;
+  enabled?: boolean;
+  emailVerified?: boolean;
+  role?: string;
+  group?: string;
+  page?: number;
+  size?: number;
+}
+
+// API response types
+export interface UserListResponse {
+  users: OrganizationUser[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface AvailableRolesResponse {
+  realmRoles: RoleRepresentation[];
+  clientRoles: Record<string, RoleRepresentation[]>;
+}
+
+export interface AvailableGroupsResponse {
+  groups: GroupRepresentation[];
+}
+
+// Form types
+export interface InviteUserFormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  sendWelcomeEmail: boolean;
+}
+
+export interface BulkInviteFormData {
+  csvFile?: File;
+  manualInvitations: InviteUserFormData[];
+}
+
+// User detail page data
+export interface UserDetailData {
+  user: OrganizationUser;
+  assignedRealmRoles: RoleRepresentation[];
+  assignedClientRoles: Record<string, RoleRepresentation[]>;
+  assignedGroups: GroupRepresentation[];
+  availableRealmRoles: RoleRepresentation[];
+  availableClientRoles: Record<string, RoleRepresentation[]>;
+  availableGroups: GroupRepresentation[];
+}
+
+// Error types
+export interface UserManagementError {
+  code: string;
+  message: string;
+  details?: Record<string, any>;
+}
+
+// Loading states
+export interface LoadingStates {
+  users: boolean;
+  roles: boolean;
+  groups: boolean;
+  invitation: boolean;
+  assignment: boolean;
+}
+
+// Organization context
+export interface OrganizationContext {
+  organizationId: string;
+  organizationName: string;
+  userRole: string; // The role of current user in this organization
+  permissions: string[]; // User's permissions in this organization
+}
