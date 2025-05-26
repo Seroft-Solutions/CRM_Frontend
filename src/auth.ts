@@ -167,31 +167,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account && account.access_token) {
         try {
           // Decode the token to extract roles and organizations
-          const decoded = jwtDecode(account.access_token);
+          const decoded: any = jwtDecode(account.access_token);
           
           // Extract minimal essential data
           const essentialRoles = extractRoles(decoded);
-          const organizations = extractOrganizations(decoded);
+          const organizationsArray = extractOrganizations(decoded); // Renamed to avoid conflict
           
           return {
-            ...token,
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
+            // Essential fields from the original token or decoded access token
+            sub: decoded.sub || token.sub,
+            email: decoded.email || token.email,
+            name: decoded.name || token.name,
+            // Fields from account object
             expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
             provider: account.provider,
+            // Extracted and processed data
             roles: essentialRoles,
-            organizations: decoded.organizations || {},
+            organizations: organizationsArray, // Use the processed array
             processed: true
+            // access_token and refresh_token are intentionally omitted
           };
         } catch (error) {
           console.error("Error decoding JWT token:", error);
-          return token;
+          return token; // Return original token in case of error
         }
       }
       
       // Return previous token if the access token has not expired yet
       if (token.expires_at && Date.now() < token.expires_at * 1000) {
-        return token;
+        // Return only the essential fields
+        return {
+            sub: token.sub,
+            email: token.email,
+            name: token.name,
+            roles: token.roles,
+            organizations: token.organizations,
+            expires_at: token.expires_at,
+            provider: token.provider,
+            processed: token.processed,
+        };
       }
       
       // Access token has expired, try to refresh it
@@ -200,21 +214,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     
     async session({ session, token }) {
       if (token) {
-        // Add minimal user info to session
-        session.user.id = token.sub;
-        session.user.roles = token.roles;
+        // Populate user object from the token
+        // session.user might be initially pre-filled by NextAuth with some defaults (like email, name, image from OIDC)
+        // We are augmenting it here with our custom claims from the JWT.
+        session.user = {
+          ...session.user, // Preserve any default fields like image if present
+          id: token.sub,
+          name: token.name as string | undefined, // Ensure type correctness
+          email: token.email as string | undefined, // Ensure type correctness
+          roles: token.roles as string[] | undefined,
+        };
         
-        // Add organizations to session (limit to first 5 to reduce size)
-        const organizations = extractOrganizations({ organizations: token.organizations });
-        session.user.organizations = organizations.slice(0, 5); // Limit organizations
+        // Handle organizations
+        // token.organizations is already an array of Organization objects from the jwt callback
+        const userOrgs = Array.isArray(token.organizations) ? token.organizations as Array<{ name: string, id: string }> : [];
+        session.user.organizations = userOrgs.slice(0, 5); // Limit to 5 organizations in the client session
         
-        // Set current organization (first one if multiple, or null if none)
-        session.user.currentOrganization = organizations.length > 0 ? organizations[0] : undefined;
+        if (session.user.organizations && session.user.organizations.length > 0) {
+          session.user.currentOrganization = session.user.organizations[0];
+        } else {
+          session.user.currentOrganization = undefined;
+        }
         
-        // Don't store large tokens in session - they'll be available in the JWT callback if needed
-        session.error = token.error;
+        session.error = token.error as "RefreshAccessTokenError" | undefined;
       }
-      
       return session;
     }
   },
