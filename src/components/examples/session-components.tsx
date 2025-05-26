@@ -1,16 +1,14 @@
 /**
- * Example components showing optimized session usage with organization support
+ * Example components showing session usage with organization support
  */
 
 'use client'
 
-import { useOptimizedSession, useUser, useUserRoles, useUserOrganizations } from '@/providers/session-provider'
+import { useAuth, useUser, useUserRoles, useUserOrganizations } from '@/providers/session-provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { OrganizationSwitcher, OrganizationBadge } from '@/components/organization/organization-switcher'
 import { useState, useTransition } from 'react'
-import { protectedAction, adminOnlyAction } from '@/app/actions/auth'
 
 /**
  * Enhanced User Profile Component - shows user info with organizations
@@ -33,7 +31,6 @@ export function EnhancedUserProfile() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           User Profile
-          <OrganizationBadge />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -43,17 +40,6 @@ export function EnhancedUserProfile() {
         <div>
           <strong>Email:</strong> {user?.email}
         </div>
-        
-        {/* Current Organization */}
-        {currentOrganization && (
-          <div>
-            <strong>Current Organization:</strong>
-            <div className="mt-2 p-3 bg-muted rounded-lg">
-              <div className="font-medium">{currentOrganization.name}</div>
-              <div className="text-sm text-muted-foreground">ID: {currentOrganization.id}</div>
-            </div>
-          </div>
-        )}
         
         {/* All Organizations */}
         {organizations.length > 0 && (
@@ -82,18 +68,8 @@ export function EnhancedUserProfile() {
         </div>
         
         <div>
-          <strong>Admin Access:</strong> {hasRole('ROLE_ADMIN') ? 'Yes' : 'No'}
+          <strong>Admin Access:</strong> {hasRole('admin') ? 'Yes' : 'No'}
         </div>
-        
-        {/* Organization Switcher */}
-        {organizations.length > 1 && (
-          <div>
-            <strong>Switch Organization:</strong>
-            <div className="mt-2">
-              <OrganizationSwitcher />
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   )
@@ -103,21 +79,23 @@ export function EnhancedUserProfile() {
  * Organization Dashboard Component
  */
 export function OrganizationDashboard() {
-  const { currentOrganization, organizations } = useUserOrganizations()
+  const { organizations } = useUserOrganizations()
   const { hasRole } = useUserRoles()
 
-  if (!currentOrganization) {
+  if (!organizations.length) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Organization Dashboard</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>No organization selected. Please contact your administrator.</p>
+          <p>No organizations found. Please contact your administrator.</p>
         </CardContent>
       </Card>
     )
   }
+
+  const currentOrganization = organizations[0]; // Use first organization as current
 
   return (
     <div className="space-y-4">
@@ -125,7 +103,6 @@ export function OrganizationDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Organization Dashboard
-            <OrganizationSwitcher variant="ghost" />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -156,7 +133,7 @@ export function OrganizationDashboard() {
               </Card>
             </div>
             
-            {hasRole('ROLE_ADMIN') && (
+            {hasRole('admin') && (
               <div className="p-4 bg-muted rounded-lg">
                 <h4 className="font-semibold mb-2">Admin Actions</h4>
                 <div className="flex gap-2">
@@ -177,7 +154,7 @@ export function OrganizationDashboard() {
  * Session Debug Component - shows full session state including organizations
  */
 export function SessionDebugWithOrganizations() {
-  const { session, status, isLoading } = useOptimizedSession()
+  const { session, status, isLoading } = useAuth()
 
   return (
     <Card>
@@ -189,7 +166,6 @@ export function SessionDebugWithOrganizations() {
           <div><strong>Status:</strong> {status}</div>
           <div><strong>Loading:</strong> {isLoading ? 'Yes' : 'No'}</div>
           <div><strong>Organizations Count:</strong> {session?.user?.organizations?.length || 0}</div>
-          <div><strong>Current Org:</strong> {session?.user?.currentOrganization?.name || 'None'}</div>
           <div><strong>Session Data:</strong></div>
           <pre className="bg-muted p-2 rounded text-xs overflow-auto max-h-64">
             {JSON.stringify(session, null, 2)}

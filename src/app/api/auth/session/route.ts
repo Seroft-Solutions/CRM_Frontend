@@ -1,39 +1,42 @@
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
+
 /**
- * Session API Route
- * 
- * This route provides session information for client-side components
- * and API services, reducing the need for multiple session calls.
+ * Optimized Session API Endpoint
+ * Provides session information without sensitive tokens
  */
-
-import { auth } from '@/auth'
-import { NextResponse } from 'next/server'
-
 export async function GET() {
   try {
-    const session = await auth()
+    const session = await auth();
     
     if (!session) {
-      return NextResponse.json(null, { status: 401 })
+      return NextResponse.json(null, { status: 401 });
     }
 
-    // Return session data with tokens for API calls
-    return NextResponse.json({
+    // Return clean session data without tokens
+    const cleanSession = {
       user: {
         id: session.user?.id,
         name: session.user?.name,
         email: session.user?.email,
         image: session.user?.image,
-        roles: session.user?.roles || []
+        roles: session.user?.roles || [],
+        organizations: session.user?.organizations || []
       },
-      accessToken: session.accessToken,
-      idToken: session.idToken,
-      expires: session.expires
-    })
+      expires: session.expires,
+      error: session.error
+    };
+
+    return NextResponse.json(cleanSession, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+      },
+    });
   } catch (error) {
-    console.error('Session API error:', error)
+    console.error('Session API error:', error);
     return NextResponse.json(
       { error: 'Failed to retrieve session' },
       { status: 500 }
-    )
+    );
   }
 }

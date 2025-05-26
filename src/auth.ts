@@ -1,108 +1,104 @@
-/**
- * Session Configuration Fix
- * Reduces session cookie size by storing only essential data in cookies
- * and implementing a more efficient session strategy
- */
-
 import NextAuth from "next-auth";
-import Keycloak from "next-auth/providers/keycloak";
+import { authConfig } from "./auth.config";
 import { jwtDecode } from "jwt-decode";
 
-// Extend the JWT interface to include minimal token information
-declare module "next-auth/jwt" {
-  interface JWT {
-    id_token?: string;
-    access_token?: string;
-    refresh_token?: string;
-    expires_at?: number;
-    provider?: string;
-    roles?: string[];
-    organizations?: Record<string, { id: string }>;
-    // Add a flag to indicate if we've already processed this token
-    processed?: boolean;
-  }
-}
-
-// Define organization type
-interface Organization {
-  name: string;
-  id: string;
-}
-
-// Extend the Session interface with minimal data
+// Type declarations for NextAuth v5
 declare module "next-auth" {
   interface Session {
     user: {
-      id?: string;
+      id: string;
       name?: string;
       email?: string;
       image?: string;
-      roles?: string[];
-      organizations?: Organization[];
-      currentOrganization?: Organization;
+      roles: string[];
+      organizations: Array<{
+        name: string;
+        id: string;
+      }>;
     };
-    // Remove large tokens from session - we'll store them separately if needed
     error?: "RefreshAccessTokenError";
   }
 }
 
-/**
- * Extract organizations from decoded token
- */
-function extractOrganizations(decoded: any): Organization[] {
-  const organizations: Organization[] = [];
-  
-  if (decoded.organizations && typeof decoded.organizations === 'object') {
-    Object.entries(decoded.organizations).forEach(([name, orgData]: [string, any]) => {
-      if (orgData && orgData.id) {
-        organizations.push({
-          name,
-          id: orgData.id
-        });
-      }
-    });
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+    idToken?: string;
+    expiresAt?: number;
+    roles?: string[];
+    organizations?: Array<{ name: string; id: string }>;
+    error?: "RefreshAccessTokenError";
   }
-  
-  return organizations;
+}
+
+// Types for Keycloak token structure
+interface KeycloakTokenPayload {
+  sub: string;
+  email?: string;
+  name?: string;
+  preferred_username?: string;
+  realm_access?: {
+    roles: string[];
+  };
+  resource_access?: Record<string, { roles: string[] }>;
+  organizations?: Record<string, { id: string }>;
+  exp: number;
+  iat: number;
 }
 
 /**
- * Extract roles from decoded token (combining realm and resource roles)
- * Limit to most important roles to reduce session size
+ * Extract essential roles only (limit to reduce session size)
  */
-function extractRoles(decoded: any): string[] {
-  const realmRoles = decoded.realm_access?.roles || [];
-  const resourceRoles = [];
+function extractEssentialRoles(tokenPayload: KeycloakTokenPayload): string[] {
+  const realmRoles = tokenPayload.realm_access?.roles || [];
+  const resourceRoles: string[] = [];
   
-  if (decoded.resource_access) {
-    Object.values(decoded.resource_access).forEach((resource: any) => {
-      if (resource.roles && Array.isArray(resource.roles)) {
-        resourceRoles.push(...resource.roles);
-      }
+  // Extract roles from all resource access
+  if (tokenPayload.resource_access) {
+    Object.values(tokenPayload.resource_access).forEach((resource) => {
+      resourceRoles.push(...(resource.roles || []));
     });
   }
   
-  // Also include the direct roles array if it exists
-  const directRoles = decoded.roles || [];
+  // Combine and dedupe roles, filter out default Keycloak roles
+  const allRoles = [...new Set([...realmRoles, ...resourceRoles])];
+  const filteredRoles = allRoles.filter(role => !role.startsWith('default-roles-'));
   
-  const allRoles = [...new Set([...realmRoles, ...resourceRoles, ...directRoles])];
-  
-  // Filter to keep only essential roles (you can customize this based on your needs)
-  const essentialRoles = allRoles.filter(role => 
+  // Keep only essential roles to reduce session size
+  const essentialRoles = filteredRoles.filter(role => 
     role.includes('admin') || 
     role.includes('manager') || 
     role.includes('user') ||
-    role.includes('manage-users') ||
-    !role.startsWith('default-roles-') // Remove default Keycloak roles
+    role.includes('create') ||
+    role.includes('read') ||
+    role.includes('update') ||
+    role.includes('delete')
   );
   
-  return essentialRoles.slice(0, 10); // Limit to 10 most important roles
+  // Limit to maximum 5 roles to keep session small
+  return essentialRoles.slice(0, 5);
 }
 
 /**
- * Refreshes the access token using the refresh token
+ * Extract limited organizations (to reduce session size)
  */
-async function refreshAccessToken(token: any) {
+function extractLimitedOrganizations(tokenPayload: KeycloakTokenPayload): Array<{ name: string; id: string }> {
+  if (!tokenPayload.organizations) return [];
+  
+  const orgs = Object.entries(tokenPayload.organizations).map(([name, data]) => ({
+    name: name.length > 20 ? name.substring(0, 20) + '...' : name, // Limit name length
+    id: data.id
+  }));
+  
+  // Limit to maximum 3 organizations to keep session small
+  return orgs.slice(0, 3);
+}
+
+/**
+ * Refresh access token using refresh token
+ */
+async function refreshAccessToken(token: JWT) {
   try {
     const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     
@@ -110,10 +106,10 @@ async function refreshAccessToken(token: any) {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       method: "POST",
       body: new URLSearchParams({
-        client_id: process.env.AUTH_KEYCLOAK_ID || "",
-        client_secret: process.env.AUTH_KEYCLOAK_SECRET || "",
+        client_id: process.env.AUTH_KEYCLOAK_ID!,
+        client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
         grant_type: "refresh_token",
-        refresh_token: token.refresh_token || "",
+        refresh_token: token.refreshToken!,
       }),
     });
 
@@ -123,91 +119,57 @@ async function refreshAccessToken(token: any) {
       throw refreshedTokens;
     }
 
-    const decoded = jwtDecode(refreshedTokens.access_token);
-    
-    // Extract minimal data
-    const essentialRoles = extractRoles(decoded);
-    const organizations = extractOrganizations(decoded);
+    // Decode the new access token
+    const decodedToken = jwtDecode<KeycloakTokenPayload>(refreshedTokens.access_token);
     
     return {
       ...token,
-      access_token: refreshedTokens.access_token,
-      refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
-      expires_at: Math.floor(Date.now() / 1000) + (refreshedTokens.expires_in || 3600),
-      roles: essentialRoles,
-      organizations: decoded.organizations || {},
-      processed: true
+      accessToken: refreshedTokens.access_token,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+      idToken: refreshedTokens.id_token,
+      expiresAt: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
+      roles: extractEssentialRoles(decodedToken),
+      organizations: extractLimitedOrganizations(decodedToken),
     };
   } catch (error) {
-    console.error("Token refresh failed:", error);
+    console.error("Error refreshing access token:", error);
     return {
       ...token,
-      error: "RefreshAccessTokenError",
+      error: "RefreshAccessTokenError" as const,
     };
   }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Keycloak],
+  ...authConfig,
   
-  // Configure session strategy
   session: {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
   
-  // Configure JWT settings
-  jwt: {
-    maxAge: 24 * 60 * 60, // 24 hours
-  },
-  
   callbacks: {
+    ...authConfig.callbacks,
+    
     async jwt({ token, account }) {
       // Initial sign in
-      if (account && account.access_token) {
-        try {
-          // Decode the token to extract roles and organizations
-          const decoded: any = jwtDecode(account.access_token);
-          
-          // Extract minimal essential data
-          const essentialRoles = extractRoles(decoded);
-          const organizationsArray = extractOrganizations(decoded); // Renamed to avoid conflict
-          
-          return {
-            // Essential fields from the original token or decoded access token
-            sub: decoded.sub || token.sub,
-            email: decoded.email || token.email,
-            name: decoded.name || token.name,
-            // Fields from account object
-            expires_at: Math.floor(Date.now() / 1000) + (account.expires_in || 3600),
-            provider: account.provider,
-            id_token: account.id_token, // Persist id_token
-            // Extracted and processed data
-            roles: essentialRoles,
-            organizations: organizationsArray, // Use the processed array
-            processed: true
-            // access_token and refresh_token are intentionally omitted
-          };
-        } catch (error) {
-          console.error("Error decoding JWT token:", error);
-          return token; // Return original token in case of error
-        }
+      if (account) {
+        const decodedToken = jwtDecode<KeycloakTokenPayload>(account.access_token!);
+        
+        return {
+          ...token,
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          idToken: account.id_token,
+          expiresAt: account.expires_at,
+          roles: extractEssentialRoles(decodedToken),
+          organizations: extractLimitedOrganizations(decodedToken),
+        };
       }
       
       // Return previous token if the access token has not expired yet
-      if (token.expires_at && Date.now() < token.expires_at * 1000) {
-        // Return only the essential fields
-        return {
-            sub: token.sub,
-            email: token.email,
-            name: token.name,
-            id_token: token.id_token, // Persist id_token
-            roles: token.roles,
-            organizations: token.organizations,
-            expires_at: token.expires_at,
-            provider: token.provider,
-            processed: token.processed,
-        };
+      if (token.expiresAt && Date.now() < token.expiresAt * 1000) {
+        return token;
       }
       
       // Access token has expired, try to refresh it
@@ -216,53 +178,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     
     async session({ session, token }) {
       if (token) {
-        // Populate user object from the token
-        // session.user might be initially pre-filled by NextAuth with some defaults (like email, name, image from OIDC)
-        // We are augmenting it here with our custom claims from the JWT.
+        // Only store essential data in session (not tokens to reduce size)
         session.user = {
-          ...session.user, // Preserve any default fields like image if present
-          id: token.sub,
-          name: token.name as string | undefined, // Ensure type correctness
-          email: token.email as string | undefined, // Ensure type correctness
-          roles: token.roles as string[] | undefined,
+          id: token.sub!,
+          name: token.name,
+          email: token.email,
+          image: token.picture,
+          roles: token.roles || [],
+          organizations: token.organizations || [],
         };
         
-        // Handle organizations
-        // token.organizations is already an array of Organization objects from the jwt callback
-        const userOrgs = Array.isArray(token.organizations) ? token.organizations as Array<{ name: string, id: string }> : [];
-        session.user.organizations = userOrgs.slice(0, 5); // Limit to 5 organizations in the client session
-        
-        if (session.user.organizations && session.user.organizations.length > 0) {
-          session.user.currentOrganization = session.user.organizations[0];
-        } else {
-          session.user.currentOrganization = undefined;
-        }
-        
-        session.error = token.error as "RefreshAccessTokenError" | undefined;
+        // Only include error, not tokens
+        session.error = token.error;
       }
+      
       return session;
-    }
+    },
   },
   
-  pages: {
-    error: '/auth/error', // Custom error page
+  events: {
+    async signOut({ token }) {
+      // Perform Keycloak logout
+      if (token?.idToken) {
+        try {
+          const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/logout`;
+          const logoutUrl = new URL(url);
+          logoutUrl.searchParams.append('id_token_hint', token.idToken);
+          logoutUrl.searchParams.append('post_logout_redirect_uri', process.env.AUTH_URL!);
+          
+          await fetch(logoutUrl.toString(), { method: 'GET' });
+        } catch (error) {
+          console.error('Keycloak logout error:', error);
+        }
+      }
+    },
   },
   
-  debug: process.env.NODE_ENV === 'development', // Enable debug in development
+  debug: process.env.NODE_ENV === 'development',
 });
 
 /**
- * Utility function to get access token if needed for API calls
- * This can be used in API routes or server actions where you need the full token
+ * Utility function to get access token for API calls
+ * Since we don't store tokens in session anymore, we need to get them from JWT
  */
 export async function getAccessToken() {
-  const session = await auth();
-  
-  if (!session) {
+  try {
+    const session = await auth();
+    if (!session) return null;
+    
+    // In production, you might want to store tokens in a secure database
+    // and retrieve them here using the user ID
+    return null; // Tokens not available in session for security
+  } catch {
     return null;
   }
-  
-  // In a real implementation, you might want to store tokens in a database
-  // and retrieve them here, or implement a token refresh mechanism
-  return null; // Token not available in session anymore for security
 }
