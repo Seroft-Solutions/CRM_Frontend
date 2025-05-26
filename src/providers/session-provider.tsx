@@ -1,186 +1,120 @@
-/**
- * Session Context Provider
- * 
- * This provides a more optimized session context that reduces redundant session calls
- * by managing session state efficiently across client components.
- */
+'use client';
 
-'use client'
+import React, { createContext, useContext } from 'react';
+import { SessionProvider, useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { SessionProvider, useSession as useNextAuthSession } from 'next-auth/react'
-import type { Session } from 'next-auth'
-
-interface Organization {
-  name: string;
-  id: string;
+// Simple context for additional auth utilities
+interface AuthContextValue {
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  hasOrganization: (orgId: string) => boolean;
+  getUserRoles: () => string[];
+  getUserOrganizations: () => Array<{ name: string; id: string }>;
 }
 
-interface SessionContextValue {
-  session: Session | null
-  status: 'loading' | 'authenticated' | 'unauthenticated'
-  isLoading: boolean
-  error?: string
-  refetch: () => void
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: React.ReactNode;
+  session?: Session | null;
 }
 
-const SessionContext = createContext<SessionContextValue | undefined>(undefined)
+function AuthContextProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
 
-interface SessionProviderProps {
-  children: React.ReactNode
-  // Optional: provide session from server-side if available
-  serverSession?: Session | null
-}
+  const hasRole = (role: string): boolean => {
+    return session?.user?.roles?.includes(role) ?? false;
+  };
 
-function OptimizedSessionInner({ children, serverSession }: SessionProviderProps) {
-  const { data: session, status, update } = useNextAuthSession()
-  const [sessionState, setSessionState] = useState<Session | null>(serverSession || null)
-  const [isInitialized, setIsInitialized] = useState(!!serverSession)
+  const hasAnyRole = (roles: string[]): boolean => {
+    return roles.some(role => session?.user?.roles?.includes(role)) ?? false;
+  };
 
-  // Update local session state when NextAuth session changes
-  useEffect(() => {
-    if (status !== 'loading') {
-      setSessionState(session)
-      setIsInitialized(true)
-    }
-  }, [session, status])
+  const hasOrganization = (orgId: string): boolean => {
+    return session?.user?.organizations?.some(org => org.id === orgId) ?? false;
+  };
 
-  const refetch = useCallback(() => {
-    update()
-  }, [update])
+  const getUserRoles = (): string[] => {
+    return session?.user?.roles ?? [];
+  };
 
-  const contextValue: SessionContextValue = {
-    session: sessionState,
-    status: !isInitialized ? 'loading' : status,
-    isLoading: !isInitialized || status === 'loading',
-    refetch
-  }
+  const getUserOrganizations = (): Array<{ name: string; id: string }> => {
+    return session?.user?.organizations ?? [];
+  };
 
-  return (
-    <SessionContext.Provider value={contextValue}>
-      {children}
-    </SessionContext.Provider>
-  )
-}
-
-export function OptimizedSessionProvider({ children, serverSession }: SessionProviderProps) {
-  return (
-    <SessionProvider session={serverSession}>
-      <OptimizedSessionInner serverSession={serverSession}>
-        {children}
-      </OptimizedSessionInner>
-    </SessionProvider>
-  )
-}
-
-/**
- * Optimized useSession hook that uses our context
- */
-export function useOptimizedSession() {
-  const context = useContext(SessionContext)
-  
-  if (context === undefined) {
-    throw new Error('useOptimizedSession must be used within OptimizedSessionProvider')
-  }
-  
-  return context
-}
-
-/**
- * Hook for role-based access control
- */
-export function useUserRoles() {
-  const { session } = useOptimizedSession()
-  
-  const hasRole = useCallback((role: string) => {
-    return session?.user?.roles?.includes(role) ?? false
-  }, [session?.user?.roles])
-  
-  const hasAnyRole = useCallback((roles: string[]) => {
-    return roles.some(role => session?.user?.roles?.includes(role)) ?? false
-  }, [session?.user?.roles])
-  
-  const hasAllRoles = useCallback((roles: string[]) => {
-    return roles.every(role => session?.user?.roles?.includes(role)) ?? false
-  }, [session?.user?.roles])
-  
-  return {
-    roles: session?.user?.roles || [],
+  const contextValue: AuthContextValue = {
     hasRole,
     hasAnyRole,
-    hasAllRoles
-  }
-}
-
-/**
- * Hook for organization-based access control
- */
-export function useUserOrganizations() {
-  const { session } = useOptimizedSession()
-  
-  const hasOrganization = useCallback((organizationId: string) => {
-    return session?.user?.organizations?.some(org => org.id === organizationId) ?? false
-  }, [session?.user?.organizations])
-  
-  const hasAnyOrganization = useCallback((organizationIds: string[]) => {
-    return organizationIds.some(orgId => 
-      session?.user?.organizations?.some(org => org.id === orgId)
-    ) ?? false
-  }, [session?.user?.organizations])
-  
-  const getOrganizationByName = useCallback((name: string) => {
-    return session?.user?.organizations?.find(org => org.name === name) || null
-  }, [session?.user?.organizations])
-  
-  const getOrganizationById = useCallback((id: string) => {
-    return session?.user?.organizations?.find(org => org.id === id) || null
-  }, [session?.user?.organizations])
-  
-  return {
-    organizations: session?.user?.organizations || [],
-    currentOrganization: session?.user?.currentOrganization || null,
     hasOrganization,
-    hasAnyOrganization,
-    getOrganizationByName,
-    getOrganizationById
-  }
+    getUserRoles,
+    getUserOrganizations,
+  };
+
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-/**
- * Hook for combined role and organization checks
- */
-export function usePermissions() {
-  const { hasRole, hasAnyRole, hasAllRoles } = useUserRoles()
-  const { hasOrganization, hasAnyOrganization } = useUserOrganizations()
-  
-  const hasRoleInOrganization = useCallback((role: string, organizationId: string) => {
-    return hasRole(role) && hasOrganization(organizationId)
-  }, [hasRole, hasOrganization])
-  
-  const hasAnyRoleInOrganization = useCallback((roles: string[], organizationId: string) => {
-    return hasAnyRole(roles) && hasOrganization(organizationId)
-  }, [hasAnyRole, hasOrganization])
-  
-  return {
-    hasRoleInOrganization,
-    hasAnyRoleInOrganization
-  }
+export function AppSessionProvider({ children, session }: AuthProviderProps) {
+  return (
+    <SessionProvider session={session}>
+      <AuthContextProvider>
+        {children}
+      </AuthContextProvider>
+    </SessionProvider>
+  );
 }
 
-/**
- * Hook for user information
- */
-export function useUser() {
-  const { session, status, isLoading } = useOptimizedSession()
+// Custom hooks for easier access to auth data
+export function useAuth() {
+  const context = useContext(AuthContext);
+  const { data: session, status } = useSession();
+  
+  if (context === undefined) {
+    throw new Error('useAuth must be used within AppSessionProvider');
+  }
   
   return {
-    user: session?.user || null,
+    session,
+    status,
     isAuthenticated: status === 'authenticated',
-    isLoading,
-    accessToken: session?.accessToken,
-    idToken: session?.idToken,
-    roles: session?.user?.roles || [],
-    organizations: session?.user?.organizations || [],
-    currentOrganization: session?.user?.currentOrganization || null
-  }
+    isLoading: status === 'loading',
+    user: session?.user,
+    error: session?.error,
+    ...context,
+  };
+}
+
+// Simplified hooks for common use cases
+export function useUser() {
+  const { data: session } = useSession();
+  return session?.user ?? null;
+}
+
+export function useUserRoles() {
+  const { data: session } = useSession();
+  const roles = session?.user?.roles ?? [];
+  
+  return {
+    roles,
+    hasRole: (role: string) => roles.includes(role),
+    hasAnyRole: (checkRoles: string[]) => checkRoles.some(role => roles.includes(role)),
+    hasAllRoles: (checkRoles: string[]) => checkRoles.every(role => roles.includes(role)),
+  };
+}
+
+export function useUserOrganizations() {
+  const { data: session } = useSession();
+  const organizations = session?.user?.organizations ?? [];
+  
+  return {
+    organizations,
+    currentOrganization: organizations.length > 0 ? organizations[0] : null, // Use first org as current
+    hasOrganization: (orgId: string) => organizations.some(org => org.id === orgId),
+    getOrganizationById: (id: string) => organizations.find(org => org.id === id) ?? null,
+    getOrganizationByName: (name: string) => organizations.find(org => org.name === name) ?? null,
+  };
 }

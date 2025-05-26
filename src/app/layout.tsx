@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryClientProvider } from "@/core";
-import { OptimizedSessionProvider } from "@/providers/session-provider";
+import { AppSessionProvider } from "@/providers/session-provider";
 import { auth } from "@/auth";
 
 const geistSans = Geist({
@@ -33,11 +33,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <OptimizedSessionProvider serverSession={session}>
+        <AppSessionProvider session={session}>
           <QueryClientProvider>
             {children}
           </QueryClientProvider>
-        </OptimizedSessionProvider>
+        </AppSessionProvider>
       </body>
     </html>
   );
