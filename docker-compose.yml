@@ -1,0 +1,31 @@
+version: '3.8'
+
+# Local development Docker Compose for frontend
+# For other environments, see deploy/docker/ directory
+
+services:
+  crm-frontend-local:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: development
+        ENV_FILE: .env
+    image: crm-frontend:local
+    container_name: crm-frontend-local
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    networks:
+      - crm-local-network
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+
+networks:
+  crm-local-network:
+    name: crm-local-network
+    external: true
