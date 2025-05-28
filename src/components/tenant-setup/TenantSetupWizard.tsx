@@ -49,12 +49,12 @@ export function TenantSetupWizard({ tenantSetup }: TenantSetupWizardProps) {
   // Show setup completed state
   if (state.isSetupCompleted && !state.isSetupRequired) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card>
           <CardHeader className="text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <CardTitle className="text-2xl text-green-700">Setup Complete!</CardTitle>
-            <CardDescription>
+            <CheckCircle className="w-20 h-20 text-green-600 mx-auto mb-4" />
+            <CardTitle className="text-3xl text-green-700">Setup Complete!</CardTitle>
+            <CardDescription className="text-lg">
               Your organization is ready to use CRM Cup.
             </CardDescription>
           </CardHeader>
@@ -62,7 +62,7 @@ export function TenantSetupWizard({ tenantSetup }: TenantSetupWizardProps) {
             <p className="text-sm text-muted-foreground mb-4">
               Redirecting to dashboard...
             </p>
-            <div className="w-8 h-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+            <div className="w-8 h-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent mx-auto"></div>
           </CardContent>
         </Card>
       </div>
@@ -72,14 +72,12 @@ export function TenantSetupWizard({ tenantSetup }: TenantSetupWizardProps) {
   // Show setup in progress
   if (state.isSetupInProgress) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-2xl">
-          <TenantSetupProgress 
-            progress={state.setupProgress}
-            organizationName={state.organizationName}
-            onRetry={actions.retrySetup}
-          />
-        </div>
+      <div className="container mx-auto max-w-4xl py-8">
+        <TenantSetupProgress 
+          progress={state.setupProgress}
+          organizationName={state.organizationName}
+          onRetry={actions.retrySetup}
+        />
       </div>
     );
   }
@@ -87,12 +85,12 @@ export function TenantSetupWizard({ tenantSetup }: TenantSetupWizardProps) {
   // Show error state with retry option
   if (state.error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card>
           <CardHeader className="text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <CardTitle className="text-2xl text-red-700">Setup Failed</CardTitle>
-            <CardDescription>
+            <AlertCircle className="w-20 h-20 text-red-600 mx-auto mb-4" />
+            <CardTitle className="text-3xl text-red-700">Setup Failed</CardTitle>
+            <CardDescription className="text-lg">
               There was an issue setting up your organization.
             </CardDescription>
           </CardHeader>
@@ -128,26 +126,13 @@ export function TenantSetupWizard({ tenantSetup }: TenantSetupWizardProps) {
   // Show welcome and setup form
   if (showForm) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-2xl">
-          <Card>
-            <CardHeader className="text-center">
-              <Building2 className="w-16 h-16 text-primary mx-auto mb-4" />
-              <CardTitle className="text-3xl">Welcome to CRM Cup!</CardTitle>
-              <CardDescription className="text-lg">
-                Let&apos;s set up your organization: <strong>{state.organizationName}</strong>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TenantSetupForm
-                organizationName={state.organizationName || ''}
-                onSetupRequest={setSetupRequest}
-                onStartSetup={handleStartSetup}
-                isLoading={state.isInitiatingSetup}
-              />
-            </CardContent>
-          </Card>
-        </div>
+      <div className="container mx-auto py-8">
+        <TenantSetupForm
+          organizationName={state.organizationName || ''}
+          onSetupRequest={setSetupRequest}
+          onStartSetup={handleStartSetup}
+          isLoading={state.isInitiatingSetup}
+        />
       </div>
     );
   }
