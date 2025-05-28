@@ -19,3 +19,4 @@ export * from './endpoints/public-user-resource/public-user-resource.gen';
 export * from './endpoints/account-resource/account-resource.gen';
 export * from './endpoints/auth-info-resource/auth-info-resource.gen';
 export * from './schemas';
+export * from './endpoints/tenant-setup-controller/tenant-setup-controller.gen';

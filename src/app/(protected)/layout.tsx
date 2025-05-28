@@ -11,6 +11,8 @@ import {
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
+import { useTenantSetup } from "@/hooks/useTenantSetup";
+import { TenantSetupWizard } from "@/components/tenant-setup";
 
 export default function DashboardLayout({
   children,
@@ -18,6 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const tenantSetup = useTenantSetup();
 
   // Handle authentication redirect
   useEffect(() => {
@@ -43,7 +46,12 @@ export default function DashboardLayout({
     return null;
   }
 
-  // If authenticated, render the dashboard layout
+  // Check if tenant setup is required
+  if (tenantSetup.state.isSetupRequired && !tenantSetup.state.isSetupCompleted) {
+    return <TenantSetupWizard tenantSetup={tenantSetup} />;
+  }
+
+  // If authenticated and tenant is set up, render the dashboard layout
   return (
     <SidebarProvider>
       <AppSidebar />
