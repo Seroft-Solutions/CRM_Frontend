@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma, userUtils } from "@/lib/prisma";
 import { jwtDecode } from "jwt-decode";
 
 // Type declarations for NextAuth v5
@@ -15,7 +17,9 @@ declare module "next-auth" {
         name: string;
         id: string;
       }>;
+      keycloakId?: string;
     };
+    accessToken?: string;
     error?: "RefreshAccessTokenError";
   }
 }
@@ -28,6 +32,7 @@ declare module "next-auth/jwt" {
     expiresAt?: number;
     roles?: string[];
     organizations?: Array<{ name: string; id: string }>;
+    keycloakId?: string;
     error?: "RefreshAccessTokenError";
   }
 }
@@ -76,8 +81,8 @@ function extractEssentialRoles(tokenPayload: KeycloakTokenPayload): string[] {
     role.includes('delete')
   );
   
-  // Limit to maximum 5 roles to keep session small
-  return essentialRoles.slice(0, 5);
+  // Limit to maximum 10 roles
+  return essentialRoles.slice(0, 10);
 }
 
 /**
@@ -87,12 +92,12 @@ function extractLimitedOrganizations(tokenPayload: KeycloakTokenPayload): Array<
   if (!tokenPayload.organizations) return [];
   
   const orgs = Object.entries(tokenPayload.organizations).map(([name, data]) => ({
-    name: name.length > 20 ? name.substring(0, 20) + '...' : name, // Limit name length
+    name: name.length > 50 ? name.substring(0, 50) + '...' : name, // Limit name length
     id: data.id
   }));
   
-  // Limit to maximum 3 organizations to keep session small
-  return orgs.slice(0, 3);
+  // Limit to maximum 5 organizations
+  return orgs.slice(0, 5);
 }
 
 /**
@@ -143,16 +148,113 @@ async function refreshAccessToken(token: JWT) {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   
+  // Use Prisma adapter for database session strategy
+  adapter: PrismaAdapter(prisma),
+  
   session: {
-    strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours
+    strategy: "database", // Changed from "jwt" to "database"
+    maxAge: 8 * 60 * 60, // 8 hours (shorter for better security)
+    updateAge: 60 * 60, // 1 hour (update session every hour)
+  },
+  
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
   },
   
   callbacks: {
     ...authConfig.callbacks,
     
-    async jwt({ token, account }) {
-      // Initial sign in
+    async signIn({ user, account, profile }) {
+      try {
+        if (account?.provider === 'keycloak' && account.access_token) {
+          // Decode the Keycloak token to get additional information
+          const decodedToken = jwtDecode<KeycloakTokenPayload>(account.access_token);
+          
+          // Update user with Keycloak information
+          if (user.id) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                keycloak_id: decodedToken.sub,
+                preferred_username: decodedToken.preferred_username,
+                last_login: new Date(),
+                updated_at: new Date(),
+              }
+            });
+
+            // Sync user roles and organizations
+            const roles = extractEssentialRoles(decodedToken);
+            const organizations = extractLimitedOrganizations(decodedToken);
+            
+            await userUtils.syncUserRoles(user.id, roles);
+            await userUtils.syncUserOrganizations(user.id, organizations);
+          }
+        }
+        return true;
+      } catch (error) {
+        console.error("Error in signIn callback:", error);
+        return true; // Still allow sign in even if sync fails
+      }
+    },
+
+    async session({ session, user, token }) {
+      try {
+        if (user) {
+          // Get user with roles and organizations from database
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            include: {
+              roles: true,
+              organizations: true,
+              accounts: {
+                where: { provider: 'keycloak' },
+                select: { access_token: true, refresh_token: true, expires_at: true }
+              }
+            }
+          });
+
+          if (dbUser) {
+            session.user = {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              keycloakId: dbUser.keycloak_id || undefined,
+              roles: dbUser.roles.map(r => r.role),
+              organizations: dbUser.organizations.map(o => ({
+                id: o.organizationId,
+                name: o.organizationName
+              }))
+            };
+
+            // Check if we have a valid access token
+            const account = dbUser.accounts[0];
+            if (account?.access_token && account.expires_at) {
+              const now = Math.floor(Date.now() / 1000);
+              if (account.expires_at > now) {
+                session.accessToken = account.access_token;
+              }
+            }
+          }
+        }
+        
+        return session;
+      } catch (error) {
+        console.error("Error in session callback:", error);
+        return session;
+      }
+    },
+
+    async jwt({ token, account, user }) {
+      // This callback is still used for token refresh even with database sessions
       if (account) {
         const decodedToken = jwtDecode<KeycloakTokenPayload>(account.access_token!);
         
@@ -162,6 +264,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           refreshToken: account.refresh_token,
           idToken: account.id_token,
           expiresAt: account.expires_at,
+          keycloakId: decodedToken.sub,
           roles: extractEssentialRoles(decodedToken),
           organizations: extractLimitedOrganizations(decodedToken),
         };
@@ -173,45 +276,79 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       
       // Access token has expired, try to refresh it
-      return refreshAccessToken(token);
-    },
-    
-    async session({ session, token }) {
-      if (token) {
-        // Only store essential data in session (not tokens to reduce size)
-        session.user = {
-          id: token.sub!,
-          name: token.name,
-          email: token.email,
-          image: token.picture,
-          roles: token.roles || [],
-          organizations: token.organizations || [],
-        };
-        
-        // Only include error, not tokens
-        session.error = token.error;
+      const refreshedToken = await refreshAccessToken(token);
+      
+      // Update the database with the new token
+      if (refreshedToken.accessToken && user?.id) {
+        try {
+          await prisma.account.updateMany({
+            where: {
+              userId: user.id,
+              provider: 'keycloak'
+            },
+            data: {
+              access_token: refreshedToken.accessToken,
+              refresh_token: refreshedToken.refreshToken,
+              expires_at: refreshedToken.expiresAt,
+              updated_at: new Date()
+            }
+          });
+        } catch (error) {
+          console.error("Error updating token in database:", error);
+        }
       }
       
-      return session;
+      return refreshedToken;
     },
   },
   
   events: {
-    async signOut({ token }) {
-      // Perform Keycloak logout
-      if (token?.idToken) {
-        try {
-          const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/logout`;
-          const logoutUrl = new URL(url);
-          logoutUrl.searchParams.append('id_token_hint', token.idToken);
-          logoutUrl.searchParams.append('post_logout_redirect_uri', process.env.AUTH_URL!);
-          
-          await fetch(logoutUrl.toString(), { method: 'GET' });
-        } catch (error) {
-          console.error('Keycloak logout error:', error);
+    async signOut({ session }) {
+      try {
+        // Clean up expired sessions when user signs out
+        await prisma.session.deleteMany({
+          where: {
+            expires: {
+              lt: new Date()
+            }
+          }
+        });
+
+        // Perform Keycloak logout if we have the necessary information
+        if (session?.user?.id) {
+          const account = await prisma.account.findFirst({
+            where: {
+              userId: session.user.id,
+              provider: 'keycloak'
+            },
+            select: { id_token: true }
+          });
+
+          if (account?.id_token) {
+            try {
+              const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/logout`;
+              const logoutUrl = new URL(url);
+              logoutUrl.searchParams.append('id_token_hint', account.id_token);
+              logoutUrl.searchParams.append('post_logout_redirect_uri', process.env.AUTH_URL!);
+              
+              await fetch(logoutUrl.toString(), { method: 'GET' });
+            } catch (error) {
+              console.error('Keycloak logout error:', error);
+            }
+          }
         }
+      } catch (error) {
+        console.error("Error in signOut event:", error);
       }
     },
+
+    async createUser({ user }) {
+      console.log(`New user created: ${user.email}`);
+    },
+
+    async linkAccount({ user, account, profile }) {
+      console.log(`Account linked for user: ${user.email}, provider: ${account.provider}`);
+    }
   },
   
   debug: process.env.NODE_ENV === 'development',
@@ -219,17 +356,83 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 /**
  * Utility function to get access token for API calls
- * Since we don't store tokens in session anymore, we need to get them from JWT
  */
-export async function getAccessToken() {
+export async function getAccessToken(): Promise<string | null> {
   try {
     const session = await auth();
-    if (!session) return null;
-    
-    // In production, you might want to store tokens in a secure database
-    // and retrieve them here using the user ID
-    return null; // Tokens not available in session for security
-  } catch {
+    if (!session?.user?.id) return null;
+
+    // Get the latest access token from database
+    const account = await prisma.account.findFirst({
+      where: {
+        userId: session.user.id,
+        provider: 'keycloak'
+      },
+      select: {
+        access_token: true,
+        expires_at: true,
+        refresh_token: true
+      }
+    });
+
+    if (!account?.access_token) return null;
+
+    // Check if token is still valid
+    const now = Math.floor(Date.now() / 1000);
+    if (account.expires_at && account.expires_at > now) {
+      return account.access_token;
+    }
+
+    // Token expired, try to refresh
+    if (account.refresh_token) {
+      try {
+        const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
+        
+        const response = await fetch(url, {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          method: "POST",
+          body: new URLSearchParams({
+            client_id: process.env.AUTH_KEYCLOAK_ID!,
+            client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
+            grant_type: "refresh_token",
+            refresh_token: account.refresh_token,
+          }),
+        });
+
+        if (response.ok) {
+          const refreshedTokens = await response.json();
+          
+          // Update the database with new tokens
+          await prisma.account.updateMany({
+            where: {
+              userId: session.user.id,
+              provider: 'keycloak'
+            },
+            data: {
+              access_token: refreshedTokens.access_token,
+              refresh_token: refreshedTokens.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
+              updated_at: new Date()
+            }
+          });
+
+          return refreshedTokens.access_token;
+        }
+      } catch (error) {
+        console.error("Error refreshing token:", error);
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error getting access token:", error);
     return null;
   }
+}
+
+/**
+ * Server-side utility to get access token
+ */
+export async function getServerAccessToken(): Promise<string | null> {
+  return await getAccessToken();
 }
