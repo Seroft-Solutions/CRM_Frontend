@@ -12,7 +12,7 @@ export interface RequestData {
   [key: string]: unknown;
 }
 
-// Token cache to avoid redundant session calls
+// Token cache to avoid redundant API calls
 class TokenCache {
   private token: string | null = null;
   private expiry: number = 0;
@@ -45,8 +45,8 @@ class TokenCache {
       
       if (newToken) {
         this.token = newToken;
-        // Cache for 5 minutes (considering most JWTs expire in 15-30 minutes)
-        this.expiry = Date.now() + (5 * 60 * 1000);
+        // Cache for 45 minutes (tokens usually expire in 1 hour)
+        this.expiry = Date.now() + (45 * 60 * 1000);
       }
       
       return newToken;
@@ -65,6 +65,15 @@ class TokenCache {
   }
 }
 
+// Response interface for token API
+interface TokenResponse {
+  accessToken: string;
+  userId: string;
+  userEmail?: string;
+  organizations?: Array<{ id: string; name: string }>;
+  expiresAt: number;
+}
+
 export class BaseService {
   protected instance: AxiosInstance;
   protected config: BaseServiceConfig;
@@ -80,6 +89,7 @@ export class BaseService {
         Accept: 'application/json',
         ...config.headers,
       },
+      withCredentials: true, // Important for session cookies
     });
 
     this.setupInterceptors();
@@ -89,10 +99,20 @@ export class BaseService {
     // Request interceptor for authentication
     this.instance.interceptors.request.use(
       async (config) => {
-        const token = await this.tokenCache.getToken(() => this.getAuthTokenFromSession());
+        // For database session strategy, get token from our API endpoint
+        const token = await this.tokenCache.getToken(() => this.getAuthTokenFromAPI());
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Add tenant information if available
+        const organizations = await this.getCurrentUserOrganizations();
+        if (organizations && organizations.length > 0) {
+          // Add the first organization as tenant header for multi-tenant backend
+          config.headers['X-Tenant-ID'] = organizations[0].id;
+          config.headers['X-Organization-ID'] = organizations[0].id;
+        }
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -101,61 +121,91 @@ export class BaseService {
     // Response interceptor for error handling
     this.instance.interceptors.response.use(
       (response) => response,
-      (error) => {
-        // If unauthorized, invalidate token cache
+      async (error) => {
+        // If unauthorized, invalidate token cache and try once more
         if (error.response?.status === 401) {
           this.tokenCache.invalidate();
+          
+          // Try to get a fresh token
+          const freshToken = await this.getAuthTokenFromAPI();
+          if (freshToken && error.config && !error.config._retried) {
+            error.config._retried = true;
+            error.config.headers.Authorization = `Bearer ${freshToken}`;
+            return this.instance.request(error.config);
+          }
+          
+          // If still unauthorized, redirect to login
+          if (typeof window !== 'undefined') {
+            window.location.href = '/auth/signin';
+          }
         }
         return this.handleError(error);
       }
     );
   }
 
-  protected async getAuthTokenFromSession(): Promise<string | null> {
+  /**
+   * Get access token from our API endpoint (database session strategy)
+   */
+  protected async getAuthTokenFromAPI(): Promise<string | null> {
     try {
-      switch (this.config.authType) {
-        case 'bearer':
-          // For client-side, tokens are no longer stored in session for security
-          // Instead, we'll use session cookies for authentication
-          if (typeof window !== 'undefined') {
-            // Client-side: Check if user is authenticated via session
-            const response = await fetch('/api/auth/session');
-            if (response.ok) {
-              const session = await response.json();
-              // Since tokens are not in session anymore, we'll rely on cookie-based auth
-              // or create a separate token endpoint if needed
-              if (session?.user) {
-                // User is authenticated, but we don't have client-side tokens
-                // This is by design for security. API calls should use session cookies
-                return 'session-authenticated'; // Placeholder to indicate auth status
-              }
-            }
-          } else {
-            // Server-side - can access tokens from JWT
-            const { auth } = await import('@/auth');
-            const session = await auth();
-            
-            // On server-side, we can access the full JWT token
-            if (session?.user) {
-              // Return a server-side token or handle authentication server-side
-              return 'server-authenticated'; // Placeholder
-            }
-          }
-          return null;
-        case 'api-key':
-          // Handle API key authentication
-          return process.env[this.config.authTokenKey || ''] || null;
-        case 'client-credentials':
-          // Handle client credentials flow
-          return await this.getClientCredentialsToken();
-        case 'none':
-        default:
-          return null;
+      // Only available on client-side
+      if (typeof window === 'undefined') {
+        return null;
       }
+
+      const response = await fetch('/api/auth/token', {
+        method: 'GET',
+        credentials: 'include', // Include session cookies
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('User not authenticated, redirecting to login');
+          return null;
+        }
+        throw new Error(`Token API responded with status: ${response.status}`);
+      }
+
+      const data: TokenResponse = await response.json();
+      return data.accessToken;
     } catch (error) {
-      console.error('Error getting auth token:', error);
+      console.error('Error getting access token from API:', error);
       return null;
     }
+  }
+
+  /**
+   * Get current user organizations for tenant context
+   */
+  protected async getCurrentUserOrganizations(): Promise<Array<{ id: string; name: string }> | null> {
+    try {
+      if (typeof window === 'undefined') {
+        return null;
+      }
+
+      const response = await fetch('/api/auth/session', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const session = await response.json();
+      return session?.user?.organizations || null;
+    } catch (error) {
+      console.error('Error getting user organizations:', error);
+      return null;
+    }
+  }
+
+  protected async getAuthTokenFromSession(): Promise<string | null> {
+    // This method is kept for compatibility but now uses the API endpoint
+    return await this.getAuthTokenFromAPI();
   }
 
   protected async getClientCredentialsToken(): Promise<string | null> {
@@ -188,15 +238,7 @@ export class BaseService {
       const response = await this.instance.get<T>(url, config);
       return response.data;
     } catch (error) {
-      // Handle authentication errors gracefully
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // Redirect to login or handle auth error
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
+      throw this.enhanceError(error);
     }
   }
 
@@ -205,13 +247,7 @@ export class BaseService {
       const response = await this.instance.post<T>(url, data, config);
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
+      throw this.enhanceError(error);
     }
   }
 
@@ -220,13 +256,7 @@ export class BaseService {
       const response = await this.instance.put<T>(url, data, config);
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
+      throw this.enhanceError(error);
     }
   }
 
@@ -235,13 +265,7 @@ export class BaseService {
       const response = await this.instance.patch<T>(url, data, config);
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
+      throw this.enhanceError(error);
     }
   }
 
@@ -250,13 +274,77 @@ export class BaseService {
       const response = await this.instance.delete<T>(url, config);
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
+      throw this.enhanceError(error);
     }
+  }
+
+  private enhanceError(error: any) {
+    if (axios.isAxiosError(error)) {
+      // Handle specific HTTP status codes
+      switch (error.response?.status) {
+        case 401:
+          return new Error('Authentication required - please sign in again');
+        case 403:
+          return new Error('Access forbidden - insufficient permissions');
+        case 404:
+          return new Error('Resource not found');
+        case 429:
+          return new Error('Too many requests - please try again later');
+        case 500:
+          return new Error('Server error - please try again later');
+        default:
+          return error;
+      }
+    }
+    return error;
+  }
+}
+
+/**
+ * Utility function to check if user is authenticated
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  try {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const response = await fetch('/api/auth/session', {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const session = await response.json();
+    return !!session?.user;
+  } catch (error) {
+    console.error('Error checking authentication status:', error);
+    return false;
+  }
+}
+
+/**
+ * Utility function to get current user session
+ */
+export async function getCurrentSession() {
+  try {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const response = await fetch('/api/auth/session', {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting current session:', error);
+    return null;
   }
 }
