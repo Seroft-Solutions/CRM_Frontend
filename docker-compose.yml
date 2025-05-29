@@ -1,31 +1,33 @@
 version: '3.8'
 
-# Local development Docker Compose for frontend
-# For other environments, see deploy/docker/ directory
-
 services:
-  crm-frontend-local:
+  crm-frontend:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        NODE_ENV: development
-        ENV_FILE: .env
-    image: crm-frontend:local
-    container_name: crm-frontend-local
-    env_file: .env
+    container_name: crm-frontend-app
     ports:
-      - "3000:3000"
-    volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-    networks:
-      - crm-local-network
-    restart: unless-stopped
+      - "${PORT:-3000}:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3000}
+      - NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED:-1}
+      # Add your custom environment variables here
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+    restart: unless-stopped
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
-  crm-local-network:
-    name: crm-local-network
-    external: true
+  crm-network:
+    driver: bridge
