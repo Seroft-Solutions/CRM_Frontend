@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { SourceDTO } from "@/core/api/generated/schemas/SourceDTO";
+import type { SourceDTO } from "@/core/api/generated/spring/schemas/SourceDTO";
 
 
 
@@ -35,7 +35,13 @@ export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowP
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {source.remark}
+        {source.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowP
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(source.id)}
-              disabled={isDeleting}
+              onClick={() => source.id && onDelete(source.id)}
+              disabled={isDeleting || !source.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

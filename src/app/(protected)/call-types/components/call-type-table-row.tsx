@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CallTypeDTO } from "@/core/api/generated/schemas/CallTypeDTO";
+import type { CallTypeDTO } from "@/core/api/generated/spring/schemas/CallTypeDTO";
 
 
 
@@ -35,7 +35,13 @@ export function CallTypeTableRow({ callType, onDelete, isDeleting }: CallTypeTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callType.remark}
+        {callType.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function CallTypeTableRow({ callType, onDelete, isDeleting }: CallTypeTab
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(callType.id)}
-              disabled={isDeleting}
+              onClick={() => callType.id && onDelete(callType.id)}
+              disabled={isDeleting || !callType.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

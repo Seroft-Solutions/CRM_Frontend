@@ -2,14 +2,14 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import { jwtDecode } from "jwt-decode";
 
-// Type declarations for NextAuth v5
+// Type declarations for NextAuth v5 - Override default interfaces
 declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      name?: string;
-      email?: string;
-      image?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
       roles: string[];
       organizations: Array<{
         name: string;
@@ -18,9 +18,7 @@ declare module "next-auth" {
     };
     error?: "RefreshAccessTokenError";
   }
-}
 
-declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
@@ -45,6 +43,30 @@ interface KeycloakTokenPayload {
   organizations?: Record<string, { id: string }>;
   exp: number;
   iat: number;
+}
+
+// Local JWT type that's compatible with NextAuth's JWT interface
+interface JWTToken {
+  // Standard JWT fields (matching NextAuth's JWT interface)
+  sub?: string;
+  name?: string | null;
+  email?: string | null;
+  picture?: string | null;
+  iat?: number;
+  exp?: number;
+  jti?: string;
+  
+  // Our custom OAuth/Keycloak fields
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
+  expiresAt?: number;
+  roles?: string[];
+  organizations?: Array<{ name: string; id: string }>;
+  error?: "RefreshAccessTokenError";
+  
+  // Additional fields that might be present
+  [key: string]: any;
 }
 
 /**
@@ -98,7 +120,7 @@ function extractLimitedOrganizations(tokenPayload: KeycloakTokenPayload): Array<
 /**
  * Refresh access token using refresh token
  */
-async function refreshAccessToken(token: JWT) {
+async function refreshAccessToken(token: JWTToken) {
   try {
     const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     
@@ -152,12 +174,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig.callbacks,
     
     async jwt({ token, account }) {
+      const jwtToken = token as JWTToken;
+      
       // Initial sign in
       if (account) {
         const decodedToken = jwtDecode<KeycloakTokenPayload>(account.access_token!);
         
         return {
-          ...token,
+          ...jwtToken,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           idToken: account.id_token,
@@ -168,28 +192,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       
       // Return previous token if the access token has not expired yet
-      if (token.expiresAt && Date.now() < token.expiresAt * 1000) {
-        return token;
+      if (jwtToken.expiresAt && typeof jwtToken.expiresAt === 'number' && Date.now() < jwtToken.expiresAt * 1000) {
+        return jwtToken;
       }
       
       // Access token has expired, try to refresh it
-      return refreshAccessToken(token);
+      return refreshAccessToken(jwtToken);
     },
     
     async session({ session, token }) {
-      if (token) {
+      const jwtToken = token as JWTToken;
+      
+      if (jwtToken) {
         // Only store essential data in session (not tokens to reduce size)
         session.user = {
-          id: token.sub!,
-          name: token.name,
-          email: token.email,
-          image: token.picture,
-          roles: token.roles || [],
-          organizations: token.organizations || [],
-        };
+          id: jwtToken.sub!,
+          name: jwtToken.name ?? undefined,
+          email: jwtToken.email ?? undefined,
+          image: jwtToken.picture ?? undefined,
+          roles: jwtToken.roles || [],
+          organizations: jwtToken.organizations || [],
+        } as any; // Type assertion to override NextAuth's strict session types
         
         // Only include error, not tokens
-        session.error = token.error;
+        session.error = jwtToken.error;
       }
       
       return session;
@@ -197,13 +223,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   
   events: {
-    async signOut({ token }) {
+    async signOut(params) {
+      // Handle both possible parameter structures
+      const token = 'token' in params ? params.token : null;
+      const jwtToken = token as JWTToken | null;
+      
       // Perform Keycloak logout
-      if (token?.idToken) {
+      if (jwtToken?.idToken) {
         try {
           const url = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/logout`;
           const logoutUrl = new URL(url);
-          logoutUrl.searchParams.append('id_token_hint', token.idToken);
+          logoutUrl.searchParams.append('id_token_hint', jwtToken.idToken);
           logoutUrl.searchParams.append('post_logout_redirect_uri', process.env.AUTH_URL!);
           
           await fetch(logoutUrl.toString(), { method: 'GET' });

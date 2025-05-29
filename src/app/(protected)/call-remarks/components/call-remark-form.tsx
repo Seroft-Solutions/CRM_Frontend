@@ -46,7 +46,7 @@ import {
   useGetAllCallsInfinite,
   useSearchCallsInfinite 
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-import type { CallRemarkDTO } from "@/core/api/generated/schemas/CallRemarkDTO";
+import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
 
 interface CallRemarkFormProps {
   id?: number;
@@ -55,7 +55,7 @@ interface CallRemarkFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   remark: z.string(),
-  dateTime: z.string(),
+  dateTime: z.date(),
   call: z.number().optional(),
 });
 
@@ -105,7 +105,7 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
       remark: "",
 
 
-      dateTime: "",
+      dateTime: new Date(),
 
 
       call: undefined,
@@ -118,10 +118,10 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
     if (entity) {
       const formValues = {
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
 
-        dateTime: entity.dateTime,
+        dateTime: entity.dateTime ? new Date(entity.dateTime) : undefined,
 
 
         call: entity.call?.id,
@@ -134,11 +134,27 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       remark: data.remark,
+
+
       dateTime: data.dateTime,
+
 
       call: data.call ? { id: data.call } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['remark','dateTime','call',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as CallRemarkDTO;
 
     if (isNew) {
@@ -179,14 +195,35 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
           name="dateTime"
           render={({ field }) => (
 
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>DateTime *</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  placeholder="Enter dateTime"
-                />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
 
               <FormMessage />
             </FormItem>

@@ -93,7 +93,7 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">State</p>
 
-              <p>{entity.state?.name || "—"}</p>
+              <p>{(entity.state as any)?.name || entity.state?.id || "—"}</p>
 
             </div>
           </div>

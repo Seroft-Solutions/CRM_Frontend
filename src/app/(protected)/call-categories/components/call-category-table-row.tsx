@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CallCategoryDTO } from "@/core/api/generated/schemas/CallCategoryDTO";
+import type { CallCategoryDTO } from "@/core/api/generated/spring/schemas/CallCategoryDTO";
 
 
 
@@ -35,7 +35,13 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting }: Cal
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callCategory.remark}
+        {callCategory.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting }: Cal
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(callCategory.id)}
-              disabled={isDeleting}
+              onClick={() => callCategory.id && onDelete(callCategory.id)}
+              disabled={isDeleting || !callCategory.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

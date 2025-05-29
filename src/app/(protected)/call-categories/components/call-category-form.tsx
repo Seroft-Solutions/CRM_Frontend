@@ -41,7 +41,7 @@ import {
   useUpdateCallCategory,
   useGetCallCategory,
 } from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
-import type { CallCategoryDTO } from "@/core/api/generated/schemas/CallCategoryDTO";
+import type { CallCategoryDTO } from "@/core/api/generated/spring/schemas/CallCategoryDTO";
 
 interface CallCategoryFormProps {
   id?: number;
@@ -113,13 +113,13 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        description: entity.description,
+        description: entity.description || "",
 
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
       };
       form.reset(formValues);
@@ -129,9 +129,27 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+
       description: data.description,
+
+
       remark: data.remark,
+
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','description','remark',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as CallCategoryDTO;
 
     if (isNew) {
@@ -158,6 +176,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -177,6 +196,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter description"
                 />
               </FormControl>

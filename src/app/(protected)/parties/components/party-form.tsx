@@ -46,7 +46,7 @@ import {
   useGetAllCitiesInfinite,
   useSearchCitiesInfinite 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
-import type { PartyDTO } from "@/core/api/generated/schemas/PartyDTO";
+import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 interface PartyFormProps {
   id?: number;
@@ -146,31 +146,31 @@ export function PartyForm({ id }: PartyFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        mobile: entity.mobile,
+        mobile: entity.mobile || "",
 
 
-        email: entity.email,
+        email: entity.email || "",
 
 
-        whatsApp: entity.whatsApp,
+        whatsApp: entity.whatsApp || "",
 
 
-        contactPerson: entity.contactPerson,
+        contactPerson: entity.contactPerson || "",
 
 
-        address1: entity.address1,
+        address1: entity.address1 || "",
 
 
-        address2: entity.address2,
+        address2: entity.address2 || "",
 
 
-        address3: entity.address3,
+        address3: entity.address3 || "",
 
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
 
         city: entity.city?.id,
@@ -183,18 +183,48 @@ export function PartyForm({ id }: PartyFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+
       mobile: data.mobile,
+
+
       email: data.email,
+
+
       whatsApp: data.whatsApp,
+
+
       contactPerson: data.contactPerson,
+
+
       address1: data.address1,
+
+
       address2: data.address2,
+
+
       address3: data.address3,
+
+
       remark: data.remark,
+
 
       city: data.city ? { id: data.city } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','remark','city',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as PartyDTO;
 
     if (isNew) {
@@ -221,6 +251,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -240,6 +271,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter mobile"
                 />
               </FormControl>
@@ -259,6 +291,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter email"
                 />
               </FormControl>
@@ -278,6 +311,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter whatsApp"
                 />
               </FormControl>
@@ -297,6 +331,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter contactPerson"
                 />
               </FormControl>
@@ -316,6 +351,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter address1"
                 />
               </FormControl>
@@ -335,6 +371,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter address2"
                 />
               </FormControl>
@@ -354,6 +391,7 @@ export function PartyForm({ id }: PartyFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter address3"
                 />
               </FormControl>

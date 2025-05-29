@@ -41,7 +41,7 @@ import {
   useUpdateState,
   useGetState,
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-import type { StateDTO } from "@/core/api/generated/schemas/StateDTO";
+import type { StateDTO } from "@/core/api/generated/spring/schemas/StateDTO";
 
 interface StateFormProps {
   id?: number;
@@ -105,7 +105,7 @@ export function StateForm({ id }: StateFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
       };
       form.reset(formValues);
@@ -115,7 +115,21 @@ export function StateForm({ id }: StateFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as StateDTO;
 
     if (isNew) {
@@ -142,6 +156,7 @@ export function StateForm({ id }: StateFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>

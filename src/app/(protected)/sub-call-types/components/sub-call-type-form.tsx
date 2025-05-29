@@ -46,7 +46,7 @@ import {
   useGetAllCallTypesInfinite,
   useSearchCallTypesInfinite 
 } from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
-import type { SubCallTypeDTO } from "@/core/api/generated/schemas/SubCallTypeDTO";
+import type { SubCallTypeDTO } from "@/core/api/generated/spring/schemas/SubCallTypeDTO";
 
 interface SubCallTypeFormProps {
   id?: number;
@@ -122,13 +122,13 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        description: entity.description,
+        description: entity.description || "",
 
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
 
         callType: entity.callType?.id,
@@ -141,12 +141,30 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+
       description: data.description,
+
+
       remark: data.remark,
+
 
       callType: data.callType ? { id: data.callType } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','description','remark','callType',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as SubCallTypeDTO;
 
     if (isNew) {
@@ -173,6 +191,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -192,6 +211,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter description"
                 />
               </FormControl>

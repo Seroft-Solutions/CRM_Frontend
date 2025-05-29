@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CityDTO } from "@/core/api/generated/schemas/CityDTO";
+import type { CityDTO } from "@/core/api/generated/spring/schemas/CityDTO";
 
 
 
@@ -30,7 +30,7 @@ export function CityTableRow({ city, onDelete, isDeleting }: CityTableRowProps) 
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {city.district ? 
-          city.district.name : ""}
+          (city.district as any).name || city.district.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -66,8 +66,8 @@ export function CityTableRow({ city, onDelete, isDeleting }: CityTableRowProps) 
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(city.id)}
-              disabled={isDeleting}
+              onClick={() => city.id && onDelete(city.id)}
+              disabled={isDeleting || !city.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

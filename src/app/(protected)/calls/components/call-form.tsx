@@ -82,8 +82,8 @@ import {
   useGetAllCallStatusesInfinite,
   useSearchCallStatusesInfinite 
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
-import type { CallDTO } from "@/core/api/generated/schemas/CallDTO";
-import type { UserDTO } from "@/core/api/generated/schemas/UserDTO";
+import type { CallDTO } from "@/core/api/generated/spring/schemas/CallDTO";
+import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
 
 interface CallFormProps {
   id?: number;
@@ -92,8 +92,8 @@ interface CallFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   status: z.string().optional(),
-  assignedTo: z.number().optional(),
-  channelParty: z.number().optional(),
+  assignedTo: z.string().optional(),
+  channelParty: z.string().optional(),
   priority: z.number().optional(),
   callType: z.number().optional(),
   subCallType: z.number().optional(),
@@ -202,7 +202,7 @@ export function CallForm({ id }: CallFormProps) {
     if (entity) {
       const formValues = {
 
-        status: entity.status,
+        status: entity.status || "",
 
 
         assignedTo: entity.assignedTo?.id,
@@ -248,7 +248,10 @@ export function CallForm({ id }: CallFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       status: data.status,
+
 
       assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
 
@@ -285,6 +288,17 @@ export function CallForm({ id }: CallFormProps) {
 
       callStatus: data.callStatus ? { id: data.callStatus } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['status','assignedTo','channelParty','priority','callType','subCallType','source','area','party','product','channelType','callCategory','callStatus',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as CallDTO;
 
     if (isNew) {
@@ -311,6 +325,7 @@ export function CallForm({ id }: CallFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter status"
                 />
               </FormControl>

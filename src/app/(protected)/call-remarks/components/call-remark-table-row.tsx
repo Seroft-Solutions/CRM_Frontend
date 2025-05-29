@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CallRemarkDTO } from "@/core/api/generated/schemas/CallRemarkDTO";
+import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
 
 
 
@@ -23,20 +23,26 @@ export function CallRemarkTableRow({ callRemark, onDelete, isDeleting }: CallRem
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callRemark.remark}
+        {callRemark.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callRemark.dateTime}
+        {callRemark.dateTime ? format(new Date(callRemark.dateTime), "PPP") : ""}
         
       </TableCell>
       
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {callRemark.call ? 
-          callRemark.call.name : ""}
+          (callRemark.call as any).name || callRemark.call.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -72,8 +78,8 @@ export function CallRemarkTableRow({ callRemark, onDelete, isDeleting }: CallRem
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(callRemark.id)}
-              disabled={isDeleting}
+              onClick={() => callRemark.id && onDelete(callRemark.id)}
+              disabled={isDeleting || !callRemark.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

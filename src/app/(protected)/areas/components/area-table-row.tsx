@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { AreaDTO } from "@/core/api/generated/schemas/AreaDTO";
+import type { AreaDTO } from "@/core/api/generated/spring/schemas/AreaDTO";
 
 
 
@@ -36,7 +36,7 @@ export function AreaTableRow({ area, onDelete, isDeleting }: AreaTableRowProps) 
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {area.city ? 
-          area.city.name : ""}
+          (area.city as any).name || area.city.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -72,8 +72,8 @@ export function AreaTableRow({ area, onDelete, isDeleting }: AreaTableRowProps) 
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(area.id)}
-              disabled={isDeleting}
+              onClick={() => area.id && onDelete(area.id)}
+              disabled={isDeleting || !area.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

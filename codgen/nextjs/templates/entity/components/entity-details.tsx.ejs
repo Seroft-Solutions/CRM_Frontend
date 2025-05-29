@@ -150,7 +150,7 @@ _%>
                   : "—"}
               </p>
 <% } else { %>
-              <p>{entity.<%= relationshipFieldName %>?.<%= otherEntityField %> || "—"}</p>
+              <p>{(entity.<%= relationshipFieldName %> as any)?.<%= otherEntityField %> || entity.<%= relationshipFieldName %>?.id || "—"}</p>
 <% } %>
             </div>
 <%_ } _%>

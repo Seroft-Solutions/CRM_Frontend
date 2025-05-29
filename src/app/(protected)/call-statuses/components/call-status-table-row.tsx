@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CallStatusDTO } from "@/core/api/generated/schemas/CallStatusDTO";
+import type { CallStatusDTO } from "@/core/api/generated/spring/schemas/CallStatusDTO";
 
 
 
@@ -35,7 +35,13 @@ export function CallStatusTableRow({ callStatus, onDelete, isDeleting }: CallSta
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callStatus.remark}
+        {callStatus.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function CallStatusTableRow({ callStatus, onDelete, isDeleting }: CallSta
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(callStatus.id)}
-              disabled={isDeleting}
+              onClick={() => callStatus.id && onDelete(callStatus.id)}
+              disabled={isDeleting || !callStatus.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

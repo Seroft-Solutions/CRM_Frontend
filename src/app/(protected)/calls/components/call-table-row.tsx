@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { CallDTO } from "@/core/api/generated/schemas/CallDTO";
+import type { CallDTO } from "@/core/api/generated/spring/schemas/CallDTO";
 
 
 
@@ -30,62 +30,62 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.assignedTo ? 
-          call.assignedTo.login : ""}
+          (call.assignedTo as any).login || call.assignedTo.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.channelParty ? 
-          call.channelParty.login : ""}
+          (call.channelParty as any).login || call.channelParty.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.priority ? 
-          call.priority.name : ""}
+          (call.priority as any).name || call.priority.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.callType ? 
-          call.callType.name : ""}
+          (call.callType as any).name || call.callType.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.subCallType ? 
-          call.subCallType.name : ""}
+          (call.subCallType as any).name || call.subCallType.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.source ? 
-          call.source.name : ""}
+          (call.source as any).name || call.source.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.area ? 
-          call.area.name : ""}
+          (call.area as any).name || call.area.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.party ? 
-          call.party.name : ""}
+          (call.party as any).name || call.party.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.product ? 
-          call.product.name : ""}
+          (call.product as any).name || call.product.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.channelType ? 
-          call.channelType.name : ""}
+          (call.channelType as any).name || call.channelType.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.callCategory ? 
-          call.callCategory.name : ""}
+          (call.callCategory as any).name || call.callCategory.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.callStatus ? 
-          call.callStatus.name : ""}
+          (call.callStatus as any).name || call.callStatus.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -121,8 +121,8 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(call.id)}
-              disabled={isDeleting}
+              onClick={() => call.id && onDelete(call.id)}
+              disabled={isDeleting || !call.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

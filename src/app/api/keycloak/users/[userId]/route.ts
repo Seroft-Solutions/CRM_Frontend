@@ -43,8 +43,15 @@ export async function GET(
     let assignedRealmRoles: RoleRepresentation[] = [];
     
     try {
-      // This would use the role mappings endpoint when implemented
-      assignedRealmRoles = user.realmRoles || [];
+      // Convert string array of role names to RoleRepresentation objects
+      const roleNames = user.realmRoles;
+      if (Array.isArray(roleNames)) {
+        assignedRealmRoles = roleNames.map((roleName: string) => ({
+          name: roleName,
+          id: roleName, // Use name as ID for now until we get proper role objects
+          description: `Role: ${roleName}`
+        } as RoleRepresentation));
+      }
     } catch (roleError) {
       console.warn('Could not fetch user roles:', roleError);
       assignedRealmRoles = [];

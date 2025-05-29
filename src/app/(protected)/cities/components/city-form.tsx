@@ -46,7 +46,7 @@ import {
   useGetAllDistrictsInfinite,
   useSearchDistrictsInfinite 
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
-import type { CityDTO } from "@/core/api/generated/schemas/CityDTO";
+import type { CityDTO } from "@/core/api/generated/spring/schemas/CityDTO";
 
 interface CityFormProps {
   id?: number;
@@ -114,7 +114,7 @@ export function CityForm({ id }: CityFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
         district: entity.district?.id,
@@ -127,10 +127,24 @@ export function CityForm({ id }: CityFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
 
       district: data.district ? { id: data.district } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','district',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as CityDTO;
 
     if (isNew) {
@@ -157,6 +171,7 @@ export function CityForm({ id }: CityFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>

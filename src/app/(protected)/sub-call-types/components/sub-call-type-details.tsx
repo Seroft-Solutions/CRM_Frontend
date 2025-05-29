@@ -98,14 +98,20 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.remark || "—"}</p>
+              <p>
+                {entity.remark ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
 
             </div>
 
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call Type</p>
 
-              <p>{entity.callType?.name || "—"}</p>
+              <p>{(entity.callType as any)?.name || entity.callType?.id || "—"}</p>
 
             </div>
           </div>

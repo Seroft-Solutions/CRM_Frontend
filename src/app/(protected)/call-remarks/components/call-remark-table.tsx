@@ -86,6 +86,13 @@ export function CallRemarkTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`dateTimeGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`dateTimeLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -98,7 +105,7 @@ export function CallRemarkTable() {
     {
       page: apiPage,
       size: pageSize,
-      sort: `${sort},${order}`,
+      sort: [`${sort},${order}`],
       ...filterParams,
     },
     {
@@ -186,7 +193,7 @@ export function CallRemarkTable() {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || searchTerm || dateRange.from || dateRange.to;
+  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
 
   return (
     <div className="space-y-4">

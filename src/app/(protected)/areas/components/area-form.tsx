@@ -46,7 +46,7 @@ import {
   useGetAllCitiesInfinite,
   useSearchCitiesInfinite 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
-import type { AreaDTO } from "@/core/api/generated/schemas/AreaDTO";
+import type { AreaDTO } from "@/core/api/generated/spring/schemas/AreaDTO";
 
 interface AreaFormProps {
   id?: number;
@@ -118,10 +118,10 @@ export function AreaForm({ id }: AreaFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        pincode: entity.pincode,
+        pincode: entity.pincode != null ? String(entity.pincode) : "",
 
 
         city: entity.city?.id,
@@ -134,11 +134,27 @@ export function AreaForm({ id }: AreaFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
-      pincode: data.pincode,
+
+
+      pincode: data.pincode ? Number(data.pincode) : undefined,
+
 
       city: data.city ? { id: data.city } : null,
 
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','pincode','city',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as AreaDTO;
 
     if (isNew) {
@@ -165,6 +181,7 @@ export function AreaForm({ id }: AreaFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -184,6 +201,7 @@ export function AreaForm({ id }: AreaFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  type="number"
                   placeholder="Enter pincode"
                 />
               </FormControl>

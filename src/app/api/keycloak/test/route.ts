@@ -8,7 +8,7 @@ import { keycloakService } from '@/core/api/services/keycloak-service';
 
 export async function GET(request: NextRequest) {
   try {
-    const testResults = {
+    const testResults: any = {
       timestamp: new Date().toISOString(),
       configuration: {
         baseUrl: process.env.AUTH_KEYCLOAK_ISSUER?.replace('/realms/crm', '') || 'http://localhost:9080',
@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     try {
       const authResult = await keycloakService.testAdminAuth();
       testResults.tests.adminAuth = {
-        ...authResult,
+        success: authResult.success,
+        error: authResult.error || '',
         details: {
           tokenCached: keycloakService.getDebugInfo().hasAdminToken,
           tokenValid: keycloakService.getDebugInfo().isAdminTokenValid,
@@ -75,7 +76,10 @@ export async function GET(request: NextRequest) {
     // Test 3: Permission Check
     try {
       const permissionCheck = await keycloakService.verifyAdminPermissions();
-      testResults.tests.permissions = permissionCheck;
+      testResults.tests.permissions = {
+        authorized: permissionCheck.authorized,
+        error: permissionCheck.error || ''
+      };
     } catch (error: any) {
       testResults.tests.permissions = { authorized: false, error: error.message };
     }

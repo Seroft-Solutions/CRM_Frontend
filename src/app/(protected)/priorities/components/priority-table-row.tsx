@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { PriorityDTO } from "@/core/api/generated/schemas/PriorityDTO";
+import type { PriorityDTO } from "@/core/api/generated/spring/schemas/PriorityDTO";
 
 
 
@@ -35,7 +35,13 @@ export function PriorityTableRow({ priority, onDelete, isDeleting }: PriorityTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {priority.remark}
+        {priority.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function PriorityTableRow({ priority, onDelete, isDeleting }: PriorityTab
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(priority.id)}
-              disabled={isDeleting}
+              onClick={() => priority.id && onDelete(priority.id)}
+              disabled={isDeleting || !priority.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

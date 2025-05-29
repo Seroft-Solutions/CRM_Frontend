@@ -103,13 +103,21 @@ export function <%= entityClass %>SearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      const relation = displayableRelationships.find(r => r.relationshipName === relationName);
-      return relation ? relation.relationshipNameHumanized : relationName;
+      <%_ for (const rel of displayableRelationships) { _%>
+      if (relationName === '<%= rel.relationshipName %>') {
+        return '<%= rel.relationshipNameHumanized %>';
+      }
+      <%_ } _%>
+      return relationName;
     }
     
     // Handle regular field filters
-    const field = [...enumFields, ...booleanFields, ...dateFields, ...textFields].find(f => f.fieldName === key);
-    return field ? (field.fieldNameHumanized || field.fieldName) : key;
+    <%_ for (const field of [...enumFields, ...booleanFields, ...dateFields, ...textFields]) { _%>
+    if (key === '<%= field.fieldName %>') {
+      return '<%= field.fieldNameHumanized || field.fieldName %>';
+    }
+    <%_ } _%>
+    return key;
   };
 
   return (

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       organizations,
-      count: organizations?.length || 0,
+      count: Array.isArray(organizations) ? organizations.length : 0,
       message: 'Available organizations in Keycloak'
     });
   } catch (error: any) {

@@ -134,14 +134,20 @@ export function PartyDetails({ id }: PartyDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.remark || "—"}</p>
+              <p>
+                {entity.remark ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
 
             </div>
 
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">City</p>
 
-              <p>{entity.city?.name || "—"}</p>
+              <p>{(entity.city as any)?.name || entity.city?.id || "—"}</p>
 
             </div>
           </div>
