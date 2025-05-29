@@ -98,7 +98,13 @@ export function PriorityDetails({ id }: PriorityDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.remark || "—"}</p>
+              <p>
+                {entity.remark ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
 
             </div>
 

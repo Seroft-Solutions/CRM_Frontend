@@ -17,7 +17,7 @@ interface PermissionGuardProps {
  * Permission Guard Component
  * 
  * Renders children only if the user has the required permission.
- * Uses the session provider to check user permissions.
+ * Uses the optimized session provider to reduce redundant session calls.
  * 
  * Permission naming convention:
  * - {entityName}:create - Can create new entities
@@ -40,7 +40,7 @@ export function PermissionGuard({
   unauthorizedTitle,
   unauthorizedDescription
 }: PermissionGuardProps) {
-  const { session, isLoading, hasRole } = useAuth();
+  const { session, status, isLoading } = useAuth();
 
   // Loading state
   if (isLoading) {
@@ -66,7 +66,10 @@ export function PermissionGuard({
   }
 
   // Check if user has the required permission
-  if (!hasRole(requiredPermission)) {
+  const userRoles = session.user.roles || [];
+  const hasPermission = userRoles.includes(requiredPermission);
+
+  if (!hasPermission) {
     if (showUnauthorizedPage) {
       return (
         <UnauthorizedPage
@@ -110,37 +113,54 @@ export function InlinePermissionGuard({
 
 /**
  * Hook to check if user has a specific permission
+ * Uses the auth provider for better performance
  * 
  * @param permission - Permission string to check
  * @returns boolean indicating if user has the permission
  */
 export function usePermission(permission: string): boolean {
-  const { hasRole, isAuthenticated } = useAuth();
-  return isAuthenticated && hasRole(permission);
+  const { session, status } = useAuth();
+
+  if (status === "loading" || !session?.user) {
+    return false;
+  }
+
+  const userRoles = session.user.roles || [];
+  return userRoles.includes(permission);
 }
 
 /**
  * Hook to check if user has any of the specified roles
+ * Uses the auth provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has at least one of the roles
  */
 export function useAnyPermission(roles: string[]): boolean {
-  const { hasAnyRole, isAuthenticated } = useAuth();
-  return isAuthenticated && hasAnyRole(roles);
+  const { session, status } = useAuth();
+
+  if (status === "loading" || !session?.user) {
+    return false;
+  }
+
+  const userRoles = session.user.roles || [];
+  return roles.some(permission => userRoles.includes(permission));
 }
 
 /**
  * Hook to check if user has all of the specified roles
+ * Uses the auth provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has all of the roles
  */
 export function useAllRoles(roles: string[]): boolean {
-  const { getUserRoles, isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) return false;
-  
-  const userRoles = getUserRoles();
+  const { session, status } = useAuth();
+
+  if (status === "loading" || !session?.user) {
+    return false;
+  }
+
+  const userRoles = session.user.roles || [];
   return roles.every(permission => userRoles.includes(permission));
 }

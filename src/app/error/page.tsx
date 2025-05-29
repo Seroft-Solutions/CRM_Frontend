@@ -9,7 +9,7 @@ export default function AuthError() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
 
-  const getErrorMessage = (errorCode) => {
+  const getErrorMessage = (errorCode: string | null) => {
     switch (errorCode) {
       case 'Signin':
         return 'Try signing in with a different account.';

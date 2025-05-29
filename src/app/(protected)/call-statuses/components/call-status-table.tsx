@@ -98,7 +98,7 @@ export function CallStatusTable() {
     {
       page: apiPage,
       size: pageSize,
-      sort: `${sort},${order}`,
+      sort: [`${sort},${order}`],
       ...filterParams,
     },
     {
@@ -186,7 +186,7 @@ export function CallStatusTable() {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || searchTerm || dateRange.from || dateRange.to;
+  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
 
   return (
     <div className="space-y-4">

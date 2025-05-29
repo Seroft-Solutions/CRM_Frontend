@@ -99,7 +99,7 @@ export function AreaDetails({ id }: AreaDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">City</p>
 
-              <p>{entity.city?.name || "—"}</p>
+              <p>{(entity.city as any)?.name || entity.city?.id || "—"}</p>
 
             </div>
           </div>

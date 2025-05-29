@@ -91,13 +91,20 @@ export function AreaSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      const relation = displayableRelationships.find(r => r.relationshipName === relationName);
-      return relation ? relation.relationshipNameHumanized : relationName;
+      if (relationName === 'city') {
+        return 'City';
+      }
+      return relationName;
     }
     
     // Handle regular field filters
-    const field = [...enumFields, ...booleanFields, ...dateFields, ...textFields].find(f => f.fieldName === key);
-    return field ? (field.fieldNameHumanized || field.fieldName) : key;
+    if (key === 'name') {
+      return 'name';
+    }
+    if (key === 'pincode') {
+      return 'pincode';
+    }
+    return key;
   };
 
   return (

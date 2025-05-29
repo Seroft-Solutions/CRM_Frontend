@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { <%= entityClass %>DTO } from "@/core/api/generated/schemas/<%= entityClass %>DTO";
+import type { <%= entityClass %>DTO } from "@/core/api/generated/spring/schemas/<%= entityClass %>DTO";
 
 <%
 const displayableRelationships = relationships.filter(rel => 
@@ -61,7 +61,7 @@ export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, is
       %>
       <TableCell className="whitespace-nowrap px-4 py-3">
         {<%= entityInstance %>.<%= relationshipFieldName %> ? 
-          <%= entityInstance %>.<%= relationshipFieldName %>.<%= displayField %> : ""}
+          (<%= entityInstance %>.<%= relationshipFieldName %> as any).<%= displayField %> || <%= entityInstance %>.<%= relationshipFieldName %>.id || "" : ""}
       </TableCell>
       <% } %>
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -97,8 +97,8 @@ export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, is
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(<%= entityInstance %>.<%= primaryKey.name %>)}
-              disabled={isDeleting}
+              onClick={() => <%= entityInstance %>.<%= primaryKey.name %> && onDelete(<%= entityInstance %>.<%= primaryKey.name %>)}
+              disabled={isDeleting || !<%= entityInstance %>.<%= primaryKey.name %>}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

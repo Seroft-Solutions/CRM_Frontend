@@ -131,7 +131,7 @@ export function PaginatedRelationshipCombobox({
       }
     } else if (infiniteQuery.data?.pages) {
       // Handle both array response and paginated response for infinite query
-      rawOptions = infiniteQuery.data.pages.flatMap(page => {
+      rawOptions = infiniteQuery.data.pages.flatMap((page: any) => {
         if (Array.isArray(page)) {
           return page;
         } else if (page?.content && Array.isArray(page.content)) {

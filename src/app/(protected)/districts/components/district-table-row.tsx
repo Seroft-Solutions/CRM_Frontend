@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { DistrictDTO } from "@/core/api/generated/schemas/DistrictDTO";
+import type { DistrictDTO } from "@/core/api/generated/spring/schemas/DistrictDTO";
 
 
 
@@ -30,7 +30,7 @@ export function DistrictTableRow({ district, onDelete, isDeleting }: DistrictTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {district.state ? 
-          district.state.name : ""}
+          (district.state as any).name || district.state.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -66,8 +66,8 @@ export function DistrictTableRow({ district, onDelete, isDeleting }: DistrictTab
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(district.id)}
-              disabled={isDeleting}
+              onClick={() => district.id && onDelete(district.id)}
+              disabled={isDeleting || !district.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

@@ -67,8 +67,18 @@ export async function createCity(
     
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors
+      const cleanedErrors: Record<string, string[]> = {}
+      
+      // Filter out undefined values to match the expected type
+      Object.entries(fieldErrors).forEach(([key, value]) => {
+        if (value) {
+          cleanedErrors[key] = value
+        }
+      })
+      
       return {
-        errors: error.flatten().fieldErrors
+        errors: cleanedErrors
       }
     }
     
@@ -127,8 +137,18 @@ export async function updateCity(
     
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors
+      const cleanedErrors: Record<string, string[]> = {}
+      
+      // Filter out undefined values to match the expected type
+      Object.entries(fieldErrors).forEach(([key, value]) => {
+        if (value) {
+          cleanedErrors[key] = value
+        }
+      })
+      
       return {
-        errors: error.flatten().fieldErrors
+        errors: cleanedErrors
       }
     }
     

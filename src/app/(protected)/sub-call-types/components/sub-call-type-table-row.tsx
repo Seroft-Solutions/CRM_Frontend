@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { SubCallTypeDTO } from "@/core/api/generated/schemas/SubCallTypeDTO";
+import type { SubCallTypeDTO } from "@/core/api/generated/spring/schemas/SubCallTypeDTO";
 
 
 
@@ -35,14 +35,20 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting }: SubCa
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {subCallType.remark}
+        {subCallType.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {subCallType.callType ? 
-          subCallType.callType.name : ""}
+          (subCallType.callType as any).name || subCallType.callType.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -78,8 +84,8 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting }: SubCa
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(subCallType.id)}
-              disabled={isDeleting}
+              onClick={() => subCallType.id && onDelete(subCallType.id)}
+              disabled={isDeleting || !subCallType.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

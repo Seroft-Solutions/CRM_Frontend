@@ -91,13 +91,17 @@ export function CallTypeSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      const relation = displayableRelationships.find(r => r.relationshipName === relationName);
-      return relation ? relation.relationshipNameHumanized : relationName;
+      return relationName;
     }
     
     // Handle regular field filters
-    const field = [...enumFields, ...booleanFields, ...dateFields, ...textFields].find(f => f.fieldName === key);
-    return field ? (field.fieldNameHumanized || field.fieldName) : key;
+    if (key === 'name') {
+      return 'name';
+    }
+    if (key === 'description') {
+      return 'description';
+    }
+    return key;
   };
 
   return (
@@ -168,18 +172,6 @@ export function CallTypeSearchAndFilters({
                       placeholder="Filter by description..."
                       value={filters["description"] as string || ""}
                       onChange={(e) => onFilterChange("description", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      remark
-                    </label>
-                    <Input
-                      placeholder="Filter by remark..."
-                      value={filters["remark"] as string || ""}
-                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

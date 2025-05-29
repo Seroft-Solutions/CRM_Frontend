@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { PartyDTO } from "@/core/api/generated/schemas/PartyDTO";
+import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 
 
@@ -71,14 +71,20 @@ export function PartyTableRow({ party, onDelete, isDeleting }: PartyTableRowProp
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {party.remark}
+        {party.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {party.city ? 
-          party.city.name : ""}
+          (party.city as any).name || party.city.id || "" : ""}
       </TableCell>
       
       <TableCell className="sticky right-0 bg-background px-4 py-3">
@@ -114,8 +120,8 @@ export function PartyTableRow({ party, onDelete, isDeleting }: PartyTableRowProp
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(party.id)}
-              disabled={isDeleting}
+              onClick={() => party.id && onDelete(party.id)}
+              disabled={isDeleting || !party.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

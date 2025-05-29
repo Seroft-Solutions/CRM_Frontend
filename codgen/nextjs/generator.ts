@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ejs from 'ejs';
-import { plural } from 'pluralize';
+import pluralize from 'pluralize';
 
 interface TemplateVariables {
   entityName: string;
@@ -223,9 +223,9 @@ export class NextJsGenerator {
   private prepareTemplateVariables(entityName: string, entityDefinition: EntityDefinition): TemplateVariables {
     const entityFileName = this.camelToKebab(entityName);
     const entityClass = entityName;
-    const entityClassPlural = plural(entityName);
+    const entityClassPlural = pluralize(entityName);
     const entityInstance = this.lowerFirstCamelCase(entityName);
-    const pluralizedRoute = plural(entityFileName);
+    const pluralizedRoute = pluralize(entityFileName);
 
     // Filter out tenantId fields from code generation
     const filteredFields = this.filterFields(entityDefinition.fields);
@@ -304,15 +304,15 @@ export class NextJsGenerator {
     return relationships.map(rel => {
       const otherEntityName = rel.otherEntityName;
       const otherEntityClass = this.upperFirstCamelCase(otherEntityName);
-      const otherEntityClassPlural = plural(otherEntityClass);
+      const otherEntityClassPlural = pluralize(otherEntityClass);
       const otherEntityInstance = this.lowerFirstCamelCase(otherEntityName);
-      const otherEntityInstancePlural = plural(otherEntityInstance);
+      const otherEntityInstancePlural = pluralize(otherEntityInstance);
       const otherEntityFileName = this.camelToKebab(otherEntityName);
       
       // Determine relationship field names
       const relationshipName = rel.relationshipName;
       const relationshipFieldName = relationshipName;
-      const relationshipFieldNamePlural = plural(relationshipName);
+      const relationshipFieldNamePlural = pluralize(relationshipName);
       
       // Determine if this is a collection relationship
       const isCollection = rel.relationshipType === 'one-to-many' || rel.relationshipType === 'many-to-many';
@@ -371,7 +371,7 @@ export class NextJsGenerator {
   }
 
   /**
-   * Filter out system fields that should not be included in code generation
+   * Filter out system fields and process field types
    */
   private filterFields(fields: Field[]): Field[] {
     const excludedFields = ['tenantId'];
@@ -382,7 +382,57 @@ export class NextJsGenerator {
         console.log(`Excluding system field from code generation: ${field.fieldName}`);
       }
       return !shouldExclude;
-    });
+    }).map(field => this.processFieldType(field));
+  }
+
+  /**
+   * Process field type to set boolean flags for template usage
+   */
+  private processFieldType(field: Field): Field {
+    const processedField = { ...field };
+    
+    // Set type-specific boolean flags based on fieldType
+    switch (field.fieldType) {
+      case 'Integer':
+      case 'Long':
+      case 'Float':
+      case 'Double':
+      case 'BigDecimal':
+        processedField.fieldTypeNumeric = true;
+        break;
+      
+      case 'Boolean':
+        processedField.fieldTypeBoolean = true;
+        break;
+      
+      case 'LocalDate':
+        processedField.fieldTypeLocalDate = true;
+        processedField.fieldTypeTimed = true;
+        break;
+      
+      case 'ZonedDateTime':
+        processedField.fieldTypeZonedDateTime = true;
+        processedField.fieldTypeTimed = true;
+        break;
+      
+      case 'Instant':
+        processedField.fieldTypeInstant = true;
+        processedField.fieldTypeTimed = true;
+        break;
+      
+      case 'TextBlob':
+      case 'ImageBlob':
+      case 'AnyBlob':
+        processedField.fieldTypeBinary = true;
+        break;
+    }
+    
+    // Check if field is an enum (has enumValues)
+    if (field.enumValues && field.enumValues.length > 0) {
+      processedField.fieldIsEnum = true;
+    }
+    
+    return processedField;
   }
 
   /**

@@ -86,20 +86,26 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.remark || "—"}</p>
+              <p>
+                {entity.remark ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.dateTime || "—"}</p>
+              <p>{entity.dateTime ? format(new Date(entity.dateTime), "PPP") : ""}</p>
 
             </div>
 
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call</p>
 
-              <p>{entity.call?.name || "—"}</p>
+              <p>{(entity.call as any)?.name || entity.call?.id || "—"}</p>
 
             </div>
           </div>

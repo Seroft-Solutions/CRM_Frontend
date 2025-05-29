@@ -91,13 +91,50 @@ export function CallSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      const relation = displayableRelationships.find(r => r.relationshipName === relationName);
-      return relation ? relation.relationshipNameHumanized : relationName;
+      if (relationName === 'assignedTo') {
+        return 'Assigned To';
+      }
+      if (relationName === 'channelParty') {
+        return 'Channel Party';
+      }
+      if (relationName === 'priority') {
+        return 'Priority';
+      }
+      if (relationName === 'callType') {
+        return 'Call Type';
+      }
+      if (relationName === 'subCallType') {
+        return 'Sub Call Type';
+      }
+      if (relationName === 'source') {
+        return 'Source';
+      }
+      if (relationName === 'area') {
+        return 'Area';
+      }
+      if (relationName === 'party') {
+        return 'Party';
+      }
+      if (relationName === 'product') {
+        return 'Product';
+      }
+      if (relationName === 'channelType') {
+        return 'Channel Type';
+      }
+      if (relationName === 'callCategory') {
+        return 'Call Category';
+      }
+      if (relationName === 'callStatus') {
+        return 'Call Status';
+      }
+      return relationName;
     }
     
     // Handle regular field filters
-    const field = [...enumFields, ...booleanFields, ...dateFields, ...textFields].find(f => f.fieldName === key);
-    return field ? (field.fieldNameHumanized || field.fieldName) : key;
+    if (key === 'status') {
+      return 'status';
+    }
+    return key;
   };
 
   return (

@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { StateDTO } from "@/core/api/generated/schemas/StateDTO";
+import type { StateDTO } from "@/core/api/generated/spring/schemas/StateDTO";
 
 
 
@@ -61,8 +61,8 @@ export function StateTableRow({ state, onDelete, isDeleting }: StateTableRowProp
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(state.id)}
-              disabled={isDeleting}
+              onClick={() => state.id && onDelete(state.id)}
+              disabled={isDeleting || !state.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

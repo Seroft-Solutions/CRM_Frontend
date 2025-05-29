@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { ChannelTypeDTO } from "@/core/api/generated/schemas/ChannelTypeDTO";
+import type { ChannelTypeDTO } from "@/core/api/generated/spring/schemas/ChannelTypeDTO";
 
 
 
@@ -35,7 +35,13 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting }: Chann
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {channelType.remark}
+        {channelType.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting }: Chann
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(channelType.id)}
-              disabled={isDeleting}
+              onClick={() => channelType.id && onDelete(channelType.id)}
+              disabled={isDeleting || !channelType.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useOptimizedSession } from "@/providers/session-provider";
+import { useAuth } from "@/providers/session-provider";
 import { UnauthorizedPage } from "./unauthorized-page";
 
 interface PermissionGuardProps {
@@ -40,7 +40,7 @@ export function PermissionGuard({
   unauthorizedTitle,
   unauthorizedDescription
 }: PermissionGuardProps) {
-  const { session, status, isLoading } = useOptimizedSession();
+  const { session, status, isLoading } = useAuth();
 
   // Loading state
   if (isLoading) {
@@ -113,13 +113,13 @@ export function InlinePermissionGuard({
 
 /**
  * Hook to check if user has a specific permission
- * Uses the optimized session provider for better performance
+ * Uses the auth provider for better performance
  * 
  * @param permission - Permission string to check
  * @returns boolean indicating if user has the permission
  */
 export function usePermission(permission: string): boolean {
-  const { session, status } = useOptimizedSession();
+  const { session, status } = useAuth();
 
   if (status === "loading" || !session?.user) {
     return false;
@@ -131,13 +131,13 @@ export function usePermission(permission: string): boolean {
 
 /**
  * Hook to check if user has any of the specified roles
- * Uses the optimized session provider for better performance
+ * Uses the auth provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has at least one of the roles
  */
 export function useAnyPermission(roles: string[]): boolean {
-  const { session, status } = useOptimizedSession();
+  const { session, status } = useAuth();
 
   if (status === "loading" || !session?.user) {
     return false;
@@ -149,13 +149,13 @@ export function useAnyPermission(roles: string[]): boolean {
 
 /**
  * Hook to check if user has all of the specified roles
- * Uses the optimized session provider for better performance
+ * Uses the auth provider for better performance
  * 
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has all of the roles
  */
 export function useAllRoles(roles: string[]): boolean {
-  const { session, status } = useOptimizedSession();
+  const { session, status } = useAuth();
 
   if (status === "loading" || !session?.user) {
     return false;

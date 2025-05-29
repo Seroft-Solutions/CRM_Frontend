@@ -91,13 +91,17 @@ export function CallRemarkSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      const relation = displayableRelationships.find(r => r.relationshipName === relationName);
-      return relation ? relation.relationshipNameHumanized : relationName;
+      if (relationName === 'call') {
+        return 'Call';
+      }
+      return relationName;
     }
     
     // Handle regular field filters
-    const field = [...enumFields, ...booleanFields, ...dateFields, ...textFields].find(f => f.fieldName === key);
-    return field ? (field.fieldNameHumanized || field.fieldName) : key;
+    if (key === 'dateTime') {
+      return 'dateTime';
+    }
+    return key;
   };
 
   return (
@@ -161,41 +165,60 @@ export function CallRemarkSearchAndFilters({
               
 
               
-
-              
               <DropdownMenuSeparator />
               
-              {/* Other Fields Section */}
+              {/* Dates Section */}
               <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      remark
-                    </label>
-                    <Input
-                      placeholder="Filter by remark..."
-                      value={filters["remark"] as string || ""}
-                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      dateTime
-                    </label>
-                    <Input
-                      placeholder="Filter by dateTime..."
-                      value={filters["dateTime"] as string || ""}
-                      onChange={(e) => onFilterChange("dateTime", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
+                <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
+                <div className="mt-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    dateTime Range
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full h-8 justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-3 w-3" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "MMM dd, yyyy")
+                          )
+                        ) : (
+                          "Pick date range"
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={dateRange.from}
+                        selected={{ from: dateRange.from, to: dateRange.to }}
+                        onSelect={(range) => onDateRangeChange({ from: range?.from, to: range?.to })}
+                        numberOfMonths={2}
+                      />
+                      <div className="p-3 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-7"
+                          onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
+                        >
+                          Clear Date Range
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
+              
+
               
 
             </div>

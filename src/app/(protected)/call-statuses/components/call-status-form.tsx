@@ -41,7 +41,7 @@ import {
   useUpdateCallStatus,
   useGetCallStatus,
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
-import type { CallStatusDTO } from "@/core/api/generated/schemas/CallStatusDTO";
+import type { CallStatusDTO } from "@/core/api/generated/spring/schemas/CallStatusDTO";
 
 interface CallStatusFormProps {
   id?: number;
@@ -113,13 +113,13 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        description: entity.description,
+        description: entity.description || "",
 
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
       };
       form.reset(formValues);
@@ -129,9 +129,27 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+
       description: data.description,
+
+
       remark: data.remark,
+
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','description','remark',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as CallStatusDTO;
 
     if (isNew) {
@@ -158,6 +176,7 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -177,6 +196,7 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter description"
                 />
               </FormControl>

@@ -93,73 +93,73 @@ export function CallDetails({ id }: CallDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
 
-              <p>{entity.assignedTo?.login || "—"}</p>
+              <p>{(entity.assignedTo as any)?.login || entity.assignedTo?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Channel Party</p>
 
-              <p>{entity.channelParty?.login || "—"}</p>
+              <p>{(entity.channelParty as any)?.login || entity.channelParty?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Priority</p>
 
-              <p>{entity.priority?.name || "—"}</p>
+              <p>{(entity.priority as any)?.name || entity.priority?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call Type</p>
 
-              <p>{entity.callType?.name || "—"}</p>
+              <p>{(entity.callType as any)?.name || entity.callType?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Sub Call Type</p>
 
-              <p>{entity.subCallType?.name || "—"}</p>
+              <p>{(entity.subCallType as any)?.name || entity.subCallType?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Source</p>
 
-              <p>{entity.source?.name || "—"}</p>
+              <p>{(entity.source as any)?.name || entity.source?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Area</p>
 
-              <p>{entity.area?.name || "—"}</p>
+              <p>{(entity.area as any)?.name || entity.area?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Party</p>
 
-              <p>{entity.party?.name || "—"}</p>
+              <p>{(entity.party as any)?.name || entity.party?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Product</p>
 
-              <p>{entity.product?.name || "—"}</p>
+              <p>{(entity.product as any)?.name || entity.product?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Channel Type</p>
 
-              <p>{entity.channelType?.name || "—"}</p>
+              <p>{(entity.channelType as any)?.name || entity.channelType?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call Category</p>
 
-              <p>{entity.callCategory?.name || "—"}</p>
+              <p>{(entity.callCategory as any)?.name || entity.callCategory?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call Status</p>
 
-              <p>{entity.callStatus?.name || "—"}</p>
+              <p>{(entity.callStatus as any)?.name || entity.callStatus?.id || "—"}</p>
 
             </div>
           </div>

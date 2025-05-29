@@ -7,7 +7,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import type { ProductDTO } from "@/core/api/generated/schemas/ProductDTO";
+import type { ProductDTO } from "@/core/api/generated/spring/schemas/ProductDTO";
 
 
 
@@ -35,7 +35,13 @@ export function ProductTableRow({ product, onDelete, isDeleting }: ProductTableR
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {product.remark}
+        {product.remark ? (
+          <>
+            
+            <span className="text-muted-foreground">Binary data</span>
+            
+          </>
+        ) : ""}
         
       </TableCell>
       
@@ -73,8 +79,8 @@ export function ProductTableRow({ product, onDelete, isDeleting }: ProductTableR
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 text-destructive"
-              onClick={() => onDelete(product.id)}
-              disabled={isDeleting}
+              onClick={() => product.id && onDelete(product.id)}
+              disabled={isDeleting || !product.id}
             >
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Delete</span>

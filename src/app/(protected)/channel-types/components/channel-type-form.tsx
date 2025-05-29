@@ -41,7 +41,7 @@ import {
   useUpdateChannelType,
   useGetChannelType,
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import type { ChannelTypeDTO } from "@/core/api/generated/schemas/ChannelTypeDTO";
+import type { ChannelTypeDTO } from "@/core/api/generated/spring/schemas/ChannelTypeDTO";
 
 interface ChannelTypeFormProps {
   id?: number;
@@ -113,13 +113,13 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
     if (entity) {
       const formValues = {
 
-        name: entity.name,
+        name: entity.name || "",
 
 
-        description: entity.description,
+        description: entity.description || "",
 
 
-        remark: entity.remark,
+        remark: entity.remark || "",
 
       };
       form.reset(formValues);
@@ -129,9 +129,27 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
+      ...(!isNew && entity ? { id: entity.id } : {}),
+
       name: data.name,
+
+
       description: data.description,
+
+
       remark: data.remark,
+
+      // Include any existing fields not in the form to preserve required fields
+      ...(entity && !isNew ? {
+        // Preserve any existing required fields that aren't in the form
+        ...Object.keys(entity).reduce((acc, key) => {
+          const isFormField = ['name','description','remark',].includes(key);
+          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
+            acc[key] = entity[key as keyof typeof entity];
+          }
+          return acc;
+        }, {} as any)
+      } : {})
     } as ChannelTypeDTO;
 
     if (isNew) {
@@ -158,6 +176,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter name"
                 />
               </FormControl>
@@ -177,6 +196,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
               <FormControl>
                 <Input 
                   {...field}
+                  
                   placeholder="Enter description"
                 />
               </FormControl>
