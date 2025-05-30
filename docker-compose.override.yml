@@ -1,0 +1,44 @@
+# Development Docker Compose Override
+# Extends docker-compose.yml for development
+version: '3.8'
+
+services:
+  crm-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development
+    volumes:
+      # Mount source code for hot reloading (if using dev server)
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./next.config.ts:/app/next.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - NEXT_TELEMETRY_DISABLED=1
+    command: npm run dev
+    ports:
+      - "3000:3000"  # Different port for dev
+    healthcheck:
+      interval: 60s  # Less frequent healthchecks in dev
+
+  # Optional: Add development database
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: crm-postgres-dev
+    environment:
+      - POSTGRES_DB=crm_db_dev
+      - POSTGRES_USER=crm_user
+      - POSTGRES_PASSWORD=crm_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - crm-network
+
+volumes:
+  postgres_dev_data:
