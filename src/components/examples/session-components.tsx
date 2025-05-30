@@ -8,15 +8,15 @@ import { useAuth, useUser, useUserRoles, useUserOrganizations } from '@/provider
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useState, useTransition } from 'react'
 
 /**
  * Enhanced User Profile Component - shows user info with organizations
  */
 export function EnhancedUserProfile() {
-  const { user, isAuthenticated, isLoading } = useUser()
+  const user = useUser()
+  const { isAuthenticated, isLoading } = useAuth()
   const { roles, hasRole } = useUserRoles()
-  const { organizations, currentOrganization } = useUserOrganizations()
+  const { organizations } = useUserOrganizations()
 
   if (isLoading) {
     return <div>Loading user profile...</div>
