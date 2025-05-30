@@ -98,9 +98,9 @@ docker-compose*.yml
 # JHipster specific
 .jhipster/
 
-# Code generation
+# Code generation (be selective - some scripts might be needed)
 codgen/
-scripts/
+# scripts/ - commented out as some scripts might be needed for build
 
 # Database
 prisma/migrations/
@@ -117,5 +117,5 @@ clean-empty-dirs.bat
 CRM_Frontend.iml
 orval.config.js
 
-# OpenAPI
-openapi/
+# OpenAPI (might be needed for code generation)
+# openapi/ - commented out as it might be needed for build
