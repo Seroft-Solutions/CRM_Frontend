@@ -190,7 +190,7 @@ export function TenantSetupForm({
                 <Checkbox
                   id="sample-data"
                   checked={createSampleData}
-                  onCheckedChange={setCreateSampleData}
+                  onCheckedChange={(checked) => setCreateSampleData(checked === true)}
                   className="mt-0.5"
                 />
                 <div className="space-y-1">

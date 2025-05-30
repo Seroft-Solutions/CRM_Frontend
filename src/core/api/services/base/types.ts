@@ -1,4 +1,8 @@
-export interface ApiResponse<T = any> {
+/**
+ * Generic API response wrapper
+ * @template T The type of data returned by the API
+ */
+export interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
   status: number;
@@ -28,7 +32,8 @@ export interface ServiceRequestConfig {
   url: string;
   method?: string;
   headers?: Record<string, string>;
-  data?: any;
-  params?: Record<string, any>;
+  data?: unknown;
+  params?: Record<string, string | number | boolean | null | Array<string | number | boolean>>;
   signal?: AbortSignal;
+  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
