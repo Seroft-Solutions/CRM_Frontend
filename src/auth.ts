@@ -26,16 +26,26 @@ interface KeycloakTokenPayload {
 
 function parseOrganizations(accessToken: string): Array<{ name: string; id: string }> {
   try {
+    console.log('=== ACCESS TOKEN ===')
+    console.log('Access Token:', accessToken)
+    
     const [, payload] = accessToken.split('.')
     if (!payload) return []
     
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
     const organizations = decoded.organizations || {}
     
-    return Object.entries(organizations).map(([name, data]) => ({
+    console.log('=== PARSED ORGANIZATIONS ===')
+    console.log('Raw organizations from token:', organizations)
+    
+    const parsedOrgs = Object.entries(organizations).map(([name, data]) => ({
       name,
       id: data?.id || name
     }))
+    
+    console.log('Formatted organizations:', parsedOrgs)
+    
+    return parsedOrgs
   } catch (error) {
     console.error('Failed to parse organizations from token:', error)
     return []
@@ -57,10 +67,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, account, trigger }) {
       if (account?.provider === "keycloak") {
+        console.log('=== JWT CALLBACK - KEYCLOAK AUTH ===')
+        console.log('Account access token available:', !!account.access_token)
+        
         token.id_token = account.id_token
         
         if (account.access_token) {
+          console.log('Processing access token for organizations...')
           token.organizations = parseOrganizations(account.access_token)
+          console.log('Organizations set on token:', token.organizations)
         }
       }
       
