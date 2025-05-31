@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react'
+import { SessionProvider, useSession } from 'next-auth/react'
 import type { Session } from 'next-auth'
 
 interface AppSessionProviderProps {
@@ -14,4 +14,14 @@ export function AppSessionProvider({ children, session }: AppSessionProviderProp
       {children}
     </SessionProvider>
   )
+}
+
+// Export useAuth hook for client components
+export function useAuth() {
+  const { data: session, status } = useSession()
+  return {
+    session,
+    status,
+    isLoading: status === 'loading'
+  }
 }
