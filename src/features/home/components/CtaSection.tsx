@@ -1,12 +1,13 @@
-'use client';
+'use client'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
+import { signIn } from 'next-auth/react'
 
-interface CtaSectionProps {
-  onStartBrewing: () => void;
-}
+export default function CtaSection() {
+  const handleStartBrewing = () => {
+    signIn('keycloak', { redirectTo: '/dashboard' })
+  }
 
-export default function CtaSection({ onStartBrewing }: CtaSectionProps) {
   return (
     <div className="bg-primary/10 py-20 px-4">
       <div className="container mx-auto max-w-4xl text-center">
@@ -14,10 +15,10 @@ export default function CtaSection({ onStartBrewing }: CtaSectionProps) {
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
           Join thousands of businesses using CRM Cup to manage and grow their customer relationships.
         </p>
-        <Button size="lg" onClick={onStartBrewing}>
+        <Button size="lg" onClick={handleStartBrewing}>
           Start Brewing Now
         </Button>
       </div>
     </div>
-  );
+  )
 }

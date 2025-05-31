@@ -1,21 +1,17 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { signIn } from 'next-auth/react';
-import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button'
+import { signIn } from 'next-auth/react'
+import dynamic from 'next/dynamic'
 
-// Dynamically import client components with animations
-const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
-const MotionContainer = dynamic(() => import('./motion-components').then(mod => mod.MotionContainer), { ssr: false });
-const MotionItem = dynamic(() => import('./motion-components').then(mod => mod.MotionItem), { ssr: false });
+const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false })
+const MotionContainer = dynamic(() => import('./motion-components').then(mod => mod.MotionContainer), { ssr: false })
+const MotionItem = dynamic(() => import('./motion-components').then(mod => mod.MotionItem), { ssr: false })
 
-interface HeroSectionProps {
-  onStartBrewing: () => void;
-}
-
-export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
-  const router = useRouter();
+export default function HeroSection() {
+  const handleStartBrewing = () => {
+    signIn('keycloak', { redirectTo: '/dashboard' })
+  }
   
   return (
     <div className="bg-gradient-to-br from-primary/10 to-background py-24 px-4 overflow-hidden">
@@ -45,7 +41,7 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
             <div className="pt-6 flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                onClick={onStartBrewing} 
+                onClick={handleStartBrewing} 
                 className="bg-primary hover:bg-primary/90 text-white font-medium"
               >
                 Start Brewing
@@ -53,7 +49,7 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => signIn('keycloak', { redirectTo: '/dashboard' })}
+                onClick={handleStartBrewing}
                 className="border-primary text-primary hover:bg-primary/10"
               >
                 Create Account
@@ -66,5 +62,5 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
         </div>
       </MotionContainer>
     </div>
-  );
+  )
 }

@@ -5,12 +5,11 @@ import {
   Bell,
   Building,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
   User,
 } from "lucide-react"
-import { useAuth } from "@/providers/session-provider"
+import { useSession } from "next-auth/react"
+import { logoutAction } from "@/lib/auth-actions"
 
 import {
   Avatar,
@@ -32,13 +31,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { logout } from "@/lib/auth-utils"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { session, status, isAuthenticated, isLoading } = useAuth()
+  const { data: session, status } = useSession()
   
-  // Generate user initials for avatar fallback
   const getInitials = (name: string) => {
     if (!name) return "U"
     const parts = name.split(' ')
@@ -46,7 +43,6 @@ export function NavUser() {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
   }
   
-  // Use session data or fallback values
   const user = {
     name: session?.user?.name || "User",
     email: session?.user?.email || "",
@@ -54,8 +50,7 @@ export function NavUser() {
     initials: session?.user?.name ? getInitials(session.user.name) : "U",
   }
   
-  // Show loading state if session is loading
-  if (isLoading) {
+  if (status === 'loading') {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -65,7 +60,6 @@ export function NavUser() {
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">Loading...</span>
-              <span className="truncate text-xs"></span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -116,45 +110,6 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             
-            {/* All Organizations */}
-            {session?.user?.organizations?.length ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
-                    Organizations
-                  </DropdownMenuLabel>
-                  {session.user.organizations.map((org) => (
-                    <DropdownMenuItem key={org.id} className="text-sm">
-                      <Building className="h-4 w-4 mr-2" />
-                      <div className="flex flex-col">
-                        <span>{org.name}</span>
-                        <span className="text-xs text-muted-foreground">{org.id}</span>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuGroup>
-              </>
-            ) : null}
-            
-            {/* Roles */}
-            {session?.user?.roles?.length ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold">
-                    Roles
-                  </DropdownMenuLabel>
-                  {session.user.roles.map((role) => (
-                    <DropdownMenuItem key={role} className="text-sm">
-                      <BadgeCheck className="h-4 w-4 mr-2" />
-                      {role}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuGroup>
-              </>
-            ) : null}
-            
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
@@ -167,9 +122,13 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Log out
+            <DropdownMenuItem asChild>
+              <form action={logoutAction}>
+                <button type="submit" className="flex w-full items-center">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Log out
+                </button>
+              </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
