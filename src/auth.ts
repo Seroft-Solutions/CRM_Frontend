@@ -9,18 +9,22 @@ declare module "next-auth" {
       email?: string | null
       image?: string | null
       organizations?: Array<{ name: string; id: string }>
+      roles?: string[]
     }
   }
   
   interface JWT {
     id_token?: string
     organizations?: Array<{ name: string; id: string }>
+    roles?: string[]
   }
 }
 
 interface KeycloakTokenPayload {
   sub: string
   organizations?: Record<string, { id: string }>
+  realm_access?: { roles?: string[] }
+  resource_access?: Record<string, { roles?: string[] }>
   [key: string]: any
 }
 
@@ -52,6 +56,44 @@ function parseOrganizations(accessToken: string): Array<{ name: string; id: stri
   }
 }
 
+function parseRoles(accessToken: string): string[] {
+  try {
+    const [, payload] = accessToken.split('.')
+    if (!payload) return []
+    
+    const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
+    
+    console.log('=== PARSED ROLES ===')
+    console.log('Raw token payload for roles:', {
+      realm_access: decoded.realm_access,
+      resource_access: decoded.resource_access
+    })
+    
+    const roles: string[] = []
+    
+    // Get realm roles
+    if (decoded.realm_access?.roles) {
+      roles.push(...decoded.realm_access.roles)
+    }
+    
+    // Get client roles (resource_access)
+    if (decoded.resource_access) {
+      Object.values(decoded.resource_access).forEach(client => {
+        if (client.roles) {
+          roles.push(...client.roles)
+        }
+      })
+    }
+    
+    console.log('Parsed roles:', roles)
+    
+    return [...new Set(roles)] // Remove duplicates
+  } catch (error) {
+    console.error('Failed to parse roles from token:', error)
+    return []
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Keycloak({
@@ -73,9 +115,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id_token = account.id_token
         
         if (account.access_token) {
-          console.log('Processing access token for organizations...')
+          console.log('Processing access token for organizations and roles...')
           token.organizations = parseOrganizations(account.access_token)
+          token.roles = parseRoles(account.access_token)
           console.log('Organizations set on token:', token.organizations)
+          console.log('Roles set on token:', token.roles)
         }
       }
       
@@ -88,6 +132,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       
       if (token.organizations) {
         session.user.organizations = token.organizations
+      }
+      
+      if (token.roles) {
+        session.user.roles = token.roles
       }
       
       return session
