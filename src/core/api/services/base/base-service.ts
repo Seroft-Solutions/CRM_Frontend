@@ -190,9 +190,9 @@ export class BaseService {
     } catch (error) {
       // Handle authentication errors gracefully
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // Redirect to login or handle auth error
+        // Redirect to home page or handle auth error
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
         throw new Error('Authentication required');
       }
@@ -207,7 +207,7 @@ export class BaseService {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
         throw new Error('Authentication required');
       }
@@ -222,7 +222,7 @@ export class BaseService {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
         throw new Error('Authentication required');
       }
@@ -237,7 +237,7 @@ export class BaseService {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
         throw new Error('Authentication required');
       }
@@ -252,7 +252,7 @@ export class BaseService {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
         throw new Error('Authentication required');
       }
