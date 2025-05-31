@@ -25,7 +25,7 @@ export default function DashboardLayout({
   // Handle authentication redirect
   useEffect(() => {
     if (status === "unauthenticated") {
-      redirect("/login");
+      redirect("/");
     }
   }, [status]);
 

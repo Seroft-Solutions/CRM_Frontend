@@ -75,7 +75,7 @@ export default function AuthErrorPage() {
 
   const handleAction = () => {
     if (error === 'AccessDenied') {
-      router.push('/login');
+      router.push('/');
     } else {
       signIn('keycloak');
     }

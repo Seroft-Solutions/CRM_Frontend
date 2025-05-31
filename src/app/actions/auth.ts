@@ -47,10 +47,10 @@ export async function loginAction(
  */
 export async function logoutAction() {
   try {
-    await signOut({ redirectTo: '/login' })
+    await signOut({ redirectTo: '/' })
   } catch (error) {
     console.error('Logout error:', error)
-    redirect('/login')
+    redirect('/')
   }
 }
 

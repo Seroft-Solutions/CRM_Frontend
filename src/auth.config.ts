@@ -8,7 +8,6 @@ import Keycloak from "next-auth/providers/keycloak";
  */
 export const authConfig = {
   pages: {
-    signIn: '/login',
     error: '/auth/error',
   },
   
@@ -23,13 +22,14 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnProtectedRoute = !nextUrl.pathname.startsWith('/login') && 
-                                !nextUrl.pathname.startsWith('/auth/error');
+      const isOnProtectedRoute = !nextUrl.pathname.startsWith('/auth/error') &&
+                                nextUrl.pathname !== '/'; // Allow home page to be public
       
       if (isOnProtectedRoute) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
+        return false; // Redirect unauthenticated users to Keycloak
+      } else if (isLoggedIn && nextUrl.pathname === '/') {
+        // If logged in user visits home page, redirect to dashboard
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
       
