@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronsUpDown, Plus, Check, Building2 } from "lucide-react"
-import { useUserOrganizations } from '@/providers/session-provider'
+import { useSession } from "next-auth/react"
 
 import {
   DropdownMenu,
@@ -22,20 +22,20 @@ import {
 
 export function OrganizationSwitcher() {
   const { isMobile } = useSidebar()
-  const { organizations = [], currentOrganization } = useUserOrganizations()
+  const { data: session } = useSession()
+  
+  const organizations = session?.user?.organizations || []
+  const currentOrganization = organizations.length > 0 ? organizations[0] : null
   const [activeOrganization, setActiveOrganization] = React.useState(currentOrganization)
 
-  // Use current organization or first available organization as fallback
-  const displayOrg = activeOrganization || currentOrganization || (organizations.length > 0 ? organizations[0] : null)
+  const displayOrg = activeOrganization || currentOrganization
 
-  // Don't render if no organizations
   if (!organizations.length || !displayOrg) {
     return null
   }
 
   const handleOrganizationSwitch = (org: typeof organizations[0]) => {
     setActiveOrganization(org)
-    // TODO: Implement organization switch logic
     console.log('Switching to organization:', org)
   }
 
