@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { useAuth } from "@/providers/session-provider";
 import { UnauthorizedPage } from "./unauthorized-page";
+import { rolesManager } from "./roles-manager";
 
 interface PermissionGuardProps {
   children: ReactNode;
@@ -16,17 +17,11 @@ interface PermissionGuardProps {
 /**
  * Permission Guard Component
  * 
- * Renders children only if the user has the required permission.
- * Uses the optimized session provider to reduce redundant session calls.
- * 
- * Permission naming convention:
- * - {entityName}:create - Can create new entities
- * - {entityName}:read   - Can view entities  
- * - {entityName}:update - Can edit entities
- * - {entityName}:delete - Can delete entities
+ * Renders children only if the user has the required role.
+ * Uses the roles manager map to check permissions instead of session.
  * 
  * @param children - Content to render if permission is granted
- * @param requiredPermission - Permission string to check (e.g., "user:create", "party:read")
+ * @param requiredRole - Role string to check (e.g., "admin", "user:create")
  * @param fallback - Optional fallback content to render if permission is denied
  * @param showUnauthorizedPage - Whether to show full unauthorized page (default: true for page-level guards)
  * @param unauthorizedTitle - Custom title for unauthorized page
@@ -65,11 +60,26 @@ export function PermissionGuard({
     return <>{fallback}</>;
   }
 
-  // Check if user has the required permission
-  const userRoles = session.user.roles || [];
-  const hasPermission = userRoles.includes(requiredPermission);
+  // Check if user has the required permission using roles manager (checks both permissions and roles)
+  const userId = session.user.id;
+  
+  // Populate roles manager from session if it's empty
+  if (session.user.roles && rolesManager.getUserRoles(userId).length === 0) {
+    rolesManager.setUserRoles(userId, session.user.roles);
+    console.log('🔧 Populated roles manager from session:', { userId, roles: session.user.roles });
+  }
+  
+  console.log('🔍 Permission Check Debug:', {
+    userId,
+    requiredPermission,
+    userRolesFromManager: rolesManager.getUserRoles(userId),
+    userRolesFromSession: session.user.roles,
+    allUsersInManager: rolesManager.getAllUsers()
+  });
+  const hasRequiredPermission = rolesManager.hasAccess(userId, requiredPermission);
+  console.log('✅ Access result:', hasRequiredPermission);
 
-  if (!hasPermission) {
+  if (!hasRequiredPermission) {
     if (showUnauthorizedPage) {
       return (
         <UnauthorizedPage
@@ -113,7 +123,7 @@ export function InlinePermissionGuard({
 
 /**
  * Hook to check if user has a specific permission
- * Uses the auth provider for better performance
+ * Uses the roles manager map for checking
  * 
  * @param permission - Permission string to check
  * @returns boolean indicating if user has the permission
@@ -125,42 +135,55 @@ export function usePermission(permission: string): boolean {
     return false;
   }
 
-  const userRoles = session.user.roles || [];
-  return userRoles.includes(permission);
+  return rolesManager.hasRole(session.user.id, permission);
 }
 
 /**
- * Hook to check if user has any of the specified roles
- * Uses the auth provider for better performance
+ * Hook to check if user has any of the specified permissions
+ * Uses the roles manager map for checking
  * 
- * @param roles - Array of permission strings to check
- * @returns boolean indicating if user has at least one of the roles
+ * @param permissions - Array of permission strings to check
+ * @returns boolean indicating if user has at least one of the permissions
  */
-export function useAnyPermission(roles: string[]): boolean {
+export function useAnyPermission(permissions: string[]): boolean {
   const { session, status } = useAuth();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userRoles = session.user.roles || [];
-  return roles.some(permission => userRoles.includes(permission));
+  return rolesManager.hasAnyRole(session.user.id, permissions);
 }
 
 /**
- * Hook to check if user has all of the specified roles
- * Uses the auth provider for better performance
+ * Hook to check if user has all of the specified permissions
+ * Uses the roles manager map for checking
  * 
- * @param roles - Array of permission strings to check
- * @returns boolean indicating if user has all of the roles
+ * @param permissions - Array of permission strings to check
+ * @returns boolean indicating if user has all of the permissions
  */
-export function useAllRoles(roles: string[]): boolean {
+export function useAllRoles(permissions: string[]): boolean {
   const { session, status } = useAuth();
 
   if (status === "loading" || !session?.user) {
     return false;
   }
 
-  const userRoles = session.user.roles || [];
-  return roles.every(permission => userRoles.includes(permission));
+  return rolesManager.hasAllRoles(session.user.id, permissions);
+}
+
+/**
+ * Hook to get all roles for current user
+ * Uses the roles manager map
+ * 
+ * @returns array of role strings for the current user
+ */
+export function useUserRoles(): string[] {
+  const { session, status } = useAuth();
+
+  if (status === "loading" || !session?.user) {
+    return [];
+  }
+
+  return rolesManager.getUserRoles(session.user.id);
 }

@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Keycloak from "next-auth/providers/keycloak"
+import { rolesManager } from "@/components/auth/roles-manager"
 
 declare module "next-auth" {
   interface Session {
@@ -111,21 +112,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "keycloak") {
         console.log('=== JWT CALLBACK - KEYCLOAK AUTH ===')
         console.log('Account access token available:', !!account.access_token)
+        console.log('Token sub:', token.sub)
         
         token.id_token = account.id_token
         
-        if (account.access_token) {
+        if (account.access_token && token.sub) {
           console.log('Processing access token for organizations and roles...')
           token.organizations = parseOrganizations(account.access_token)
-          token.roles = parseRoles(account.access_token)
+          
+          // Store roles in JWT token for client access
+          const roles = parseRoles(account.access_token)
+          token.roles = roles
+          rolesManager.setUserRoles(token.sub, roles)
+          
           console.log('Organizations set on token:', token.organizations)
-          console.log('Roles set on token:', token.roles)
+          console.log('Roles set in JWT and roles manager for user:', token.sub, roles)
         }
       }
       
       return token
     },
     async session({ session, token }) {
+      console.log('=== SESSION CALLBACK ===')
+      console.log('Token sub:', token.sub)
+      console.log('Session user before:', session.user.id)
+      
       if (token.sub) {
         session.user.id = token.sub
       }
@@ -138,6 +149,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.roles = token.roles
       }
       
+      console.log('Session user after:', session.user.id)
+      console.log('Session roles:', session.user.roles)
       return session
     },
     authorized({ auth, request: { nextUrl } }) {
@@ -172,6 +185,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async signOut({ token }) {
+      // Clear roles from roles manager on signout
+      if (token?.sub) {
+        rolesManager.clearUserRoles(token.sub)
+        console.log('Roles cleared from roles manager for user:', token.sub)
+      }
+      
       if (token?.id_token) {
         try {
           const keycloakIssuer = process.env.AUTH_KEYCLOAK_ISSUER
