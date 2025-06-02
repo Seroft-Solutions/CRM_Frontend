@@ -43,10 +43,23 @@ import {
   useGetParty,
 } from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 import { 
+  useGetAllSourcesInfinite,
+  useSearchSourcesInfinite 
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+import { 
+  useGetAllAreasInfinite,
+  useSearchAreasInfinite 
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+import { 
+  useGetAllProductsInfinite,
+  useSearchProductsInfinite 
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import { 
   useGetAllCitiesInfinite,
   useSearchCitiesInfinite 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
+import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
 
 interface PartyFormProps {
   id?: number;
@@ -54,15 +67,32 @@ interface PartyFormProps {
 
 // Create Zod schema for form validation
 const formSchema = z.object({
-  name: z.string(),
-  mobile: z.string().optional(),
-  email: z.string().optional(),
-  whatsApp: z.string().optional(),
-  contactPerson: z.string().optional(),
-  address1: z.string().optional(),
-  address2: z.string().optional(),
-  address3: z.string().optional(),
+  name: z.string().min(2).max(100),
+  mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
+  email: z.string().max(254).regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/).optional(),
+  whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/).optional(),
+  contactPerson: z.string().min(2).max(100).optional(),
+  address1: z.string().max(255).optional(),
+  address2: z.string().max(255).optional(),
+  address3: z.string().max(255).optional(),
+  website: z.string().max(255).regex(/^https?:\/\/[^\s]+$/).optional(),
+  partyType: z.string().max(20),
+  leadStatus: z.string(),
+  leadScore: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 100, { message: "Must be at most 100" }).optional(),
+  annualRevenue: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
+  employeeCount: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
+  isActive: z.boolean(),
+  registrationDate: z.date(),
+  lastContactDate: z.date().optional(),
+  nextFollowUpDate: z.date().optional(),
   remark: z.string().optional(),
+  createdDate: z.date(),
+  lastModifiedDate: z.date().optional(),
+  assignedTo: z.string().optional(),
+  createdBy: z.string().optional(),
+  source: z.number().optional(),
+  area: z.number().optional(),
+  interestedProducts: z.array(z.number()).optional(),
   city: z.number().optional(),
 });
 
@@ -103,6 +133,13 @@ export function PartyForm({ id }: PartyFormProps) {
     },
   });
 
+  // For user relationships, you'll need to implement user fetching based on your user management setup
+  // This is a placeholder - replace with your actual user management API call
+  const users: UserDTO[] = []; // TODO: Implement user fetching
+  
+  // Example: If you have a user management hook, use it like:
+  // const { data: usersData } = useGetUsers();
+  // const users = usersData || [];
 
   // Form initialization
   const form = useForm<z.infer<typeof formSchema>>({
@@ -133,7 +170,58 @@ export function PartyForm({ id }: PartyFormProps) {
       address3: "",
 
 
+      website: "",
+
+
+      partyType: "",
+
+
+      leadStatus: "",
+
+
+      leadScore: "",
+
+
+      annualRevenue: "",
+
+
+      employeeCount: "",
+
+
+      isActive: false,
+
+
+      registrationDate: new Date(),
+
+
+      lastContactDate: new Date(),
+
+
+      nextFollowUpDate: new Date(),
+
+
       remark: "",
+
+
+      createdDate: new Date(),
+
+
+      lastModifiedDate: new Date(),
+
+
+      assignedTo: undefined,
+
+
+      createdBy: undefined,
+
+
+      source: undefined,
+
+
+      area: undefined,
+
+
+      interestedProducts: [],
 
 
       city: undefined,
@@ -170,7 +258,58 @@ export function PartyForm({ id }: PartyFormProps) {
         address3: entity.address3 || "",
 
 
+        website: entity.website || "",
+
+
+        partyType: entity.partyType || "",
+
+
+        leadStatus: entity.leadStatus || "",
+
+
+        leadScore: entity.leadScore != null ? String(entity.leadScore) : "",
+
+
+        annualRevenue: entity.annualRevenue != null ? String(entity.annualRevenue) : "",
+
+
+        employeeCount: entity.employeeCount != null ? String(entity.employeeCount) : "",
+
+
+        isActive: entity.isActive || "",
+
+
+        registrationDate: entity.registrationDate ? new Date(entity.registrationDate) : undefined,
+
+
+        lastContactDate: entity.lastContactDate ? new Date(entity.lastContactDate) : undefined,
+
+
+        nextFollowUpDate: entity.nextFollowUpDate ? new Date(entity.nextFollowUpDate) : undefined,
+
+
         remark: entity.remark || "",
+
+
+        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
+
+
+        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
+
+
+        assignedTo: entity.assignedTo?.id,
+
+
+        createdBy: entity.createdBy?.id,
+
+
+        source: entity.source?.id,
+
+
+        area: entity.area?.id,
+
+
+        interestedProducts: entity.interestedProducts?.map(item => item.id),
 
 
         city: entity.city?.id,
@@ -209,7 +348,58 @@ export function PartyForm({ id }: PartyFormProps) {
       address3: data.address3,
 
 
+      website: data.website,
+
+
+      partyType: data.partyType,
+
+
+      leadStatus: data.leadStatus,
+
+
+      leadScore: data.leadScore ? Number(data.leadScore) : undefined,
+
+
+      annualRevenue: data.annualRevenue ? Number(data.annualRevenue) : undefined,
+
+
+      employeeCount: data.employeeCount ? Number(data.employeeCount) : undefined,
+
+
+      isActive: data.isActive,
+
+
+      registrationDate: data.registrationDate,
+
+
+      lastContactDate: data.lastContactDate,
+
+
+      nextFollowUpDate: data.nextFollowUpDate,
+
+
       remark: data.remark,
+
+
+      createdDate: data.createdDate,
+
+
+      lastModifiedDate: data.lastModifiedDate,
+
+
+      assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
+
+
+      createdBy: data.createdBy ? { id: data.createdBy } : null,
+
+
+      source: data.source ? { id: data.source } : null,
+
+
+      area: data.area ? { id: data.area } : null,
+
+
+      interestedProducts: data.interestedProducts?.map(id => ({ id: id })),
 
 
       city: data.city ? { id: data.city } : null,
@@ -218,7 +408,7 @@ export function PartyForm({ id }: PartyFormProps) {
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','remark','city',].includes(key);
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','website','partyType','leadStatus','leadScore','annualRevenue','employeeCount','isActive','registrationDate','lastContactDate','nextFollowUpDate','remark','createdDate','lastModifiedDate','assignedTo','createdBy','source','area','interestedProducts','city',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -256,6 +446,10 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Party name/company name
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -267,7 +461,7 @@ export function PartyForm({ id }: PartyFormProps) {
           render={({ field }) => (
 
             <FormItem>
-              <FormLabel>Mobile</FormLabel>
+              <FormLabel>Mobile *</FormLabel>
               <FormControl>
                 <Input 
                   {...field}
@@ -275,6 +469,10 @@ export function PartyForm({ id }: PartyFormProps) {
                   placeholder="Enter mobile"
                 />
               </FormControl>
+
+              <FormDescription>
+                Mobile number
+              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -296,6 +494,10 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Email address
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -315,6 +517,10 @@ export function PartyForm({ id }: PartyFormProps) {
                   placeholder="Enter whatsApp"
                 />
               </FormControl>
+
+              <FormDescription>
+                WhatsApp number
+              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -336,6 +542,10 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Contact person name
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -355,6 +565,10 @@ export function PartyForm({ id }: PartyFormProps) {
                   placeholder="Enter address1"
                 />
               </FormControl>
+
+              <FormDescription>
+                Address line 1
+              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -376,6 +590,10 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Address line 2
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -396,6 +614,311 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Address line 3
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="website"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>Website</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter website"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Website URL
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="partyType"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>PartyType *</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter partyType"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Company/individual type
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="leadStatus"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>LeadStatus *</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter leadStatus"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Lead status
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="leadScore"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>LeadScore</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  type="number"
+                  placeholder="Enter leadScore"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Lead score (0-100)
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="annualRevenue"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>AnnualRevenue</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  type="number"
+                  placeholder="Enter annualRevenue"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Annual revenue
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="employeeCount"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>EmployeeCount</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  type="number"
+                  placeholder="Enter employeeCount"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Number of employees
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsActive</FormLabel>
+
+                <FormDescription>
+                  Is this party active
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="registrationDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>RegistrationDate *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Registration date
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastContactDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>LastContactDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Last contact date
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="nextFollowUpDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>NextFollowUpDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Next follow up date
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -415,12 +938,205 @@ export function PartyForm({ id }: PartyFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Additional remarks
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="createdDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>CreatedDate *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Created timestamp
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastModifiedDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>LastModifiedDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Last modified timestamp
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="assignedTo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Assigned To</FormLabel>
+              <FormControl>
+                {/* TODO: Implement user relationships with appropriate infinite query hook */}
+                <div className="p-2 text-muted-foreground border rounded">
+                  User relationship support - Please implement user infinite query hook
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="createdBy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Created By</FormLabel>
+              <FormControl>
+                {/* TODO: Implement user relationships with appropriate infinite query hook */}
+                <div className="p-2 text-muted-foreground border rounded">
+                  User relationship support - Please implement user infinite query hook
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="source"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Source</FormLabel>
+              <FormControl>
+                <PaginatedRelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  displayField="name"
+                  placeholder="Select source"
+                  multiple={false}
+                  useInfiniteQueryHook={useGetAllSourcesInfinite}
+                  searchHook={useSearchSourcesInfinite}
+                  entityName="Sources"
+                  searchField="name"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="area"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Area</FormLabel>
+              <FormControl>
+                <PaginatedRelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  displayField="name"
+                  placeholder="Select area"
+                  multiple={false}
+                  useInfiniteQueryHook={useGetAllAreasInfinite}
+                  searchHook={useSearchAreasInfinite}
+                  entityName="Areas"
+                  searchField="name"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="interestedProducts"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Interested Products</FormLabel>
+              <FormControl>
+                <PaginatedRelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  displayField="name"
+                  placeholder="Select interested products"
+                  multiple={true}
+                  useInfiniteQueryHook={useGetAllProductsInfinite}
+                  searchHook={useSearchProductsInfinite}
+                  entityName="Products"
+                  searchField="name"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="city"

@@ -47,6 +47,7 @@ import {
   useSearchCallsInfinite 
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
+import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
 
 interface CallRemarkFormProps {
   id?: number;
@@ -56,6 +57,13 @@ interface CallRemarkFormProps {
 const formSchema = z.object({
   remark: z.string(),
   dateTime: z.date(),
+  isPrivate: z.boolean(),
+  remarkType: z.string().max(50).optional(),
+  actionItems: z.string().max(500).optional(),
+  isActive: z.boolean(),
+  createdDate: z.date(),
+  lastModifiedDate: z.date().optional(),
+  createdBy: z.string().optional(),
   call: z.number().optional(),
 });
 
@@ -96,6 +104,13 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
     },
   });
 
+  // For user relationships, you'll need to implement user fetching based on your user management setup
+  // This is a placeholder - replace with your actual user management API call
+  const users: UserDTO[] = []; // TODO: Implement user fetching
+  
+  // Example: If you have a user management hook, use it like:
+  // const { data: usersData } = useGetUsers();
+  // const users = usersData || [];
 
   // Form initialization
   const form = useForm<z.infer<typeof formSchema>>({
@@ -106,6 +121,27 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
 
 
       dateTime: new Date(),
+
+
+      isPrivate: false,
+
+
+      remarkType: "",
+
+
+      actionItems: "",
+
+
+      isActive: false,
+
+
+      createdDate: new Date(),
+
+
+      lastModifiedDate: new Date(),
+
+
+      createdBy: undefined,
 
 
       call: undefined,
@@ -122,6 +158,27 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
 
 
         dateTime: entity.dateTime ? new Date(entity.dateTime) : undefined,
+
+
+        isPrivate: entity.isPrivate || "",
+
+
+        remarkType: entity.remarkType || "",
+
+
+        actionItems: entity.actionItems || "",
+
+
+        isActive: entity.isActive || "",
+
+
+        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
+
+
+        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
+
+
+        createdBy: entity.createdBy?.id,
 
 
         call: entity.call?.id,
@@ -142,13 +199,34 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
       dateTime: data.dateTime,
 
 
+      isPrivate: data.isPrivate,
+
+
+      remarkType: data.remarkType,
+
+
+      actionItems: data.actionItems,
+
+
+      isActive: data.isActive,
+
+
+      createdDate: data.createdDate,
+
+
+      lastModifiedDate: data.lastModifiedDate,
+
+
+      createdBy: data.createdBy ? { id: data.createdBy } : null,
+
+
       call: data.call ? { id: data.call } : null,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['remark','dateTime','call',].includes(key);
+          const isFormField = ['remark','dateTime','isPrivate','remarkType','actionItems','isActive','createdDate','lastModifiedDate','createdBy','call',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -184,6 +262,10 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
                   placeholder="Enter remark"
                 />
               </FormControl>
+
+              <FormDescription>
+                Remark text
+              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -225,12 +307,218 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
                 </PopoverContent>
               </Popover>
 
+              <FormDescription>
+                Remark date and time
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isPrivate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsPrivate</FormLabel>
+
+                <FormDescription>
+                  Is this remark private
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="remarkType"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>RemarkType</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter remarkType"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Remark type
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="actionItems"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>ActionItems</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter actionItems"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Action items from this remark
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsActive</FormLabel>
+
+                <FormDescription>
+                  Is this remark active
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="createdDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>CreatedDate *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Created timestamp
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastModifiedDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>LastModifiedDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Last modified timestamp
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="createdBy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Created By</FormLabel>
+              <FormControl>
+                {/* TODO: Implement user relationships with appropriate infinite query hook */}
+                <div className="p-2 text-muted-foreground border rounded">
+                  User relationship support - Please implement user infinite query hook
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="call"

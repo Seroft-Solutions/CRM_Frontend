@@ -10,15 +10,15 @@ import { z } from 'zod'
 const partySchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
   
   
   
-  mobile: z.string().optional(),
+  mobile: z.string(),
   
   
   
-  email: z.string().optional(),
+  email: z.string().max(254).optional(),
   
   
   
@@ -26,23 +26,89 @@ const partySchema = z.object({
   
   
   
-  contactPerson: z.string().optional(),
+  contactPerson: z.string().min(2).max(100).optional(),
   
   
   
-  address1: z.string().optional(),
+  address1: z.string().max(255).optional(),
   
   
   
-  address2: z.string().optional(),
+  address2: z.string().max(255).optional(),
   
   
   
-  address3: z.string().optional(),
+  address3: z.string().max(255).optional(),
+  
+  
+  
+  website: z.string().max(255).optional(),
+  
+  
+  
+  partyType: z.string().max(20),
+  
+  
+  
+  leadStatus: z.any(),
+  
+  
+  
+  leadScore: z.number().min(0).max(100).optional(),
+  
+  
+  
+  annualRevenue: z.any().optional(),
+  
+  
+  
+  employeeCount: z.number().min(0).optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  registrationDate: z.string().datetime(),
+  
+  
+  
+  lastContactDate: z.string().datetime().optional(),
+  
+  
+  
+  nextFollowUpDate: z.string().datetime().optional(),
   
   
   
   remark: z.any().optional(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
+  
+  
+  
+  
+  assignedToId: z.number().optional(),
+  
+  
+  
+  createdById: z.number().optional(),
+  
+  
+  
+  sourceId: z.number().optional(),
+  
+  
+  
+  areaId: z.number().optional(),
+  
   
   
   
@@ -106,7 +172,73 @@ export async function createParty(
       
       
       
+      website: formData.get('website') || undefined,
+      
+      
+      
+      partyType: formData.get('partyType') || undefined,
+      
+      
+      
+      leadStatus: formData.get('leadStatus') || undefined,
+      
+      
+      
+      leadScore: formData.get('leadScore') ? Number(formData.get('leadScore')) : undefined,
+      
+      
+      
+      annualRevenue: formData.get('annualRevenue') || undefined,
+      
+      
+      
+      employeeCount: formData.get('employeeCount') ? Number(formData.get('employeeCount')) : undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      registrationDate: formData.get('registrationDate') || undefined,
+      
+      
+      
+      lastContactDate: formData.get('lastContactDate') || undefined,
+      
+      
+      
+      nextFollowUpDate: formData.get('nextFollowUpDate') || undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
+      
+      
+      
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
+      
+      
+      
+      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
       
       
       
@@ -207,7 +339,73 @@ export async function updateParty(
       
       
       
+      website: formData.get('website') || undefined,
+      
+      
+      
+      partyType: formData.get('partyType') || undefined,
+      
+      
+      
+      leadStatus: formData.get('leadStatus') || undefined,
+      
+      
+      
+      leadScore: formData.get('leadScore') ? Number(formData.get('leadScore')) : undefined,
+      
+      
+      
+      annualRevenue: formData.get('annualRevenue') || undefined,
+      
+      
+      
+      employeeCount: formData.get('employeeCount') ? Number(formData.get('employeeCount')) : undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      registrationDate: formData.get('registrationDate') || undefined,
+      
+      
+      
+      lastContactDate: formData.get('lastContactDate') || undefined,
+      
+      
+      
+      nextFollowUpDate: formData.get('nextFollowUpDate') || undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
+      
+      
+      
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
+      
+      
+      
+      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
       
       
       

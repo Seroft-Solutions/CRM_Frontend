@@ -31,7 +31,7 @@ import {
   useGetAllCalls,
   useDeleteCall,
   useCountCalls,
-  
+  useSearchCalls,
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 
 import { CallSearchAndFilters } from "./call-search-filters";
@@ -86,6 +86,13 @@ export function CallTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`callDateTimeGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`callDateTimeLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -93,6 +100,23 @@ export function CallTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
+  
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchCalls(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : 
   
   const { data, isLoading, refetch } = useGetAllCalls(
     {
@@ -180,6 +204,12 @@ export function CallTable() {
   };
 
   
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
+  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -193,7 +223,7 @@ export function CallTable() {
       {/* Search and Filter Component */}
       <CallSearchAndFilters 
         searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
+        onSearchChange={handleSearch}
         filters={filters}
         onFilterChange={handleFilterChange}
         dateRange={dateRange}
@@ -213,7 +243,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={30}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +261,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={30}
                   className="h-24 text-center"
                 >
                   No calls found

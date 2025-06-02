@@ -29,7 +29,37 @@ export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowP
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
+        {source.code}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
         {source.description}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.isActive ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.costPerLead}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.conversionRate}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.sortOrder}
         
       </TableCell>
       
@@ -42,6 +72,18 @@ export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowP
             
           </>
         ) : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.createdDate ? format(new Date(source.createdDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {source.lastModifiedDate ? format(new Date(source.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

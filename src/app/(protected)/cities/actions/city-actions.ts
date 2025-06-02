@@ -10,7 +10,31 @@ import { z } from 'zod'
 const citySchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
+  
+  
+  
+  code: z.string().min(2).max(10).optional(),
+  
+  
+  
+  isMetro: z.boolean(),
+  
+  
+  
+  population: z.number().min(0).optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -43,6 +67,30 @@ export async function createCity(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      isMetro: formData.get('isMetro') === 'true',
+      
+      
+      
+      population: formData.get('population') ? Number(formData.get('population')) : undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -112,6 +160,30 @@ export async function updateCity(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      isMetro: formData.get('isMetro') === 'true',
+      
+      
+      
+      population: formData.get('population') ? Number(formData.get('population')) : undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

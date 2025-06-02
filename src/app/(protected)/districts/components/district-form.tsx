@@ -54,7 +54,11 @@ interface DistrictFormProps {
 
 // Create Zod schema for form validation
 const formSchema = z.object({
-  name: z.string(),
+  name: z.string().min(2).max(100),
+  code: z.string().min(2).max(10).regex(/^[A-Z0-9]+$/).optional(),
+  isActive: z.boolean(),
+  createdDate: z.date(),
+  lastModifiedDate: z.date().optional(),
   state: z.number().optional(),
 });
 
@@ -104,6 +108,18 @@ export function DistrictForm({ id }: DistrictFormProps) {
       name: "",
 
 
+      code: "",
+
+
+      isActive: false,
+
+
+      createdDate: new Date(),
+
+
+      lastModifiedDate: new Date(),
+
+
       state: undefined,
 
     },
@@ -115,6 +131,18 @@ export function DistrictForm({ id }: DistrictFormProps) {
       const formValues = {
 
         name: entity.name || "",
+
+
+        code: entity.code || "",
+
+
+        isActive: entity.isActive || "",
+
+
+        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
+
+
+        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
 
 
         state: entity.state?.id,
@@ -132,13 +160,25 @@ export function DistrictForm({ id }: DistrictFormProps) {
       name: data.name,
 
 
+      code: data.code,
+
+
+      isActive: data.isActive,
+
+
+      createdDate: data.createdDate,
+
+
+      lastModifiedDate: data.lastModifiedDate,
+
+
       state: data.state ? { id: data.state } : null,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','state',].includes(key);
+          const isFormField = ['name','code','isActive','createdDate','lastModifiedDate','state',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -175,6 +215,147 @@ export function DistrictForm({ id }: DistrictFormProps) {
                   placeholder="Enter name"
                 />
               </FormControl>
+
+              <FormDescription>
+                District name
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>Code</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter code"
+                />
+              </FormControl>
+
+              <FormDescription>
+                District code
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsActive</FormLabel>
+
+                <FormDescription>
+                  Is this district active
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="createdDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>CreatedDate *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Created timestamp
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastModifiedDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>LastModifiedDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Last modified timestamp
+              </FormDescription>
 
               <FormMessage />
             </FormItem>

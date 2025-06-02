@@ -92,7 +92,61 @@ export function ProductDetails({ id }: ProductDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.code || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
               <p>{entity.description || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.category || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.basePrice || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.minPrice || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.maxPrice || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isActive ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.launchDate ? format(new Date(entity.launchDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>
+                {entity.features ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
 
             </div>
             <div className="space-y-1">
@@ -107,7 +161,39 @@ export function ProductDetails({ id }: ProductDetailsProps) {
               </p>
 
             </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
+
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Calls</p>
+
+              <p>
+                {entity.calls?.length
+                  ? entity.calls.map((item) => item.name).join(", ")
+                  : "—"}
+              </p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Interested Parties</p>
+
+              <p>
+                {entity.interestedParties?.length
+                  ? entity.interestedParties.map((item) => item.name).join(", ")
+                  : "—"}
+              </p>
+
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">

@@ -10,15 +10,59 @@ import { z } from 'zod'
 const productSchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
   
   
   
-  description: z.string().optional(),
+  code: z.string().min(2).max(20),
+  
+  
+  
+  description: z.string().max(500).optional(),
+  
+  
+  
+  category: z.string().max(50).optional(),
+  
+  
+  
+  basePrice: z.any().optional(),
+  
+  
+  
+  minPrice: z.any().optional(),
+  
+  
+  
+  maxPrice: z.any().optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  launchDate: z.string().datetime().optional(),
+  
+  
+  
+  features: z.any().optional(),
   
   
   
   remark: z.any().optional(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
+  
+  
+  
+  
   
   
   
@@ -50,11 +94,55 @@ export async function createProduct(
       
       
       
+      code: formData.get('code') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      category: formData.get('category') || undefined,
+      
+      
+      
+      basePrice: formData.get('basePrice') || undefined,
+      
+      
+      
+      minPrice: formData.get('minPrice') || undefined,
+      
+      
+      
+      maxPrice: formData.get('maxPrice') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      launchDate: formData.get('launchDate') || undefined,
+      
+      
+      
+      features: formData.get('features') || undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
+      
+      
+      
+      
       
       
       
@@ -123,11 +211,55 @@ export async function updateProduct(
       
       
       
+      code: formData.get('code') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      category: formData.get('category') || undefined,
+      
+      
+      
+      basePrice: formData.get('basePrice') || undefined,
+      
+      
+      
+      minPrice: formData.get('minPrice') || undefined,
+      
+      
+      
+      maxPrice: formData.get('maxPrice') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      launchDate: formData.get('launchDate') || undefined,
+      
+      
+      
+      features: formData.get('features') || undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
+      
+      
+      
+      
       
       
       

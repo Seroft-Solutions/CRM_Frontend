@@ -10,15 +10,39 @@ import { z } from 'zod'
 const channeltypeSchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(50),
   
   
   
-  description: z.string().optional(),
+  code: z.string().min(2).max(10),
+  
+  
+  
+  description: z.string().max(255).optional(),
+  
+  
+  
+  commissionRate: z.any().optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  sortOrder: z.number().min(0).optional(),
   
   
   
   remark: z.any().optional(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -50,11 +74,35 @@ export async function createChannelType(
       
       
       
+      code: formData.get('code') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      commissionRate: formData.get('commissionRate') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -123,11 +171,35 @@ export async function updateChannelType(
       
       
       
+      code: formData.get('code') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      commissionRate: formData.get('commissionRate') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

@@ -27,6 +27,42 @@ export function CityTableRow({ city, onDelete, isDeleting }: CityTableRowProps) 
         
       </TableCell>
       
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.code}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.isMetro ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.population}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.isActive ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.createdDate ? format(new Date(city.createdDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {city.lastModifiedDate ? format(new Date(city.lastModifiedDate), "PPP") : ""}
+        
+      </TableCell>
+      
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {city.district ? 

@@ -123,6 +123,116 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
             variant="ghost"
+            onClick={() => onSort("website")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            website
+            {renderSortIcon("website")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("partyType")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            partyType
+            {renderSortIcon("partyType")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("leadStatus")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            leadStatus
+            {renderSortIcon("leadStatus")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("leadScore")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            leadScore
+            {renderSortIcon("leadScore")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("annualRevenue")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            annualRevenue
+            {renderSortIcon("annualRevenue")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("employeeCount")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            employeeCount
+            {renderSortIcon("employeeCount")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("isActive")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            isActive
+            {renderSortIcon("isActive")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("registrationDate")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            registrationDate
+            {renderSortIcon("registrationDate")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("lastContactDate")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            lastContactDate
+            {renderSortIcon("lastContactDate")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("nextFollowUpDate")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            nextFollowUpDate
+            {renderSortIcon("nextFollowUpDate")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
@@ -131,6 +241,72 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
           </Button>
         </TableHead>
         
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("createdDate")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            createdDate
+            {renderSortIcon("createdDate")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("lastModifiedDate")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            lastModifiedDate
+            {renderSortIcon("lastModifiedDate")}
+          </Button>
+        </TableHead>
+        
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("assignedTo.login")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            Assigned To
+            {renderSortIcon("assignedTo.login")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("createdBy.login")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            Created By
+            {renderSortIcon("createdBy.login")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("source.name")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            Source
+            {renderSortIcon("source.name")}
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-4 py-3">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("area.name")}
+            className="flex items-center gap-2 h-8 px-2 font-medium"
+          >
+            Area
+            {renderSortIcon("area.name")}
+          </Button>
+        </TableHead>
         
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button

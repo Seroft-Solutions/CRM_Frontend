@@ -86,6 +86,13 @@ export function DistrictTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`createdDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`createdDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -213,7 +220,7 @@ export function DistrictTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={7}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +238,7 @@ export function DistrictTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={7}
                   className="h-24 text-center"
                 >
                   No districts found

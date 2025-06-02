@@ -134,6 +134,66 @@ export function PartyDetails({ id }: PartyDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.website || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.partyType || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.leadStatus || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.leadScore || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.annualRevenue || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.employeeCount || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isActive ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.registrationDate ? format(new Date(entity.registrationDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastContactDate ? format(new Date(entity.lastContactDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.nextFollowUpDate ? format(new Date(entity.nextFollowUpDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
               <p>
                 {entity.remark ? (
 
@@ -143,7 +203,53 @@ export function PartyDetails({ id }: PartyDetailsProps) {
               </p>
 
             </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
+
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
+
+              <p>{(entity.assignedTo as any)?.login || entity.assignedTo?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Created By</p>
+
+              <p>{(entity.createdBy as any)?.login || entity.createdBy?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Source</p>
+
+              <p>{(entity.source as any)?.name || entity.source?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Area</p>
+
+              <p>{(entity.area as any)?.name || entity.area?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Interested Products</p>
+
+              <p>
+                {entity.interestedProducts?.length
+                  ? entity.interestedProducts.map((item) => item.name).join(", ")
+                  : "—"}
+              </p>
+
+            </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">City</p>
 

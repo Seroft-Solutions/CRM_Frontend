@@ -10,11 +10,27 @@ import { z } from 'zod'
 const areaSchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
   
   
   
-  pincode: z.number(),
+  pincode: z.string().min(6).max(6),
+  
+  
+  
+  areaType: z.string().max(50).optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -50,7 +66,23 @@ export async function createArea(
       
       
       
-      pincode: formData.get('pincode') ? Number(formData.get('pincode')) : undefined,
+      pincode: formData.get('pincode') || undefined,
+      
+      
+      
+      areaType: formData.get('areaType') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -123,7 +155,23 @@ export async function updateArea(
       
       
       
-      pincode: formData.get('pincode') ? Number(formData.get('pincode')) : undefined,
+      pincode: formData.get('pincode') || undefined,
+      
+      
+      
+      areaType: formData.get('areaType') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
