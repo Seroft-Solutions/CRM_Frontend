@@ -71,6 +71,66 @@ export function PartyTableRow({ party, onDelete, isDeleting }: PartyTableRowProp
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
+        {party.website}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.partyType}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.leadStatus}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.leadScore}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.annualRevenue}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.employeeCount}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.isActive ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.registrationDate ? format(new Date(party.registrationDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.lastContactDate ? format(new Date(party.lastContactDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.nextFollowUpDate ? format(new Date(party.nextFollowUpDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
         {party.remark ? (
           <>
             
@@ -81,6 +141,38 @@ export function PartyTableRow({ party, onDelete, isDeleting }: PartyTableRowProp
         
       </TableCell>
       
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.createdDate ? format(new Date(party.createdDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {party.lastModifiedDate ? format(new Date(party.lastModifiedDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        {party.assignedTo ? 
+          (party.assignedTo as any).login || party.assignedTo.id || "" : ""}
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        {party.createdBy ? 
+          (party.createdBy as any).login || party.createdBy.id || "" : ""}
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        {party.source ? 
+          (party.source as any).name || party.source.id || "" : ""}
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        {party.area ? 
+          (party.area as any).name || party.area.id || "" : ""}
+      </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {party.city ? 

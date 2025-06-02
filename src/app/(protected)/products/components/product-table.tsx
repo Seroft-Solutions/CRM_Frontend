@@ -31,7 +31,7 @@ import {
   useGetAllProducts,
   useDeleteProduct,
   useCountProducts,
-  
+  useSearchProducts,
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
 
 import { ProductSearchAndFilters } from "./product-search-filters";
@@ -86,6 +86,13 @@ export function ProductTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`launchDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`launchDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -93,6 +100,23 @@ export function ProductTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
+  
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchProducts(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : 
   
   const { data, isLoading, refetch } = useGetAllProducts(
     {
@@ -180,6 +204,12 @@ export function ProductTable() {
   };
 
   
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
+  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -193,7 +223,7 @@ export function ProductTable() {
       {/* Search and Filter Component */}
       <ProductSearchAndFilters 
         searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
+        onSearchChange={handleSearch}
         filters={filters}
         onFilterChange={handleFilterChange}
         dateRange={dateRange}
@@ -213,7 +243,7 @@ export function ProductTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +261,7 @@ export function ProductTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   No products found

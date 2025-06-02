@@ -29,7 +29,31 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting }: Chann
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
+        {channelType.code}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
         {channelType.description}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {channelType.commissionRate}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {channelType.isActive ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {channelType.sortOrder}
         
       </TableCell>
       
@@ -42,6 +66,18 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting }: Chann
             
           </>
         ) : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {channelType.createdDate ? format(new Date(channelType.createdDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {channelType.lastModifiedDate ? format(new Date(channelType.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

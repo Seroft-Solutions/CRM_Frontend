@@ -101,7 +101,49 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
               <p>{entity.dateTime ? format(new Date(entity.dateTime), "PPP") : ""}</p>
 
             </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.isPrivate ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.remarkType || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.actionItems || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isActive ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
+
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Created By</p>
+
+              <p>{(entity.createdBy as any)?.login || entity.createdBy?.id || "—"}</p>
+
+            </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Call</p>
 

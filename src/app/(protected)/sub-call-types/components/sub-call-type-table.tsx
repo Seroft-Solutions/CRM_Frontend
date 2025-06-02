@@ -86,6 +86,13 @@ export function SubCallTypeTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`createdDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`createdDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -213,7 +220,7 @@ export function SubCallTypeTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +238,7 @@ export function SubCallTypeTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   No sub call types found

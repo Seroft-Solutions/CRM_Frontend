@@ -10,7 +10,27 @@ import { z } from 'zod'
 const stateSchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
+  
+  
+  
+  code: z.string().min(2).max(10),
+  
+  
+  
+  country: z.string().min(2).max(50),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -39,6 +59,26 @@ export async function createState(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      country: formData.get('country') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -104,6 +144,26 @@ export async function updateState(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      country: formData.get('country') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

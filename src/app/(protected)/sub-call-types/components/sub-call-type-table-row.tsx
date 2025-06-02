@@ -29,7 +29,25 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting }: SubCa
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
+        {subCallType.code}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
         {subCallType.description}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {subCallType.isActive ? "Yes" : "No"}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {subCallType.sortOrder}
         
       </TableCell>
       
@@ -42,6 +60,18 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting }: SubCa
             
           </>
         ) : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {subCallType.createdDate ? format(new Date(subCallType.createdDate), "PPP") : ""}
+        
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-4 py-3">
+        
+        {subCallType.lastModifiedDate ? format(new Date(subCallType.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

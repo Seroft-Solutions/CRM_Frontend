@@ -86,6 +86,13 @@ export function ChannelTypeTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`createdDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`createdDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -213,7 +220,7 @@ export function ChannelTypeTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +238,7 @@ export function ChannelTypeTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   No channel types found

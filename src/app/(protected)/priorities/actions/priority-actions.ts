@@ -10,15 +10,39 @@ import { z } from 'zod'
 const prioritySchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(50),
   
   
   
-  description: z.string().optional(),
+  level: z.any(),
+  
+  
+  
+  description: z.string().max(255).optional(),
+  
+  
+  
+  colorCode: z.string().optional(),
+  
+  
+  
+  sortOrder: z.number().min(0).optional(),
   
   
   
   remark: z.any().optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -50,11 +74,35 @@ export async function createPriority(
       
       
       
+      level: formData.get('level') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      colorCode: formData.get('colorCode') || undefined,
+      
+      
+      
+      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -123,11 +171,35 @@ export async function updatePriority(
       
       
       
+      level: formData.get('level') || undefined,
+      
+      
+      
       description: formData.get('description') || undefined,
       
       
       
+      colorCode: formData.get('colorCode') || undefined,
+      
+      
+      
+      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
+      
+      
+      
       remark: formData.get('remark') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

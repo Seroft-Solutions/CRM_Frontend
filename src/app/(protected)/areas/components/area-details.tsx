@@ -95,6 +95,30 @@ export function AreaDetails({ id }: AreaDetailsProps) {
               <p>{entity.pincode || "—"}</p>
 
             </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.areaType || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isActive ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
+
+            </div>
 
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">City</p>

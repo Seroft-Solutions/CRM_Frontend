@@ -86,7 +86,103 @@ export function CallDetails({ id }: CallDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
+              <p>{entity.callDateTime ? format(new Date(entity.callDateTime), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.direction || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.durationSeconds || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.outcome || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.expectedRevenue || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.actualRevenue || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.probability || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.nextFollowUpDate ? format(new Date(entity.nextFollowUpDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isCompleted ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.summary || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.recordingUrl || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>
+                {entity.internalNotes ? (
+
+                  <span>Binary data</span>
+
+                ) : ""}
+              </p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
               <p>{entity.status || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.isActive ? "Yes" : "No"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground"></p>
+
+              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
 
             </div>
 
@@ -100,6 +196,12 @@ export function CallDetails({ id }: CallDetailsProps) {
               <p className="text-sm font-medium text-muted-foreground">Channel Party</p>
 
               <p>{(entity.channelParty as any)?.login || entity.channelParty?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Created By</p>
+
+              <p>{(entity.createdBy as any)?.login || entity.createdBy?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">
@@ -133,12 +235,6 @@ export function CallDetails({ id }: CallDetailsProps) {
 
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Party</p>
-
-              <p>{(entity.party as any)?.name || entity.party?.id || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Product</p>
 
               <p>{(entity.product as any)?.name || entity.product?.id || "—"}</p>
@@ -160,6 +256,22 @@ export function CallDetails({ id }: CallDetailsProps) {
               <p className="text-sm font-medium text-muted-foreground">Call Status</p>
 
               <p>{(entity.callStatus as any)?.name || entity.callStatus?.id || "—"}</p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Products</p>
+
+              <p>
+                {entity.products?.length
+                  ? entity.products.map((item) => item.name).join(", ")
+                  : "—"}
+              </p>
+
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Party</p>
+
+              <p>{(entity.party as any)?.name || entity.party?.id || "—"}</p>
 
             </div>
           </div>

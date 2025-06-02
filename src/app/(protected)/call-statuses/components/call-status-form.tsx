@@ -49,9 +49,15 @@ interface CallStatusFormProps {
 
 // Create Zod schema for form validation
 const formSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
+  name: z.string().min(2).max(50),
+  code: z.string().min(2).max(10).regex(/^[A-Z0-9_]+$/),
+  description: z.string().max(255).optional(),
+  isFinal: z.boolean(),
+  isActive: z.boolean(),
+  sortOrder: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
   remark: z.string().optional(),
+  createdDate: z.date(),
+  lastModifiedDate: z.date().optional(),
 });
 
 export function CallStatusForm({ id }: CallStatusFormProps) {
@@ -100,10 +106,28 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
       name: "",
 
 
+      code: "",
+
+
       description: "",
 
 
+      isFinal: false,
+
+
+      isActive: false,
+
+
+      sortOrder: "",
+
+
       remark: "",
+
+
+      createdDate: new Date(),
+
+
+      lastModifiedDate: new Date(),
 
     },
   });
@@ -116,10 +140,28 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
         name: entity.name || "",
 
 
+        code: entity.code || "",
+
+
         description: entity.description || "",
 
 
+        isFinal: entity.isFinal || "",
+
+
+        isActive: entity.isActive || "",
+
+
+        sortOrder: entity.sortOrder != null ? String(entity.sortOrder) : "",
+
+
         remark: entity.remark || "",
+
+
+        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
+
+
+        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
 
       };
       form.reset(formValues);
@@ -134,16 +176,34 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
       name: data.name,
 
 
+      code: data.code,
+
+
       description: data.description,
 
 
+      isFinal: data.isFinal,
+
+
+      isActive: data.isActive,
+
+
+      sortOrder: data.sortOrder ? Number(data.sortOrder) : undefined,
+
+
       remark: data.remark,
+
+
+      createdDate: data.createdDate,
+
+
+      lastModifiedDate: data.lastModifiedDate,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','description','remark',].includes(key);
+          const isFormField = ['name','code','description','isFinal','isActive','sortOrder','remark','createdDate','lastModifiedDate',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -181,6 +241,34 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Status name
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>Code *</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter code"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Status code
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -201,6 +289,84 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
                 />
               </FormControl>
 
+              <FormDescription>
+                Status description
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isFinal"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsFinal</FormLabel>
+
+                <FormDescription>
+                  Is this a final status
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>IsActive</FormLabel>
+
+                <FormDescription>
+                  Is this status active
+                </FormDescription>
+
+              </div>
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="sortOrder"
+          render={({ field }) => (
+
+            <FormItem>
+              <FormLabel>SortOrder</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  type="number"
+                  placeholder="Enter sortOrder"
+                />
+              </FormControl>
+
+              <FormDescription>
+                Sort order for display
+              </FormDescription>
+
               <FormMessage />
             </FormItem>
 
@@ -219,6 +385,98 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
                   placeholder="Enter remark"
                 />
               </FormControl>
+
+              <FormDescription>
+                Additional remarks
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="createdDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>CreatedDate *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Created timestamp
+              </FormDescription>
+
+              <FormMessage />
+            </FormItem>
+
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="lastModifiedDate"
+          render={({ field }) => (
+
+            <FormItem className="flex flex-col">
+              <FormLabel>LastModifiedDate</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-full pl-3 text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormDescription>
+                Last modified timestamp
+              </FormDescription>
 
               <FormMessage />
             </FormItem>

@@ -10,7 +10,23 @@ import { z } from 'zod'
 const districtSchema = z.object({
   
   
-  name: z.string(),
+  name: z.string().min(2).max(100),
+  
+  
+  
+  code: z.string().min(2).max(10).optional(),
+  
+  
+  
+  isActive: z.boolean(),
+  
+  
+  
+  createdDate: z.string().datetime(),
+  
+  
+  
+  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -43,6 +59,22 @@ export async function createDistrict(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -112,6 +144,22 @@ export async function updateDistrict(
       
       
       name: formData.get('name') || undefined,
+      
+      
+      
+      code: formData.get('code') || undefined,
+      
+      
+      
+      isActive: formData.get('isActive') === 'true',
+      
+      
+      
+      createdDate: formData.get('createdDate') || undefined,
+      
+      
+      
+      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

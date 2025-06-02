@@ -31,7 +31,7 @@ import {
   useGetAllParties,
   useDeleteParty,
   useCountParties,
-  
+  useSearchParties,
 } from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 
 import { PartySearchAndFilters } from "./party-search-filters";
@@ -86,6 +86,13 @@ export function PartyTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params[`registrationDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+    }
+    if (dateRange.to) {
+      params[`registrationDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+    }
+    
 
     return params;
   };
@@ -93,6 +100,23 @@ export function PartyTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
+  
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchParties(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : 
   
   const { data, isLoading, refetch } = useGetAllParties(
     {
@@ -180,6 +204,12 @@ export function PartyTable() {
   };
 
   
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
+  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -193,7 +223,7 @@ export function PartyTable() {
       {/* Search and Filter Component */}
       <PartySearchAndFilters 
         searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
+        onSearchChange={handleSearch}
         filters={filters}
         onFilterChange={handleFilterChange}
         dateRange={dateRange}
@@ -213,7 +243,7 @@ export function PartyTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={27}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -231,7 +261,7 @@ export function PartyTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={27}
                   className="h-24 text-center"
                 >
                   No parties found
