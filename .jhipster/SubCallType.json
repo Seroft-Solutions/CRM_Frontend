@@ -2,27 +2,62 @@
   "annotations": {
     "changelogDate": "20250525054421"
   },
-  "applications": ["crmBackend"],
-  "documentation": "SubCallType entity.",
+  "applications": "*",
+  "documentation": "Sub call type entity",
   "dto": "mapstruct",
   "fields": [
     {
+      "documentation": "Sub call type name",
       "fieldName": "name",
       "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "documentation": "Sub call type code",
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "10",
+      "fieldValidateRulesMinlength": "2",
+      "fieldValidateRulesPattern": "^[A-Z0-9_]+$"
+    },
+    {
+      "documentation": "Description",
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "documentation": "Is this sub type active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "description",
-      "fieldType": "String"
+      "documentation": "Sort order for display",
+      "fieldName": "sortOrder",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
     },
     {
+      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "TextBlob"
     },
     {
-      "fieldName": "tenantId",
-      "fieldType": "String",
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -30,10 +65,13 @@
   "pagination": "pagination",
   "relationships": [
     {
+      "otherEntityField": "name",
       "otherEntityName": "callType",
+      "otherEntityRelationshipName": "subTypes",
       "relationshipName": "callType",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "service": "serviceImpl"

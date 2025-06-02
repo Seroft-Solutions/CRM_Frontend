@@ -2,40 +2,73 @@
   "annotations": {
     "changelogDate": "20250525054425"
   },
-  "applications": ["crmBackend"],
-  "documentation": "CallStatus entity.",
+  "applications": "*",
+  "documentation": "Call status master entity",
   "dto": "mapstruct",
   "fields": [
     {
+      "documentation": "Status name",
       "fieldName": "name",
       "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "documentation": "Status code",
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "10",
+      "fieldValidateRulesMinlength": "2",
+      "fieldValidateRulesPattern": "^[A-Z0-9_]+$"
+    },
+    {
+      "documentation": "Status description",
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "documentation": "Is this a final status",
+      "fieldName": "isFinal",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "description",
-      "fieldType": "String"
+      "documentation": "Is this status active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
     },
     {
+      "documentation": "Sort order for display",
+      "fieldName": "sortOrder",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "TextBlob"
     },
     {
-      "fieldName": "tenantId",
-      "fieldType": "String",
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "CallStatus",
   "pagination": "pagination",
-  "relationships": [
-    {
-      "otherEntityName": "call",
-      "otherEntityRelationshipName": "callStatus",
-      "relationshipName": "call",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-many"
-    }
-  ],
+  "relationships": [],
   "service": "serviceImpl"
 }

@@ -2,19 +2,50 @@
   "annotations": {
     "changelogDate": "20250525054433"
   },
-  "applications": ["crmBackend"],
-  "documentation": "Area entity.",
+  "applications": "*",
+  "documentation": "Area master entity with pincode",
   "dto": "mapstruct",
   "fields": [
     {
+      "documentation": "Area name",
       "fieldName": "name",
       "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "documentation": "Area pincode",
+      "fieldName": "pincode",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "6",
+      "fieldValidateRulesMinlength": "6",
+      "fieldValidateRulesPattern": "^[0-9]{6}$"
+    },
+    {
+      "documentation": "Area type (Sector, Block, etc.)",
+      "fieldName": "areaType",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "documentation": "Is this area active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "pincode",
-      "fieldType": "Integer",
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -22,10 +53,13 @@
   "pagination": "pagination",
   "relationships": [
     {
+      "otherEntityField": "name",
       "otherEntityName": "city",
+      "otherEntityRelationshipName": "areas",
       "relationshipName": "city",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "service": "serviceImpl"

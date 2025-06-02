@@ -2,32 +2,114 @@
   "annotations": {
     "changelogDate": "20250525054426"
   },
-  "applications": ["crmBackend"],
-  "documentation": "Product entity.",
+  "applications": "*",
+  "documentation": "Product master entity",
   "dto": "mapstruct",
   "fields": [
     {
+      "documentation": "Product name",
       "fieldName": "name",
       "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "documentation": "Product code/SKU",
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "20",
+      "fieldValidateRulesMinlength": "2",
+      "fieldValidateRulesPattern": "^[A-Z0-9_-]+$"
+    },
+    {
+      "documentation": "Product description",
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "documentation": "Product category",
+      "fieldName": "category",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "documentation": "Base price",
+      "fieldName": "basePrice",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Minimum price",
+      "fieldName": "minPrice",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Maximum price",
+      "fieldName": "maxPrice",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Is this product active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "description",
-      "fieldType": "String"
+      "documentation": "Launch date",
+      "fieldName": "launchDate",
+      "fieldType": "LocalDate"
     },
     {
+      "documentation": "Product features",
+      "fieldName": "features",
+      "fieldType": "TextBlob"
+    },
+    {
+      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "TextBlob"
     },
     {
-      "fieldName": "tenantId",
-      "fieldType": "String",
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "Product",
   "pagination": "pagination",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityName": "call",
+      "otherEntityRelationshipName": "products",
+      "relationshipName": "calls",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityName": "party",
+      "otherEntityRelationshipName": "interestedProducts",
+      "relationshipName": "interestedParties",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }
