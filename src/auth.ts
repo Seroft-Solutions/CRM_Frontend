@@ -12,10 +12,12 @@ declare module "next-auth" {
       organizations?: Array<{ name: string; id: string }>
       roles?: string[]
     }
+    access_token?: string
   }
   
   interface JWT {
     id_token?: string
+    access_token?: string
     organizations?: Array<{ name: string; id: string }>
     roles?: string[]
   }
@@ -115,6 +117,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.log('Token sub:', token.sub)
         
         token.id_token = account.id_token
+        token.access_token = account.access_token
         
         if (account.access_token && token.sub) {
           console.log('Processing access token for organizations and roles...')
@@ -147,6 +150,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       
       if (token.roles) {
         session.user.roles = token.roles
+      }
+      
+      if (token.access_token) {
+        session.access_token = token.access_token
       }
       
       console.log('Session user after:', session.user.id)

@@ -115,38 +115,32 @@ export class BaseService {
     try {
       switch (this.config.authType) {
         case 'bearer':
-          // For client-side, tokens are no longer stored in session for security
-          // Instead, we'll use session cookies for authentication
           if (typeof window !== 'undefined') {
-            // Client-side: Check if user is authenticated via session
+            // Client-side: Get token from session
             const response = await fetch('/api/auth/session');
             if (response.ok) {
               const session = await response.json();
-              // Since tokens are not in session anymore, we'll rely on cookie-based auth
-              // or create a separate token endpoint if needed
-              if (session?.user) {
-                // User is authenticated, but we don't have client-side tokens
-                // This is by design for security. API calls should use session cookies
-                return 'session-authenticated'; // Placeholder to indicate auth status
+              if (session?.access_token) {
+                return session.access_token;
               }
             }
+            
+            // Fallback: Try localStorage/sessionStorage
+            const { tokenStorage } = await import('@/lib/token-storage');
+            return tokenStorage.getToken() || tokenStorage.getTokenSession();
           } else {
-            // Server-side - can access tokens from JWT
+            // Server-side: Get token from auth session
             const { auth } = await import('@/auth');
             const session = await auth();
             
-            // On server-side, we can access the full JWT token
-            if (session?.user) {
-              // Return a server-side token or handle authentication server-side
-              return 'server-authenticated'; // Placeholder
+            if (session?.access_token) {
+              return session.access_token;
             }
           }
           return null;
         case 'api-key':
-          // Handle API key authentication
           return process.env[this.config.authTokenKey || ''] || null;
         case 'client-credentials':
-          // Handle client credentials flow
           return await this.getClientCredentialsToken();
         case 'none':
         default:
