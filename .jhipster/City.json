@@ -2,14 +2,56 @@
   "annotations": {
     "changelogDate": "20250525054432"
   },
-  "applications": ["crmBackend"],
-  "documentation": "City entity.",
+  "applications": "*",
+  "documentation": "City master entity",
   "dto": "mapstruct",
   "fields": [
     {
+      "documentation": "City name",
       "fieldName": "name",
       "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "documentation": "City code",
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "10",
+      "fieldValidateRulesMinlength": "2",
+      "fieldValidateRulesPattern": "^[A-Z0-9]+$"
+    },
+    {
+      "documentation": "Is metropolitan city",
+      "fieldName": "isMetro",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Population",
+      "fieldName": "population",
+      "fieldType": "Long",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Is this city active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -19,22 +61,25 @@
     {
       "otherEntityName": "area",
       "otherEntityRelationshipName": "city",
-      "relationshipName": "area",
+      "relationshipName": "areas",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     },
     {
       "otherEntityName": "party",
       "otherEntityRelationshipName": "city",
-      "relationshipName": "party",
+      "relationshipName": "parties",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "district",
+      "otherEntityRelationshipName": "cities",
       "relationshipName": "district",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "service": "serviceImpl"

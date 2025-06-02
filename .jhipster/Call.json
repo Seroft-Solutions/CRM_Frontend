@@ -2,19 +2,114 @@
   "annotations": {
     "changelogDate": "20250525054428"
   },
-  "applications": ["crmBackend"],
-  "documentation": "Call entity.",
+  "applications": "*",
+  "documentation": "Call entity - core CRM activity",
   "dto": "mapstruct",
   "fields": [
     {
-      "fieldName": "status",
-      "fieldType": "Status",
-      "fieldValues": "DRAFT,ACTIVE"
+      "documentation": "Call date and time",
+      "fieldName": "callDateTime",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "tenantId",
-      "fieldType": "String",
+      "documentation": "Call direction",
+      "fieldName": "direction",
+      "fieldType": "CallDirection",
+      "fieldTypeDocumentation": "Call direction enumeration",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "INBOUND,OUTBOUND"
+    },
+    {
+      "documentation": "Call duration in seconds",
+      "fieldName": "durationSeconds",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Call outcome",
+      "fieldName": "outcome",
+      "fieldType": "CallOutcome",
+      "fieldTypeDocumentation": "Call outcome enumeration",
+      "fieldValues": "SUCCESSFUL,NO_ANSWER,BUSY,DISCONNECTED,FOLLOW_UP_NEEDED,CONVERTED,REJECTED,CALLBACK_REQUESTED,NOT_INTERESTED,WRONG_NUMBER"
+    },
+    {
+      "documentation": "Expected revenue from this call",
+      "fieldName": "expectedRevenue",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Actual revenue realized",
+      "fieldName": "actualRevenue",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Probability of closure (0-100)",
+      "fieldName": "probability",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min", "max"],
+      "fieldValidateRulesMax": "100",
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Next follow up date",
+      "fieldName": "nextFollowUpDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "documentation": "Is call completed",
+      "fieldName": "isCompleted",
+      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Call summary",
+      "fieldName": "summary",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "documentation": "Call recording URL",
+      "fieldName": "recordingUrl",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "documentation": "Internal notes",
+      "fieldName": "internalNotes",
+      "fieldType": "TextBlob"
+    },
+    {
+      "documentation": "Current status",
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldTypeDocumentation": "General status for entities",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
+    },
+    {
+      "documentation": "Is this call active",
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Created timestamp",
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Last modified timestamp",
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -24,7 +119,7 @@
     {
       "otherEntityName": "callRemark",
       "otherEntityRelationshipName": "call",
-      "relationshipName": "callRemark",
+      "relationshipName": "remarks",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     },
@@ -45,65 +140,94 @@
       "relationshipWithBuiltInEntity": true
     },
     {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "createdBy",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityField": "name",
       "otherEntityName": "priority",
       "relationshipName": "priority",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "callType",
       "relationshipName": "callType",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "subCallType",
       "relationshipName": "subCallType",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "source",
       "relationshipName": "source",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
-      "otherEntityName": "city",
+      "otherEntityField": "name",
+      "otherEntityName": "area",
       "relationshipName": "area",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
-      "otherEntityName": "party",
-      "relationshipName": "party",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one"
-    },
-    {
+      "otherEntityField": "name",
       "otherEntityName": "product",
       "relationshipName": "product",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "channelType",
       "relationshipName": "channelType",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "callCategory",
       "relationshipName": "callCategory",
-      "relationshipSide": "right",
+      "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },
     {
+      "otherEntityField": "name",
       "otherEntityName": "callStatus",
       "relationshipName": "callStatus",
-      "relationshipSide": "right",
+      "relationshipSide": "left",
       "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "product",
+      "otherEntityRelationshipName": "calls",
+      "relationshipName": "products",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "party",
+      "otherEntityRelationshipName": "calls",
+      "relationshipName": "party",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }
