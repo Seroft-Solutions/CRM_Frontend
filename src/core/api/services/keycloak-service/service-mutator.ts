@@ -1,115 +1,67 @@
-import { AxiosRequestConfig } from 'axios';
-import { keycloakService } from './index';
+import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '../base/types';
+import { KEYCLOAK_SERVICE_CONFIG, KEYCLOAK_ADMIN_CONFIG } from './config';
 
-/**
- * Unified Keycloak Service Mutator for Orval-generated endpoints
- * 
- * This mutator bridges between Orval's generated code and our unified KeycloakService.
- * It automatically handles admin authentication and provides type-safe operations.
- * 
- * Features:
- * - Automatic admin authentication for all operations
- * - Consistent error handling
- * - Type safety with generated schemas
- * - Single point of configuration
- */
+// Admin token cache
+let adminToken: string | null = null;
+let tokenExpiry = 0;
+
+const getAdminToken = async (baseURL: string): Promise<string | null> => {
+  if (adminToken && Date.now() < tokenExpiry - 30000) {
+    return adminToken;
+  }
+
+  try {
+    const tokenUrl = `${baseURL}/realms/master/protocol/openid-connect/token`;
+    const body = new URLSearchParams({
+      grant_type: 'password',
+      client_id: 'admin-cli',
+      username: KEYCLOAK_ADMIN_CONFIG.username,
+      password: KEYCLOAK_ADMIN_CONFIG.password,
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      adminToken = data.access_token;
+      tokenExpiry = Date.now() + (data.expires_in * 1000);
+      return adminToken;
+    }
+  } catch (error) {
+    console.warn('Admin token fetch failed:', error);
+  }
+  return null;
+};
+
 export const keycloakServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  const { url, method = 'GET', data, params, headers } = requestConfig;
+  const { url, method = 'GET', data, params } = requestConfig;
   
-  // Merge headers from request config and options
-  const mergedOptions: AxiosRequestConfig = {
+  const instance = axios.create(KEYCLOAK_SERVICE_CONFIG);
+  
+  // Add auth interceptor
+  instance.interceptors.request.use(async (config) => {
+    const token = await getAdminToken(instance.defaults.baseURL as string);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
+  const response = await instance.request({
+    url,
+    method: method as any,
+    data,
     params,
-    headers: {
-      ...headers,
-      ...options?.headers,
-    },
     ...options,
-  };
-  
-  try {
-    // Use the unified keycloak service's admin methods for all operations
-    switch (method.toUpperCase()) {
-      case 'GET':
-        return await keycloakService.adminGet<T>(url, mergedOptions);
-      
-      case 'POST':
-        return await keycloakService.adminPost<T>(url, data, mergedOptions);
-      
-      case 'PUT':
-        return await keycloakService.adminPut<T>(url, data, mergedOptions);
-      
-      case 'PATCH':
-        return await keycloakService.adminPatch<T>(url, data, mergedOptions);
-      
-      case 'DELETE':
-        return await keycloakService.adminDelete<T>(url, mergedOptions);
-      
-      default:
-        throw new Error(`Unsupported HTTP method: ${method}`);
-    }
-  } catch (error: any) {
-    // Enhanced error handling with admin context
-    const enhancedError = {
-      message: error.message || 'Keycloak admin operation failed',
-      status: error.status || 500,
-      url,
-      method,
-      timestamp: new Date().toISOString(),
-      isKeycloakError: true,
-      originalError: error,
-    };
+  });
 
-    console.error('Keycloak Admin API Error:', enhancedError);
-    throw enhancedError;
-  }
+  return response.data;
 };
-
-/**
- * Type-safe wrapper for Keycloak admin operations
- * This can be used for custom operations not covered by generated endpoints
- */
-export class KeycloakAdminOperations {
-  /**
-   * Perform a type-safe admin operation
-   */
-  static async performOperation<T>(
-    operation: () => Promise<T>,
-    context?: string
-  ): Promise<T> {
-    try {
-      return await operation();
-    } catch (error: any) {
-      const contextualError = {
-        ...error,
-        context: context || 'Keycloak admin operation',
-        timestamp: new Date().toISOString(),
-      };
-      
-      console.error(`Keycloak Admin Error [${context}]:`, contextualError);
-      throw contextualError;
-    }
-  }
-
-  /**
-   * Verify admin permissions before performing operations
-   */
-  static async withPermissionCheck<T>(
-    operation: () => Promise<T>,
-    context?: string
-  ): Promise<T> {
-    const permissionCheck = await keycloakService.verifyAdminPermissions();
-    
-    if (!permissionCheck.authorized) {
-      throw new Error(permissionCheck.error || 'Insufficient permissions');
-    }
-
-    return this.performOperation(operation, context);
-  }
-}
-
-// Export the service instance for direct use when needed
-export { keycloakService as keycloakAdminService };
