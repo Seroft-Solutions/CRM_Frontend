@@ -85,7 +85,7 @@ const formSchema = z.object({
   registrationDate: z.date(),
   lastContactDate: z.date().optional(),
   nextFollowUpDate: z.date().optional(),
-  remark: z.string().optional(),
+  remark: z.string().max(1000).optional(),
   createdDate: z.date(),
   lastModifiedDate: z.date().optional(),
   assignedTo: z.string().optional(),
@@ -932,8 +932,9 @@ export function PartyForm({ id }: PartyFormProps) {
             <FormItem>
               <FormLabel>Remark</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

@@ -53,13 +53,7 @@ export function PriorityTableRow({ priority, onDelete, isDeleting }: PriorityTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {priority.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {priority.remark}
         
       </TableCell>
       

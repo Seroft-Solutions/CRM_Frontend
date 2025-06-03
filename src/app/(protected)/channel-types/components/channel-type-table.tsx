@@ -114,6 +114,7 @@ export function ChannelTypeTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountChannelTypes(

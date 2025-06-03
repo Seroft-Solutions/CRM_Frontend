@@ -55,7 +55,7 @@ const formSchema = z.object({
   isFinal: z.boolean(),
   isActive: z.boolean(),
   sortOrder: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  remark: z.string().optional(),
+  remark: z.string().max(1000).optional(),
   createdDate: z.date(),
   lastModifiedDate: z.date().optional(),
 });
@@ -380,8 +380,9 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
             <FormItem>
               <FormLabel>Remark</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

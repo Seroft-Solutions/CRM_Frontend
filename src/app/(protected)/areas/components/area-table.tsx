@@ -114,6 +114,7 @@ export function AreaTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountAreas(

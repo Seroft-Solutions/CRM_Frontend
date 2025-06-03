@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250525054419"
+    "changelogDate": "20250603183919"
   },
   "applications": "*",
   "documentation": "Priority master entity for calls and leads",
@@ -46,7 +46,9 @@
     {
       "documentation": "Additional remarks",
       "fieldName": "remark",
-      "fieldType": "TextBlob"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
     },
     {
       "documentation": "Active status",

@@ -132,8 +132,20 @@ export function <%= entityClass %>Table() {
           },
         }
       )
-    : 
-  <% } %>
+    : useGetAll<%= entityClassPlural %>(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
+  <% } else { %>
   const { data, isLoading, refetch } = useGetAll<%= entityClassPlural %>(
     {
       page: apiPage,
@@ -147,6 +159,7 @@ export function <%= entityClass %>Table() {
       },
     }
   );
+  <% } %>
 
   // Get total count for pagination
   const { data: countData } = useCount<%= entityClassPlural %>(

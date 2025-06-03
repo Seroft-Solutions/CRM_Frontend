@@ -170,6 +170,9 @@ export function PartySearchAndFilters({
     if (key === 'employeeCount') {
       return 'employeeCount';
     }
+    if (key === 'remark') {
+      return 'remark';
+    }
     return key;
   };
 

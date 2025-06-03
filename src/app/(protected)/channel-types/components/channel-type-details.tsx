@@ -122,13 +122,7 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>
-                {entity.remark ? (
-
-                  <span>Binary data</span>
-
-                ) : ""}
-              </p>
+              <p>{entity.remark || "—"}</p>
 
             </div>
             <div className="space-y-1">

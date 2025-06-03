@@ -114,6 +114,7 @@ export function SubCallTypeTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountSubCallTypes(

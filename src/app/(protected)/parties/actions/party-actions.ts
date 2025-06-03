@@ -82,7 +82,7 @@ const partySchema = z.object({
   
   
   
-  remark: z.any().optional(),
+  remark: z.string().max(1000).optional(),
   
   
   

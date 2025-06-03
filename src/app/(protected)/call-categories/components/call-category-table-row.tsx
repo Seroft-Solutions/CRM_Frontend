@@ -53,13 +53,7 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting }: Cal
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callCategory.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {callCategory.remark}
         
       </TableCell>
       

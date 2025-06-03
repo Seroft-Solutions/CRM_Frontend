@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250525054420"
+    "changelogDate": "20250603183920"
   },
   "applications": "*",
   "documentation": "Call type master entity",
@@ -46,7 +46,9 @@
     {
       "documentation": "Additional remarks",
       "fieldName": "remark",
-      "fieldType": "TextBlob"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
     },
     {
       "documentation": "Created timestamp",

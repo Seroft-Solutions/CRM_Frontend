@@ -116,21 +116,20 @@ export function ProductTable() {
           },
         }
       )
-    : 
+    : useGetAllProducts(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
-  const { data, isLoading, refetch } = useGetAllProducts(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: [`${sort},${order}`],
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
 
   // Get total count for pagination
   const { data: countData } = useCountProducts(

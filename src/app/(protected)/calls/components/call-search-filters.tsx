@@ -176,6 +176,9 @@ export function CallSearchAndFilters({
     if (key === 'recordingUrl') {
       return 'recordingUrl';
     }
+    if (key === 'internalNotes') {
+      return 'internalNotes';
+    }
     if (key === 'status') {
       return 'status';
     }

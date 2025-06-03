@@ -116,6 +116,9 @@ export function CallRemarkSearchAndFilters({
     if (key === 'lastModifiedDate') {
       return 'lastModifiedDate';
     }
+    if (key === 'remark') {
+      return 'remark';
+    }
     if (key === 'remarkType') {
       return 'remarkType';
     }
@@ -307,6 +310,18 @@ export function CallRemarkSearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      remark
+                    </label>
+                    <Input
+                      placeholder="Filter by remark..."
+                      value={filters["remark"] as string || ""}
+                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">

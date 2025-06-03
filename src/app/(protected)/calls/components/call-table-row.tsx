@@ -89,13 +89,7 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {call.internalNotes ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {call.internalNotes}
         
       </TableCell>
       

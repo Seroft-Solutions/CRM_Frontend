@@ -114,6 +114,7 @@ export function CallRemarkTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountCallRemarks(

@@ -54,7 +54,7 @@ const formSchema = z.object({
   description: z.string().max(255).optional(),
   isActive: z.boolean(),
   sortOrder: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  remark: z.string().optional(),
+  remark: z.string().max(1000).optional(),
   createdDate: z.date(),
   lastModifiedDate: z.date().optional(),
 });
@@ -345,8 +345,9 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
             <FormItem>
               <FormLabel>Remark</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

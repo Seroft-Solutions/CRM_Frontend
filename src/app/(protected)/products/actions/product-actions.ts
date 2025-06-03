@@ -46,11 +46,11 @@ const productSchema = z.object({
   
   
   
-  features: z.any().optional(),
+  features: z.string().max(2000).optional(),
   
   
   
-  remark: z.any().optional(),
+  remark: z.string().max(1000).optional(),
   
   
   

@@ -59,13 +59,7 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting }: Chann
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {channelType.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {channelType.remark}
         
       </TableCell>
       

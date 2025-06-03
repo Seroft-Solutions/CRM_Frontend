@@ -54,7 +54,7 @@ const callSchema = z.object({
   
   
   
-  internalNotes: z.any().optional(),
+  internalNotes: z.string().max(2000).optional(),
   
   
   

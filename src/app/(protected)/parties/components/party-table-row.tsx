@@ -131,13 +131,7 @@ export function PartyTableRow({ party, onDelete, isDeleting }: PartyTableRowProp
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {party.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {party.remark}
         
       </TableCell>
       

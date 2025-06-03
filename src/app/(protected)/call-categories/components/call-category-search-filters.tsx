@@ -116,6 +116,9 @@ export function CallCategorySearchAndFilters({
     if (key === 'sortOrder') {
       return 'sortOrder';
     }
+    if (key === 'remark') {
+      return 'remark';
+    }
     return key;
   };
 

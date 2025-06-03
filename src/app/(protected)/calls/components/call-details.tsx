@@ -152,13 +152,7 @@ export function CallDetails({ id }: CallDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>
-                {entity.internalNotes ? (
-
-                  <span>Binary data</span>
-
-                ) : ""}
-              </p>
+              <p>{entity.internalNotes || "—"}</p>
 
             </div>
             <div className="space-y-1">

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250525054422"
+    "changelogDate": "20250603183922"
   },
   "applications": "*",
   "documentation": "Source master entity for lead sources",
@@ -61,7 +61,9 @@
     {
       "documentation": "Additional remarks",
       "fieldName": "remark",
-      "fieldType": "TextBlob"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
     },
     {
       "documentation": "Created timestamp",
