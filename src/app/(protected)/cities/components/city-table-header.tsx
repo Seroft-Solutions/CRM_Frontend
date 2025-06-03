@@ -38,7 +38,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("name")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            name
+            Name
             {renderSortIcon("name")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("code")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            code
+            Code
             {renderSortIcon("code")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("isMetro")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isMetro
+            Is Metro
             {renderSortIcon("isMetro")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("population")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            population
+            Population
             {renderSortIcon("population")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function CityTableHeader({ onSort, getSortIcon }: CityTableHeaderProps) {
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>

@@ -38,7 +38,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("name")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            name
+            Name
             {renderSortIcon("name")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("code")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            code
+            Code
             {renderSortIcon("code")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("description")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            description
+            Description
             {renderSortIcon("description")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("category")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            category
+            Category
             {renderSortIcon("category")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("basePrice")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            basePrice
+            Base Price
             {renderSortIcon("basePrice")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("minPrice")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            minPrice
+            Min Price
             {renderSortIcon("minPrice")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("maxPrice")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            maxPrice
+            Max Price
             {renderSortIcon("maxPrice")}
           </Button>
         </TableHead>
@@ -115,7 +115,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -126,7 +126,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("launchDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            launchDate
+            Launch Date
             {renderSortIcon("launchDate")}
           </Button>
         </TableHead>
@@ -137,7 +137,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("features")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            features
+            Features
             {renderSortIcon("features")}
           </Button>
         </TableHead>
@@ -148,7 +148,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            remark
+            Remark
             {renderSortIcon("remark")}
           </Button>
         </TableHead>
@@ -159,7 +159,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -170,7 +170,7 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>

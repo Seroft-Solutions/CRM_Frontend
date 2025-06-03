@@ -38,7 +38,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("name")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            name
+            Name
             {renderSortIcon("name")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("code")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            code
+            Code
             {renderSortIcon("code")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("description")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            description
+            Description
             {renderSortIcon("description")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("costPerLead")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            costPerLead
+            Cost Per Lead
             {renderSortIcon("costPerLead")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("conversionRate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            conversionRate
+            Conversion Rate
             {renderSortIcon("conversionRate")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("sortOrder")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            sortOrder
+            Sort Order
             {renderSortIcon("sortOrder")}
           </Button>
         </TableHead>
@@ -115,7 +115,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            remark
+            Remark
             {renderSortIcon("remark")}
           </Button>
         </TableHead>
@@ -126,7 +126,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -137,7 +137,7 @@ export function SourceTableHeader({ onSort, getSortIcon }: SourceTableHeaderProp
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>

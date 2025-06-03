@@ -38,7 +38,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("name")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            name
+            Name
             {renderSortIcon("name")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("mobile")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            mobile
+            Mobile
             {renderSortIcon("mobile")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("email")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            email
+            Email
             {renderSortIcon("email")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("whatsApp")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            whatsApp
+            Whats App
             {renderSortIcon("whatsApp")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("contactPerson")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            contactPerson
+            Contact Person
             {renderSortIcon("contactPerson")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("address1")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            address1
+            Address1
             {renderSortIcon("address1")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("address2")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            address2
+            Address2
             {renderSortIcon("address2")}
           </Button>
         </TableHead>
@@ -115,7 +115,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("address3")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            address3
+            Address3
             {renderSortIcon("address3")}
           </Button>
         </TableHead>
@@ -126,7 +126,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("website")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            website
+            Website
             {renderSortIcon("website")}
           </Button>
         </TableHead>
@@ -137,7 +137,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("partyType")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            partyType
+            Party Type
             {renderSortIcon("partyType")}
           </Button>
         </TableHead>
@@ -148,7 +148,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("leadStatus")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            leadStatus
+            Lead Status
             {renderSortIcon("leadStatus")}
           </Button>
         </TableHead>
@@ -159,7 +159,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("leadScore")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            leadScore
+            Lead Score
             {renderSortIcon("leadScore")}
           </Button>
         </TableHead>
@@ -170,7 +170,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("annualRevenue")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            annualRevenue
+            Annual Revenue
             {renderSortIcon("annualRevenue")}
           </Button>
         </TableHead>
@@ -181,7 +181,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("employeeCount")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            employeeCount
+            Employee Count
             {renderSortIcon("employeeCount")}
           </Button>
         </TableHead>
@@ -192,7 +192,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -203,7 +203,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("registrationDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            registrationDate
+            Registration Date
             {renderSortIcon("registrationDate")}
           </Button>
         </TableHead>
@@ -214,7 +214,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("lastContactDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastContactDate
+            Last Contact Date
             {renderSortIcon("lastContactDate")}
           </Button>
         </TableHead>
@@ -225,7 +225,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("nextFollowUpDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            nextFollowUpDate
+            Next Follow Up Date
             {renderSortIcon("nextFollowUpDate")}
           </Button>
         </TableHead>
@@ -236,7 +236,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            remark
+            Remark
             {renderSortIcon("remark")}
           </Button>
         </TableHead>
@@ -247,7 +247,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -258,7 +258,7 @@ export function PartyTableHeader({ onSort, getSortIcon }: PartyTableHeaderProps)
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>
