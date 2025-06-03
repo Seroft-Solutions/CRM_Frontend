@@ -14,6 +14,14 @@ const displayableRelationships = relationships.filter(rel =>
   !rel.collection && 
   rel.otherEntityField
 );
+
+// Function to convert camelCase to Title Case
+function camelToTitleCase(str) {
+  return str
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
 %>
 
 interface <%= entityClass %>TableHeaderProps {
@@ -44,7 +52,7 @@ export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entit
             onClick={() => onSort("<%= field.fieldName %>")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            <%= field.fieldNameHumanized || field.fieldName %>
+            <%= camelToTitleCase(field.fieldName) %>
             {renderSortIcon("<%= field.fieldName %>")}
           </Button>
         </TableHead>
@@ -59,7 +67,7 @@ export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entit
             onClick={() => onSort("<%= rel.relationshipName %>.<%=displayField%>")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            <%= rel.relationshipNameHumanized %>
+            <%= camelToTitleCase(rel.relationshipName) %>
             {renderSortIcon("<%= rel.relationshipName %>.<%=displayField%>")}
           </Button>
         </TableHead>

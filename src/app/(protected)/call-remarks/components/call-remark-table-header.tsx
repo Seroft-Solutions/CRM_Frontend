@@ -38,7 +38,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            remark
+            Remark
             {renderSortIcon("remark")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("dateTime")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            dateTime
+            Date Time
             {renderSortIcon("dateTime")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("isPrivate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isPrivate
+            Is Private
             {renderSortIcon("isPrivate")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("remarkType")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            remarkType
+            Remark Type
             {renderSortIcon("remarkType")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("actionItems")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            actionItems
+            Action Items
             {renderSortIcon("actionItems")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -115,7 +115,7 @@ export function CallRemarkTableHeader({ onSort, getSortIcon }: CallRemarkTableHe
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>

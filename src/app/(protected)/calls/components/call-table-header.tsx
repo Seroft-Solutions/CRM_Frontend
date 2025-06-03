@@ -38,7 +38,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("callDateTime")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            callDateTime
+            Call Date Time
             {renderSortIcon("callDateTime")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("direction")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            direction
+            Direction
             {renderSortIcon("direction")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("durationSeconds")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            durationSeconds
+            Duration Seconds
             {renderSortIcon("durationSeconds")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("outcome")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            outcome
+            Outcome
             {renderSortIcon("outcome")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("expectedRevenue")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            expectedRevenue
+            Expected Revenue
             {renderSortIcon("expectedRevenue")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("actualRevenue")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            actualRevenue
+            Actual Revenue
             {renderSortIcon("actualRevenue")}
           </Button>
         </TableHead>
@@ -104,7 +104,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("probability")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            probability
+            Probability
             {renderSortIcon("probability")}
           </Button>
         </TableHead>
@@ -115,7 +115,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("nextFollowUpDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            nextFollowUpDate
+            Next Follow Up Date
             {renderSortIcon("nextFollowUpDate")}
           </Button>
         </TableHead>
@@ -126,7 +126,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("isCompleted")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isCompleted
+            Is Completed
             {renderSortIcon("isCompleted")}
           </Button>
         </TableHead>
@@ -137,7 +137,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("summary")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            summary
+            Summary
             {renderSortIcon("summary")}
           </Button>
         </TableHead>
@@ -148,7 +148,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("recordingUrl")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            recordingUrl
+            Recording Url
             {renderSortIcon("recordingUrl")}
           </Button>
         </TableHead>
@@ -159,7 +159,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("internalNotes")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            internalNotes
+            Internal Notes
             {renderSortIcon("internalNotes")}
           </Button>
         </TableHead>
@@ -170,7 +170,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("status")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            status
+            Status
             {renderSortIcon("status")}
           </Button>
         </TableHead>
@@ -181,7 +181,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -192,7 +192,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -203,7 +203,7 @@ export function CallTableHeader({ onSort, getSortIcon }: CallTableHeaderProps) {
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>

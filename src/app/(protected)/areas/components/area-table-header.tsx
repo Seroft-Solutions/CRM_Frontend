@@ -38,7 +38,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("name")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            name
+            Name
             {renderSortIcon("name")}
           </Button>
         </TableHead>
@@ -49,7 +49,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("pincode")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            pincode
+            Pincode
             {renderSortIcon("pincode")}
           </Button>
         </TableHead>
@@ -60,7 +60,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("areaType")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            areaType
+            Area Type
             {renderSortIcon("areaType")}
           </Button>
         </TableHead>
@@ -71,7 +71,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("isActive")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            isActive
+            Is Active
             {renderSortIcon("isActive")}
           </Button>
         </TableHead>
@@ -82,7 +82,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("createdDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            createdDate
+            Created Date
             {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
@@ -93,7 +93,7 @@ export function AreaTableHeader({ onSort, getSortIcon }: AreaTableHeaderProps) {
             onClick={() => onSort("lastModifiedDate")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
-            lastModifiedDate
+            Last Modified Date
             {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>
