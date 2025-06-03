@@ -54,7 +54,7 @@ const formSchema = z.object({
   description: z.string().max(255).optional(),
   colorCode: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   sortOrder: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  remark: z.string().optional(),
+  remark: z.string().max(1000).optional(),
   isActive: z.boolean(),
   createdDate: z.date(),
   lastModifiedDate: z.date().optional(),
@@ -354,8 +354,9 @@ export function PriorityForm({ id }: PriorityFormProps) {
             <FormItem>
               <FormLabel>Remark</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

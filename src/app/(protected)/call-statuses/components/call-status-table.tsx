@@ -114,6 +114,7 @@ export function CallStatusTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountCallStatuses(

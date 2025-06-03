@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250525054426"
+    "changelogDate": "20250603183926"
   },
   "applications": "*",
   "documentation": "Product master entity",
@@ -72,12 +72,16 @@
     {
       "documentation": "Product features",
       "fieldName": "features",
-      "fieldType": "TextBlob"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "2000"
     },
     {
       "documentation": "Additional remarks",
       "fieldName": "remark",
-      "fieldType": "TextBlob"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
     },
     {
       "documentation": "Created timestamp",

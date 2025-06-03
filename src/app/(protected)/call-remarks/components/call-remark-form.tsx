@@ -55,7 +55,7 @@ interface CallRemarkFormProps {
 
 // Create Zod schema for form validation
 const formSchema = z.object({
-  remark: z.string(),
+  remark: z.string().max(2000),
   dateTime: z.date(),
   isPrivate: z.boolean(),
   remarkType: z.string().max(50).optional(),
@@ -257,8 +257,9 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
             <FormItem>
               <FormLabel>Remark *</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

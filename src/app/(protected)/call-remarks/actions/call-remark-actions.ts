@@ -10,7 +10,7 @@ import { z } from 'zod'
 const callremarkSchema = z.object({
   
   
-  remark: z.any(),
+  remark: z.string().max(2000),
   
   
   

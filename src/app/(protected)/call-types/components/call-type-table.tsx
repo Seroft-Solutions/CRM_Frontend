@@ -114,6 +114,7 @@ export function CallTypeTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountCallTypes(

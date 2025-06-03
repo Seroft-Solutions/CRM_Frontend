@@ -67,8 +67,8 @@ const formSchema = z.object({
   maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
   isActive: z.boolean(),
   launchDate: z.date().optional(),
-  features: z.string().optional(),
-  remark: z.string().optional(),
+  features: z.string().max(2000).optional(),
+  remark: z.string().max(1000).optional(),
   createdDate: z.date(),
   lastModifiedDate: z.date().optional(),
   calls: z.array(z.number()).optional(),
@@ -540,8 +540,9 @@ export function ProductForm({ id }: ProductFormProps) {
             <FormItem>
               <FormLabel>Features</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter features"
                 />
               </FormControl>
@@ -563,8 +564,9 @@ export function ProductForm({ id }: ProductFormProps) {
             <FormItem>
               <FormLabel>Remark</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter remark"
                 />
               </FormControl>

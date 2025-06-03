@@ -128,6 +128,12 @@ export function ProductSearchAndFilters({
     if (key === 'maxPrice') {
       return 'maxPrice';
     }
+    if (key === 'features') {
+      return 'features';
+    }
+    if (key === 'remark') {
+      return 'remark';
+    }
     return key;
   };
 

@@ -77,25 +77,13 @@ export function ProductTableRow({ product, onDelete, isDeleting }: ProductTableR
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {product.features ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {product.features}
         
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {product.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {product.remark}
         
       </TableCell>
       

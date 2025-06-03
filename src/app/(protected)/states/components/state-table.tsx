@@ -114,6 +114,7 @@ export function StateTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountStates(

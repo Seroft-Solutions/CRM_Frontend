@@ -102,7 +102,7 @@ const formSchema = z.object({
   isCompleted: z.boolean(),
   summary: z.string().max(500).optional(),
   recordingUrl: z.string().max(500).optional(),
-  internalNotes: z.string().optional(),
+  internalNotes: z.string().max(2000).optional(),
   status: z.string(),
   isActive: z.boolean(),
   createdDate: z.date(),
@@ -798,8 +798,9 @@ export function CallForm({ id }: CallFormProps) {
             <FormItem>
               <FormLabel>InternalNotes</FormLabel>
               <FormControl>
-                <Textarea
+                <Input 
                   {...field}
+                  
                   placeholder="Enter internalNotes"
                 />
               </FormControl>

@@ -53,13 +53,7 @@ export function CallTypeTableRow({ callType, onDelete, isDeleting }: CallTypeTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callType.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {callType.remark}
         
       </TableCell>
       

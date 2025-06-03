@@ -23,13 +23,7 @@ export function CallRemarkTableRow({ callRemark, onDelete, isDeleting }: CallRem
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callRemark.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {callRemark.remark}
         
       </TableCell>
       

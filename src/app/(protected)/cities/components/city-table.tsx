@@ -114,6 +114,7 @@ export function CityTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
   const { data: countData } = useCountCities(

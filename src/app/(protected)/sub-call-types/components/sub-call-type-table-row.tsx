@@ -53,13 +53,7 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting }: SubCa
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {subCallType.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {subCallType.remark}
         
       </TableCell>
       

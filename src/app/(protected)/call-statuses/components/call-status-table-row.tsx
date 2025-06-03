@@ -59,13 +59,7 @@ export function CallStatusTableRow({ callStatus, onDelete, isDeleting }: CallSta
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callStatus.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {callStatus.remark}
         
       </TableCell>
       

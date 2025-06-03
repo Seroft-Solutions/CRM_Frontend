@@ -65,13 +65,7 @@ export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowP
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {source.remark ? (
-          <>
-            
-            <span className="text-muted-foreground">Binary data</span>
-            
-          </>
-        ) : ""}
+        {source.remark}
         
       </TableCell>
       
