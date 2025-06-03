@@ -100,8 +100,7 @@ export function CallTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
-  const { data, isLoading, refetch } = searchTerm 
+  const { data, isLoading, refetch } = searchTerm
     ? useSearchCalls(
         {
           query: searchTerm,
@@ -116,21 +115,19 @@ export function CallTable() {
           },
         }
       )
-    : 
-  
-  const { data, isLoading, refetch } = useGetAllCalls(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: [`${sort},${order}`],
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+    : useGetAllCalls(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
 
   // Get total count for pagination
   const { data: countData } = useCountCalls(
