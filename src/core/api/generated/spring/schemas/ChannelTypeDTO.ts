@@ -12,41 +12,19 @@
 export interface ChannelTypeDTO {
   id?: number;
   /**
-   * Channel type name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
   /**
-   * Channel type code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9_]+$
-   */
-  code: string;
-  /**
-   * Channel description
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
   /**
-   * Commission percentage
    * @minimum 0
    * @maximum 100
    */
   commissionRate?: number;
-  /** Is this channel active */
   isActive: boolean;
-  /**
-   * Sort order for display
-   * @minimum 0
-   */
-  sortOrder?: number;
-  /** Additional remarks */
-  remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
 }

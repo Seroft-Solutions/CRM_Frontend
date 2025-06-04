@@ -13,29 +13,15 @@ import type { CityDTO } from './CityDTO';
 export interface AreaDTO {
   id?: number;
   /**
-   * Area name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
   /**
-   * Area pincode
    * @minLength 6
    * @maxLength 6
    * @pattern ^[0-9]{6}$
    */
   pincode: string;
-  /**
-   * Area type (Sector, Block, etc.)
-   * @minLength 0
-   * @maxLength 50
-   */
-  areaType?: string;
-  /** Is this area active */
-  isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   city: CityDTO;
 }

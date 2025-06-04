@@ -91,9 +91,6 @@ export function CallRemarkSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      if (relationName === 'createdBy') {
-        return 'Created By';
-      }
       if (relationName === 'call') {
         return 'Call';
       }
@@ -101,29 +98,11 @@ export function CallRemarkSearchAndFilters({
     }
     
     // Handle regular field filters
-    if (key === 'isPrivate') {
-      return 'isPrivate';
-    }
-    if (key === 'isActive') {
-      return 'isActive';
-    }
     if (key === 'dateTime') {
       return 'dateTime';
     }
-    if (key === 'createdDate') {
-      return 'createdDate';
-    }
-    if (key === 'lastModifiedDate') {
-      return 'lastModifiedDate';
-    }
     if (key === 'remark') {
       return 'remark';
-    }
-    if (key === 'remarkType') {
-      return 'remarkType';
-    }
-    if (key === 'actionItems') {
-      return 'actionItems';
     }
     return key;
   };
@@ -163,54 +142,6 @@ export function CallRemarkSearchAndFilters({
               
 
               
-              <DropdownMenuSeparator />
-              
-              {/* Boolean Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isPrivate
-                    </label>
-                    <Select
-                      value={filters["isPrivate"] as string || ""}
-                      onValueChange={(value) => onFilterChange("isPrivate", value || undefined)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isActive
-                    </label>
-                    <Select
-                      value={filters["isActive"] as string || ""}
-                      onValueChange={(value) => onFilterChange("isActive", value || undefined)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                </div>
-              </div>
-              
 
               
               <DropdownMenuSeparator />
@@ -219,18 +150,6 @@ export function CallRemarkSearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">People & Relationships</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Created By
-                    </label>
-                    <Input
-                      placeholder="Filter by created by..."
-                      value={filters["createdBy.login"] as string || ""}
-                      onChange={(e) => onFilterChange("createdBy.login", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
@@ -319,30 +238,6 @@ export function CallRemarkSearchAndFilters({
                       placeholder="Filter by remark..."
                       value={filters["remark"] as string || ""}
                       onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      remarkType
-                    </label>
-                    <Input
-                      placeholder="Filter by remarkType..."
-                      value={filters["remarkType"] as string || ""}
-                      onChange={(e) => onFilterChange("remarkType", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      actionItems
-                    </label>
-                    <Input
-                      placeholder="Filter by actionItems..."
-                      value={filters["actionItems"] as string || ""}
-                      onChange={(e) => onFilterChange("actionItems", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

@@ -14,10 +14,6 @@ const channeltypeSchema = z.object({
   
   
   
-  code: z.string().min(2).max(10),
-  
-  
-  
   description: z.string().max(255).optional(),
   
   
@@ -27,22 +23,6 @@ const channeltypeSchema = z.object({
   
   
   isActive: z.boolean(),
-  
-  
-  
-  sortOrder: z.number().min(0).optional(),
-  
-  
-  
-  remark: z.string().max(1000).optional(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -74,10 +54,6 @@ export async function createChannelType(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -87,22 +63,6 @@ export async function createChannelType(
       
       
       isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -171,10 +131,6 @@ export async function updateChannelType(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -184,22 +140,6 @@ export async function updateChannelType(
       
       
       isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

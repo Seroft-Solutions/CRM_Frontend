@@ -42,23 +42,7 @@ const productSchema = z.object({
   
   
   
-  launchDate: z.string().datetime().optional(),
-  
-  
-  
-  features: z.string().max(2000).optional(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -122,23 +106,7 @@ export async function createProduct(
       
       
       
-      launchDate: formData.get('launchDate') || undefined,
-      
-      
-      
-      features: formData.get('features') || undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -239,23 +207,7 @@ export async function updateProduct(
       
       
       
-      launchDate: formData.get('launchDate') || undefined,
-      
-      
-      
-      features: formData.get('features') || undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

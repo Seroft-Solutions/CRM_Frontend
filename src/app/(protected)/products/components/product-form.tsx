@@ -66,11 +66,7 @@ const formSchema = z.object({
   minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
   maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
   isActive: z.boolean(),
-  launchDate: z.date().optional(),
-  features: z.string().max(2000).optional(),
   remark: z.string().max(1000).optional(),
-  createdDate: z.date(),
-  lastModifiedDate: z.date().optional(),
   calls: z.array(z.number()).optional(),
   interestedParties: z.array(z.number()).optional(),
 });
@@ -142,19 +138,7 @@ export function ProductForm({ id }: ProductFormProps) {
       isActive: false,
 
 
-      launchDate: new Date(),
-
-
-      features: "",
-
-
       remark: "",
-
-
-      createdDate: new Date(),
-
-
-      lastModifiedDate: new Date(),
 
 
       calls: [],
@@ -194,19 +178,7 @@ export function ProductForm({ id }: ProductFormProps) {
         isActive: entity.isActive || "",
 
 
-        launchDate: entity.launchDate ? new Date(entity.launchDate) : undefined,
-
-
-        features: entity.features || "",
-
-
         remark: entity.remark || "",
-
-
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
-
-        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
 
 
         calls: entity.calls?.map(item => item.id),
@@ -248,19 +220,7 @@ export function ProductForm({ id }: ProductFormProps) {
       isActive: data.isActive,
 
 
-      launchDate: data.launchDate,
-
-
-      features: data.features,
-
-
       remark: data.remark,
-
-
-      createdDate: data.createdDate,
-
-
-      lastModifiedDate: data.lastModifiedDate,
 
 
       calls: data.calls?.map(id => ({ id: id })),
@@ -272,7 +232,7 @@ export function ProductForm({ id }: ProductFormProps) {
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','isActive','launchDate','features','remark','createdDate','lastModifiedDate','calls','interestedParties',].includes(key);
+          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','isActive','remark','calls','interestedParties',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -310,10 +270,6 @@ export function ProductForm({ id }: ProductFormProps) {
                 />
               </FormControl>
 
-              <FormDescription>
-                Product name
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -333,10 +289,6 @@ export function ProductForm({ id }: ProductFormProps) {
                   placeholder="Enter code"
                 />
               </FormControl>
-
-              <FormDescription>
-                Product code/SKU
-              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -358,10 +310,6 @@ export function ProductForm({ id }: ProductFormProps) {
                 />
               </FormControl>
 
-              <FormDescription>
-                Product description
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -381,10 +329,6 @@ export function ProductForm({ id }: ProductFormProps) {
                   placeholder="Enter category"
                 />
               </FormControl>
-
-              <FormDescription>
-                Product category
-              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -406,10 +350,6 @@ export function ProductForm({ id }: ProductFormProps) {
                 />
               </FormControl>
 
-              <FormDescription>
-                Base price
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -429,10 +369,6 @@ export function ProductForm({ id }: ProductFormProps) {
                   placeholder="Enter minPrice"
                 />
               </FormControl>
-
-              <FormDescription>
-                Minimum price
-              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -454,10 +390,6 @@ export function ProductForm({ id }: ProductFormProps) {
                 />
               </FormControl>
 
-              <FormDescription>
-                Maximum price
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -478,79 +410,7 @@ export function ProductForm({ id }: ProductFormProps) {
               <div className="space-y-1 leading-none">
                 <FormLabel>IsActive</FormLabel>
 
-                <FormDescription>
-                  Is this product active
-                </FormDescription>
-
               </div>
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="launchDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>LaunchDate</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Launch date
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="features"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Features</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter features"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Product features
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -570,98 +430,6 @@ export function ProductForm({ id }: ProductFormProps) {
                   placeholder="Enter remark"
                 />
               </FormControl>
-
-              <FormDescription>
-                Additional remarks
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="createdDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>CreatedDate *</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Created timestamp
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastModifiedDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>LastModifiedDate</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Last modified timestamp
-              </FormDescription>
 
               <FormMessage />
             </FormItem>

@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Channel type name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,23 +14,12 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "Channel type code",
-      "fieldName": "code",
-      "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
-      "fieldValidateRulesMaxlength": "10",
-      "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9_]+$"
-    },
-    {
-      "documentation": "Channel description",
       "fieldName": "description",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "documentation": "Commission percentage",
       "fieldName": "commissionRate",
       "fieldType": "Float",
       "fieldValidateRules": ["min", "max"],
@@ -39,35 +27,9 @@
       "fieldValidateRulesMin": "0"
     },
     {
-      "documentation": "Is this channel active",
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Sort order for display",
-      "fieldName": "sortOrder",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Additional remarks",
-      "fieldName": "remark",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "1000"
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

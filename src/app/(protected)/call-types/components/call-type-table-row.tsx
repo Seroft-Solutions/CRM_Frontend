@@ -29,12 +29,6 @@ export function CallTypeTableRow({ callType, onDelete, isDeleting }: CallTypeTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callType.code}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callType.description}
         
       </TableCell>
@@ -47,25 +41,7 @@ export function CallTypeTableRow({ callType, onDelete, isDeleting }: CallTypeTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callType.sortOrder}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callType.remark}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callType.createdDate ? format(new Date(callType.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callType.lastModifiedDate ? format(new Date(callType.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

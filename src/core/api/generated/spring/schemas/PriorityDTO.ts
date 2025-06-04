@@ -5,7 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { PriorityDTOLevel } from './PriorityDTOLevel';
 
 /**
  * Priority master entity for calls and leads
@@ -13,35 +12,19 @@ import type { PriorityDTOLevel } from './PriorityDTOLevel';
 export interface PriorityDTO {
   id?: number;
   /**
-   * Priority name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
-  /** Priority level */
-  level: PriorityDTOLevel;
   /**
-   * Description of priority
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
   /**
-   * Color code for UI display
-   * @pattern ^#[0-9A-Fa-f]{6}$
+   * @minLength 0
+   * @maxLength 1000
    */
-  colorCode?: string;
-  /**
-   * Sort order
-   * @minimum 0
-   */
-  sortOrder?: number;
-  /** Additional remarks */
   remark?: string;
-  /** Active status */
   isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
 }

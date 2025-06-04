@@ -101,23 +101,11 @@ export function SubCallTypeSearchAndFilters({
     if (key === 'isActive') {
       return 'isActive';
     }
-    if (key === 'createdDate') {
-      return 'createdDate';
-    }
-    if (key === 'lastModifiedDate') {
-      return 'lastModifiedDate';
-    }
     if (key === 'name') {
       return 'name';
     }
-    if (key === 'code') {
-      return 'code';
-    }
     if (key === 'description') {
       return 'description';
-    }
-    if (key === 'sortOrder') {
-      return 'sortOrder';
     }
     if (key === 'remark') {
       return 'remark';
@@ -215,59 +203,6 @@ export function SubCallTypeSearchAndFilters({
               
 
               
-              <DropdownMenuSeparator />
-              
-              {/* Dates Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
-                <div className="mt-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    createdDate Range
-                  </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full h-8 justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-3 w-3" />
-                        {dateRange.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "MMM dd, yyyy")
-                          )
-                        ) : (
-                          "Pick date range"
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange.from}
-                        selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) => onDateRangeChange({ from: range?.from, to: range?.to })}
-                        numberOfMonths={2}
-                      />
-                      <div className="p-3 border-t">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full h-7"
-                          onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
-                        >
-                          Clear Date Range
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              
 
               
               <DropdownMenuSeparator />
@@ -291,24 +226,24 @@ export function SubCallTypeSearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      code
-                    </label>
-                    <Input
-                      placeholder="Filter by code..."
-                      value={filters["code"] as string || ""}
-                      onChange={(e) => onFilterChange("code", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
                       description
                     </label>
                     <Input
                       placeholder="Filter by description..."
                       value={filters["description"] as string || ""}
                       onChange={(e) => onFilterChange("description", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      remark
+                    </label>
+                    <Input
+                      placeholder="Filter by remark..."
+                      value={filters["remark"] as string || ""}
+                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

@@ -14,63 +14,11 @@ const callSchema = z.object({
   
   
   
-  direction: z.any(),
-  
-  
-  
-  durationSeconds: z.number().min(0).optional(),
-  
-  
-  
-  outcome: z.any().optional(),
-  
-  
-  
-  expectedRevenue: z.any().optional(),
-  
-  
-  
-  actualRevenue: z.any().optional(),
-  
-  
-  
-  probability: z.number().min(0).max(100).optional(),
-  
-  
-  
-  nextFollowUpDate: z.string().datetime().optional(),
-  
-  
-  
-  isCompleted: z.boolean(),
-  
-  
-  
-  summary: z.string().max(500).optional(),
-  
-  
-  
-  recordingUrl: z.string().max(500).optional(),
-  
-  
-  
-  internalNotes: z.string().max(2000).optional(),
-  
-  
-  
   status: z.any(),
   
   
   
   isActive: z.boolean(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -80,10 +28,6 @@ const callSchema = z.object({
   
   
   channelPartyId: z.number().optional(),
-  
-  
-  
-  createdById: z.number().optional(),
   
   
   
@@ -156,63 +100,11 @@ export async function createCall(
       
       
       
-      direction: formData.get('direction') || undefined,
-      
-      
-      
-      durationSeconds: formData.get('durationSeconds') ? Number(formData.get('durationSeconds')) : undefined,
-      
-      
-      
-      outcome: formData.get('outcome') || undefined,
-      
-      
-      
-      expectedRevenue: formData.get('expectedRevenue') || undefined,
-      
-      
-      
-      actualRevenue: formData.get('actualRevenue') || undefined,
-      
-      
-      
-      probability: formData.get('probability') ? Number(formData.get('probability')) : undefined,
-      
-      
-      
-      nextFollowUpDate: formData.get('nextFollowUpDate') || undefined,
-      
-      
-      
-      isCompleted: formData.get('isCompleted') === 'true',
-      
-      
-      
-      summary: formData.get('summary') || undefined,
-      
-      
-      
-      recordingUrl: formData.get('recordingUrl') || undefined,
-      
-      
-      
-      internalNotes: formData.get('internalNotes') || undefined,
-      
-      
-      
       status: formData.get('status') || undefined,
       
       
       
       isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -222,10 +114,6 @@ export async function createCall(
       
       
       channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
-      
-      
-      
-      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
       
       
       
@@ -335,63 +223,11 @@ export async function updateCall(
       
       
       
-      direction: formData.get('direction') || undefined,
-      
-      
-      
-      durationSeconds: formData.get('durationSeconds') ? Number(formData.get('durationSeconds')) : undefined,
-      
-      
-      
-      outcome: formData.get('outcome') || undefined,
-      
-      
-      
-      expectedRevenue: formData.get('expectedRevenue') || undefined,
-      
-      
-      
-      actualRevenue: formData.get('actualRevenue') || undefined,
-      
-      
-      
-      probability: formData.get('probability') ? Number(formData.get('probability')) : undefined,
-      
-      
-      
-      nextFollowUpDate: formData.get('nextFollowUpDate') || undefined,
-      
-      
-      
-      isCompleted: formData.get('isCompleted') === 'true',
-      
-      
-      
-      summary: formData.get('summary') || undefined,
-      
-      
-      
-      recordingUrl: formData.get('recordingUrl') || undefined,
-      
-      
-      
-      internalNotes: formData.get('internalNotes') || undefined,
-      
-      
-      
       status: formData.get('status') || undefined,
       
       
       
       isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -401,10 +237,6 @@ export async function updateCall(
       
       
       channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
-      
-      
-      
-      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
       
       
       

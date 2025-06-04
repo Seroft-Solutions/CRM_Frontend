@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Category name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,49 +14,23 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "Category code",
-      "fieldName": "code",
-      "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
-      "fieldValidateRulesMaxlength": "10",
-      "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9_]+$"
-    },
-    {
-      "documentation": "Category description",
       "fieldName": "description",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "documentation": "Is this category active",
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "documentation": "Sort order for display",
-      "fieldName": "sortOrder",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
     },
     {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
       "fieldName": "lastModifiedDate",
       "fieldType": "Instant"
     }

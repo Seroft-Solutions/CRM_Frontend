@@ -12,35 +12,20 @@
 export interface CallCategoryDTO {
   id?: number;
   /**
-   * Category name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
   /**
-   * Category code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9_]+$
-   */
-  code: string;
-  /**
-   * Category description
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
-  /** Is this category active */
   isActive: boolean;
   /**
-   * Sort order for display
-   * @minimum 0
+   * @minLength 0
+   * @maxLength 1000
    */
-  sortOrder?: number;
-  /** Additional remarks */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
   lastModifiedDate?: string;
 }

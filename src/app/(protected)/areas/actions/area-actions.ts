@@ -18,22 +18,6 @@ const areaSchema = z.object({
   
   
   
-  areaType: z.string().max(50).optional(),
-  
-  
-  
-  isActive: z.boolean(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
-  
-  
-  
   
   cityId: z.number().optional(),
   
@@ -67,22 +51,6 @@ export async function createArea(
       
       
       pincode: formData.get('pincode') || undefined,
-      
-      
-      
-      areaType: formData.get('areaType') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -156,22 +124,6 @@ export async function updateArea(
       
       
       pincode: formData.get('pincode') || undefined,
-      
-      
-      
-      areaType: formData.get('areaType') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

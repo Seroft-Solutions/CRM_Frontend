@@ -13,36 +13,20 @@ import type { CallTypeDTO } from './CallTypeDTO';
 export interface SubCallTypeDTO {
   id?: number;
   /**
-   * Sub call type name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
   /**
-   * Sub call type code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9_]+$
-   */
-  code: string;
-  /**
-   * Description
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
-  /** Is this sub type active */
   isActive: boolean;
   /**
-   * Sort order for display
-   * @minimum 0
+   * @minLength 0
+   * @maxLength 1000
    */
-  sortOrder?: number;
-  /** Additional remarks */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   callType: CallTypeDTO;
 }

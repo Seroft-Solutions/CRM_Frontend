@@ -92,72 +92,6 @@ export function CallDetails({ id }: CallDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.direction || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.durationSeconds || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.outcome || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.expectedRevenue || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.actualRevenue || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.probability || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.nextFollowUpDate ? format(new Date(entity.nextFollowUpDate), "PPP") : ""}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.isCompleted ? "Yes" : "No"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.summary || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.recordingUrl || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.internalNotes || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
               <p>{entity.status || "—"}</p>
 
             </div>
@@ -165,18 +99,6 @@ export function CallDetails({ id }: CallDetailsProps) {
               <p className="text-sm font-medium text-muted-foreground"></p>
 
               <p>{entity.isActive ? "Yes" : "No"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
 
             </div>
 
@@ -190,12 +112,6 @@ export function CallDetails({ id }: CallDetailsProps) {
               <p className="text-sm font-medium text-muted-foreground">Channel Party</p>
 
               <p>{(entity.channelParty as any)?.login || entity.channelParty?.id || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Created By</p>
-
-              <p>{(entity.createdBy as any)?.login || entity.createdBy?.id || "—"}</p>
 
             </div>
             <div className="space-y-1">

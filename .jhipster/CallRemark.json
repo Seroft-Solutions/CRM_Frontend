@@ -7,68 +7,21 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Remark text",
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength", "required"],
       "fieldValidateRulesMaxlength": "2000"
     },
     {
-      "documentation": "Remark date and time",
       "fieldName": "dateTime",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Is this remark private",
-      "fieldName": "isPrivate",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Remark type",
-      "fieldName": "remarkType",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "50"
-    },
-    {
-      "documentation": "Action items from this remark",
-      "fieldName": "actionItems",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "500"
-    },
-    {
-      "documentation": "Is this remark active",
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "CallRemark",
   "pagination": "pagination",
   "relationships": [
-    {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "createdBy",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
     {
       "otherEntityName": "call",
       "otherEntityRelationshipName": "remarks",

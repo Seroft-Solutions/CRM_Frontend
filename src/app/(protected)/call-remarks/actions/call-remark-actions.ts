@@ -18,34 +18,6 @@ const callremarkSchema = z.object({
   
   
   
-  isPrivate: z.boolean(),
-  
-  
-  
-  remarkType: z.string().max(50).optional(),
-  
-  
-  
-  actionItems: z.string().max(500).optional(),
-  
-  
-  
-  isActive: z.boolean(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
-  
-  
-  
-  
-  createdById: z.number().optional(),
-  
-  
   
   callId: z.number().optional(),
   
@@ -80,34 +52,6 @@ export async function createCallRemark(
       
       dateTime: formData.get('dateTime') || undefined,
       
-      
-      
-      isPrivate: formData.get('isPrivate') === 'true',
-      
-      
-      
-      remarkType: formData.get('remarkType') || undefined,
-      
-      
-      
-      actionItems: formData.get('actionItems') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
-      
-      
-      
-      
-      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
       
       
       
@@ -181,34 +125,6 @@ export async function updateCallRemark(
       
       dateTime: formData.get('dateTime') || undefined,
       
-      
-      
-      isPrivate: formData.get('isPrivate') === 'true',
-      
-      
-      
-      remarkType: formData.get('remarkType') || undefined,
-      
-      
-      
-      actionItems: formData.get('actionItems') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
-      
-      
-      
-      
-      createdById: formData.get('createdById') ? Number(formData.get('createdById')) : undefined,
       
       
       

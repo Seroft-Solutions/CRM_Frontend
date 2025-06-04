@@ -29,12 +29,6 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting }: Cal
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callCategory.code}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callCategory.description}
         
       </TableCell>
@@ -47,19 +41,7 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting }: Cal
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callCategory.sortOrder}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callCategory.remark}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callCategory.createdDate ? format(new Date(callCategory.createdDate), "PPP") : ""}
         
       </TableCell>
       

@@ -13,56 +13,37 @@ import type { PartyDTO } from './PartyDTO';
 export type CallDTOProductsItem = {
   id?: number;
   /**
-   * Product name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
   /**
-   * Product code/SKU
    * @minLength 2
    * @maxLength 20
    * @pattern ^[A-Z0-9_-]+$
    */
   code: string;
   /**
-   * Product description
    * @minLength 0
    * @maxLength 500
    */
   description?: string;
   /**
-   * Product category
    * @minLength 0
    * @maxLength 50
    */
   category?: string;
-  /**
-   * Base price
-   * @minimum 0
-   */
+  /** @minimum 0 */
   basePrice?: number;
-  /**
-   * Minimum price
-   * @minimum 0
-   */
+  /** @minimum 0 */
   minPrice?: number;
-  /**
-   * Maximum price
-   * @minimum 0
-   */
+  /** @minimum 0 */
   maxPrice?: number;
-  /** Is this product active */
   isActive: boolean;
-  /** Launch date */
-  launchDate?: string;
-  /** Product features */
-  features?: string;
-  /** Additional remarks */
+  /**
+   * @minLength 0
+   * @maxLength 1000
+   */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   interestedParties?: PartyDTO[];
 };

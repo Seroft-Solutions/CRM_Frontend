@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Product name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,7 +14,6 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "Product code/SKU",
       "fieldName": "code",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
@@ -24,75 +22,45 @@
       "fieldValidateRulesPattern": "^[A-Z0-9_-]+$"
     },
     {
-      "documentation": "Product description",
       "fieldName": "description",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "500"
     },
     {
-      "documentation": "Product category",
       "fieldName": "category",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "50"
     },
     {
-      "documentation": "Base price",
       "fieldName": "basePrice",
       "fieldType": "BigDecimal",
       "fieldValidateRules": ["min"],
       "fieldValidateRulesMin": "0"
     },
     {
-      "documentation": "Minimum price",
       "fieldName": "minPrice",
       "fieldType": "BigDecimal",
       "fieldValidateRules": ["min"],
       "fieldValidateRulesMin": "0"
     },
     {
-      "documentation": "Maximum price",
       "fieldName": "maxPrice",
       "fieldType": "BigDecimal",
       "fieldValidateRules": ["min"],
       "fieldValidateRulesMin": "0"
     },
     {
-      "documentation": "Is this product active",
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "documentation": "Launch date",
-      "fieldName": "launchDate",
-      "fieldType": "LocalDate"
-    },
-    {
-      "documentation": "Product features",
-      "fieldName": "features",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "2000"
-    },
-    {
-      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

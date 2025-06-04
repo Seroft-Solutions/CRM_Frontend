@@ -14,10 +14,6 @@ const callcategorySchema = z.object({
   
   
   
-  code: z.string().min(2).max(10),
-  
-  
-  
   description: z.string().max(255).optional(),
   
   
@@ -26,15 +22,7 @@ const callcategorySchema = z.object({
   
   
   
-  sortOrder: z.number().min(0).optional(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
-  
-  
-  
-  createdDate: z.string().datetime(),
   
   
   
@@ -70,10 +58,6 @@ export async function createCallCategory(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -82,15 +66,7 @@ export async function createCallCategory(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       
@@ -163,10 +139,6 @@ export async function updateCallCategory(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -175,15 +147,7 @@ export async function updateCallCategory(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       

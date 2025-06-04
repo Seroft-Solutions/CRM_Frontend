@@ -97,9 +97,6 @@ export function CallSearchAndFilters({
       if (relationName === 'channelParty') {
         return 'Channel Party';
       }
-      if (relationName === 'createdBy') {
-        return 'Created By';
-      }
       if (relationName === 'priority') {
         return 'Priority';
       }
@@ -134,50 +131,11 @@ export function CallSearchAndFilters({
     }
     
     // Handle regular field filters
-    if (key === 'isCompleted') {
-      return 'isCompleted';
-    }
     if (key === 'isActive') {
       return 'isActive';
     }
     if (key === 'callDateTime') {
       return 'callDateTime';
-    }
-    if (key === 'nextFollowUpDate') {
-      return 'nextFollowUpDate';
-    }
-    if (key === 'createdDate') {
-      return 'createdDate';
-    }
-    if (key === 'lastModifiedDate') {
-      return 'lastModifiedDate';
-    }
-    if (key === 'direction') {
-      return 'direction';
-    }
-    if (key === 'durationSeconds') {
-      return 'durationSeconds';
-    }
-    if (key === 'outcome') {
-      return 'outcome';
-    }
-    if (key === 'expectedRevenue') {
-      return 'expectedRevenue';
-    }
-    if (key === 'actualRevenue') {
-      return 'actualRevenue';
-    }
-    if (key === 'probability') {
-      return 'probability';
-    }
-    if (key === 'summary') {
-      return 'summary';
-    }
-    if (key === 'recordingUrl') {
-      return 'recordingUrl';
-    }
-    if (key === 'internalNotes') {
-      return 'internalNotes';
     }
     if (key === 'status') {
       return 'status';
@@ -226,25 +184,6 @@ export function CallSearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isCompleted
-                    </label>
-                    <Select
-                      value={filters["isCompleted"] as string || ""}
-                      onValueChange={(value) => onFilterChange("isCompleted", value || undefined)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
@@ -297,18 +236,6 @@ export function CallSearchAndFilters({
                       placeholder="Filter by channel party..."
                       value={filters["channelParty.login"] as string || ""}
                       onChange={(e) => onFilterChange("channelParty.login", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Created By
-                    </label>
-                    <Input
-                      placeholder="Filter by created by..."
-                      value={filters["createdBy.login"] as string || ""}
-                      onChange={(e) => onFilterChange("createdBy.login", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
@@ -502,36 +429,12 @@ export function CallSearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      direction
+                      status
                     </label>
                     <Input
-                      placeholder="Filter by direction..."
-                      value={filters["direction"] as string || ""}
-                      onChange={(e) => onFilterChange("direction", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      durationSeconds
-                    </label>
-                    <Input
-                      placeholder="Filter by durationSeconds..."
-                      value={filters["durationSeconds"] as string || ""}
-                      onChange={(e) => onFilterChange("durationSeconds", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      outcome
-                    </label>
-                    <Input
-                      placeholder="Filter by outcome..."
-                      value={filters["outcome"] as string || ""}
-                      onChange={(e) => onFilterChange("outcome", e.target.value || undefined)}
+                      placeholder="Filter by status..."
+                      value={filters["status"] as string || ""}
+                      onChange={(e) => onFilterChange("status", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

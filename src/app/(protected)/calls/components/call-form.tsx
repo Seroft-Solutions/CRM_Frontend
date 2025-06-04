@@ -92,24 +92,10 @@ interface CallFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   callDateTime: z.date(),
-  direction: z.string(),
-  durationSeconds: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  outcome: z.string().optional(),
-  expectedRevenue: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  actualRevenue: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  probability: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 100, { message: "Must be at most 100" }).optional(),
-  nextFollowUpDate: z.date().optional(),
-  isCompleted: z.boolean(),
-  summary: z.string().max(500).optional(),
-  recordingUrl: z.string().max(500).optional(),
-  internalNotes: z.string().max(2000).optional(),
   status: z.string(),
   isActive: z.boolean(),
-  createdDate: z.date(),
-  lastModifiedDate: z.date().optional(),
   assignedTo: z.string().optional(),
   channelParty: z.string().optional(),
-  createdBy: z.string().optional(),
   priority: z.number().optional(),
   callType: z.number().optional(),
   subCallType: z.number().optional(),
@@ -176,58 +162,16 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: new Date(),
 
 
-      direction: "",
-
-
-      durationSeconds: "",
-
-
-      outcome: "",
-
-
-      expectedRevenue: "",
-
-
-      actualRevenue: "",
-
-
-      probability: "",
-
-
-      nextFollowUpDate: new Date(),
-
-
-      isCompleted: false,
-
-
-      summary: "",
-
-
-      recordingUrl: "",
-
-
-      internalNotes: "",
-
-
       status: "",
 
 
       isActive: false,
 
 
-      createdDate: new Date(),
-
-
-      lastModifiedDate: new Date(),
-
-
       assignedTo: undefined,
 
 
       channelParty: undefined,
-
-
-      createdBy: undefined,
 
 
       priority: undefined,
@@ -273,58 +217,16 @@ export function CallForm({ id }: CallFormProps) {
         callDateTime: entity.callDateTime ? new Date(entity.callDateTime) : undefined,
 
 
-        direction: entity.direction || "",
-
-
-        durationSeconds: entity.durationSeconds != null ? String(entity.durationSeconds) : "",
-
-
-        outcome: entity.outcome || "",
-
-
-        expectedRevenue: entity.expectedRevenue != null ? String(entity.expectedRevenue) : "",
-
-
-        actualRevenue: entity.actualRevenue != null ? String(entity.actualRevenue) : "",
-
-
-        probability: entity.probability != null ? String(entity.probability) : "",
-
-
-        nextFollowUpDate: entity.nextFollowUpDate ? new Date(entity.nextFollowUpDate) : undefined,
-
-
-        isCompleted: entity.isCompleted || "",
-
-
-        summary: entity.summary || "",
-
-
-        recordingUrl: entity.recordingUrl || "",
-
-
-        internalNotes: entity.internalNotes || "",
-
-
         status: entity.status || "",
 
 
         isActive: entity.isActive || "",
 
 
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
-
-        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
-
-
         assignedTo: entity.assignedTo?.id,
 
 
         channelParty: entity.channelParty?.id,
-
-
-        createdBy: entity.createdBy?.id,
 
 
         priority: entity.priority?.id,
@@ -372,58 +274,16 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: data.callDateTime,
 
 
-      direction: data.direction,
-
-
-      durationSeconds: data.durationSeconds ? Number(data.durationSeconds) : undefined,
-
-
-      outcome: data.outcome,
-
-
-      expectedRevenue: data.expectedRevenue ? Number(data.expectedRevenue) : undefined,
-
-
-      actualRevenue: data.actualRevenue ? Number(data.actualRevenue) : undefined,
-
-
-      probability: data.probability ? Number(data.probability) : undefined,
-
-
-      nextFollowUpDate: data.nextFollowUpDate,
-
-
-      isCompleted: data.isCompleted,
-
-
-      summary: data.summary,
-
-
-      recordingUrl: data.recordingUrl,
-
-
-      internalNotes: data.internalNotes,
-
-
       status: data.status,
 
 
       isActive: data.isActive,
 
 
-      createdDate: data.createdDate,
-
-
-      lastModifiedDate: data.lastModifiedDate,
-
-
       assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
 
 
       channelParty: data.channelParty ? { id: data.channelParty } : null,
-
-
-      createdBy: data.createdBy ? { id: data.createdBy } : null,
 
 
       priority: data.priority ? { id: data.priority } : null,
@@ -462,7 +322,7 @@ export function CallForm({ id }: CallFormProps) {
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['callDateTime','direction','durationSeconds','outcome','expectedRevenue','actualRevenue','probability','nextFollowUpDate','isCompleted','summary','recordingUrl','internalNotes','status','isActive','createdDate','lastModifiedDate','assignedTo','channelParty','createdBy','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',].includes(key);
+          const isFormField = ['callDateTime','status','isActive','assignedTo','channelParty','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -520,295 +380,6 @@ export function CallForm({ id }: CallFormProps) {
                 </PopoverContent>
               </Popover>
 
-              <FormDescription>
-                Call date and time
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="direction"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Direction *</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter direction"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Call direction
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="durationSeconds"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>DurationSeconds</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  type="number"
-                  placeholder="Enter durationSeconds"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Call duration in seconds
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="outcome"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Outcome</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter outcome"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Call outcome
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="expectedRevenue"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>ExpectedRevenue</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  type="number"
-                  placeholder="Enter expectedRevenue"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Expected revenue from this call
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="actualRevenue"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>ActualRevenue</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  type="number"
-                  placeholder="Enter actualRevenue"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Actual revenue realized
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="probability"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Probability</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  type="number"
-                  placeholder="Enter probability"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Probability of closure (0-100)
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="nextFollowUpDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>NextFollowUpDate</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Next follow up date
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="isCompleted"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>IsCompleted</FormLabel>
-
-                <FormDescription>
-                  Is call completed
-                </FormDescription>
-
-              </div>
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="summary"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Summary</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter summary"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Call summary
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="recordingUrl"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>RecordingUrl</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter recordingUrl"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Call recording URL
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="internalNotes"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>InternalNotes</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter internalNotes"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Internal notes
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -828,10 +399,6 @@ export function CallForm({ id }: CallFormProps) {
                   placeholder="Enter status"
                 />
               </FormControl>
-
-              <FormDescription>
-                Current status
-              </FormDescription>
 
               <FormMessage />
             </FormItem>
@@ -853,99 +420,7 @@ export function CallForm({ id }: CallFormProps) {
               <div className="space-y-1 leading-none">
                 <FormLabel>IsActive</FormLabel>
 
-                <FormDescription>
-                  Is this call active
-                </FormDescription>
-
               </div>
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="createdDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>CreatedDate *</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Created timestamp
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastModifiedDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>LastModifiedDate</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Last modified timestamp
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -974,22 +449,6 @@ export function CallForm({ id }: CallFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Channel Party</FormLabel>
-              <FormControl>
-                {/* TODO: Implement user relationships with appropriate infinite query hook */}
-                <div className="p-2 text-muted-foreground border rounded">
-                  User relationship support - Please implement user infinite query hook
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="createdBy"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Created By</FormLabel>
               <FormControl>
                 {/* TODO: Implement user relationships with appropriate infinite query hook */}
                 <div className="p-2 text-muted-foreground border rounded">

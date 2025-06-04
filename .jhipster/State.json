@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "State name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,38 +14,11 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "State code",
-      "fieldName": "code",
-      "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
-      "fieldValidateRulesMaxlength": "10",
-      "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9]+$"
-    },
-    {
-      "documentation": "Country name",
       "fieldName": "country",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
       "fieldValidateRulesMaxlength": "50",
       "fieldValidateRulesMinlength": "2"
-    },
-    {
-      "documentation": "Is this state active",
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

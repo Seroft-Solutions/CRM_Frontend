@@ -98,23 +98,14 @@ export function CallCategorySearchAndFilters({
     if (key === 'isActive') {
       return 'isActive';
     }
-    if (key === 'createdDate') {
-      return 'createdDate';
-    }
     if (key === 'lastModifiedDate') {
       return 'lastModifiedDate';
     }
     if (key === 'name') {
       return 'name';
     }
-    if (key === 'code') {
-      return 'code';
-    }
     if (key === 'description') {
       return 'description';
-    }
-    if (key === 'sortOrder') {
-      return 'sortOrder';
     }
     if (key === 'remark') {
       return 'remark';
@@ -197,7 +188,7 @@ export function CallCategorySearchAndFilters({
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
                 <div className="mt-2">
                   <label className="text-xs text-muted-foreground mb-1 block">
-                    createdDate Range
+                    lastModifiedDate Range
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -266,24 +257,24 @@ export function CallCategorySearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      code
-                    </label>
-                    <Input
-                      placeholder="Filter by code..."
-                      value={filters["code"] as string || ""}
-                      onChange={(e) => onFilterChange("code", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
                       description
                     </label>
                     <Input
                       placeholder="Filter by description..."
                       value={filters["description"] as string || ""}
                       onChange={(e) => onFilterChange("description", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      remark
+                    </label>
+                    <Input
+                      placeholder="Filter by remark..."
+                      value={filters["remark"] as string || ""}
+                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
