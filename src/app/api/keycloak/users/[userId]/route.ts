@@ -8,6 +8,7 @@ import { keycloakService } from '@/core/api/services/keycloak-service';
 import { 
   getAdminRealmsRealmUsersUserId,
   getAdminRealmsRealmUsersUserIdGroups,
+  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
 } from '@/core/api/generated/keycloak';
 import type { 
   UserRepresentation,
@@ -32,30 +33,17 @@ export async function GET(
     // Await params in Next.js 15+
     const { userId } = await params;
     const realm = keycloakService.getRealm();
+    
+    if (!realm) {
+      throw new Error('Realm configuration missing');
+    }
 
     // Get user details, roles, and groups in parallel using generated endpoints
-    const [user, groups] = await Promise.all([
+    const [user, groups, assignedRealmRoles] = await Promise.all([
       getAdminRealmsRealmUsersUserId(realm, userId),
       getAdminRealmsRealmUsersUserIdGroups(realm, userId),
+      getAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId),
     ]);
-
-    // Get role mappings - we'll need to implement this with the role endpoints
-    let assignedRealmRoles: RoleRepresentation[] = [];
-    
-    try {
-      // Convert string array of role names to RoleRepresentation objects
-      const roleNames = user.realmRoles;
-      if (Array.isArray(roleNames)) {
-        assignedRealmRoles = roleNames.map((roleName: string) => ({
-          name: roleName,
-          id: roleName, // Use name as ID for now until we get proper role objects
-          description: `Role: ${roleName}`
-        } as RoleRepresentation));
-      }
-    } catch (roleError) {
-      console.warn('Could not fetch user roles:', roleError);
-      assignedRealmRoles = [];
-    }
 
     const userDetails = {
       user: user as UserRepresentation,
@@ -109,6 +97,10 @@ export async function PUT(
     // Await params in Next.js 15+
     const { userId } = await params;
     const realm = keycloakService.getRealm();
+    
+    if (!realm) {
+      throw new Error('Realm configuration missing');
+    }
     const userData: UserRepresentation = await request.json();
 
     // Validate required fields
