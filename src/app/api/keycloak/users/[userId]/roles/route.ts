@@ -5,6 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import { 
+  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
+  postAdminRealmsRealmUsersUserIdRoleMappingsRealm,
+  deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm,
+} from '@/core/api/generated/keycloak';
 import type { RoleRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(
@@ -23,12 +28,16 @@ export async function GET(
 
     // Await params in Next.js 15+
     const { userId } = await params;
-    const realm = keycloakService.getRealm();
+    const realm = 'crm'; // Hardcode for now - same as groups work
+    
+    console.log('API Debug:', { userId, realm, baseURL: process.env.AUTH_KEYCLOAK_ISSUER });
+    
+    if (!realm) {
+      throw new Error('Realm configuration missing');
+    }
 
-    // Get user's current role mappings
-    const userRoles = await keycloakService.adminGet<RoleRepresentation[]>(
-      `/users/${userId}/role-mappings/realm`
-    );
+    // Get user's current role mappings using generated endpoint
+    const userRoles = await getAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId);
 
     return NextResponse.json(userRoles);
   } catch (error: any) {
@@ -66,6 +75,7 @@ export async function POST(
     const { userId } = await params;
     const body = await request.json();
     const { roles, action } = body;
+    const realm = 'crm'; // Hardcode for now - same as groups work
 
     // Validate input
     if (!Array.isArray(roles) || roles.length === 0) {
@@ -97,12 +107,12 @@ export async function POST(
       };
     });
 
-    const endpoint = `/users/${userId}/role-mappings/realm`;
-    
+    // Use generated endpoints for role assignment/unassignment
     if (action === 'assign') {
-      await keycloakService.adminPost(endpoint, validatedRoles);
+      await postAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId, validatedRoles);
     } else {
-      await keycloakService.adminDelete(endpoint, { data: validatedRoles });
+      console.log('Deleting roles:', validatedRoles.map(r => r.name));
+      await deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId, validatedRoles);
     }
 
     return NextResponse.json({ 
