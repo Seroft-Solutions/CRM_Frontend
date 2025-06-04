@@ -14,10 +14,6 @@ const subcalltypeSchema = z.object({
   
   
   
-  code: z.string().min(2).max(10),
-  
-  
-  
   description: z.string().max(255).optional(),
   
   
@@ -26,19 +22,7 @@ const subcalltypeSchema = z.object({
   
   
   
-  sortOrder: z.number().min(0).optional(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -74,10 +58,6 @@ export async function createSubCallType(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -86,19 +66,7 @@ export async function createSubCallType(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -171,10 +139,6 @@ export async function updateSubCallType(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
       
       
@@ -183,19 +147,7 @@ export async function updateSubCallType(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

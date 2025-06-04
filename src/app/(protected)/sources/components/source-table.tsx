@@ -86,13 +86,6 @@ export function SourceTable() {
 
     // Add date range filters
     
-    if (dateRange.from) {
-      params[`createdDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
-    }
-    if (dateRange.to) {
-      params[`createdDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
-    }
-    
 
     return params;
   };
@@ -221,7 +214,7 @@ export function SourceTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -239,7 +232,7 @@ export function SourceTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   No sources found

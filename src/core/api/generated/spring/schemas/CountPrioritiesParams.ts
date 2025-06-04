@@ -5,10 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CountPrioritiesLevelEquals } from './CountPrioritiesLevelEquals';
-import type { CountPrioritiesLevelNotEquals } from './CountPrioritiesLevelNotEquals';
-import type { CountPrioritiesLevelInItem } from './CountPrioritiesLevelInItem';
-import type { CountPrioritiesLevelNotInItem } from './CountPrioritiesLevelNotInItem';
 
 export type CountPrioritiesParams = {
 'id.greaterThan'?: number;
@@ -27,11 +23,6 @@ export type CountPrioritiesParams = {
 'name.specified'?: boolean;
 'name.in'?: string[];
 'name.notIn'?: string[];
-'level.equals'?: CountPrioritiesLevelEquals;
-'level.notEquals'?: CountPrioritiesLevelNotEquals;
-'level.specified'?: boolean;
-'level.in'?: CountPrioritiesLevelInItem[];
-'level.notIn'?: CountPrioritiesLevelNotInItem[];
 'description.contains'?: string;
 'description.doesNotContain'?: string;
 'description.equals'?: string;
@@ -39,44 +30,17 @@ export type CountPrioritiesParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'colorCode.contains'?: string;
-'colorCode.doesNotContain'?: string;
-'colorCode.equals'?: string;
-'colorCode.notEquals'?: string;
-'colorCode.specified'?: boolean;
-'colorCode.in'?: string[];
-'colorCode.notIn'?: string[];
-'sortOrder.greaterThan'?: number;
-'sortOrder.lessThan'?: number;
-'sortOrder.greaterThanOrEqual'?: number;
-'sortOrder.lessThanOrEqual'?: number;
-'sortOrder.equals'?: number;
-'sortOrder.notEquals'?: number;
-'sortOrder.specified'?: boolean;
-'sortOrder.in'?: number[];
-'sortOrder.notIn'?: number[];
+'remark.contains'?: string;
+'remark.doesNotContain'?: string;
+'remark.equals'?: string;
+'remark.notEquals'?: string;
+'remark.specified'?: boolean;
+'remark.in'?: string[];
+'remark.notIn'?: string[];
 'isActive.equals'?: boolean;
 'isActive.notEquals'?: boolean;
 'isActive.specified'?: boolean;
 'isActive.in'?: boolean[];
 'isActive.notIn'?: boolean[];
-'createdDate.greaterThan'?: string;
-'createdDate.lessThan'?: string;
-'createdDate.greaterThanOrEqual'?: string;
-'createdDate.lessThanOrEqual'?: string;
-'createdDate.equals'?: string;
-'createdDate.notEquals'?: string;
-'createdDate.specified'?: boolean;
-'createdDate.in'?: string[];
-'createdDate.notIn'?: string[];
-'lastModifiedDate.greaterThan'?: string;
-'lastModifiedDate.lessThan'?: string;
-'lastModifiedDate.greaterThanOrEqual'?: string;
-'lastModifiedDate.lessThanOrEqual'?: string;
-'lastModifiedDate.equals'?: string;
-'lastModifiedDate.notEquals'?: string;
-'lastModifiedDate.specified'?: boolean;
-'lastModifiedDate.in'?: string[];
-'lastModifiedDate.notIn'?: string[];
 distinct?: boolean;
 };

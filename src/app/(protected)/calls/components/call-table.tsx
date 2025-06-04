@@ -242,7 +242,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={30}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -260,7 +260,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={30}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   No calls found

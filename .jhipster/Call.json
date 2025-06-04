@@ -7,89 +7,11 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Call date and time",
       "fieldName": "callDateTime",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]
     },
     {
-      "documentation": "Call direction",
-      "fieldName": "direction",
-      "fieldType": "CallDirection",
-      "fieldTypeDocumentation": "Call direction enumeration",
-      "fieldValidateRules": ["required"],
-      "fieldValues": "INBOUND,OUTBOUND"
-    },
-    {
-      "documentation": "Call duration in seconds",
-      "fieldName": "durationSeconds",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Call outcome",
-      "fieldName": "outcome",
-      "fieldType": "CallOutcome",
-      "fieldTypeDocumentation": "Call outcome enumeration",
-      "fieldValues": "SUCCESSFUL,NO_ANSWER,BUSY,DISCONNECTED,FOLLOW_UP_NEEDED,CONVERTED,REJECTED,CALLBACK_REQUESTED,NOT_INTERESTED,WRONG_NUMBER"
-    },
-    {
-      "documentation": "Expected revenue from this call",
-      "fieldName": "expectedRevenue",
-      "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Actual revenue realized",
-      "fieldName": "actualRevenue",
-      "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Probability of closure (0-100)",
-      "fieldName": "probability",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min", "max"],
-      "fieldValidateRulesMax": "100",
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Next follow up date",
-      "fieldName": "nextFollowUpDate",
-      "fieldType": "LocalDate"
-    },
-    {
-      "documentation": "Is call completed",
-      "fieldName": "isCompleted",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Call summary",
-      "fieldName": "summary",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "500"
-    },
-    {
-      "documentation": "Call recording URL",
-      "fieldName": "recordingUrl",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "500"
-    },
-    {
-      "documentation": "Internal notes",
-      "fieldName": "internalNotes",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "2000"
-    },
-    {
-      "documentation": "Current status",
       "fieldName": "status",
       "fieldType": "Status",
       "fieldTypeDocumentation": "General status for entities",
@@ -97,21 +19,9 @@
       "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
-      "documentation": "Is this call active",
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -137,14 +47,6 @@
       "otherEntityField": "login",
       "otherEntityName": "user",
       "relationshipName": "channelParty",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
-    {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "createdBy",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipWithBuiltInEntity": true

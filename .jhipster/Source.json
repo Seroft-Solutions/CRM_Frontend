@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Source name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,66 +14,21 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "Source code",
-      "fieldName": "code",
-      "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
-      "fieldValidateRulesMaxlength": "10",
-      "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9_]+$"
-    },
-    {
-      "documentation": "Source description",
       "fieldName": "description",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "documentation": "Is this source active",
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     },
     {
-      "documentation": "Cost per lead from this source",
-      "fieldName": "costPerLead",
-      "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Conversion rate percentage",
-      "fieldName": "conversionRate",
-      "fieldType": "Float",
-      "fieldValidateRules": ["min", "max"],
-      "fieldValidateRulesMax": "100",
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Sort order for display",
-      "fieldName": "sortOrder",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
-    },
-    {
-      "documentation": "Additional remarks",
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

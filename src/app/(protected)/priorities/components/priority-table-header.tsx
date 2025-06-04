@@ -46,44 +46,11 @@ export function PriorityTableHeader({ onSort, getSortIcon }: PriorityTableHeader
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
             variant="ghost"
-            onClick={() => onSort("level")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Level
-            {renderSortIcon("level")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
             onClick={() => onSort("description")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
             Description
             {renderSortIcon("description")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("colorCode")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Color Code
-            {renderSortIcon("colorCode")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("sortOrder")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Sort Order
-            {renderSortIcon("sortOrder")}
           </Button>
         </TableHead>
         
@@ -106,28 +73,6 @@ export function PriorityTableHeader({ onSort, getSortIcon }: PriorityTableHeader
           >
             Is Active
             {renderSortIcon("isActive")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("createdDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Created Date
-            {renderSortIcon("createdDate")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("lastModifiedDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Last Modified Date
-            {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>
         

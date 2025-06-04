@@ -221,7 +221,7 @@ export function CallRemarkTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -239,7 +239,7 @@ export function CallRemarkTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   No call remarks found

@@ -33,47 +33,6 @@ export function CallRemarkTableRow({ callRemark, onDelete, isDeleting }: CallRem
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.isPrivate ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.remarkType}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.actionItems}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.createdDate ? format(new Date(callRemark.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callRemark.lastModifiedDate ? format(new Date(callRemark.lastModifiedDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        {callRemark.createdBy ? 
-          (callRemark.createdBy as any).login || callRemark.createdBy.id || "" : ""}
-      </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {callRemark.call ? 

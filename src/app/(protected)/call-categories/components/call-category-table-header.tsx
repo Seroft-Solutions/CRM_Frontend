@@ -46,17 +46,6 @@ export function CallCategoryTableHeader({ onSort, getSortIcon }: CallCategoryTab
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
             variant="ghost"
-            onClick={() => onSort("code")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Code
-            {renderSortIcon("code")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
             onClick={() => onSort("description")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
@@ -79,33 +68,11 @@ export function CallCategoryTableHeader({ onSort, getSortIcon }: CallCategoryTab
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
             variant="ghost"
-            onClick={() => onSort("sortOrder")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Sort Order
-            {renderSortIcon("sortOrder")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
             Remark
             {renderSortIcon("remark")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("createdDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Created Date
-            {renderSortIcon("createdDate")}
           </Button>
         </TableHead>
         

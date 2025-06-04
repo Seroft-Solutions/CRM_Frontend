@@ -12,46 +12,19 @@
 export interface SourceDTO {
   id?: number;
   /**
-   * Source name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
   /**
-   * Source code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9_]+$
-   */
-  code: string;
-  /**
-   * Source description
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
-  /** Is this source active */
   isActive: boolean;
   /**
-   * Cost per lead from this source
-   * @minimum 0
+   * @minLength 0
+   * @maxLength 1000
    */
-  costPerLead?: number;
-  /**
-   * Conversion rate percentage
-   * @minimum 0
-   * @maximum 100
-   */
-  conversionRate?: number;
-  /**
-   * Sort order for display
-   * @minimum 0
-   */
-  sortOrder?: number;
-  /** Additional remarks */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
 }

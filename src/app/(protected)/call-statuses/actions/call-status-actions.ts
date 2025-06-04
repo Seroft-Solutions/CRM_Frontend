@@ -14,15 +14,7 @@ const callstatusSchema = z.object({
   
   
   
-  code: z.string().min(2).max(10),
-  
-  
-  
   description: z.string().max(255).optional(),
-  
-  
-  
-  isFinal: z.boolean(),
   
   
   
@@ -30,19 +22,7 @@ const callstatusSchema = z.object({
   
   
   
-  sortOrder: z.number().min(0).optional(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
-  
-  
-  
-  createdDate: z.string().datetime(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -74,15 +54,7 @@ export async function createCallStatus(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
-      
-      
-      
-      isFinal: formData.get('isFinal') === 'true',
       
       
       
@@ -90,19 +62,7 @@ export async function createCallStatus(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -171,15 +131,7 @@ export async function updateCallStatus(
       
       
       
-      code: formData.get('code') || undefined,
-      
-      
-      
       description: formData.get('description') || undefined,
-      
-      
-      
-      isFinal: formData.get('isFinal') === 'true',
       
       
       
@@ -187,19 +139,7 @@ export async function updateCallStatus(
       
       
       
-      sortOrder: formData.get('sortOrder') ? Number(formData.get('sortOrder')) : undefined,
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

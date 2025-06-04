@@ -13,30 +13,9 @@ import type { DistrictDTO } from './DistrictDTO';
 export interface CityDTO {
   id?: number;
   /**
-   * City name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
-  /**
-   * City code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9]+$
-   */
-  code?: string;
-  /** Is metropolitan city */
-  isMetro: boolean;
-  /**
-   * Population
-   * @minimum 0
-   */
-  population?: number;
-  /** Is this city active */
-  isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   district: DistrictDTO;
 }

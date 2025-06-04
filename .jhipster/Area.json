@@ -7,7 +7,6 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "Area name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
@@ -15,37 +14,12 @@
       "fieldValidateRulesMinlength": "2"
     },
     {
-      "documentation": "Area pincode",
       "fieldName": "pincode",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
       "fieldValidateRulesMaxlength": "6",
       "fieldValidateRulesMinlength": "6",
       "fieldValidateRulesPattern": "^[0-9]{6}$"
-    },
-    {
-      "documentation": "Area type (Sector, Block, etc.)",
-      "fieldName": "areaType",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "50"
-    },
-    {
-      "documentation": "Is this area active",
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

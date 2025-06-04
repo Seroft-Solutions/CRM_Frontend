@@ -29,72 +29,6 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {call.direction}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.durationSeconds}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.outcome}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.expectedRevenue}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.actualRevenue}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.probability}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.nextFollowUpDate ? format(new Date(call.nextFollowUpDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.isCompleted ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.summary}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.recordingUrl}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.internalNotes}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {call.status}
         
       </TableCell>
@@ -102,18 +36,6 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
       <TableCell className="whitespace-nowrap px-4 py-3">
         
         {call.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.createdDate ? format(new Date(call.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {call.lastModifiedDate ? format(new Date(call.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       
@@ -126,11 +48,6 @@ export function CallTableRow({ call, onDelete, isDeleting }: CallTableRowProps) 
       <TableCell className="whitespace-nowrap px-4 py-3">
         {call.channelParty ? 
           (call.channelParty as any).login || call.channelParty.id || "" : ""}
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        {call.createdBy ? 
-          (call.createdBy as any).login || call.createdBy.id || "" : ""}
       </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">

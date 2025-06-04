@@ -29,31 +29,7 @@ export function StateTableRow({ state, onDelete, isDeleting }: StateTableRowProp
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {state.code}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {state.country}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {state.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {state.createdDate ? format(new Date(state.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {state.lastModifiedDate ? format(new Date(state.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

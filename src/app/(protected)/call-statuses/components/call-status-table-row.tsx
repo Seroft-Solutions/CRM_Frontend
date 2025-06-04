@@ -29,19 +29,7 @@ export function CallStatusTableRow({ callStatus, onDelete, isDeleting }: CallSta
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callStatus.code}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callStatus.description}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callStatus.isFinal ? "Yes" : "No"}
         
       </TableCell>
       
@@ -53,25 +41,7 @@ export function CallStatusTableRow({ callStatus, onDelete, isDeleting }: CallSta
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {callStatus.sortOrder}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {callStatus.remark}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callStatus.createdDate ? format(new Date(callStatus.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {callStatus.lastModifiedDate ? format(new Date(callStatus.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

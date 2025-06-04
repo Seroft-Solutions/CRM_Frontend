@@ -87,10 +87,10 @@ export function CallCategoryTable() {
     // Add date range filters
     
     if (dateRange.from) {
-      params[`createdDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+      params[`lastModifiedDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
     }
     if (dateRange.to) {
-      params[`createdDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+      params[`lastModifiedDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
     }
     
 
@@ -221,7 +221,7 @@ export function CallCategoryTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={6}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -239,7 +239,7 @@ export function CallCategoryTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={6}
                   className="h-24 text-center"
                 >
                   No call categories found

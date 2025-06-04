@@ -71,31 +71,7 @@ export function ProductTableRow({ product, onDelete, isDeleting }: ProductTableR
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {product.launchDate ? format(new Date(product.launchDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {product.features}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {product.remark}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {product.createdDate ? format(new Date(product.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {product.lastModifiedDate ? format(new Date(product.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

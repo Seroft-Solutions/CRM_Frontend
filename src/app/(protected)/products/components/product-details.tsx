@@ -134,31 +134,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground"></p>
 
-              <p>{entity.launchDate ? format(new Date(entity.launchDate), "PPP") : ""}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.features || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
               <p>{entity.remark || "—"}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.createdDate ? format(new Date(entity.createdDate), "PPP") : ""}</p>
-
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : ""}</p>
 
             </div>
 

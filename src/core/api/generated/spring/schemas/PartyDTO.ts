@@ -5,8 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { PartyDTOLeadStatus } from './PartyDTOLeadStatus';
-import type { UserDTO } from './UserDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { AreaDTO } from './AreaDTO';
 import type { PartyDTOInterestedProductsItem } from './PartyDTOInterestedProductsItem';
@@ -18,99 +16,46 @@ import type { CityDTO } from './CityDTO';
 export interface PartyDTO {
   id?: number;
   /**
-   * Party name/company name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
-  /**
-   * Mobile number
-   * @pattern ^[+]?[0-9]{10,15}$
-   */
+  /** @pattern ^[+]?[0-9]{10,15}$ */
   mobile: string;
   /**
-   * Email address
    * @minLength 0
    * @maxLength 254
    * @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$
    */
   email?: string;
-  /**
-   * WhatsApp number
-   * @pattern ^[+]?[0-9]{10,15}$
-   */
+  /** @pattern ^[+]?[0-9]{10,15}$ */
   whatsApp?: string;
   /**
-   * Contact person name
    * @minLength 2
    * @maxLength 100
    */
   contactPerson?: string;
   /**
-   * Address line 1
    * @minLength 0
    * @maxLength 255
    */
   address1?: string;
   /**
-   * Address line 2
    * @minLength 0
    * @maxLength 255
    */
   address2?: string;
   /**
-   * Address line 3
    * @minLength 0
    * @maxLength 255
    */
   address3?: string;
-  /**
-   * Website URL
-   * @minLength 0
-   * @maxLength 255
-   * @pattern ^https?:\/\/[^\s]+$
-   */
-  website?: string;
-  /**
-   * Company/individual type
-   * @minLength 0
-   * @maxLength 20
-   */
-  partyType: string;
-  /** Lead status */
-  leadStatus: PartyDTOLeadStatus;
-  /**
-   * Lead score (0-100)
-   * @minimum 0
-   * @maximum 100
-   */
-  leadScore?: number;
-  /**
-   * Annual revenue
-   * @minimum 0
-   */
-  annualRevenue?: number;
-  /**
-   * Number of employees
-   * @minimum 0
-   */
-  employeeCount?: number;
-  /** Is this party active */
   isActive: boolean;
-  /** Registration date */
-  registrationDate: string;
-  /** Last contact date */
-  lastContactDate?: string;
-  /** Next follow up date */
-  nextFollowUpDate?: string;
-  /** Additional remarks */
+  /**
+   * @minLength 0
+   * @maxLength 1000
+   */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
-  assignedTo?: UserDTO;
-  createdBy?: UserDTO;
   source?: SourceDTO;
   area?: AreaDTO;
   interestedProducts?: PartyDTOInterestedProductsItem[];

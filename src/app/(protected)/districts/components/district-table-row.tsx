@@ -27,30 +27,6 @@ export function DistrictTableRow({ district, onDelete, isDeleting }: DistrictTab
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {district.code}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {district.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {district.createdDate ? format(new Date(district.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {district.lastModifiedDate ? format(new Date(district.lastModifiedDate), "PPP") : ""}
-        
-      </TableCell>
-      
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {district.state ? 

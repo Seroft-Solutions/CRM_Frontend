@@ -56,10 +56,6 @@ interface AreaFormProps {
 const formSchema = z.object({
   name: z.string().min(2).max(100),
   pincode: z.string().min(6).max(6).regex(/^[0-9]{6}$/),
-  areaType: z.string().max(50).optional(),
-  isActive: z.boolean(),
-  createdDate: z.date(),
-  lastModifiedDate: z.date().optional(),
   city: z.number().optional(),
 });
 
@@ -112,18 +108,6 @@ export function AreaForm({ id }: AreaFormProps) {
       pincode: "",
 
 
-      areaType: "",
-
-
-      isActive: false,
-
-
-      createdDate: new Date(),
-
-
-      lastModifiedDate: new Date(),
-
-
       city: undefined,
 
     },
@@ -138,18 +122,6 @@ export function AreaForm({ id }: AreaFormProps) {
 
 
         pincode: entity.pincode || "",
-
-
-        areaType: entity.areaType || "",
-
-
-        isActive: entity.isActive || "",
-
-
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
-
-        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
 
 
         city: entity.city?.id,
@@ -170,25 +142,13 @@ export function AreaForm({ id }: AreaFormProps) {
       pincode: data.pincode,
 
 
-      areaType: data.areaType,
-
-
-      isActive: data.isActive,
-
-
-      createdDate: data.createdDate,
-
-
-      lastModifiedDate: data.lastModifiedDate,
-
-
       city: data.city ? { id: data.city } : null,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
         // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','pincode','areaType','isActive','createdDate','lastModifiedDate','city',].includes(key);
+          const isFormField = ['name','pincode','city',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -226,10 +186,6 @@ export function AreaForm({ id }: AreaFormProps) {
                 />
               </FormControl>
 
-              <FormDescription>
-                Area name
-              </FormDescription>
-
               <FormMessage />
             </FormItem>
 
@@ -249,147 +205,6 @@ export function AreaForm({ id }: AreaFormProps) {
                   placeholder="Enter pincode"
                 />
               </FormControl>
-
-              <FormDescription>
-                Area pincode
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="areaType"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>AreaType</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter areaType"
-                />
-              </FormControl>
-
-              <FormDescription>
-                Area type (Sector, Block, etc.)
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>IsActive</FormLabel>
-
-                <FormDescription>
-                  Is this area active
-                </FormDescription>
-
-              </div>
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="createdDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>CreatedDate *</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Created timestamp
-              </FormDescription>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastModifiedDate"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-col">
-              <FormLabel>LastModifiedDate</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormDescription>
-                Last modified timestamp
-              </FormDescription>
 
               <FormMessage />
             </FormItem>

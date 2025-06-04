@@ -123,55 +123,11 @@ export function ProductTableHeader({ onSort, getSortIcon }: ProductTableHeaderPr
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
             variant="ghost"
-            onClick={() => onSort("launchDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Launch Date
-            {renderSortIcon("launchDate")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("features")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Features
-            {renderSortIcon("features")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
             onClick={() => onSort("remark")}
             className="flex items-center gap-2 h-8 px-2 font-medium"
           >
             Remark
             {renderSortIcon("remark")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("createdDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Created Date
-            {renderSortIcon("createdDate")}
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("lastModifiedDate")}
-            className="flex items-center gap-2 h-8 px-2 font-medium"
-          >
-            Last Modified Date
-            {renderSortIcon("lastModifiedDate")}
           </Button>
         </TableHead>
         

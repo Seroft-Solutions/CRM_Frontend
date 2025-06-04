@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Current status
- */
 export type CallDTOStatus = typeof CallDTOStatus[keyof typeof CallDTOStatus];
 
 

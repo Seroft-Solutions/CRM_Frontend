@@ -29,25 +29,7 @@ export function PriorityTableRow({ priority, onDelete, isDeleting }: PriorityTab
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         
-        {priority.level}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
         {priority.description}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {priority.colorCode}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {priority.sortOrder}
         
       </TableCell>
       
@@ -60,18 +42,6 @@ export function PriorityTableRow({ priority, onDelete, isDeleting }: PriorityTab
       <TableCell className="whitespace-nowrap px-4 py-3">
         
         {priority.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {priority.createdDate ? format(new Date(priority.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {priority.lastModifiedDate ? format(new Date(priority.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

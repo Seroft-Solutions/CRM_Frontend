@@ -12,37 +12,19 @@
 export interface CallStatusDTO {
   id?: number;
   /**
-   * Status name
    * @minLength 2
    * @maxLength 50
    */
   name: string;
   /**
-   * Status code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9_]+$
-   */
-  code: string;
-  /**
-   * Status description
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
-  /** Is this a final status */
-  isFinal: boolean;
-  /** Is this status active */
   isActive: boolean;
   /**
-   * Sort order for display
-   * @minimum 0
+   * @minLength 0
+   * @maxLength 1000
    */
-  sortOrder?: number;
-  /** Additional remarks */
   remark?: string;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
 }

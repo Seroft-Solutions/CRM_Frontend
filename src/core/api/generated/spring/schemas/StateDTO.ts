@@ -12,28 +12,13 @@
 export interface StateDTO {
   id?: number;
   /**
-   * State name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
   /**
-   * State code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9]+$
-   */
-  code: string;
-  /**
-   * Country name
    * @minLength 2
    * @maxLength 50
    */
   country: string;
-  /** Is this state active */
-  isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
 }

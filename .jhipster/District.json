@@ -7,38 +7,11 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "documentation": "District name",
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "minlength", "maxlength"],
       "fieldValidateRulesMaxlength": "100",
       "fieldValidateRulesMinlength": "2"
-    },
-    {
-      "documentation": "District code",
-      "fieldName": "code",
-      "fieldType": "String",
-      "fieldValidateRules": ["minlength", "maxlength", "pattern"],
-      "fieldValidateRulesMaxlength": "10",
-      "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9]+$"
-    },
-    {
-      "documentation": "Is this district active",
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Created timestamp",
-      "fieldName": "createdDate",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "documentation": "Last modified timestamp",
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

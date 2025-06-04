@@ -23,13 +23,6 @@ export type GetAllChannelTypesParams = {
 'name.specified'?: boolean;
 'name.in'?: string[];
 'name.notIn'?: string[];
-'code.contains'?: string;
-'code.doesNotContain'?: string;
-'code.equals'?: string;
-'code.notEquals'?: string;
-'code.specified'?: boolean;
-'code.in'?: string[];
-'code.notIn'?: string[];
 'description.contains'?: string;
 'description.doesNotContain'?: string;
 'description.equals'?: string;
@@ -51,33 +44,6 @@ export type GetAllChannelTypesParams = {
 'isActive.specified'?: boolean;
 'isActive.in'?: boolean[];
 'isActive.notIn'?: boolean[];
-'sortOrder.greaterThan'?: number;
-'sortOrder.lessThan'?: number;
-'sortOrder.greaterThanOrEqual'?: number;
-'sortOrder.lessThanOrEqual'?: number;
-'sortOrder.equals'?: number;
-'sortOrder.notEquals'?: number;
-'sortOrder.specified'?: boolean;
-'sortOrder.in'?: number[];
-'sortOrder.notIn'?: number[];
-'createdDate.greaterThan'?: string;
-'createdDate.lessThan'?: string;
-'createdDate.greaterThanOrEqual'?: string;
-'createdDate.lessThanOrEqual'?: string;
-'createdDate.equals'?: string;
-'createdDate.notEquals'?: string;
-'createdDate.specified'?: boolean;
-'createdDate.in'?: string[];
-'createdDate.notIn'?: string[];
-'lastModifiedDate.greaterThan'?: string;
-'lastModifiedDate.lessThan'?: string;
-'lastModifiedDate.greaterThanOrEqual'?: string;
-'lastModifiedDate.lessThanOrEqual'?: string;
-'lastModifiedDate.equals'?: string;
-'lastModifiedDate.notEquals'?: string;
-'lastModifiedDate.specified'?: boolean;
-'lastModifiedDate.in'?: string[];
-'lastModifiedDate.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

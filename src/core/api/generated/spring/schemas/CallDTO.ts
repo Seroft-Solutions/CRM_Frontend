@@ -5,8 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CallDTODirection } from './CallDTODirection';
-import type { CallDTOOutcome } from './CallDTOOutcome';
 import type { CallDTOStatus } from './CallDTOStatus';
 import type { UserDTO } from './UserDTO';
 import type { PriorityDTO } from './PriorityDTO';
@@ -26,62 +24,11 @@ import type { PartyDTO } from './PartyDTO';
  */
 export interface CallDTO {
   id?: number;
-  /** Call date and time */
   callDateTime: string;
-  /** Call direction */
-  direction: CallDTODirection;
-  /**
-   * Call duration in seconds
-   * @minimum 0
-   */
-  durationSeconds?: number;
-  /** Call outcome */
-  outcome?: CallDTOOutcome;
-  /**
-   * Expected revenue from this call
-   * @minimum 0
-   */
-  expectedRevenue?: number;
-  /**
-   * Actual revenue realized
-   * @minimum 0
-   */
-  actualRevenue?: number;
-  /**
-   * Probability of closure (0-100)
-   * @minimum 0
-   * @maximum 100
-   */
-  probability?: number;
-  /** Next follow up date */
-  nextFollowUpDate?: string;
-  /** Is call completed */
-  isCompleted: boolean;
-  /**
-   * Call summary
-   * @minLength 0
-   * @maxLength 500
-   */
-  summary?: string;
-  /**
-   * Call recording URL
-   * @minLength 0
-   * @maxLength 500
-   */
-  recordingUrl?: string;
-  /** Internal notes */
-  internalNotes?: string;
-  /** Current status */
   status: CallDTOStatus;
-  /** Is this call active */
   isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   assignedTo?: UserDTO;
   channelParty?: UserDTO;
-  createdBy?: UserDTO;
   priority?: PriorityDTO;
   callType?: CallTypeDTO;
   subCallType?: SubCallTypeDTO;

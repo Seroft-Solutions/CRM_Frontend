@@ -86,13 +86,6 @@ export function ProductTable() {
 
     // Add date range filters
     
-    if (dateRange.from) {
-      params[`launchDateGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
-    }
-    if (dateRange.to) {
-      params[`launchDateLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
-    }
-    
 
     return params;
   };
@@ -242,7 +235,7 @@ export function ProductTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -260,7 +253,7 @@ export function ProductTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={10}
                   className="h-24 text-center"
                 >
                   No products found

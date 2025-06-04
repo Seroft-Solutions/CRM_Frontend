@@ -13,23 +13,9 @@ import type { StateDTO } from './StateDTO';
 export interface DistrictDTO {
   id?: number;
   /**
-   * District name
    * @minLength 2
    * @maxLength 100
    */
   name: string;
-  /**
-   * District code
-   * @minLength 2
-   * @maxLength 10
-   * @pattern ^[A-Z0-9]+$
-   */
-  code?: string;
-  /** Is this district active */
-  isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
   state: StateDTO;
 }

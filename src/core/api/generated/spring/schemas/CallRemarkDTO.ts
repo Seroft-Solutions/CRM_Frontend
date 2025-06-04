@@ -5,7 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { UserDTO } from './UserDTO';
 import type { CallDTO } from './CallDTO';
 
 /**
@@ -13,30 +12,11 @@ import type { CallDTO } from './CallDTO';
  */
 export interface CallRemarkDTO {
   id?: number;
-  /** Remark text */
+  /**
+   * @minLength 0
+   * @maxLength 2000
+   */
   remark: string;
-  /** Remark date and time */
   dateTime: string;
-  /** Is this remark private */
-  isPrivate: boolean;
-  /**
-   * Remark type
-   * @minLength 0
-   * @maxLength 50
-   */
-  remarkType?: string;
-  /**
-   * Action items from this remark
-   * @minLength 0
-   * @maxLength 500
-   */
-  actionItems?: string;
-  /** Is this remark active */
-  isActive: boolean;
-  /** Created timestamp */
-  createdDate: string;
-  /** Last modified timestamp */
-  lastModifiedDate?: string;
-  createdBy?: UserDTO;
   call: CallDTO;
 }

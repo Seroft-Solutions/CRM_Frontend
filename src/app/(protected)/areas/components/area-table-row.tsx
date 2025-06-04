@@ -33,30 +33,6 @@ export function AreaTableRow({ area, onDelete, isDeleting }: AreaTableRowProps) 
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {area.areaType}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {area.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {area.createdDate ? format(new Date(area.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-4 py-3">
-        
-        {area.lastModifiedDate ? format(new Date(area.lastModifiedDate), "PPP") : ""}
-        
-      </TableCell>
-      
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         {area.city ? 
