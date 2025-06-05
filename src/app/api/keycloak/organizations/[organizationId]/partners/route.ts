@@ -13,7 +13,8 @@ import {
   postAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
-  getAdminRealmsRealmGroups
+  getAdminRealmsRealmGroups,
+  getAdminRealmsRealmUsersUserIdGroups
 } from '@/core/api/generated/keycloak';
 import type { 
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
@@ -60,6 +61,53 @@ function createPartnerInvitationUserAttributes(invitation: PendingPartnerInvitat
     'partner_invitation_note': invitation.invitationNote || '',
     'partner_invitation_expires_at': invitation.expiresAt?.toString() || ''
   };
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ organizationId: string }> }
+) {
+  try {
+    const permissionCheck = await keycloakService.verifyAdminPermissions();
+    if (!permissionCheck.authorized) {
+      return NextResponse.json(
+        { error: permissionCheck.error },
+        { status: 401 }
+      );
+    }
+
+    const { organizationId } = await params;
+    const realm = keycloakService.getRealm();
+
+    // Get organization members
+    const members = await getAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId);
+    
+    // Filter for business partners (users with "Business Partners" group)
+    const businessPartners = [];
+    
+    for (const member of members) {
+      if (member.id) {
+        try {
+          const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, member.id);
+          const hasBusinessPartnersGroup = userGroups.some(group => group.name === 'Business Partners');
+          
+          if (hasBusinessPartnersGroup) {
+            businessPartners.push(member);
+          }
+        } catch (error) {
+          console.warn(`Failed to get groups for user ${member.id}:`, error);
+        }
+      }
+    }
+
+    return NextResponse.json(businessPartners);
+  } catch (error: any) {
+    console.error('Failed to fetch business partners:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch business partners' },
+      { status: error.status || 500 }
+    );
+  }
 }
 
 export async function POST(
