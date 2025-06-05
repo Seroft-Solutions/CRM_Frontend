@@ -49,6 +49,7 @@ import {
   Send,
   Users
 } from 'lucide-react';
+import { SendInviteButton, BulkInviteButton, AddRowButton } from './LoadingButton';
 import type { InviteUserFormData, BulkInviteFormData, InviteUserFormDataWithGroups, BulkInviteFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 
@@ -324,19 +325,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     />
 
                     <div className="flex gap-2">
-                      <Button type="submit" disabled={isInviting} className="gap-2">
-                        {isInviting ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4" />
-                            Send Invitation
-                          </>
-                        )}
-                      </Button>
+                      <SendInviteButton 
+                        type="submit" 
+                        isLoading={isInvitingWithGroups}
+                      />
                       <Button type="button" variant="outline" onClick={() => singleForm.reset()}>
                         Clear
                       </Button>
@@ -365,10 +357,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label className="text-base font-medium">User Invitations</Label>
-                        <Button type="button" variant="outline" size="sm" onClick={addInvitationRow}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Row
-                        </Button>
+                        <AddRowButton onClick={addInvitationRow} />
                       </div>
 
                       <div className="border rounded-lg">
@@ -462,19 +451,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button type="submit" disabled={isInviting} className="gap-2">
-                        {isInviting ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            Sending Invitations...
-                          </>
-                        ) : (
-                          <>
-                            <Mail className="h-4 w-4" />
-                            Send All Invitations
-                          </>
-                        )}
-                      </Button>
+                      <BulkInviteButton 
+                        type="submit" 
+                        isLoading={isInvitingWithGroups}
+                      />
                       <Button 
                         type="button" 
                         variant="outline" 
