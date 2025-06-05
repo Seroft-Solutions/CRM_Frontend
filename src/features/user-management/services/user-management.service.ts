@@ -6,6 +6,11 @@
 import type {
   OrganizationUser,
   UserInvitation,
+  UserInvitationWithGroups,
+  PendingInvitation,
+  InvitationListResponse,
+  InvitationFilters,
+  InvitationActionResult,
   RoleAssignment,
   GroupAssignment,
   UserFilters,
@@ -132,7 +137,119 @@ export class UserManagementService {
     }
   }
 
-  // User Invitation
+  // ENHANCED: User Invitation with Groups
+  async inviteUserWithGroups(invitation: UserInvitationWithGroups): Promise<InvitationActionResult> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/organizations/${invitation.organizationId}/members`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: invitation.email,
+            firstName: invitation.firstName,
+            lastName: invitation.lastName,
+            selectedGroups: invitation.selectedGroups,
+            selectedRoles: invitation.selectedRoles,
+            invitationNote: invitation.invitationNote,
+            sendWelcomeEmail: invitation.sendWelcomeEmail,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to invite user');
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: 'User invited successfully with group assignments',
+        invitationId: result.invitationId
+      };
+    } catch (error) {
+      console.error('Failed to invite user with groups:', error);
+      return {
+        success: false,
+        message: 'Failed to invite user',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      };
+    }
+  }
+
+  // ENHANCED: Get Pending Invitations
+  async getPendingInvitations(
+    organizationId: string,
+    filters?: InvitationFilters
+  ): Promise<InvitationListResponse> {
+    try {
+      const params = new URLSearchParams();
+      
+      if (filters?.status) params.append('status', filters.status.join(','));
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.page) params.append('page', String(filters.page));
+      if (filters?.size) params.append('size', String(filters.size));
+
+      const response = await fetch(
+        `${this.baseUrl}/organizations/${organizationId}/invitations?${params.toString()}`
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch pending invitations');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Failed to fetch pending invitations:', error);
+      throw new Error('Failed to fetch pending invitations');
+    }
+  }
+
+  // ENHANCED: Assign Groups from Invitation
+  async assignGroupsFromInvitation(
+    organizationId: string,
+    userId: string
+  ): Promise<InvitationActionResult> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/organizations/${organizationId}/invitations`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            action: 'assign-groups'
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to assign groups from invitation');
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.message,
+      };
+    } catch (error) {
+      console.error('Failed to assign groups from invitation:', error);
+      return {
+        success: false,
+        message: 'Failed to assign groups from invitation',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      };
+    }
+  }
+
+  // User Invitation (backward compatibility)
   async inviteUser(invitation: UserInvitation): Promise<void> {
     try {
       const response = await fetch(
@@ -286,15 +403,86 @@ export class UserManagementService {
     }
   }
 
-  // Placeholder methods for future implementation
-  async inviteExistingUser(organizationId: string, userId: string): Promise<void> {
-    // TODO: Implement when organization membership endpoints are available
-    throw new Error('Invite existing user not implemented yet');
+  // ENHANCED: User-Group Assignment
+  async getUserGroups(userId: string): Promise<{
+    user: UserRepresentation;
+    assignedGroups: GroupRepresentation[];
+    availableGroups: GroupRepresentation[];
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}/groups`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch user groups');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Failed to fetch user groups:', error);
+      throw new Error('Failed to fetch user groups');
+    }
+  }
+
+  async assignUserGroups(
+    userId: string, 
+    groupIds: string[], 
+    action: 'assign' | 'unassign'
+  ): Promise<InvitationActionResult> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}/groups`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action,
+          groupIds
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || `Failed to ${action} user groups`);
+      }
+
+      const result = await response.json();
+      return {
+        success: result.success,
+        message: result.message,
+      };
+    } catch (error) {
+      console.error(`Failed to ${action} user groups:`, error);
+      return {
+        success: false,
+        message: `Failed to ${action} user groups`,
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      };
+    }
+  }
+
+  // Enhanced method for invitation follow-up
+  async assignGroupsToInvitedUser(
+    organizationId: string,
+    userId: string
+  ): Promise<InvitationActionResult> {
+    return this.assignGroupsFromInvitation(organizationId, userId);
   }
 
   async removeUserFromOrganization(organizationId: string, userId: string): Promise<void> {
-    // TODO: Implement when organization membership endpoints are available
-    throw new Error('Remove user from organization not implemented yet');
+    try {
+      const response = await fetch(`${this.baseUrl}/organizations/${organizationId}/members/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to remove user from organization');
+      }
+    } catch (error) {
+      console.error('Failed to remove user from organization:', error);
+      throw new Error('Failed to remove user from organization');
+    }
   }
 
   async assignClientRoles(

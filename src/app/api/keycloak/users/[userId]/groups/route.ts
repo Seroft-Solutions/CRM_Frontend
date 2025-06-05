@@ -1,6 +1,6 @@
 /**
- * User Groups API Route
- * Handles user group assignment and management using generated endpoints
+ * User Groups Assignment API Route
+ * Handles assigning/removing users to/from groups
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -9,15 +9,19 @@ import {
   getAdminRealmsRealmUsersUserIdGroups,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
+  getAdminRealmsRealmGroups,
+  getAdminRealmsRealmUsersUserId
 } from '@/core/api/generated/keycloak';
-import type { GroupRepresentation } from '@/core/api/generated/keycloak';
+import type { 
+  GroupRepresentation,
+  UserRepresentation
+} from '@/core/api/generated/keycloak';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json(
@@ -26,29 +30,28 @@ export async function GET(
       );
     }
 
-    // Await params in Next.js 15+
     const { userId } = await params;
     const realm = keycloakService.getRealm();
 
-    // Get user's current groups using generated endpoint
-    const userGroups: GroupRepresentation[] = await getAdminRealmsRealmUsersUserIdGroups(
-      realm,
-      userId
-    );
+    // Get user's current groups
+    const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
+    
+    // Get all available groups
+    const allGroups = await getAdminRealmsRealmGroups(realm);
+    
+    // Get user details
+    const user = await getAdminRealmsRealmUsersUserId(realm, userId);
 
-    return NextResponse.json(userGroups);
+    return NextResponse.json({
+      user,
+      assignedGroups: userGroups,
+      availableGroups: allGroups,
+      success: true
+    });
   } catch (error: any) {
     console.error('Get user groups API error:', error);
-    
-    if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch user groups' },
+      { error: error.message || 'Failed to get user groups' },
       { status: error.status || 500 }
     );
   }
@@ -59,7 +62,6 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json(
@@ -68,99 +70,57 @@ export async function POST(
       );
     }
 
-    // Await params in Next.js 15+
     const { userId } = await params;
     const body = await request.json();
-    const { groups, action } = body;
     const realm = keycloakService.getRealm();
 
-    // Validate input
-    if (!Array.isArray(groups) || groups.length === 0) {
+    const { action, groupIds } = body;
+
+    if (!action || !groupIds || !Array.isArray(groupIds)) {
       return NextResponse.json(
-        { error: 'Groups array is required and cannot be empty' },
+        { error: 'Invalid request. action and groupIds array are required' },
         { status: 400 }
       );
     }
 
-    if (!['assign', 'unassign'].includes(action)) {
-      return NextResponse.json(
-        { error: 'Action must be either "assign" or "unassign"' },
-        { status: 400 }
-      );
-    }
+    const results = [];
+    let successCount = 0;
+    let errorCount = 0;
 
-    // Type-safe group validation
-    const validatedGroups: GroupRepresentation[] = groups.map((group: any) => {
-      if (!group.id) {
-        throw new Error('Each group must have an id property');
-      }
-      return {
-        id: group.id,
-        name: group.name,
-        path: group.path,
-        subGroups: group.subGroups,
-        attributes: group.attributes,
-        realmRoles: group.realmRoles,
-        clientRoles: group.clientRoles,
-        access: group.access,
-      };
-    });
-
-    // Process each group assignment/unassignment
-    const results = await Promise.allSettled(
-      validatedGroups.map(async (group) => {
+    for (const groupId of groupIds) {
+      try {
         if (action === 'assign') {
-          return await putAdminRealmsRealmUsersUserIdGroupsGroupId(
-            realm,
-            userId,
-            group.id!
-          );
+          await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, groupId);
+          results.push({ groupId, success: true, action: 'assigned' });
+          successCount++;
+        } else if (action === 'unassign') {
+          await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, groupId);
+          results.push({ groupId, success: true, action: 'unassigned' });
+          successCount++;
         } else {
-          return await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(
-            realm,
-            userId,
-            group.id!
-          );
+          results.push({ groupId, success: false, error: 'Invalid action' });
+          errorCount++;
         }
-      })
-    );
-
-    // Check for any failures
-    const failures = results.filter(result => result.status === 'rejected');
-    
-    if (failures.length > 0) {
-      console.error('Some group operations failed:', failures);
-      return NextResponse.json(
-        { 
-          error: `${failures.length} out of ${validatedGroups.length} group operations failed`,
-          details: failures.map(f => (f as PromiseRejectedResult).reason.message)
-        },
-        { status: 207 } // Multi-status
-      );
+      } catch (error: any) {
+        console.error(`Failed to ${action} group ${groupId} for user ${userId}:`, error);
+        results.push({ 
+          groupId, 
+          success: false, 
+          error: error.message || `Failed to ${action} group`
+        });
+        errorCount++;
+      }
     }
 
-    return NextResponse.json({ 
-      success: true,
-      message: `Groups ${action === 'assign' ? 'assigned' : 'unassigned'} successfully`,
-      groupsCount: validatedGroups.length
+    return NextResponse.json({
+      success: errorCount === 0,
+      message: `${successCount} group(s) ${action}ed successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
+      results,
+      successCount,
+      errorCount
     });
   } catch (error: any) {
     console.error('User groups assignment API error:', error);
-    
-    if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    if (error.status === 409) {
-      return NextResponse.json(
-        { error: 'Group assignment conflict. Some groups may already be assigned.' },
-        { status: 409 }
-      );
-    }
-    
     return NextResponse.json(
       { error: error.message || 'Failed to assign/unassign groups' },
       { status: error.status || 500 }

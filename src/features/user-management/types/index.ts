@@ -116,6 +116,104 @@ export interface UserDetailData {
   availableGroups: GroupRepresentation[];
 }
 
+// ENHANCED: Invitation Status Tracking
+export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
+
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId: string;
+  organizationName?: string;
+  
+  // Invitation tracking
+  status: InvitationStatus;
+  invitedBy: string;
+  invitedByName?: string;
+  invitedAt: number; // timestamp
+  expiresAt?: number; // timestamp
+  lastSentAt?: number; // timestamp
+  
+  // Group assignment
+  selectedGroups: GroupRepresentation[];
+  selectedRoles?: RoleRepresentation[];
+  
+  // Metadata
+  sendWelcomeEmail?: boolean;
+  invitationNote?: string;
+}
+
+// ENHANCED: Invitation with Group Selection
+export interface UserInvitationWithGroups {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId: string;
+  sendWelcomeEmail?: boolean;
+  
+  // Group and role assignment
+  selectedGroups?: GroupRepresentation[];
+  selectedRoles?: RoleRepresentation[];
+  invitationNote?: string;
+}
+
+// ENHANCED: Form types with group selection
+export interface InviteUserFormDataWithGroups {
+  email: string;
+  firstName: string;
+  lastName: string;
+  sendWelcomeEmail: boolean;
+  selectedGroups: string[]; // Group IDs
+  selectedRoles?: string[]; // Role IDs
+  invitationNote?: string;
+}
+
+export interface BulkInviteFormDataWithGroups {
+  csvFile?: File;
+  manualInvitations: InviteUserFormDataWithGroups[];
+  defaultGroups?: string[]; // Group IDs
+  defaultRoles?: string[]; // Role IDs
+}
+
+// ENHANCED: Organization with invitation tracking
+export interface OrganizationWithInvitations {
+  organization: OrganizationRepresentation;
+  members: OrganizationUser[];
+  pendingInvitations: PendingInvitation[];
+  totalMembers: number;
+  totalPendingInvitations: number;
+}
+
+// ENHANCED: API response types
+export interface InvitationListResponse {
+  invitations: PendingInvitation[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface InvitationActionResult {
+  success: boolean;
+  message: string;
+  invitationId?: string;
+  errors?: string[];
+}
+
+// ENHANCED: Invitation filters
+export interface InvitationFilters {
+  status?: InvitationStatus[];
+  search?: string;
+  invitedBy?: string;
+  dateRange?: {
+    from?: Date;
+    to?: Date;
+  };
+  hasGroups?: boolean;
+  page?: number;
+  size?: number;
+}
+
 // Error types
 export interface UserManagementError {
   code: string;

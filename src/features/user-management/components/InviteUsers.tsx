@@ -10,8 +10,9 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useInviteUser, useOrganizationContext } from '../hooks';
+import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups, usePendingInvitations } from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
+import { PendingInvitations } from './PendingInvitations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,7 @@ import {
   Send,
   Users
 } from 'lucide-react';
-import type { InviteUserFormData, BulkInviteFormData } from '../types';
+import type { InviteUserFormData, BulkInviteFormData, InviteUserFormDataWithGroups, BulkInviteFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 
 // Form validation schemas
@@ -57,10 +58,22 @@ const inviteUserSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   sendWelcomeEmail: z.boolean().default(true),
+  selectedGroups: z.array(z.string()).default([]),
+  invitationNote: z.string().optional(),
+});
+
+const inviteUserWithGroupsSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  sendWelcomeEmail: z.boolean().default(true),
+  selectedGroups: z.array(z.string()).default([]),
+  invitationNote: z.string().optional(),
 });
 
 const bulkInviteSchema = z.object({
-  manualInvitations: z.array(inviteUserSchema).min(1, 'At least one invitation is required'),
+  manualInvitations: z.array(inviteUserWithGroupsSchema).min(1, 'At least one invitation is required'),
+  defaultGroups: z.array(z.string()).default([]),
 });
 
 interface InviteUsersProps {
@@ -71,32 +84,44 @@ export function InviteUsers({ className }: InviteUsersProps) {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
   const { inviteUser, isInviting } = useInviteUser();
+  const { inviteUserWithGroups, isInviting: isInvitingWithGroups } = useInviteUserWithGroups();
+  const { groups } = useAvailableGroups();
+  const { invitations, totalCount: pendingCount, refetch: refetchInvitations } = usePendingInvitations(organizationId);
 
   // Local state
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'pending'>('single');
   const [invitationStatus, setInvitationStatus] = useState<{
-    sent: InviteUserFormData[];
-    failed: { invitation: InviteUserFormData; error: string }[];
+    sent: InviteUserFormDataWithGroups[];
+    failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
   }>({ sent: [], failed: [] });
 
-  // Single invitation form
-  const singleForm = useForm<InviteUserFormData>({
-    resolver: zodResolver(inviteUserSchema),
+  // Group options for MultiSelect
+  const groupOptions = groups.map(group => ({
+    value: group.id!,
+    label: group.name || '',
+  }));
+
+  // Single invitation form with groups
+  const singleForm = useForm<InviteUserFormDataWithGroups>({
+    resolver: zodResolver(inviteUserWithGroupsSchema),
     defaultValues: {
       email: '',
       firstName: '',
       lastName: '',
       sendWelcomeEmail: true,
+      selectedGroups: [],
+      invitationNote: '',
     },
   });
 
-  // Bulk invitation form
-  const bulkForm = useForm<BulkInviteFormData>({
+  // Bulk invitation form with groups
+  const bulkForm = useForm<BulkInviteFormDataWithGroups>({
     resolver: zodResolver(bulkInviteSchema),
     defaultValues: {
       manualInvitations: [
-        { email: '', firstName: '', lastName: '', sendWelcomeEmail: true }
+        { email: '', firstName: '', lastName: '', sendWelcomeEmail: true, selectedGroups: [], invitationNote: '' }
       ],
+      defaultGroups: [],
     },
   });
 
@@ -105,39 +130,53 @@ export function InviteUsers({ className }: InviteUsersProps) {
     name: 'manualInvitations',
   });
 
-  // Handle single user invitation
-  const handleSingleInvite = async (data: InviteUserFormData) => {
+  // Handle single user invitation with groups
+  const handleSingleInvite = async (data: InviteUserFormDataWithGroups) => {
     try {
-      await inviteUser({
+      const selectedGroups = groups.filter(g => data.selectedGroups.includes(g.id!));
+      
+      const result = await inviteUserWithGroups({
         ...data,
         organizationId,
+        selectedGroups,
       });
       
-      singleForm.reset();
-      toast.success(`Invitation sent to ${data.email}`);
-      
-      // Add to sent list
-      setInvitationStatus(prev => ({
-        ...prev,
-        sent: [...prev.sent, data],
-      }));
+      if (result.success) {
+        singleForm.reset();
+        setInvitationStatus(prev => ({
+          ...prev,
+          sent: [...prev.sent, data],
+        }));
+        refetchInvitations();
+      }
     } catch (error) {
-      toast.error('Failed to send invitation');
+      console.error('Failed to send invitation:', error);
     }
   };
 
-  // Handle bulk invitations
-  const handleBulkInvite = async (data: BulkInviteFormData) => {
-    const sent: InviteUserFormData[] = [];
-    const failed: { invitation: InviteUserFormData; error: string }[] = [];
+  // Handle bulk invitations with groups
+  const handleBulkInvite = async (data: BulkInviteFormDataWithGroups) => {
+    const sent: InviteUserFormDataWithGroups[] = [];
+    const failed: { invitation: InviteUserFormDataWithGroups; error: string }[] = [];
 
     for (const invitation of data.manualInvitations) {
       try {
-        await inviteUser({
+        const selectedGroups = groups.filter(g => invitation.selectedGroups.includes(g.id!));
+        
+        const result = await inviteUserWithGroups({
           ...invitation,
           organizationId,
+          selectedGroups,
         });
-        sent.push(invitation);
+        
+        if (result.success) {
+          sent.push(invitation);
+        } else {
+          failed.push({
+            invitation,
+            error: result.message
+          });
+        }
       } catch (error) {
         failed.push({
           invitation,
@@ -147,21 +186,15 @@ export function InviteUsers({ className }: InviteUsersProps) {
     }
 
     setInvitationStatus({ sent, failed });
-    
-    if (sent.length > 0) {
-      toast.success(`${sent.length} invitation${sent.length > 1 ? 's' : ''} sent successfully`);
-    }
-    
-    if (failed.length > 0) {
-      toast.error(`${failed.length} invitation${failed.length > 1 ? 's' : ''} failed`);
-    }
+    refetchInvitations();
 
     // Reset form if all succeeded
     if (failed.length === 0) {
       bulkForm.reset({
         manualInvitations: [
-          { email: '', firstName: '', lastName: '', sendWelcomeEmail: true }
+          { email: '', firstName: '', lastName: '', sendWelcomeEmail: true, selectedGroups: [], invitationNote: '' }
         ],
+        defaultGroups: [],
       });
     }
   };
@@ -199,10 +232,16 @@ export function InviteUsers({ className }: InviteUsersProps) {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'bulk')}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'bulk' | 'pending')}>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="single">Single Invitation</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Invitations</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending Invitations
+              {pendingCount > 0 && (
+                <Badge variant="secondary" className="ml-2">{pendingCount}</Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           {/* Single User Invitation */}
@@ -452,6 +491,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 </Form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Pending Invitations */}
+          <TabsContent value="pending">
+            <PendingInvitations />
           </TabsContent>
         </Tabs>
 

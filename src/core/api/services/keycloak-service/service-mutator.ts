@@ -42,7 +42,7 @@ export const keycloakServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  const { url, method = 'GET', data, params } = requestConfig;
+  const { url, method = 'GET', data, params, headers } = requestConfig;
   
   const instance = axios.create(KEYCLOAK_SERVICE_CONFIG);
   
@@ -60,6 +60,7 @@ export const keycloakServiceMutator = async <T>(
     method: method as any,
     data,
     params,
+    headers, // Preserve headers from generated endpoints
     ...options,
   });
 
