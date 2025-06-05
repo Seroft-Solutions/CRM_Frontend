@@ -196,16 +196,16 @@ export function ProductForm({ id }: ProductFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      name: data.name,
+      name: data.name === "__none__" ? undefined : data.name,
 
 
-      code: data.code,
+      code: data.code === "__none__" ? undefined : data.code,
 
 
-      description: data.description,
+      description: data.description === "__none__" ? undefined : data.description,
 
 
-      category: data.category,
+      category: data.category === "__none__" ? undefined : data.category,
 
 
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
@@ -217,10 +217,10 @@ export function ProductForm({ id }: ProductFormProps) {
       maxPrice: data.maxPrice ? Number(data.maxPrice) : undefined,
 
 
-      isActive: data.isActive,
+      isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
 
-      remark: data.remark,
+      remark: data.remark === "__none__" ? undefined : data.remark,
 
 
       calls: data.calls?.map(id => ({ id: id })),

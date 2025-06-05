@@ -90,7 +90,7 @@ const formSchema = z.object({
     const fieldValidateRules = field.fieldValidateRules || [];
     const isRequired = fieldValidateRules.includes('required');
 _%>
-  <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.string()<% if (fieldValidateRules.includes('min')) { %>.refine(val => !val || Number(val) >= <%= field.fieldValidateRulesMin %>, { message: "Must be at least <%= field.fieldValidateRulesMin %>" })<% } %><% if (fieldValidateRules.includes('max')) { %>.refine(val => !val || Number(val) <= <%= field.fieldValidateRulesMax %>, { message: "Must be at most <%= field.fieldValidateRulesMax %>" })<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.date()<% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
+  <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.string()<% if (fieldValidateRules.includes('min')) { %>.refine(val => !val || Number(val) >= <%= field.fieldValidateRulesMin %>, { message: "Must be at least <%= field.fieldValidateRulesMin %>" })<% } %><% if (fieldValidateRules.includes('max')) { %>.refine(val => !val || Number(val) <= <%= field.fieldValidateRulesMax %>, { message: "Must be at most <%= field.fieldValidateRulesMax %>" })<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.date()<% } else if (field.fieldIsEnum) { %>z.string()<% if (!isRequired) { %>.transform(val => val === "__none__" ? undefined : val)<% } %><% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
 <%_ } _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
@@ -163,7 +163,7 @@ _%>
 <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
       <%= fieldName %>: new Date(),
 <% } else if (field.fieldIsEnum) { %>
-      <%= fieldName %>: "<%= field.enumValues[0].name %>",
+      <%= fieldName %>: <% if (!isRequired) { %>undefined<% } else { %>"<%= field.enumValues[0].name %>"<% } %>,
 <% } else { %>
       <%= fieldName %>: "",
 <% } %>
@@ -223,7 +223,7 @@ _%>
 <% if (field.fieldTypeNumeric) { %>
       <%= fieldName %>: data.<%= fieldName %> ? Number(data.<%= fieldName %>) : undefined,
 <% } else { %>
-      <%= fieldName %>: data.<%= fieldName %>,
+      <%= fieldName %>: data.<%= fieldName %> === "__none__" ? undefined : data.<%= fieldName %>,
 <% } %>
 <%_ } _%>
 <%_ for (const rel of persistableRelationships) { 
@@ -343,8 +343,11 @@ _%>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <% if (!isRequired) { %>
+                  <SelectItem value="__none__">None</SelectItem>
+                  <% } %>
                   <% for (const enumValue of field.enumValues) { %>
-                  <SelectItem value="<%= enumValue.name %>"><%= enumValue.name %></SelectItem>
+                  <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>"><%= enumValue.name || enumValue.value || 'Empty' %></SelectItem>
                   <% } %>
                 </SelectContent>
               </Select>

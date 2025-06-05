@@ -271,13 +271,13 @@ export function CallForm({ id }: CallFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      callDateTime: data.callDateTime,
+      callDateTime: data.callDateTime === "__none__" ? undefined : data.callDateTime,
 
 
-      status: data.status,
+      status: data.status === "__none__" ? undefined : data.status,
 
 
-      isActive: data.isActive,
+      isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
 
       assignedTo: data.assignedTo ? { id: data.assignedTo } : null,

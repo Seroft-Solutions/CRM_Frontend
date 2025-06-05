@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -62,6 +65,8 @@ export function PriorityTable() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
@@ -186,22 +191,90 @@ export function PriorityTable() {
   const totalItems = countData || 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
+  // Handle row selection
+  const handleSelectRow = (id: number) => {
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedRows(newSelected);
+  };
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (data && selectedRows.size === data.length) {
+      setSelectedRows(new Set());
+    } else if (data) {
+      setSelectedRows(new Set(data.map(item => item.id)));
+    }
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    setShowBulkDeleteDialog(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    const deletePromises = Array.from(selectedRows).map(id => 
+      new Promise<void>((resolve, reject) => {
+        deleteEntity({ id }, {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error)
+        });
+      })
+    );
+
+    try {
+      await Promise.all(deletePromises);
+      toast.success(`${selectedRows.size} priorities deleted successfully`);
+      setSelectedRows(new Set());
+      refetch();
+    } catch (error) {
+      toast.error('Some deletions failed');
+    }
+    setShowBulkDeleteDialog(false);
+  };
+
   // Check if any filters are active
   const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
+  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
   return (
     <div className="space-y-4">
-      {/* Search and Filter Component */}
-      <PrioritySearchAndFilters 
-        searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
-        onClearAll={clearAllFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+      {/* Bulk Actions */}
+      {selectedRows.size > 0 && (
+        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
+          </span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            className="ml-auto"
+          >
+            Delete Selected
+          </Button>
+        </div>
+      )}
+
+      {/* Clear Filters Button */}
+      {hasActiveFilters && (
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+            Clear All Filters
+          </Button>
+        </div>
+      )}
 
       {/* Data Table */}
       <div className="overflow-x-auto rounded-md border">
@@ -209,6 +282,11 @@ export function PriorityTable() {
           <PriorityTableHeader 
             onSort={handleSort}
             getSortIcon={getSortIcon}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            isAllSelected={isAllSelected}
+            isIndeterminate={isIndeterminate}
+            onSelectAll={handleSelectAll}
           />
           <TableBody>
             {isLoading ? (
@@ -227,6 +305,8 @@ export function PriorityTable() {
                   priority={priority}
                   onDelete={handleDelete}
                   isDeleting={isDeleting}
+                  isSelected={selectedRows.has(priority.id || 0)}
+                  onSelect={handleSelectRow}
                 />
               ))
             ) : (
@@ -299,6 +379,28 @@ export function PriorityTable() {
           </PaginationContent>
         </Pagination>
       )}
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              selected priorities and remove their data from the server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

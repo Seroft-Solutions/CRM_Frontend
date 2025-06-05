@@ -157,14 +157,14 @@ export function ChannelTypeSearchAndFilters({
                       isActive
                     </label>
                     <Select
-                      value={filters["isActive"] as string || ""}
-                      onValueChange={(value) => onFilterChange("isActive", value || undefined)}
+                      value={filters["isActive"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="All" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All</SelectItem>
+                        <SelectItem value="__all__">All</SelectItem>
                         <SelectItem value="true">Yes</SelectItem>
                         <SelectItem value="false">No</SelectItem>
                       </SelectContent>

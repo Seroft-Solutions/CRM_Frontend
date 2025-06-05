@@ -1,7 +1,16 @@
 "use client";
 
-import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   TableHead,
   TableHeader,
@@ -15,6 +24,12 @@ const displayableRelationships = relationships.filter(rel =>
   rel.otherEntityField
 );
 
+// Organize fields by type for better filter organization
+const enumFields = fields.filter(f => f.fieldIsEnum);
+const booleanFields = fields.filter(f => f.fieldTypeBoolean);
+const dateFields = fields.filter(f => f.fieldTypeLocalDate || f.fieldTypeTimed);
+const textFields = fields.filter(f => !f.fieldIsEnum && !f.fieldTypeBoolean && !f.fieldTypeLocalDate && !f.fieldTypeTimed && !f.fieldTypeBinary);
+
 // Function to convert camelCase to Title Case
 function camelToTitleCase(str) {
   return str
@@ -24,12 +39,29 @@ function camelToTitleCase(str) {
 }
 %>
 
+interface FilterState {
+  [key: string]: string | string[] | Date | undefined;
+}
+
 interface <%= entityClass %>TableHeaderProps {
   onSort: (column: string) => void;
   getSortIcon: (column: string) => string;
+  filters: FilterState;
+  onFilterChange: (column: string, value: any) => void;
+  isAllSelected: boolean;
+  isIndeterminate: boolean;
+  onSelectAll: () => void;
 }
 
-export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entityClass %>TableHeaderProps) {
+export function <%= entityClass %>TableHeader({ 
+  onSort, 
+  getSortIcon,
+  filters,
+  onFilterChange,
+  isAllSelected,
+  isIndeterminate,
+  onSelectAll
+}: <%= entityClass %>TableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
@@ -44,7 +76,17 @@ export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entit
 
   return (
     <TableHeader>
+      {/* Header Row with Sort Buttons */}
       <TableRow>
+        <TableHead className="w-12 px-4 py-3">
+          <Checkbox
+            checked={isAllSelected}
+            onCheckedChange={onSelectAll}
+            ref={(el) => {
+              if (el) el.indeterminate = isIndeterminate;
+            }}
+          />
+        </TableHead>
         <% for (field of fields) { %>
         <TableHead className="whitespace-nowrap px-4 py-3">
           <Button
@@ -73,6 +115,83 @@ export function <%= entityClass %>TableHeader({ onSort, getSortIcon }: <%= entit
         </TableHead>
         <% } %>
         <TableHead className="w-[120px] sticky right-0 bg-background px-4 py-3">Actions</TableHead>
+      </TableRow>
+      
+      {/* Filter Row */}
+      <TableRow className="border-b">
+        <TableHead className="w-12 px-4 py-2">
+          {/* Empty cell for checkbox column */}
+        </TableHead>
+        <% for (field of fields) { %>
+        <TableHead className="px-4 py-2">
+          <% if (field.fieldIsEnum) { %>
+          <Select
+            value={filters["<%= field.fieldName %>"] as string || "__all__"}
+            onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All</SelectItem>
+              <% for (const enumValue of field.enumValues || []) { %>
+              <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>">
+                <%= enumValue.name || enumValue.value || 'Empty' %>
+              </SelectItem>
+              <% } %>
+            </SelectContent>
+          </Select>
+          <% } else if (field.fieldTypeBoolean) { %>
+          <Select
+            value={filters["<%= field.fieldName %>"] as string || "__all__"}
+            onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All</SelectItem>
+              <SelectItem value="true">Yes</SelectItem>
+              <SelectItem value="false">No</SelectItem>
+            </SelectContent>
+          </Select>
+          <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
+          <Input
+            type="date"
+            className="h-8 text-xs"
+            value={filters["<%= field.fieldName %>"] as string || ""}
+            onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
+          />
+          <% } else { %>
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs"
+            value={filters["<%= field.fieldName %>"] as string || ""}
+            onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
+          />
+          <% } %>
+        </TableHead>
+        <% } %>
+        
+        <% for (const rel of displayableRelationships) { 
+          const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+        %>
+        <TableHead className="px-4 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs"
+            value={filters["<%= rel.relationshipName %>.<%=displayField%>"] as string || ""}
+            onChange={(e) => onFilterChange("<%= rel.relationshipName %>.<%=displayField%>", e.target.value || undefined)}
+          />
+        </TableHead>
+        <% } %>
+        
+        <TableHead className="w-[120px] sticky right-0 bg-background px-4 py-2">
+          <div className="flex items-center gap-1">
+            <Filter className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Filters</span>
+          </div>
+        </TableHead>
       </TableRow>
     </TableHeader>
   );

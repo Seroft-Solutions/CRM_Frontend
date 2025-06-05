@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -15,11 +16,19 @@ interface SourceTableRowProps {
   source: SourceDTO;
   onDelete: (id: number) => void;
   isDeleting: boolean;
+  isSelected: boolean;
+  onSelect: (id: number) => void;
 }
 
-export function SourceTableRow({ source, onDelete, isDeleting }: SourceTableRowProps) {
+export function SourceTableRow({ source, onDelete, isDeleting, isSelected, onSelect }: SourceTableRowProps) {
   return (
     <TableRow>
+      <TableCell className="w-12 px-4 py-3">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => source.id && onSelect(source.id)}
+        />
+      </TableCell>
       
       <TableCell className="whitespace-nowrap px-4 py-3">
         

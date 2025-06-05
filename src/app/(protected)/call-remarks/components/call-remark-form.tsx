@@ -136,10 +136,10 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      remark: data.remark,
+      remark: data.remark === "__none__" ? undefined : data.remark,
 
 
-      dateTime: data.dateTime,
+      dateTime: data.dateTime === "__none__" ? undefined : data.dateTime,
 
 
       call: data.call ? { id: data.call } : null,
