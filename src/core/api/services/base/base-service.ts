@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { sessionEventEmitter } from '@/lib/session-events';
 
 export interface BaseServiceConfig {
   baseURL: string;
@@ -102,9 +103,17 @@ export class BaseService {
     this.instance.interceptors.response.use(
       (response) => response,
       (error) => {
-        // If unauthorized, invalidate token cache
+        // If unauthorized, invalidate token cache and emit session event
         if (error.response?.status === 401) {
           this.tokenCache.invalidate();
+          
+          // Emit session expired event instead of immediate redirect
+          if (typeof window !== 'undefined') {
+            sessionEventEmitter.emit('session-expired', {
+              message: 'Your session has expired',
+              statusCode: 401
+            });
+          }
         }
         return this.handleError(error);
       }
@@ -178,79 +187,27 @@ export class BaseService {
 
   // Generic HTTP methods with improved error handling
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.instance.get<T>(url, config);
-      return response.data;
-    } catch (error) {
-      // Handle authentication errors gracefully
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // Redirect to home page or handle auth error
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
-    }
+    const response = await this.instance.get<T>(url, config);
+    return response.data;
   }
 
   async post<T>(url: string, data?: RequestData, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.instance.post<T>(url, data, config);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
-    }
+    const response = await this.instance.post<T>(url, data, config);
+    return response.data;
   }
 
   async put<T>(url: string, data?: RequestData, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.instance.put<T>(url, data, config);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
-    }
+    const response = await this.instance.put<T>(url, data, config);
+    return response.data;
   }
 
   async patch<T>(url: string, data?: RequestData, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.instance.patch<T>(url, data, config);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
-    }
+    const response = await this.instance.patch<T>(url, data, config);
+    return response.data;
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.instance.delete<T>(url, config);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
-        throw new Error('Authentication required');
-      }
-      throw error;
-    }
+    const response = await this.instance.delete<T>(url, config);
+    return response.data;
   }
 }
