@@ -23,55 +23,55 @@ interface CallCategoryTableRowProps {
 export function CallCategoryTableRow({ callCategory, onDelete, isDeleting, isSelected, onSelect }: CallCategoryTableRowProps) {
   return (
     <TableRow>
-      <TableCell className="w-12 px-4 py-3">
+      <TableCell className="w-12 px-3 py-2">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => callCategory.id && onSelect(callCategory.id)}
         />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {callCategory.name}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {callCategory.description}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {callCategory.isActive ? "Yes" : "No"}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {callCategory.remark}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {callCategory.lastModifiedDate ? format(new Date(callCategory.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       
       
-      <TableCell className="sticky right-0 bg-background px-4 py-3">
+      <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">
           <InlinePermissionGuard requiredPermission="callCategory:read">
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
             >
               <Link href={`/call-categories/${callCategory.id}`}>
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3.5 w-3.5" />
                 <span className="sr-only">View</span>
               </Link>
             </Button>
@@ -81,10 +81,10 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting, isSel
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
             >
               <Link href={`/call-categories/${callCategory.id}/edit`}>
-                <Pencil className="h-4 w-4" />
+                <Pencil className="h-3.5 w-3.5" />
                 <span className="sr-only">Edit</span>
               </Link>
             </Button>
@@ -93,11 +93,11 @@ export function CallCategoryTableRow({ callCategory, onDelete, isDeleting, isSel
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-destructive"
+              className="h-7 w-7 p-0 text-destructive"
               onClick={() => callCategory.id && onDelete(callCategory.id)}
               disabled={isDeleting || !callCategory.id}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
               <span className="sr-only">Delete</span>
             </Button>
           </InlinePermissionGuard>

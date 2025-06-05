@@ -23,49 +23,49 @@ interface ChannelTypeTableRowProps {
 export function ChannelTypeTableRow({ channelType, onDelete, isDeleting, isSelected, onSelect }: ChannelTypeTableRowProps) {
   return (
     <TableRow>
-      <TableCell className="w-12 px-4 py-3">
+      <TableCell className="w-12 px-3 py-2">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => channelType.id && onSelect(channelType.id)}
         />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {channelType.name}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {channelType.description}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {channelType.commissionRate}
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-4 py-3">
+      <TableCell className="whitespace-nowrap px-3 py-2">
         
         {channelType.isActive ? "Yes" : "No"}
         
       </TableCell>
       
       
-      <TableCell className="sticky right-0 bg-background px-4 py-3">
+      <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">
           <InlinePermissionGuard requiredPermission="channelType:read">
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
             >
               <Link href={`/channel-types/${channelType.id}`}>
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3.5 w-3.5" />
                 <span className="sr-only">View</span>
               </Link>
             </Button>
@@ -75,10 +75,10 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting, isSelec
               variant="ghost"
               size="sm"
               asChild
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
             >
               <Link href={`/channel-types/${channelType.id}/edit`}>
-                <Pencil className="h-4 w-4" />
+                <Pencil className="h-3.5 w-3.5" />
                 <span className="sr-only">Edit</span>
               </Link>
             </Button>
@@ -87,11 +87,11 @@ export function ChannelTypeTableRow({ channelType, onDelete, isDeleting, isSelec
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-destructive"
+              className="h-7 w-7 p-0 text-destructive"
               onClick={() => channelType.id && onDelete(channelType.id)}
               disabled={isDeleting || !channelType.id}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
               <span className="sr-only">Delete</span>
             </Button>
           </InlinePermissionGuard>
