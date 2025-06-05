@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useCallback, useRef } from 'react'
 import { useActivityTracker } from './use-activity-tracker'
+import { refreshSession } from '@/lib/token-refresh'
 
 interface SessionMonitorOptions {
   checkInterval?: number // in milliseconds
@@ -86,13 +87,13 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
 
         // Auto-refresh session if user is active and token is about to expire
         if (autoRefreshOnActivity && !isIdle && minutesUntilExpiry <= warningThreshold) {
-          console.log('User is active, auto-refreshing session')
-          try {
-            await update()
-            console.log('Session auto-refreshed due to activity')
+          console.log('User is active, auto-refreshing session via Keycloak')
+          const refreshSuccess = await refreshSession()
+          if (refreshSuccess) {
+            console.log('Keycloak session auto-refreshed due to activity')
             return
-          } catch (error) {
-            console.error('Auto-refresh failed:', error)
+          } else {
+            console.error('Auto-refresh failed, will show warning')
           }
         }
 
