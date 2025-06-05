@@ -20,10 +20,11 @@ export default function ChannelTypePage() {
       unauthorizedDescription="You don't have permission to view channel types."
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <PageHeader>
-            <PageTitle>Channel Types</PageTitle>
-          </PageHeader>
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+            <h1 className="text-2xl font-bold text-gray-900">Channel Types</h1>
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
