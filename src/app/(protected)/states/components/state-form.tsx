@@ -124,10 +124,10 @@ export function StateForm({ id }: StateFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      name: data.name,
+      name: data.name === "__none__" ? undefined : data.name,
 
 
-      country: data.country,
+      country: data.country === "__none__" ? undefined : data.country,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {

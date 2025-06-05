@@ -138,16 +138,16 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      name: data.name,
+      name: data.name === "__none__" ? undefined : data.name,
 
 
-      description: data.description,
+      description: data.description === "__none__" ? undefined : data.description,
 
 
       commissionRate: data.commissionRate ? Number(data.commissionRate) : undefined,
 
 
-      isActive: data.isActive,
+      isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
       // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {

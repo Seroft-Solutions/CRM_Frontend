@@ -163,16 +163,16 @@ export function <%= entityClass %>SearchAndFilters({
                       <%= field.fieldNameHumanized || field.fieldName %>
                     </label>
                     <Select
-                      value={filters["<%= field.fieldName %>"] as string || ""}
-                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value || undefined)}
+                      value={filters["<%= field.fieldName %>"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="All" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All</SelectItem>
+                        <SelectItem value="__all__">All</SelectItem>
                         <% for (const enumValue of field.enumValues || []) { %>
-                        <SelectItem value="<%= enumValue.name %>"><%= enumValue.name %></SelectItem>
+                        <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>"><%= enumValue.name || enumValue.value || 'Empty' %></SelectItem>
                         <% } %>
                       </SelectContent>
                     </Select>
@@ -195,14 +195,14 @@ export function <%= entityClass %>SearchAndFilters({
                       <%= field.fieldNameHumanized || field.fieldName %>
                     </label>
                     <Select
-                      value={filters["<%= field.fieldName %>"] as string || ""}
-                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value || undefined)}
+                      value={filters["<%= field.fieldName %>"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="All" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All</SelectItem>
+                        <SelectItem value="__all__">All</SelectItem>
                         <SelectItem value="true">Yes</SelectItem>
                         <SelectItem value="false">No</SelectItem>
                       </SelectContent>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -21,11 +22,19 @@ interface <%= entityClass %>TableRowProps {
   <%= entityInstance %>: <%= entityClass %>DTO;
   onDelete: (id: number) => void;
   isDeleting: boolean;
+  isSelected: boolean;
+  onSelect: (id: number) => void;
 }
 
-export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, isDeleting }: <%= entityClass %>TableRowProps) {
+export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, isDeleting, isSelected, onSelect }: <%= entityClass %>TableRowProps) {
   return (
     <TableRow>
+      <TableCell className="w-12 px-4 py-3">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => <%= entityInstance %>.<%= primaryKey.name %> && onSelect(<%= entityInstance %>.<%= primaryKey.name %>)}
+        />
+      </TableCell>
       <% for (field of fields) { 
            const fieldName = field.fieldName;
            const fieldType = field.fieldType; %>

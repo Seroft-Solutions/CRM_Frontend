@@ -129,7 +129,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      name: data.name,
+      name: data.name === "__none__" ? undefined : data.name,
 
 
       state: data.state ? { id: data.state } : null,

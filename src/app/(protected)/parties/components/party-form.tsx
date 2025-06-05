@@ -225,34 +225,34 @@ export function PartyForm({ id }: PartyFormProps) {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
-      name: data.name,
+      name: data.name === "__none__" ? undefined : data.name,
 
 
-      mobile: data.mobile,
+      mobile: data.mobile === "__none__" ? undefined : data.mobile,
 
 
-      email: data.email,
+      email: data.email === "__none__" ? undefined : data.email,
 
 
-      whatsApp: data.whatsApp,
+      whatsApp: data.whatsApp === "__none__" ? undefined : data.whatsApp,
 
 
-      contactPerson: data.contactPerson,
+      contactPerson: data.contactPerson === "__none__" ? undefined : data.contactPerson,
 
 
-      address1: data.address1,
+      address1: data.address1 === "__none__" ? undefined : data.address1,
 
 
-      address2: data.address2,
+      address2: data.address2 === "__none__" ? undefined : data.address2,
 
 
-      address3: data.address3,
+      address3: data.address3 === "__none__" ? undefined : data.address3,
 
 
-      isActive: data.isActive,
+      isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
 
-      remark: data.remark,
+      remark: data.remark === "__none__" ? undefined : data.remark,
 
 
       source: data.source ? { id: data.source } : null,
