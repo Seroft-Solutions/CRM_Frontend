@@ -57,8 +57,8 @@ export function ProductTableHeader({
   return (
     <TableHeader>
       {/* Header Row with Sort Buttons */}
-      <TableRow className="border-b-2 border-gray-100 bg-gray-50">
-        <TableHead className="w-12 px-4 py-4">
+      <TableRow className="border-b border-gray-200 bg-gray-50">
+        <TableHead className="w-12 px-3 py-2">
           <Checkbox
             checked={isAllSelected}
             onCheckedChange={onSelectAll}
@@ -68,11 +68,11 @@ export function ProductTableHeader({
           />
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("name")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Name
             <div className="text-gray-400">
@@ -81,11 +81,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("code")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Code
             <div className="text-gray-400">
@@ -94,11 +94,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("description")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Description
             <div className="text-gray-400">
@@ -107,11 +107,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("category")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Category
             <div className="text-gray-400">
@@ -120,11 +120,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("basePrice")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Base Price
             <div className="text-gray-400">
@@ -133,11 +133,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("minPrice")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Min Price
             <div className="text-gray-400">
@@ -146,11 +146,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("maxPrice")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Max Price
             <div className="text-gray-400">
@@ -159,11 +159,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("isActive")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Is Active
             <div className="text-gray-400">
@@ -172,11 +172,11 @@ export function ProductTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-4 py-4">
+        <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
             onClick={() => onSort("remark")}
-            className="flex items-center gap-2 h-auto px-2 py-1 font-semibold text-gray-700 hover:text-gray-900 hover:bg-white rounded transition-colors"
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Remark
             <div className="text-gray-400">
@@ -186,9 +186,9 @@ export function ProductTableHeader({
         </TableHead>
         
         
-        <TableHead className="w-[140px] sticky right-0 bg-gray-50 px-4 py-4 border-l border-gray-200">
-          <div className="flex items-center gap-2 font-semibold text-gray-700">
-            <Filter className="h-4 w-4 text-gray-500" />
+        <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
+          <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
+            <Filter className="h-3.5 w-3.5 text-gray-500" />
             <span>Actions</span>
           </div>
         </TableHead>
@@ -196,94 +196,94 @@ export function ProductTableHeader({
       
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-4 py-3">
+        <TableHead className="w-12 px-3 py-2">
           {/* Empty cell for checkbox column */}
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["name"] as string || ""}
             onChange={(e) => onFilterChange("name", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["code"] as string || ""}
             onChange={(e) => onFilterChange("code", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["description"] as string || ""}
             onChange={(e) => onFilterChange("description", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["category"] as string || ""}
             onChange={(e) => onFilterChange("category", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["basePrice"] as string || ""}
             onChange={(e) => onFilterChange("basePrice", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["minPrice"] as string || ""}
             onChange={(e) => onFilterChange("minPrice", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["maxPrice"] as string || ""}
             onChange={(e) => onFilterChange("maxPrice", e.target.value || undefined)}
           />
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Select
             value={filters["isActive"] as string || "__all__"}
             onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
           >
-            <SelectTrigger className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+            <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
@@ -295,11 +295,11 @@ export function ProductTableHeader({
           
         </TableHead>
         
-        <TableHead className="px-4 py-3">
+        <TableHead className="px-3 py-2">
           
           <Input
             placeholder="Filter..."
-            className="h-9 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["remark"] as string || ""}
             onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
           />
@@ -309,9 +309,9 @@ export function ProductTableHeader({
         
         
         
-        <TableHead className="w-[140px] sticky right-0 bg-white px-4 py-3 border-l border-gray-200">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-500" />
+        <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
+          <div className="flex items-center gap-1.5">
+            <Filter className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs font-medium text-gray-600">Filters</span>
           </div>
         </TableHead>
