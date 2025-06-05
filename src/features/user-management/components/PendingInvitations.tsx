@@ -26,6 +26,7 @@ import {
   UserCheck,
   Filter
 } from 'lucide-react';
+import { RefreshButton } from './LoadingButton';
 import { usePendingInvitations, useOrganizationContext } from '../hooks';
 import type { InvitationFilters, PendingInvitation } from '../types';
 import { formatDistanceToNow } from 'date-fns';
@@ -87,9 +88,9 @@ export function PendingInvitations({ className }: PendingInvitationsProps) {
         <CardContent className="p-6">
           <div className="text-center">
             <p className="text-destructive">Failed to load pending invitations</p>
-            <Button onClick={() => refetch()} variant="outline" className="mt-2">
+            <RefreshButton onClick={() => refetch()} className="mt-2">
               Try Again
-            </Button>
+            </RefreshButton>
           </div>
         </CardContent>
       </Card>
