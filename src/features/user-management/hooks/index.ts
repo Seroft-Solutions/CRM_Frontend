@@ -10,6 +10,10 @@ import { userManagementService } from '../services/user-management.service';
 import type {
   OrganizationUser,
   UserInvitation,
+  UserInvitationWithGroups,
+  PendingInvitation,
+  InvitationListResponse,
+  InvitationFilters,
   RoleAssignment,
   GroupAssignment,
   UserFilters,
@@ -29,6 +33,8 @@ export const USER_MANAGEMENT_QUERY_KEYS = {
   availableRoles: ['availableRoles'],
   availableGroups: ['availableGroups'],
   userAvailableRoles: (userId: string) => ['userAvailableRoles', userId],
+  pendingInvitations: (orgId: string, filters?: InvitationFilters) =>
+    ['pendingInvitations', orgId, filters],
 } as const;
 
 // Hook for organization users list
@@ -116,7 +122,65 @@ export function useAvailableGroups() {
   };
 }
 
-// Hook for user invitation
+// ENHANCED: Hook for pending invitations
+export function usePendingInvitations(organizationId: string, filters?: InvitationFilters) {
+  const {
+    data: invitationResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: USER_MANAGEMENT_QUERY_KEYS.pendingInvitations(organizationId, filters),
+    queryFn: () => userManagementService.getPendingInvitations(organizationId, filters),
+    enabled: !!organizationId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  return {
+    invitations: invitationResponse?.invitations || [],
+    totalCount: invitationResponse?.totalCount || 0,
+    currentPage: invitationResponse?.currentPage || 1,
+    totalPages: invitationResponse?.totalPages || 1,
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
+// ENHANCED: Hook for user invitation with groups
+export function useInviteUserWithGroups() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (invitation: UserInvitationWithGroups) => 
+      userManagementService.inviteUserWithGroups(invitation),
+    onSuccess: (result, variables) => {
+      if (result.success) {
+        toast.success(result.message);
+        // Invalidate both users and invitations
+        queryClient.invalidateQueries({
+          queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: USER_MANAGEMENT_QUERY_KEYS.pendingInvitations(variables.organizationId),
+        });
+      } else {
+        toast.error(result.message);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to invite user: ${error.message}`);
+    },
+  });
+
+  return {
+    inviteUserWithGroups: mutation.mutate,
+    isInviting: mutation.isPending,
+    error: mutation.error,
+  };
+}
+
+// Hook for user invitation (enhanced backward compatibility)
 export function useInviteUser() {
   const queryClient = useQueryClient();
 
@@ -125,9 +189,11 @@ export function useInviteUser() {
       userManagementService.inviteUser(invitation),
     onSuccess: (_, variables) => {
       toast.success('User invited successfully');
-      // Invalidate and refetch organization users
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: USER_MANAGEMENT_QUERY_KEYS.pendingInvitations(variables.organizationId),
       });
     },
     onError: (error: Error) => {
@@ -290,6 +356,62 @@ export function useOrganizationContext() {
     hasMultipleOrganizations: (session?.user?.organizations?.length || 0) > 1,
     switchOrganization,
     setOrganizationId, // Keep for backward compatibility
+  };
+}
+
+// ENHANCED: Hook for user groups management
+export function useUserGroups(userId: string) {
+  const {
+    data: userGroupsData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['userGroups', userId],
+    queryFn: () => userManagementService.getUserGroups(userId),
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  return {
+    user: userGroupsData?.user,
+    assignedGroups: userGroupsData?.assignedGroups || [],
+    availableGroups: userGroupsData?.availableGroups || [],
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
+// ENHANCED: Hook for assigning user groups
+export function useAssignUserGroups() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ userId, groupIds, action }: { 
+      userId: string; 
+      groupIds: string[]; 
+      action: 'assign' | 'unassign' 
+    }) => userManagementService.assignUserGroups(userId, groupIds, action),
+    onSuccess: (result, variables) => {
+      if (result.success) {
+        toast.success(result.message);
+        queryClient.invalidateQueries({
+          queryKey: ['userGroups', variables.userId],
+        });
+      } else {
+        toast.error(result.message);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to assign groups: ${error.message}`);
+    },
+  });
+
+  return {
+    assignUserGroups: mutation.mutate,
+    isAssigning: mutation.isPending,
+    error: mutation.error,
   };
 }
 
