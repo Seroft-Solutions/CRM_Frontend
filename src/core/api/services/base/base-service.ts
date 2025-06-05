@@ -87,6 +87,14 @@ export class BaseService {
   }
 
   private setupInterceptors() {
+    // Listen for token refresh events
+    if (typeof window !== 'undefined') {
+      window.addEventListener('token-refreshed', ((event: CustomEvent) => {
+        console.log('Token refreshed, clearing cache')
+        this.tokenCache.invalidate()
+      }) as EventListener)
+    }
+
     // Request interceptor for authentication
     this.instance.interceptors.request.use(
       async (config) => {

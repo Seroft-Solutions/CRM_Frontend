@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 interface UseActivityTrackerOptions {
   timeout?: number // ms of inactivity before considered idle
@@ -16,6 +16,9 @@ export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
   const [isIdle, setIsIdle] = useState(false)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const timeoutRef = useRef<NodeJS.Timeout>()
+  
+  // Memoize events array to prevent re-renders
+  const memoizedEvents = useMemo(() => events, [events.join(',')])
 
   const resetIdleTimer = useCallback(() => {
     const now = Date.now()
@@ -42,7 +45,7 @@ export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
     resetIdleTimer()
 
     // Add event listeners
-    events.forEach(event => {
+    memoizedEvents.forEach(event => {
       document.addEventListener(event, handleActivity, true)
     })
 
@@ -51,11 +54,11 @@ export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
-      events.forEach(event => {
+      memoizedEvents.forEach(event => {
         document.removeEventListener(event, handleActivity, true)
       })
     }
-  }, [events, handleActivity, resetIdleTimer])
+  }, [memoizedEvents, handleActivity]) // Removed resetIdleTimer from deps
 
   return {
     isIdle,

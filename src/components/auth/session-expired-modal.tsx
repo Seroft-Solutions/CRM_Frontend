@@ -51,7 +51,13 @@ export function SessionExpiredModal({
   const handleRefreshSession = async () => {
     setIsReauthorizing(true)
     try {
-      await refreshSession()
+      const { refreshSession } = await import('@/lib/token-refresh')
+      const success = await refreshSession()
+      if (success) {
+        onClose()
+      } else {
+        await handleContinue()
+      }
     } catch (error) {
       console.error('Session refresh failed:', error)
       await handleContinue()
