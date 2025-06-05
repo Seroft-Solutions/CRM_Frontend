@@ -34,7 +34,7 @@ export const sidebarItems: SidebarItem[] = [
     label: 'Business Partners',
     icon: Briefcase,
     children: [
-      { key: 'registerPartner', label: 'Register Partner', path: '/business-partners' },
+      { key: 'invitePartner', label: 'Invite Partner', path: '/invite-partners' },
     ],
   },
   {
