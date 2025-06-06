@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, X, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, X, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { InlinePermissionGuard } from "@/components/auth/permission-guard";
 
 interface PaginatedRelationshipComboboxProps {
   value?: number | number[];
@@ -33,6 +34,11 @@ interface PaginatedRelationshipComboboxProps {
   searchHook?: (params: any, options?: any) => any;
   entityName: string;
   searchField?: string;
+  // Add new entity functionality
+  canCreate?: boolean;
+  createEntityPath?: string;
+  createPermission?: string;
+  onEntityCreated?: (entityId: number) => void;
 }
 
 export function PaginatedRelationshipCombobox({
@@ -47,6 +53,10 @@ export function PaginatedRelationshipCombobox({
   searchHook,
   entityName,
   searchField = "name",
+  canCreate = false,
+  createEntityPath,
+  createPermission,
+  onEntityCreated,
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -226,9 +236,61 @@ export function PaginatedRelationshipCombobox({
     }
   };
 
+  // Handle create new entity (IMPROVED with localStorage)
+  const handleCreateNew = () => {
+    if (createEntityPath) {
+      // Store current form state and navigate to create form
+      const currentUrl = window.location.href;
+      console.log('Saving return context for relationship creation:', { currentUrl, entityName });
+      
+      localStorage.setItem('returnUrl', currentUrl);
+      localStorage.setItem('relationshipFieldInfo', JSON.stringify({
+        entityName,
+        displayField,
+        multiple
+      }));
+      
+      // Trigger form state save before navigation
+      if (onEntityCreated) {
+        const saveFormEvent = new CustomEvent('saveFormState');
+        window.dispatchEvent(saveFormEvent);
+      }
+      
+      // Small delay to ensure form state is saved
+      setTimeout(() => {
+        console.log('Navigating to create entity:', createEntityPath);
+        window.location.href = createEntityPath;
+      }, 200);
+    }
+  };
+
+  // Check for newly created entity on component mount
+  React.useEffect(() => {
+    const newEntityId = sessionStorage.getItem('newlyCreatedEntityId');
+    const relationshipInfo = sessionStorage.getItem('relationshipFieldInfo');
+    
+    if (newEntityId && relationshipInfo && onEntityCreated) {
+      try {
+        const info = JSON.parse(relationshipInfo);
+        if (info.entityName === entityName) {
+          onEntityCreated(parseInt(newEntityId));
+          
+          // Clean up session storage
+          sessionStorage.removeItem('newlyCreatedEntityId');
+          sessionStorage.removeItem('relationshipFieldInfo');
+          sessionStorage.removeItem('returnUrl');
+        }
+      } catch (error) {
+        console.error('Error processing newly created entity:', error);
+      }
+    }
+  }, [entityName, onEntityCreated]);
+
   return (
     <div className={cn("w-full", className)}>
-      <Popover open={open} onOpenChange={setOpen}>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -313,6 +375,24 @@ export function PaginatedRelationshipCombobox({
           </Command>
         </PopoverContent>
       </Popover>
+      </div>
+      
+      {/* Add New Entity Button */}
+      {canCreate && createEntityPath && createPermission && (
+        <InlinePermissionGuard requiredPermission={createPermission}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleCreateNew}
+            className="shrink-0"
+            title={`Create new ${entityName.toLowerCase().slice(0, -1)}`}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </InlinePermissionGuard>
+      )}
+      </div>
 
       {/* Display selected items for multiple selection */}
       {multiple && Array.isArray(value) && value.length > 0 && (

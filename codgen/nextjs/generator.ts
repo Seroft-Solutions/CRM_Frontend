@@ -353,6 +353,7 @@ export class NextJsGenerator {
           entityInstancePlural: otherEntityInstancePlural,
           entityFileName: otherEntityFileName,
           entityNamePlural: otherEntityInstancePlural,
+          routePath: pluralize(otherEntityFileName), // Add pluralized route path
           primaryKey: { name: 'id' }, // Default primary key
           builtInUser: Boolean(isBuiltInUser),
         }

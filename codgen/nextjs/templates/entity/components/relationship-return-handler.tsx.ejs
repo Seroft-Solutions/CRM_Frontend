@@ -1,0 +1,56 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+interface RelationshipReturnHandlerProps {
+  entityId?: number;
+  entityName: string;
+  onSuccess?: () => void;
+}
+
+/**
+ * Handles return navigation after creating a new related entity
+ * Sets the newly created entity ID in session storage for auto-selection
+ */
+export function RelationshipReturnHandler({ 
+  entityId, 
+  entityName,
+  onSuccess
+}: RelationshipReturnHandlerProps) {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if we just created an entity and need to return
+    const returnUrl = sessionStorage.getItem('returnUrl');
+    const relationshipInfo = sessionStorage.getItem('relationshipFieldInfo');
+    
+    if (entityId && returnUrl && relationshipInfo) {
+      try {
+        // Store the newly created entity ID for auto-selection
+        sessionStorage.setItem('newlyCreatedEntityId', entityId.toString());
+        
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
+        
+        // Navigate back to the original form
+        router.push(returnUrl);
+        
+        // Clean up session storage after navigation
+        setTimeout(() => {
+          sessionStorage.removeItem('returnUrl');
+          sessionStorage.removeItem('relationshipFieldInfo');
+        }, 100);
+      } catch (error) {
+        console.error('Error handling relationship return:', error);
+        // Fallback: just clean up and stay on current page
+        sessionStorage.removeItem('returnUrl');
+        sessionStorage.removeItem('relationshipFieldInfo');
+      }
+    }
+  }, [entityId, router, onSuccess]);
+
+  return null; // This component doesn't render anything
+}

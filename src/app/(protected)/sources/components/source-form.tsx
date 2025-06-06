@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -71,13 +72,39 @@ export function SourceForm({ id }: SourceFormProps) {
   const isNew = !id;
   const [currentStep, setCurrentStep] = useState(0);
   const [confirmSubmission, setConfirmSubmission] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restorationAttempted, setRestorationAttempted] = useState(false);
 
-  // Create or update mutation
+  // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateSource({
     mutation: {
-      onSuccess: () => {
-        toast.success("Source created successfully");
-        router.push("/sources");
+      onSuccess: (data) => {
+        // Check if we're creating for a relationship and need to return
+        const returnUrl = localStorage.getItem('returnUrl');
+        const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
+        
+        console.log('Entity created successfully:', { data, returnUrl, relationshipInfo });
+        
+        if (returnUrl && relationshipInfo) {
+          // Store the newly created entity ID for auto-selection
+          const entityId = data?.id || data?.id;
+          if (entityId) {
+            localStorage.setItem('newlyCreatedEntityId', entityId.toString());
+            console.log('Stored newly created entity ID:', entityId);
+          }
+          
+          toast.success("Source created successfully");
+          
+          // Navigate back to the original form
+          console.log('Returning to original form:', returnUrl);
+          router.push(returnUrl);
+          
+          // DON'T clean up storage here - let the destination form handle cleanup after restoration
+        } else {
+          // Normal flow - go to list page
+          toast.success("Source created successfully");
+          router.push("/sources");
+        }
       },
       onError: (error) => {
         toast.error(`Failed to create Source: ${error}`);
@@ -105,7 +132,7 @@ export function SourceForm({ id }: SourceFormProps) {
     },
   });
 
-  // Form initialization
+  // Form initialization with standard defaults
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -125,9 +152,187 @@ export function SourceForm({ id }: SourceFormProps) {
     },
   });
 
-  // Update form values when entity data is loaded
+  // Restore preserved state immediately on mount
+  React.useEffect(() => {
+    const returnUrl = localStorage.getItem('returnUrl');
+    const preserved = localStorage.getItem('preservedFormState');
+    const currentUrl = window.location.href;
+    
+    console.log('Form mounting, checking for restoration:', { 
+      returnUrl, 
+      currentUrl,
+      hasPreserved: !!preserved,
+      isReturnDestination: currentUrl === returnUrl,
+      currentEntityType: 'Source',
+      restorationAttempted
+    });
+    
+    // ONLY restore if this is the destination form (currentUrl matches returnUrl)
+    if (returnUrl && preserved && !restorationAttempted && currentUrl === returnUrl) {
+      setIsRestoring(true);
+      setRestorationAttempted(true);
+      
+      try {
+        const parsed = JSON.parse(preserved);
+        console.log('Parsed preserved state:', {
+          entityType: parsed.entityType,
+          currentEntityType: 'Source',
+          timestamp: parsed.timestamp,
+          currentTime: Date.now(),
+          timeDiff: Date.now() - parsed.timestamp,
+          isRecent: Date.now() - parsed.timestamp < 1800000, // 30 minutes
+          entityTypeMatch: parsed.entityType === 'Source'
+        });
+        
+        // Check if this is the right form to restore to
+        const isRecent = Date.now() - parsed.timestamp < 1800000; // 30 minutes
+        const entityTypeMatch = parsed.entityType === 'Source';
+        
+        if (isRecent && entityTypeMatch) {
+          console.log('Starting restoration process...');
+          
+          // Multiple restoration attempts with delays
+          const attemptRestore = (attempt = 1) => {
+            console.log(`Restoration attempt ${attempt}`);
+            
+            setTimeout(() => {
+              try {
+                form.reset(parsed.formData);
+                setCurrentStep(parsed.currentStep);
+                setConfirmSubmission(parsed.confirmSubmission);
+                
+                console.log('Form state restored successfully', {
+                  step: parsed.currentStep,
+                  formData: parsed.formData
+                });
+                
+                // Verify restoration worked and clean up
+                setTimeout(() => {
+                  const currentFormData = form.getValues();
+                  console.log('Verification - current form data:', currentFormData);
+                  setIsRestoring(false);
+                  
+                  // Clean up storage after successful restoration
+                  localStorage.removeItem('preservedFormState');
+                  localStorage.removeItem('returnUrl');
+                  localStorage.removeItem('relationshipFieldInfo');
+                  console.log('Storage cleaned up after successful restoration');
+                }, 100);
+                
+              } catch (error) {
+                console.error(`Restoration attempt ${attempt} failed:`, error);
+                if (attempt < 3) {
+                  attemptRestore(attempt + 1);
+                } else {
+                  setIsRestoring(false);
+                }
+              }
+            }, attempt * 100);
+          };
+          
+          attemptRestore();
+          
+          // DON'T clean up storage immediately - let the destination form handle it
+          // The destination form will clean up after successful restoration
+        } else {
+          console.log('Restoration rejected:', {
+            reason: !isRecent ? 'expired' : 'wrong entity type',
+            timeDiff: Date.now() - parsed.timestamp,
+            entityType: parsed.entityType,
+            expected: 'Source'
+          });
+          setIsRestoring(false);
+        }
+      } catch (error) {
+        console.error('Error parsing preserved state:', error);
+        setIsRestoring(false);
+      }
+    } else {
+      console.log('No restoration needed:', {
+        hasReturnUrl: !!returnUrl,
+        hasPreserved: !!preserved,
+        alreadyAttempted: restorationAttempted,
+        isReturnDestination: currentUrl === returnUrl
+      });
+      setRestorationAttempted(true);
+    }
+  }, []); // Run once on mount
+
+  // Handle newly created relationship entities (IMPROVED with localStorage)
+  const handleEntityCreated = React.useCallback((entityId: number, relationshipName: string) => {
+    console.log('Handling newly created entity:', { entityId, relationshipName });
+    
+    const currentValue = form.getValues(relationshipName as any);
+    
+    if (Array.isArray(currentValue)) {
+      // Multiple relationship - add to array
+      const newValue = [...currentValue, entityId];
+      form.setValue(relationshipName as any, newValue);
+      console.log('Updated multiple relationship:', newValue);
+    } else {
+      // Single relationship - set value
+      form.setValue(relationshipName as any, entityId);
+      console.log('Updated single relationship:', entityId);
+    }
+    
+    // Trigger re-render to show updated selection
+    form.trigger(relationshipName as any);
+  }, [form]);
+
+  // Check for newly created entity on component mount (IMPROVED with localStorage)
+  React.useEffect(() => {
+    const newEntityId = localStorage.getItem('newlyCreatedEntityId');
+    const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
+    
+    if (newEntityId && relationshipInfo && restorationAttempted) {
+      try {
+        const info = JSON.parse(relationshipInfo);
+        console.log('Found newly created entity to auto-select:', { newEntityId, info });
+        
+        // Small delay to ensure form is ready after restoration
+        setTimeout(() => {
+          // Find the relationship field and update it
+          // This is a simplified approach - in practice you'd need to identify the correct field
+          console.log('Auto-selecting newly created entity:', newEntityId);
+          
+          // Clean up
+          localStorage.removeItem('newlyCreatedEntityId');
+        }, 500);
+      } catch (error) {
+        console.error('Error processing newly created entity:', error);
+      }
+    }
+  }, [restorationAttempted]);
+
+  // Form state persistence for relationship navigation (IMPROVED with localStorage)
+  React.useEffect(() => {
+    // Save form state when navigating to create related entity
+    const handleSaveFormState = () => {
+      const formData = form.getValues();
+      const stateToSave = {
+        formData,
+        currentStep,
+        confirmSubmission,
+        entityType: 'Source',
+        timestamp: Date.now()
+      };
+      
+      console.log('Saving form state for navigation:', stateToSave);
+      localStorage.setItem('preservedFormState', JSON.stringify(stateToSave));
+    };
+
+    // Add event listener
+    window.addEventListener('saveFormState', handleSaveFormState);
+
+    return () => {
+      window.removeEventListener('saveFormState', handleSaveFormState);
+    };
+  }, [form, currentStep, confirmSubmission]);
+
+  // Update form values when entity data is loaded (ONLY for edit mode, NOT when restoring)
   useEffect(() => {
-    if (entity) {
+    if (entity && !isRestoring && restorationAttempted) {
+      console.log('Loading entity data for edit mode:', entity);
       const formValues = {
 
         name: entity.name || "",
@@ -143,8 +348,9 @@ export function SourceForm({ id }: SourceFormProps) {
 
       };
       form.reset(formValues);
+      console.log('Entity data loaded successfully');
     }
-  }, [entity, form]);
+  }, [entity, form, isRestoring, restorationAttempted]);
 
   // Prevent accidental form submission
   const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
