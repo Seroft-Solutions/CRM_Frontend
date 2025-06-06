@@ -70,6 +70,7 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
   const router = useRouter();
   const isNew = !id;
   const [currentStep, setCurrentStep] = useState(0);
+  const [confirmSubmission, setConfirmSubmission] = useState(false);
 
   // Create or update mutation
   const { mutate: createEntity, isPending: isCreating } = useCreateCallStatus({
@@ -145,8 +146,36 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
     }
   }, [entity, form]);
 
-  // Form submission handler
+  // Prevent accidental form submission
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    // Prevent Enter key from submitting the form unless we're on the final step
+    // and the user is explicitly focused on the submit button
+    if (e.key === 'Enter' && currentStep !== STEPS.length - 1) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Even on the final step, only allow Enter if the target is the submit button
+    if (e.key === 'Enter' && currentStep === STEPS.length - 1) {
+      const target = e.target as HTMLElement;
+      const isSubmitButton = target.getAttribute('type') === 'submit' || 
+                           target.closest('button[type="submit"]');
+      
+      if (!isSubmitButton) {
+        e.preventDefault();
+        return;
+      }
+    }
+  };
+
+  // Form submission handler - only called when explicitly triggered
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    // Double-check we're on the review step before allowing submission
+    if (currentStep !== STEPS.length - 1) {
+      console.warn('Form submission attempted from non-final step');
+      return;
+    }
+
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
@@ -213,6 +242,10 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      // Reset confirmation when leaving review step
+      if (currentStep === STEPS.length - 1) {
+        setConfirmSubmission(false);
+      }
     }
   };
 
@@ -279,7 +312,11 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
 
       {/* Form Content */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form 
+          onSubmit={form.handleSubmit(onSubmit)} 
+          onKeyDown={handleFormKeyDown}
+          className="space-y-6"
+        >
           <Card>
             <CardContent className="pt-6">
               {/* Step 1: Basic Information */}
@@ -460,14 +497,25 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
             </Button>
 
             {currentStep === STEPS.length - 1 ? (
-              <Button 
-                type="submit" 
-                disabled={isCreating || isUpdating}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {isNew ? "Create" : "Update"} Call Status
-              </Button>
+              !confirmSubmission ? (
+                <Button 
+                  type="button"
+                  onClick={() => setConfirmSubmission(true)}
+                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+                >
+                  <Check className="h-4 w-4" />
+                  Confirm {isNew ? "Create" : "Update"}
+                </Button>
+              ) : (
+                <Button 
+                  type="submit" 
+                  disabled={isCreating || isUpdating}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="h-4 w-4" />
+                  {isCreating || isUpdating ? "Submitting..." : `${isNew ? "Create" : "Update"} Call Status`}
+                </Button>
+              )
             ) : (
               <Button
                 type="button"
