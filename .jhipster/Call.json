@@ -12,13 +12,6 @@
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "status",
-      "fieldType": "Status",
-      "fieldTypeDocumentation": "General status for entities",
-      "fieldValidateRules": ["required"],
-      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
-    },
-    {
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
@@ -56,63 +49,72 @@
       "otherEntityName": "priority",
       "relationshipName": "priority",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "callType",
       "relationshipName": "callType",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "subCallType",
       "relationshipName": "subCallType",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "source",
       "relationshipName": "source",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "area",
       "relationshipName": "area",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "product",
       "relationshipName": "product",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "channelType",
       "relationshipName": "channelType",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "callCategory",
       "relationshipName": "callCategory",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
       "otherEntityName": "callStatus",
       "relationshipName": "callStatus",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
