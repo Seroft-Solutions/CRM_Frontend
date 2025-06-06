@@ -69,12 +69,12 @@ interface ProductFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   name: z.string().min(2).max(100),
-  code: z.string().min(2).max(20).regex(/^[A-Z0-9_-]+$/),
+  code: z.string().min(2).max(20).regex(/^[A-Za-z0-9_-]+$/),
   description: z.string().max(500).optional(),
   category: z.string().max(50).optional(),
-  basePrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
-  maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).optional(),
+  basePrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
+  minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
+  maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
   isActive: z.boolean(),
   remark: z.string().max(1000).optional(),
   calls: z.array(z.number()).optional(),

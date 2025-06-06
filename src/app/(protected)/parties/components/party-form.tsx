@@ -78,7 +78,7 @@ interface PartyFormProps {
 const formSchema = z.object({
   name: z.string().min(2).max(100),
   mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  email: z.string().max(254).regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/).optional(),
+  email: z.string().max(254).regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).optional(),
   whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/).optional(),
   contactPerson: z.string().min(2).max(100).optional(),
   address1: z.string().max(255).optional(),

@@ -69,10 +69,6 @@ import {
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 
 import {
-  useGetAllProducts
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-
-import {
   useGetAllChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 
@@ -241,11 +237,6 @@ export function CallTable() {
   );
   
   const { data: areaOptions = [] } = useGetAllAreas(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
-  const { data: productOptions = [] } = useGetAllProducts(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -475,14 +466,6 @@ export function CallTable() {
     },
     
     {
-      name: "product",
-      displayName: "Product",
-      options: productOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
       name: "channelType",
       displayName: "ChannelType",
       options: channeltypeOptions || [],
@@ -582,7 +565,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={16}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -605,7 +588,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={16}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   No calls found

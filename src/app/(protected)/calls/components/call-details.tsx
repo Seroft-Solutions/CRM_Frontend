@@ -110,15 +110,6 @@ export function CallDetails({ id }: CallDetailsProps) {
                   </div>
                   
                   <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.status || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
                     <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Is Active</dt>
                     <dd className="text-base font-medium">
                       
@@ -225,19 +216,6 @@ export function CallDetails({ id }: CallDetailsProps) {
                       {entity.area ? (
                         <Badge variant="outline" className="text-sm font-medium">
                           {(entity.area as any).name || entity.area.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Product</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.product ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.product as any).name || entity.product.id}
                         </Badge>
                       ) : "—"}
                       

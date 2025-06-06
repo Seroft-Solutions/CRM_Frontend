@@ -19,7 +19,7 @@
       "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
       "fieldValidateRulesMaxlength": "20",
       "fieldValidateRulesMinlength": "2",
-      "fieldValidateRulesPattern": "^[A-Z0-9_-]+$"
+      "fieldValidateRulesPattern": "^[A-Za-z0-9_-]+$"
     },
     {
       "fieldName": "description",
@@ -36,19 +36,22 @@
     {
       "fieldName": "basePrice",
       "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
+      "fieldValidateRules": ["min", "max"],
+      "fieldValidateRulesMax": "999999",
       "fieldValidateRulesMin": "0"
     },
     {
       "fieldName": "minPrice",
       "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
+      "fieldValidateRules": ["min", "max"],
+      "fieldValidateRulesMax": "999999",
       "fieldValidateRulesMin": "0"
     },
     {
       "fieldName": "maxPrice",
       "fieldType": "BigDecimal",
-      "fieldValidateRules": ["min"],
+      "fieldValidateRules": ["min", "max"],
+      "fieldValidateRulesMax": "999999",
       "fieldValidateRulesMin": "0"
     },
     {

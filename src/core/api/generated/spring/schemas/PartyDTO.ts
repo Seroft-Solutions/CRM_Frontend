@@ -7,7 +7,7 @@
  */
 import type { SourceDTO } from './SourceDTO';
 import type { AreaDTO } from './AreaDTO';
-import type { PartyDTOInterestedProductsItem } from './PartyDTOInterestedProductsItem';
+import type { ProductDTO } from './ProductDTO';
 import type { CityDTO } from './CityDTO';
 
 /**
@@ -25,7 +25,7 @@ export interface PartyDTO {
   /**
    * @minLength 0
    * @maxLength 254
-   * @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$
+   * @pattern ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
    */
   email?: string;
   /** @pattern ^[+]?[0-9]{10,15}$ */
@@ -57,7 +57,7 @@ export interface PartyDTO {
    */
   remark?: string;
   source?: SourceDTO;
-  area?: AreaDTO;
-  interestedProducts?: PartyDTOInterestedProductsItem[];
+  area: AreaDTO;
+  interestedProducts?: ProductDTO[];
   city?: CityDTO;
 }
