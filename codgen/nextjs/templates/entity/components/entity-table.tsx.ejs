@@ -152,14 +152,85 @@ export function <%= entityClass %>Table() {
   const apiPage = page - 1;
   const pageSize = 10;
 
+  <% if (displayableRelationships.length > 0) { %>
+  // Fetch relationship data for dropdowns
+  <% 
+  const fetchedEntities = new Set();
+  displayableRelationships.forEach(rel => {
+    const otherEntityName = rel.otherEntityName;
+    const otherEntityFileName = rel.otherEntity.entityFileName || otherEntityName.toLowerCase();
+    const otherEntityClassPlural = rel.otherEntity.entityClassPlural || (otherEntityName + 's');
+    
+    if (!fetchedEntities.has(otherEntityFileName)) {
+      fetchedEntities.add(otherEntityFileName);
+      
+      if (rel.relationshipWithBuiltInEntity && otherEntityName === 'user') {
+  %>
+  const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAllPublicUsers(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  <% 
+      } else {
+  %>
+  const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAll<%= otherEntityClassPlural %>(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  <% 
+      }
+    }
+  });
+  %>
+  <% } %>
+
+  // Helper function to find entity ID by name
+  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    return entity?.id;
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
     
-    // Add regular filters
+    <% if (displayableRelationships.length > 0) { %>
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      <% displayableRelationships.forEach(rel => { 
+        const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+        const optionsVar = rel.otherEntityName.toLowerCase() + 'Options';
+      %>
+      '<%= rel.relationshipName %>.<%= displayField %>': { 
+        apiParam: '<%= rel.relationshipName %>Id.equals', 
+        options: <%= optionsVar %>, 
+        displayField: '<%= displayField %>' 
+      },
+      <% }); %>
+    };
+    <% } %>
+    
+    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
-        if (Array.isArray(value) && value.length > 0) {
+        <% if (displayableRelationships.length > 0) { %>
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
+        <% } %>
+        <% booleanFields.forEach(field => { %>
+        // Handle <%= field.fieldName %> filter
+        else if (key === '<%= field.fieldName %>') {
+          params['<%= field.fieldName %>.equals'] = value === 'true';
+        }
+        <% }); %>
+        // Handle other direct filters
+        else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -170,14 +241,14 @@ export function <%= entityClass %>Table() {
     });
 
     // Add date range filters
-    <% if (dateFields.length > 0) { %>
+    <% dateFields.forEach(field => { %>
     if (dateRange.from) {
-      params[`<%= dateFields[0].fieldName %>GreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+      params['<%= field.fieldName %>.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
-      params[`<%= dateFields[0].fieldName %>LessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+      params['<%= field.fieldName %>.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    <% } %>
+    <% }); %>
 
     return params;
   };
@@ -252,38 +323,6 @@ export function <%= entityClass %>Table() {
       },
     },
   });
-
-  <% if (displayableRelationships.length > 0) { %>
-  // Fetch relationship data for dropdowns
-  <% 
-  const fetchedEntities = new Set();
-  displayableRelationships.forEach(rel => {
-    const otherEntityName = rel.otherEntityName;
-    const otherEntityFileName = rel.otherEntity.entityFileName || otherEntityName.toLowerCase();
-    const otherEntityClassPlural = rel.otherEntity.entityClassPlural || (otherEntityName + 's');
-    
-    if (!fetchedEntities.has(otherEntityFileName)) {
-      fetchedEntities.add(otherEntityFileName);
-      
-      if (rel.relationshipWithBuiltInEntity && otherEntityName === 'user') {
-  %>
-  const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAllPublicUsers(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  <% 
-      } else {
-  %>
-  const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAll<%= otherEntityClassPlural %>(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  <% 
-      }
-    }
-  });
-  %>
-  <% } %>
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDelete<%= entityClass %>({
