@@ -850,7 +850,7 @@ export function CallForm({ id }: CallFormProps) {
                 </div>
               )}
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
               {STEPS[currentStep].id === 'classification' && (
                 <div className="space-y-6">
                   <div className="text-center mb-6">
@@ -869,7 +869,9 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select priority"
                               multiple={false}
@@ -898,7 +900,10 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                form.setValue('subCallType', undefined);
+                              }}
                               displayField="name"
                               placeholder="Select call type"
                               multiple={false}
@@ -927,7 +932,9 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select sub call type"
                               multiple={false}
@@ -939,6 +946,9 @@ export function CallForm({ id }: CallFormProps) {
                               createEntityPath="/sub-call-types/new"
                               createPermission="subCallType:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, 'subCallType')}
+                              parentFilter={form.watch('callType')}
+                              parentField="callType"
+                              disabled={!form.watch('callType')}
                             />
                           </FormControl>
                           <FormMessage />
@@ -956,7 +966,9 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select channel type"
                               multiple={false}
@@ -985,7 +997,9 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select call category"
                               multiple={false}
@@ -1014,7 +1028,9 @@ export function CallForm({ id }: CallFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select call status"
                               multiple={false}

@@ -836,7 +836,7 @@ export function ProductForm({ id }: ProductFormProps) {
 
               {/* User Assignment Step */}
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
 
               {/* Business Relations Step */}
               {STEPS[currentStep].id === 'business' && (

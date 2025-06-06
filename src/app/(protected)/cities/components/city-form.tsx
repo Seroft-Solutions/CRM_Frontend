@@ -608,7 +608,7 @@ export function CityForm({ id }: CityFormProps) {
 
               {/* User Assignment Step */}
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
 
               {/* Business Relations Step */}
 

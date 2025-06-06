@@ -581,7 +581,7 @@ export function StateForm({ id }: StateFormProps) {
 
               {/* User Assignment Step */}
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
 
               {/* Business Relations Step */}
 
