@@ -37,14 +37,6 @@ export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="callRemark:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/call-remarks/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

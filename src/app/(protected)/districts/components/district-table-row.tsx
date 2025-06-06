@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { DistrictDTO } from "@/core/api/generated/spring/schemas/DistrictDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface DistrictTableRowProps {
   district: DistrictDTO;
@@ -18,9 +27,21 @@ interface DistrictTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function DistrictTableRow({ district, onDelete, isDeleting, isSelected, onSelect }: DistrictTableRowProps) {
+export function DistrictTableRow({ 
+  district, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: DistrictTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -37,9 +58,18 @@ export function DistrictTableRow({ district, onDelete, isDeleting, isSelected, o
       </TableCell>
       
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {district.state ? 
-          (district.state as any).name || district.state.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={district.id || 0}
+          relationshipName="state"
+          currentValue={district.state}
+          options={relationshipConfigs.find(config => config.name === "state")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

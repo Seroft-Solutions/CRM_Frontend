@@ -4,14 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,11 +24,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetDistrict,
   useDeleteDistrict,
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+
+
 
 interface DistrictDetailsProps {
   id: number;
@@ -40,7 +42,7 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Fetch entity details
-  const { data: entity, isLoading, refetch } = useGetDistrict(id, {
+  const { data: entity, isLoading } = useGetDistrict(id, {
     query: {
       enabled: !!id,
     },
@@ -65,59 +67,94 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   if (!entity) {
-    return <div>Entity not found</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-muted-foreground">Entity not found</div>
+      </div>
+    );
   }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">District #id{entity.id}</CardTitle>
           <CardDescription>
-            View details for this district
+            Viewing details for District #id{entity.id}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground"></p>
-
-              <p>{entity.name || "—"}</p>
-
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Basic Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Basic Information</h3>
+                <div className="space-y-5">
+                  
+                  <div className="border-l-4 border-primary/20 pl-4 py-2">
+                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Name</dt>
+                    <dd className="text-base font-medium">
+                      
+                      <span className="text-foreground break-words">{entity.name || "—"}</span>
+                      
+                    </dd>
+                  </div>
+                  
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">State</p>
-
-              <p>{(entity.state as any)?.name || entity.state?.id || "—"}</p>
-
+            
+            {/* Relationships */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Related Information</h3>
+                <div className="space-y-5">
+                  
+                  <div className="border-l-4 border-primary/20 pl-4 py-2">
+                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">State</dt>
+                    <dd className="text-base font-medium">
+                      
+                      {entity.state ? (
+                        <Badge variant="outline" className="text-sm font-medium">
+                          {(entity.state as any).name || entity.state.id}
+                        </Badge>
+                      ) : "—"}
+                      
+                    </dd>
+                  </div>
+                  
+                </div>
+              </div>
             </div>
+            
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" asChild>
-            <Link href="/districts">Back</Link>
-          </Button>
-          <div className="flex gap-2">
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
             <Button variant="outline" asChild>
-              <Link href={`/districts/${id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
+              <Link href={`/districts/${id}/edit`} className="flex items-center gap-2">
+                <Pencil className="h-4 w-4" />
                 Edit
               </Link>
             </Button>
-            <Button
+            <Button 
               variant="destructive"
               onClick={() => setShowDeleteDialog(true)}
+              className="flex items-center gap-2"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="h-4 w-4" />
               Delete
             </Button>
           </div>
-        </CardFooter>
+        </CardContent>
       </Card>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

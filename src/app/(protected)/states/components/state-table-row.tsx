@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { StateDTO } from "@/core/api/generated/spring/schemas/StateDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface StateTableRowProps {
   state: StateDTO;
@@ -18,9 +27,21 @@ interface StateTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function StateTableRow({ state, onDelete, isDeleting, isSelected, onSelect }: StateTableRowProps) {
+export function StateTableRow({ 
+  state, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: StateTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">

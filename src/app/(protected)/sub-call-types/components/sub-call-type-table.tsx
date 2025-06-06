@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -34,14 +35,25 @@ import {
   useGetAllSubCallTypes,
   useDeleteSubCallType,
   useCountSubCallTypes,
+  usePartialUpdateSubCallType,
   
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+
+
+
+
+// Relationship data imports
+
+import {
+  useGetAllCallTypes
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+
+
 
 import { SubCallTypeSearchAndFilters } from "./sub-call-type-search-filters";
 import { SubCallTypeTableHeader } from "./sub-call-type-table-header";
 import { SubCallTypeTableRow } from "./sub-call-type-table-row";
-
-
+import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -67,6 +79,7 @@ export function SubCallTypeTable() {
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
@@ -123,6 +136,29 @@ export function SubCallTypeTable() {
       },
     }
   );
+
+  // Partial update mutation for relationship editing
+  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateSubCallType({
+    mutation: {
+      onSuccess: () => {
+        refetch();
+      },
+      onError: (error) => {
+        console.error('Update failed:', error);
+        throw error;
+      },
+    },
+  });
+
+  
+  // Fetch relationship data for dropdowns
+  
+  const { data: calltypeOptions = [] } = useGetAllCallTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteSubCallType({
@@ -237,6 +273,43 @@ export function SubCallTypeTable() {
     setShowBulkDeleteDialog(false);
   };
 
+  // Handle relationship updates
+  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+    return new Promise<void>((resolve, reject) => {
+      const updateData = {
+        id: entityId,
+        [relationshipName]: newValue ? { id: newValue } : null,
+      };
+
+      updateEntity({ 
+        id: entityId,
+        requestBody: updateData 
+      }, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error)
+      });
+    });
+  };
+
+  // Handle bulk relationship updates
+  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+    const promises = entityIds.map(id => handleRelationshipUpdate(id, relationshipName, newValue));
+    return Promise.all(promises);
+  };
+
+  // Prepare relationship configurations for components
+  const relationshipConfigs = [
+    
+    {
+      name: "callType",
+      displayName: "CallType",
+      options: calltypeOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+  ];
+
   // Check if any filters are active
   const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
@@ -250,14 +323,25 @@ export function SubCallTypeTable() {
           <span className="text-sm text-muted-foreground">
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            className="ml-auto"
-          >
-            Delete Selected
-          </Button>
+          <div className="ml-auto flex gap-2">
+            {relationshipConfigs.some(config => config.isEditable) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkRelationshipDialog(true)}
+                className="gap-2"
+              >
+                Assign Associations
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+            >
+              Delete Selected
+            </Button>
+          </div>
         </div>
       )}
 
@@ -307,6 +391,9 @@ export function SubCallTypeTable() {
                   isDeleting={isDeleting}
                   isSelected={selectedRows.has(subCallType.id || 0)}
                   onSelect={handleSelectRow}
+                  relationshipConfigs={relationshipConfigs}
+                  onRelationshipUpdate={handleRelationshipUpdate}
+                  isUpdating={isUpdating}
                 />
               ))
             ) : (
@@ -423,6 +510,15 @@ export function SubCallTypeTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Relationship Assignment Dialog */}
+      <BulkRelationshipAssignment
+        open={showBulkRelationshipDialog}
+        onOpenChange={setShowBulkRelationshipDialog}
+        selectedEntityIds={Array.from(selectedRows)}
+        relationshipConfigs={relationshipConfigs}
+        onBulkUpdate={handleBulkRelationshipUpdate}
+      />
     </div>
   );
 }

@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface PartyTableRowProps {
   party: PartyDTO;
@@ -18,9 +27,21 @@ interface PartyTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function PartyTableRow({ party, onDelete, isDeleting, isSelected, onSelect }: PartyTableRowProps) {
+export function PartyTableRow({ 
+  party, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: PartyTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -91,19 +112,46 @@ export function PartyTableRow({ party, onDelete, isDeleting, isSelected, onSelec
       </TableCell>
       
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {party.source ? 
-          (party.source as any).name || party.source.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="source"
+          currentValue={party.source}
+          options={relationshipConfigs.find(config => config.name === "source")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {party.area ? 
-          (party.area as any).name || party.area.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="area"
+          currentValue={party.area}
+          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {party.city ? 
-          (party.city as any).name || party.city.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="city"
+          currentValue={party.city}
+          options={relationshipConfigs.find(config => config.name === "city")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "city")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

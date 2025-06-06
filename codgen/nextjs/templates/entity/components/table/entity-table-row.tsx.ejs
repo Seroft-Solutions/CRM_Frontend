@@ -8,6 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { <%= entityClass %>DTO } from "@/core/api/generated/spring/schemas/<%= entityClass %>DTO";
 
 <%
@@ -18,15 +19,35 @@ const displayableRelationships = relationships.filter(rel =>
 );
 %>
 
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
+
 interface <%= entityClass %>TableRowProps {
   <%= entityInstance %>: <%= entityClass %>DTO;
   onDelete: (id: number) => void;
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, isDeleting, isSelected, onSelect }: <%= entityClass %>TableRowProps) {
+export function <%= entityClass %>TableRow({ 
+  <%= entityInstance %>, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: <%= entityClass %>TableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -68,9 +89,18 @@ export function <%= entityClass %>TableRow({ <%= entityInstance %>, onDelete, is
            const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
            const relationshipFieldName = rel.relationshipFieldName;
       %>
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {<%= entityInstance %>.<%= relationshipFieldName %> ? 
-          (<%= entityInstance %>.<%= relationshipFieldName %> as any).<%= displayField %> || <%= entityInstance %>.<%= relationshipFieldName %>.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={<%= entityInstance %>.<%= primaryKey.name %> || 0}
+          relationshipName="<%= relationshipFieldName %>"
+          currentValue={<%= entityInstance %>.<%= relationshipFieldName %>}
+          options={relationshipConfigs.find(config => config.name === "<%= relationshipFieldName %>")?.options || []}
+          displayField="<%= displayField %>"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "<%= relationshipFieldName %>")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       <% } %>
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

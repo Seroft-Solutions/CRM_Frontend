@@ -37,14 +37,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="product:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/products/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

@@ -37,14 +37,6 @@ export default async function DistrictPage({ params }: DistrictPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="district:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/districts/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

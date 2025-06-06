@@ -37,14 +37,6 @@ export default async function PriorityPage({ params }: PriorityPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="priority:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/priorities/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -34,14 +35,65 @@ import {
   useGetAllCalls,
   useDeleteCall,
   useCountCalls,
+  usePartialUpdateCall,
   useSearchCalls,
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
+
+
+
+
+// Relationship data imports
+
+import {
+  useGetAllUsers
+} from "@/core/api/generated/spring/endpoints/user-resource/user-resource.gen";
+
+import {
+  useGetAllPriorities
+} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
+
+import {
+  useGetAllCallTypes
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+
+import {
+  useGetAllSubCallTypes
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+
+import {
+  useGetAllSources
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+
+import {
+  useGetAllAreas
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+
+import {
+  useGetAllProducts
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+
+import {
+  useGetAllChannelTypes
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+
+import {
+  useGetAllCallCategories
+} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
+
+import {
+  useGetAllCallStatuses
+} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+
+import {
+  useGetAllParties
+} from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
+
+
 
 import { CallSearchAndFilters } from "./call-search-filters";
 import { CallTableHeader } from "./call-table-header";
 import { CallTableRow } from "./call-table-row";
-
-
+import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -67,6 +119,7 @@ export function CallTable() {
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
@@ -145,6 +198,79 @@ export function CallTable() {
       },
     }
   );
+
+  // Partial update mutation for relationship editing
+  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCall({
+    mutation: {
+      onSuccess: () => {
+        refetch();
+      },
+      onError: (error) => {
+        console.error('Update failed:', error);
+        throw error;
+      },
+    },
+  });
+
+  
+  // Fetch relationship data for dropdowns
+  
+  const { data: userOptions = [] } = useGetAllUsers(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: priorityOptions = [] } = useGetAllPriorities(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: calltypeOptions = [] } = useGetAllCallTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: subcalltypeOptions = [] } = useGetAllSubCallTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: sourceOptions = [] } = useGetAllSources(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: areaOptions = [] } = useGetAllAreas(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: productOptions = [] } = useGetAllProducts(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: callcategoryOptions = [] } = useGetAllCallCategories(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: callstatusOptions = [] } = useGetAllCallStatuses(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: partyOptions = [] } = useGetAllParties(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCall({
@@ -265,6 +391,131 @@ export function CallTable() {
     setShowBulkDeleteDialog(false);
   };
 
+  // Handle relationship updates
+  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+    return new Promise<void>((resolve, reject) => {
+      const updateData = {
+        id: entityId,
+        [relationshipName]: newValue ? { id: newValue } : null,
+      };
+
+      updateEntity({ 
+        id: entityId,
+        requestBody: updateData 
+      }, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error)
+      });
+    });
+  };
+
+  // Handle bulk relationship updates
+  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+    const promises = entityIds.map(id => handleRelationshipUpdate(id, relationshipName, newValue));
+    return Promise.all(promises);
+  };
+
+  // Prepare relationship configurations for components
+  const relationshipConfigs = [
+    
+    {
+      name: "assignedTo",
+      displayName: "AssignedTo",
+      options: userOptions || [],
+      displayField: "login",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "channelParty",
+      displayName: "ChannelParty",
+      options: userOptions || [],
+      displayField: "login",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "priority",
+      displayName: "Priority",
+      options: priorityOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "callType",
+      displayName: "CallType",
+      options: calltypeOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "subCallType",
+      displayName: "SubCallType",
+      options: subcalltypeOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "source",
+      displayName: "Source",
+      options: sourceOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "area",
+      displayName: "Area",
+      options: areaOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "product",
+      displayName: "Product",
+      options: productOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "channelType",
+      displayName: "ChannelType",
+      options: channeltypeOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "callCategory",
+      displayName: "CallCategory",
+      options: callcategoryOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "callStatus",
+      displayName: "CallStatus",
+      options: callstatusOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "party",
+      displayName: "Party",
+      options: partyOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+  ];
+
   // Check if any filters are active
   const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
@@ -278,14 +529,25 @@ export function CallTable() {
           <span className="text-sm text-muted-foreground">
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            className="ml-auto"
-          >
-            Delete Selected
-          </Button>
+          <div className="ml-auto flex gap-2">
+            {relationshipConfigs.some(config => config.isEditable) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkRelationshipDialog(true)}
+                className="gap-2"
+              >
+                Assign Associations
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+            >
+              Delete Selected
+            </Button>
+          </div>
         </div>
       )}
 
@@ -335,6 +597,9 @@ export function CallTable() {
                   isDeleting={isDeleting}
                   isSelected={selectedRows.has(call.id || 0)}
                   onSelect={handleSelectRow}
+                  relationshipConfigs={relationshipConfigs}
+                  onRelationshipUpdate={handleRelationshipUpdate}
+                  isUpdating={isUpdating}
                 />
               ))
             ) : (
@@ -451,6 +716,15 @@ export function CallTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Relationship Assignment Dialog */}
+      <BulkRelationshipAssignment
+        open={showBulkRelationshipDialog}
+        onOpenChange={setShowBulkRelationshipDialog}
+        selectedEntityIds={Array.from(selectedRows)}
+        relationshipConfigs={relationshipConfigs}
+        onBulkUpdate={handleBulkRelationshipUpdate}
+      />
     </div>
   );
 }

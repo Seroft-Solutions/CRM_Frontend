@@ -1,0 +1,181 @@
+"use client";
+
+import * as React from "react";
+import { Check, ChevronDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "sonner";
+
+
+
+interface RelationshipCellProps {
+  entityId: number;
+  relationshipName: string;
+  currentValue?: any;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  onUpdate: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isEditable?: boolean;
+  isLoading?: boolean;
+  className?: string;
+}
+
+export function RelationshipCell({
+  entityId,
+  relationshipName,
+  currentValue,
+  options = [],
+  displayField = "name",
+  onUpdate,
+  isEditable = false,
+  isLoading = false,
+  className,
+}: RelationshipCellProps) {
+  const [open, setOpen] = React.useState(false);
+  const [updating, setUpdating] = React.useState(false);
+
+  // Get current display value
+  const getCurrentDisplayValue = () => {
+    if (!currentValue) return "";
+    
+    if (typeof currentValue === 'object' && currentValue[displayField]) {
+      return currentValue[displayField];
+    }
+    
+    if (typeof currentValue === 'object' && currentValue.id) {
+      const option = options.find(opt => opt.id === currentValue.id);
+      return option ? option[displayField] : `ID: ${currentValue.id}`;
+    }
+    
+    return currentValue.toString();
+  };
+
+  const currentDisplayValue = getCurrentDisplayValue();
+  const currentId = currentValue?.id || currentValue;
+
+  // Handle selection
+  const handleSelect = async (optionId: number | null) => {
+    if (updating) return;
+    
+    setUpdating(true);
+    setOpen(false);
+    
+    try {
+      await onUpdate(entityId, relationshipName, optionId);
+      toast.success(`${relationshipName} updated successfully`);
+    } catch (error) {
+      toast.error(`Failed to update ${relationshipName}`);
+      console.error('Relationship update error:', error);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // If not editable, just display the value
+  if (!isEditable) {
+    return (
+      <div className={cn("px-2 py-1", className)}>
+        {isLoading ? (
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          </div>
+        ) : (
+          <span className="text-sm">{currentDisplayValue || "—"}</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("relative", className)}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full h-8 px-2 py-1 justify-between text-left font-normal hover:bg-muted"
+            disabled={updating || isLoading}
+          >
+            <span className="truncate text-sm">
+              {updating ? (
+                <div className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Updating...</span>
+                </div>
+              ) : isLoading ? (
+                <div className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                currentDisplayValue || "Select..."
+              )}
+            </span>
+            <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Search..." className="h-8" />
+            <CommandList>
+              <CommandEmpty>No options found.</CommandEmpty>
+              <CommandGroup>
+                {/* None/Clear option */}
+                <CommandItem
+                  value="__none__"
+                  onSelect={() => handleSelect(null)}
+                  className="text-sm"
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-3 w-3",
+                      !currentId ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <span className="text-muted-foreground">None</span>
+                </CommandItem>
+                
+                {/* Available options */}
+                {options.map((option) => {
+                  const isSelected = currentId === option.id;
+                  
+                  return (
+                    <CommandItem
+                      key={option.id}
+                      value={option[displayField]}
+                      onSelect={() => handleSelect(option.id)}
+                      className="text-sm"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          isSelected ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option[displayField]}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
