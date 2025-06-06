@@ -204,6 +204,12 @@ export class NextJsGenerator {
     await this.generateFile('entity/components/entity-details.tsx.ejs', 
       path.join(entityDir, 'components', `${vars.entityFileName}-details.tsx`), vars);
     
+    // Generate relationship management components
+    await this.generateFile('entity/components/bulk-relationship-assignment.tsx.ejs', 
+      path.join(entityDir, 'components', 'bulk-relationship-assignment.tsx'), vars);
+    await this.generateFile('entity/components/relationship-cell.tsx.ejs', 
+      path.join(entityDir, 'components', 'relationship-cell.tsx'), vars);
+    
     // Generate paginated relationship combobox if there are relationships
     if (vars.persistableRelationships.length > 0) {
       await this.generateFile('entity/components/paginated-relationship-combobox.tsx.ejs', 

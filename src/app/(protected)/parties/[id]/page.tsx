@@ -37,14 +37,6 @@ export default async function PartyPage({ params }: PartyPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="party:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/parties/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { CityDTO } from "@/core/api/generated/spring/schemas/CityDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface CityTableRowProps {
   city: CityDTO;
@@ -18,9 +27,21 @@ interface CityTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function CityTableRow({ city, onDelete, isDeleting, isSelected, onSelect }: CityTableRowProps) {
+export function CityTableRow({ 
+  city, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: CityTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -37,9 +58,18 @@ export function CityTableRow({ city, onDelete, isDeleting, isSelected, onSelect 
       </TableCell>
       
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {city.district ? 
-          (city.district as any).name || city.district.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={city.id || 0}
+          relationshipName="district"
+          currentValue={city.district}
+          options={relationshipConfigs.find(config => config.name === "district")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

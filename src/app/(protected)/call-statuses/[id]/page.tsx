@@ -37,14 +37,6 @@ export default async function CallStatusPage({ params }: CallStatusPageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="callStatus:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/call-statuses/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

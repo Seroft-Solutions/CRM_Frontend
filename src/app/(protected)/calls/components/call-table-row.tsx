@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { CallDTO } from "@/core/api/generated/spring/schemas/CallDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface CallTableRowProps {
   call: CallDTO;
@@ -18,9 +27,21 @@ interface CallTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function CallTableRow({ call, onDelete, isDeleting, isSelected, onSelect }: CallTableRowProps) {
+export function CallTableRow({ 
+  call, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: CallTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -49,64 +70,172 @@ export function CallTableRow({ call, onDelete, isDeleting, isSelected, onSelect 
       </TableCell>
       
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.assignedTo ? 
-          (call.assignedTo as any).login || call.assignedTo.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="assignedTo"
+          currentValue={call.assignedTo}
+          options={relationshipConfigs.find(config => config.name === "assignedTo")?.options || []}
+          displayField="login"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "assignedTo")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.channelParty ? 
-          (call.channelParty as any).login || call.channelParty.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="channelParty"
+          currentValue={call.channelParty}
+          options={relationshipConfigs.find(config => config.name === "channelParty")?.options || []}
+          displayField="login"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "channelParty")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.priority ? 
-          (call.priority as any).name || call.priority.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="priority"
+          currentValue={call.priority}
+          options={relationshipConfigs.find(config => config.name === "priority")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "priority")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.callType ? 
-          (call.callType as any).name || call.callType.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="callType"
+          currentValue={call.callType}
+          options={relationshipConfigs.find(config => config.name === "callType")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.subCallType ? 
-          (call.subCallType as any).name || call.subCallType.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="subCallType"
+          currentValue={call.subCallType}
+          options={relationshipConfigs.find(config => config.name === "subCallType")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "subCallType")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.source ? 
-          (call.source as any).name || call.source.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="source"
+          currentValue={call.source}
+          options={relationshipConfigs.find(config => config.name === "source")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.area ? 
-          (call.area as any).name || call.area.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="area"
+          currentValue={call.area}
+          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.product ? 
-          (call.product as any).name || call.product.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="product"
+          currentValue={call.product}
+          options={relationshipConfigs.find(config => config.name === "product")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "product")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.channelType ? 
-          (call.channelType as any).name || call.channelType.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="channelType"
+          currentValue={call.channelType}
+          options={relationshipConfigs.find(config => config.name === "channelType")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "channelType")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.callCategory ? 
-          (call.callCategory as any).name || call.callCategory.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="callCategory"
+          currentValue={call.callCategory}
+          options={relationshipConfigs.find(config => config.name === "callCategory")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "callCategory")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.callStatus ? 
-          (call.callStatus as any).name || call.callStatus.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="callStatus"
+          currentValue={call.callStatus}
+          options={relationshipConfigs.find(config => config.name === "callStatus")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "callStatus")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {call.party ? 
-          (call.party as any).name || call.party.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="party"
+          currentValue={call.party}
+          options={relationshipConfigs.find(config => config.name === "party")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "party")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

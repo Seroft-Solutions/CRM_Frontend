@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { SubCallTypeDTO } from "@/core/api/generated/spring/schemas/SubCallTypeDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface SubCallTypeTableRowProps {
   subCallType: SubCallTypeDTO;
@@ -18,9 +27,21 @@ interface SubCallTypeTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting, isSelected, onSelect }: SubCallTypeTableRowProps) {
+export function SubCallTypeTableRow({ 
+  subCallType, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: SubCallTypeTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
@@ -55,9 +76,18 @@ export function SubCallTypeTableRow({ subCallType, onDelete, isDeleting, isSelec
       </TableCell>
       
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        {subCallType.callType ? 
-          (subCallType.callType as any).name || subCallType.callType.id || "" : ""}
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={subCallType.id || 0}
+          relationshipName="callType"
+          currentValue={subCallType.callType}
+          options={relationshipConfigs.find(config => config.name === "callType")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
       </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

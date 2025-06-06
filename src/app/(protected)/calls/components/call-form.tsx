@@ -5,9 +5,16 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CalendarIcon, Save } from "lucide-react";
+import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -19,7 +26,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -34,7 +40,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, parse } from "date-fns";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 
 import { 
@@ -109,9 +118,12 @@ const formSchema = z.object({
   party: z.number().optional(),
 });
 
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+
 export function CallForm({ id }: CallFormProps) {
   const router = useRouter();
   const isNew = !id;
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Create or update mutation
   const { mutate: createEntity, isPending: isCreating } = useCreateCall({
@@ -146,17 +158,10 @@ export function CallForm({ id }: CallFormProps) {
     },
   });
 
-  // For user relationships, you'll need to implement user fetching based on your user management setup
-  // This is a placeholder - replace with your actual user management API call
-  const users: UserDTO[] = []; // TODO: Implement user fetching
-  
-  // Example: If you have a user management hook, use it like:
-  // const { data: usersData } = useGetUsers();
-  // const users = usersData || [];
-
   // Form initialization
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
 
       callDateTime: new Date(),
@@ -267,7 +272,7 @@ export function CallForm({ id }: CallFormProps) {
   }, [entity, form]);
 
   // Form submission handler
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 
@@ -318,9 +323,7 @@ export function CallForm({ id }: CallFormProps) {
 
       party: data.party ? { id: data.party } : null,
 
-      // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
-        // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
           const isFormField = ['callDateTime','status','isActive','assignedTo','channelParty','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
@@ -338,395 +341,604 @@ export function CallForm({ id }: CallFormProps) {
     }
   };
 
+  // Validate current step
+  const validateStep = async () => {
+    const currentStepId = STEPS[currentStep].id;
+    let fieldsToValidate: string[] = [];
+
+    switch (currentStepId) {
+      case 'basic':
+        fieldsToValidate = ['status',];
+        break;
+      case 'dates':
+        fieldsToValidate = ['callDateTime',];
+        break;
+      case 'settings':
+        fieldsToValidate = ['isActive',];
+        break;
+      case 'relationships':
+        fieldsToValidate = ['assignedTo','channelParty','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',];
+        break;
+    }
+
+    const result = await form.trigger(fieldsToValidate);
+    return result;
+  };
+
+  const nextStep = async () => {
+    const isValid = await validateStep();
+    if (isValid && currentStep < STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const progress = ((currentStep + 1) / STEPS.length) * 100;
+
   if (id && isLoadingEntity) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="callDateTime"
-          render={({ field }) => (
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <p className="text-muted-foreground">
+          {isNew ? "Follow the steps below to create a new" : "Update the information for this"} call
+        </p>
+      </div>
 
-            <FormItem className="flex flex-col">
-              <FormLabel>CallDateTime *</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-
-            <FormItem>
-              <FormLabel>Status *</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  
-                  placeholder="Enter status"
-                />
-              </FormControl>
-
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>IsActive</FormLabel>
-
-              </div>
-              <FormMessage />
-            </FormItem>
-
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="assignedTo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Assigned To</FormLabel>
-              <FormControl>
-                {/* TODO: Implement user relationships with appropriate infinite query hook */}
-                <div className="p-2 text-muted-foreground border rounded">
-                  User relationship support - Please implement user infinite query hook
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="channelParty"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Channel Party</FormLabel>
-              <FormControl>
-                {/* TODO: Implement user relationships with appropriate infinite query hook */}
-                <div className="p-2 text-muted-foreground border rounded">
-                  User relationship support - Please implement user infinite query hook
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="priority"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Priority</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select priority"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllPrioritiesInfinite}
-                  searchHook={useSearchPrioritiesInfinite}
-                  entityName="Priorities"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="callType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Call Type</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select call type"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllCallTypesInfinite}
-                  searchHook={useSearchCallTypesInfinite}
-                  entityName="CallTypes"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="subCallType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sub Call Type</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select sub call type"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllSubCallTypesInfinite}
-                  searchHook={useSearchSubCallTypesInfinite}
-                  entityName="SubCallTypes"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="source"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Source</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select source"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllSourcesInfinite}
-                  searchHook={useSearchSourcesInfinite}
-                  entityName="Sources"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="area"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Area</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select area"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllAreasInfinite}
-                  searchHook={useSearchAreasInfinite}
-                  entityName="Areas"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="product"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select product"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllProductsInfinite}
-                  searchHook={useSearchProductsInfinite}
-                  entityName="Products"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="channelType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Channel Type</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select channel type"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllChannelTypesInfinite}
-                  searchHook={useSearchChannelTypesInfinite}
-                  entityName="ChannelTypes"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="callCategory"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Call Category</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select call category"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllCallCategoriesInfinite}
-                  searchHook={useSearchCallCategoriesInfinite}
-                  entityName="CallCategories"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="callStatus"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Call Status</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select call status"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllCallStatusesInfinite}
-                  searchHook={useSearchCallStatusesInfinite}
-                  entityName="CallStatuses"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="products"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Products</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select products"
-                  multiple={true}
-                  useInfiniteQueryHook={useGetAllProductsInfinite}
-                  searchHook={useSearchProductsInfinite}
-                  entityName="Products"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="party"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Party</FormLabel>
-              <FormControl>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="name"
-                  placeholder="Select party"
-                  multiple={false}
-                  useInfiniteQueryHook={useGetAllPartiesInfinite}
-                  searchHook={useSearchPartiesInfinite}
-                  entityName="Parties"
-                  searchField="name"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/calls")}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isCreating || isUpdating}>
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
+      {/* Progress Bar */}
+      <div className="space-y-4">
+        <div className="flex justify-between text-sm font-medium">
+          <span>Step {currentStep + 1} of {STEPS.length}</span>
+          <span>{Math.round(progress)}% Complete</span>
         </div>
-      </form>
-    </Form>
+        <Progress value={progress} className="h-2" />
+      </div>
+
+      {/* Step Indicators */}
+      <div className="flex justify-center">
+        <div className="flex items-center space-x-4">
+          {STEPS.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
+                index < currentStep 
+                  ? "bg-primary border-primary text-primary-foreground" 
+                  : index === currentStep 
+                  ? "border-primary text-primary bg-primary/10" 
+                  : "border-muted-foreground/30 text-muted-foreground"
+              )}>
+                {index < currentStep ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <span className="text-sm font-medium">{index + 1}</span>
+                )}
+              </div>
+              {index < STEPS.length - 1 && (
+                <ChevronRight className="w-4 h-4 text-muted-foreground mx-2" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Current Step Info */}
+      <div className="text-center space-y-1">
+        <h2 className="text-xl font-semibold">{STEPS[currentStep].title}</h2>
+        <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
+      </div>
+
+      {/* Form Content */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              {/* Step 1: Basic Information */}
+              {STEPS[currentStep].id === 'basic' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Status *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field}
+                              
+                              placeholder="Enter status"
+                              className="transition-colors"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                        
+                      )}
+                    />
+                    
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Date & Time (if exists) */}
+              
+              {STEPS[currentStep].id === 'dates' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <FormField
+                      control={form.control}
+                      name="callDateTime"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-sm font-medium">Call Date Time *</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                  </div>
+                </div>
+              )}
+              
+
+              {/* Step 3: Settings & Files (if exists) */}
+              
+              {STEPS[currentStep].id === 'settings' && (
+                <div className="space-y-6">
+                  {/* Boolean Fields */}
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Settings</h4>
+                    
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base font-medium">Is Active</FormLabel>
+                          </div>
+                          <FormControl>
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                  </div>
+                  
+
+                  {/* Binary Fields */}
+                  
+                </div>
+              )}
+              
+
+              {/* Step 4: Relationships (if exists) */}
+              
+              {STEPS[currentStep].id === 'relationships' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    
+                    <FormField
+                      control={form.control}
+                      name="assignedTo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Assigned To</FormLabel>
+                          <FormControl>
+                            <div className="p-3 text-muted-foreground border rounded-md bg-muted/50">
+                              User relationship support - Please implement user infinite query hook
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="channelParty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Channel Party</FormLabel>
+                          <FormControl>
+                            <div className="p-3 text-muted-foreground border rounded-md bg-muted/50">
+                              User relationship support - Please implement user infinite query hook
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Priority</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select priority"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllPrioritiesInfinite}
+                              searchHook={useSearchPrioritiesInfinite}
+                              entityName="Priorities"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="callType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Call Type</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select call type"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllCallTypesInfinite}
+                              searchHook={useSearchCallTypesInfinite}
+                              entityName="CallTypes"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="subCallType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Sub Call Type</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select sub call type"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllSubCallTypesInfinite}
+                              searchHook={useSearchSubCallTypesInfinite}
+                              entityName="SubCallTypes"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="source"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Source</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select source"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllSourcesInfinite}
+                              searchHook={useSearchSourcesInfinite}
+                              entityName="Sources"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="area"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Area</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select area"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllAreasInfinite}
+                              searchHook={useSearchAreasInfinite}
+                              entityName="Areas"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="product"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Product</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select product"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllProductsInfinite}
+                              searchHook={useSearchProductsInfinite}
+                              entityName="Products"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="channelType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Channel Type</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select channel type"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllChannelTypesInfinite}
+                              searchHook={useSearchChannelTypesInfinite}
+                              entityName="ChannelTypes"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="callCategory"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Call Category</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select call category"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllCallCategoriesInfinite}
+                              searchHook={useSearchCallCategoriesInfinite}
+                              entityName="CallCategories"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="callStatus"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Call Status</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select call status"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllCallStatusesInfinite}
+                              searchHook={useSearchCallStatusesInfinite}
+                              entityName="CallStatuses"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="products"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Products</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select products"
+                              multiple={true}
+                              useInfiniteQueryHook={useGetAllProductsInfinite}
+                              searchHook={useSearchProductsInfinite}
+                              entityName="Products"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="party"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Party</FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select party"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllPartiesInfinite}
+                              searchHook={useSearchPartiesInfinite}
+                              entityName="Parties"
+                              searchField="name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                  </div>
+                </div>
+              )}
+              
+
+              {/* Step 5: Review */}
+              {STEPS[currentStep].id === 'review' && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium mb-2">Review Your Information</h3>
+                    <p className="text-muted-foreground">Please review all the information before submitting</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div className="space-y-1">
+                      <dt className="text-sm font-medium text-muted-foreground">Call Date Time</dt>
+                      <dd className="text-sm">
+                        
+                        {form.watch('callDateTime') ? format(form.watch('callDateTime'), "PPP") : "—"}
+                        
+                      </dd>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <dt className="text-sm font-medium text-muted-foreground">Status</dt>
+                      <dd className="text-sm">
+                        
+                        {form.watch('status') || "—"}
+                        
+                      </dd>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
+                      <dd className="text-sm">
+                        
+                        <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
+                          {form.watch('isActive') ? "Yes" : "No"}
+                        </Badge>
+                        
+                      </dd>
+                    </div>
+                    
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={currentStep === 0 ? () => router.push("/calls") : prevStep}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {currentStep === 0 ? "Cancel" : "Previous"}
+            </Button>
+
+            {currentStep === STEPS.length - 1 ? (
+              <Button 
+                type="submit" 
+                disabled={isCreating || isUpdating}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {isNew ? "Create" : "Update"} Call
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={nextStep}
+                className="flex items-center gap-2"
+              >
+                Next Step
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }

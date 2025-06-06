@@ -1,20 +1,5 @@
 <%#
  Copyright 2013-2025 the original author or authors from the JHipster project.
-
- This file is part of the JHipster project, see https://www.jhipster.tech/
- for more information.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
 -%>
 "use client";
 
@@ -23,9 +8,16 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CalendarIcon, Save } from "lucide-react";
+import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -37,7 +29,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -52,7 +43,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, parse } from "date-fns";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 <%_ if (persistableRelationships.length > 0) { _%>
 import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 <%_ } _%>
@@ -67,6 +61,35 @@ import {
 const userRelationships = persistableRelationships.filter(r => r.otherEntity.builtInUser);
 const regularRelationships = persistableRelationships.filter(r => !r.otherEntity.builtInUser);
 const hasUserRelationships = userRelationships.length > 0;
+
+// Helper function to convert camelCase to Title Case
+function camelToTitleCase(str) {
+  return str
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
+
+// Organize fields by category
+const basicFields = fields.filter(field => !field.id && !field.fieldTypeBinary);
+const textFields = basicFields.filter(field => 
+  !field.fieldTypeBoolean && !field.fieldTypeTimed && !field.fieldTypeLocalDate && 
+  !field.fieldIsEnum && !field.fieldTypeNumeric
+);
+const numberFields = basicFields.filter(field => field.fieldTypeNumeric);
+const dateFields = basicFields.filter(field => field.fieldTypeTimed || field.fieldTypeLocalDate);
+const enumFields = basicFields.filter(field => field.fieldIsEnum);
+const booleanFields = basicFields.filter(field => field.fieldTypeBoolean);
+const binaryFields = fields.filter(field => field.fieldTypeBinary);
+
+// Define wizard steps
+const steps = [
+  { id: 'basic', title: 'Basic Information', description: 'Enter essential details' },
+  ...(dateFields.length > 0 ? [{ id: 'dates', title: 'Date & Time', description: 'Set relevant dates' }] : []),
+  ...(booleanFields.length > 0 || binaryFields.length > 0 ? [{ id: 'settings', title: 'Settings & Files', description: 'Configure options' }] : []),
+  ...(persistableRelationships.length > 0 ? [{ id: 'relationships', title: 'Relationships', description: 'Associate with other entities' }] : []),
+  { id: 'review', title: 'Review', description: 'Confirm your details' }
+];
 _%>
 <%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
 import { 
@@ -95,16 +118,18 @@ _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
     const relationshipRequired = rel.relationshipRequired;
-    // Use string for user relationships (they have string IDs), number for others
     const relationshipType = rel.otherEntity.builtInUser ? 'string' : 'number';
 _%>
   <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.<%= relationshipType %>())<% } else { %><%= relationshipType %>()<% } %><% if (!relationshipRequired) { %>.optional()<% } %>,
 <%_ } _%>
 });
 
+const STEPS = <%= JSON.stringify(steps) %>;
+
 export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
   const router = useRouter();
   const isNew = !id;
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Create or update mutation
   const { mutate: createEntity, isPending: isCreating } = useCreate<%= entityClass %>({
@@ -139,19 +164,10 @@ export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
     },
   });
 
-<%_ if (hasUserRelationships) { _%>
-  // For user relationships, you'll need to implement user fetching based on your user management setup
-  // This is a placeholder - replace with your actual user management API call
-  const users: UserDTO[] = []; // TODO: Implement user fetching
-  
-  // Example: If you have a user management hook, use it like:
-  // const { data: usersData } = useGetUsers();
-  // const users = usersData || [];
-<%_ } _%>
-
   // Form initialization
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
 <%_ for (field of fields.filter(field => !field.id)) { 
     const fieldName = field.fieldName;
@@ -163,17 +179,16 @@ _%>
 <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
       <%= fieldName %>: new Date(),
 <% } else if (field.fieldIsEnum) { %>
-      <%= fieldName %>: <% if (!isRequired) { %>undefined<% } else { %>"<%= field.enumValues[0].name %>"<% } %>,
+      <%= fieldName %>: <% if (!field.fieldValidateRules?.includes('required')) { %>undefined<% } else { %>"<%= field.enumValues[0].name %>"<% } %>,
 <% } else { %>
       <%= fieldName %>: "",
 <% } %>
 <%_ } _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
-    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
 _%>
 <% if (rel.collection) { %>
-      <%= relationshipFieldNamePlural %>: [],
+      <%= relationshipFieldName %>: [],
 <% } else { %>
       <%= relationshipFieldName %>: undefined,
 <% } %>
@@ -198,12 +213,10 @@ _%>
 <%_ } _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
-    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
-    // Use appropriate primary key based on entity type
-    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey?.name || 'id');
 _%>
 <% if (rel.collection) { %>
-        <%= relationshipFieldNamePlural %>: entity.<%= relationshipFieldNamePlural %>?.map(item => item.<%= otherEntityPkName %>),
+        <%= relationshipFieldName %>: entity.<%= relationshipFieldName %>?.map(item => item.<%= otherEntityPkName %>),
 <% } else { %>
         <%= relationshipFieldName %>: entity.<%= relationshipFieldName %>?.<%= otherEntityPkName %>,
 <% } %>
@@ -214,7 +227,7 @@ _%>
   }, [entity, form]);
 
   // Form submission handler
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const entityToSave = {
       ...(!isNew && entity ? { id: entity.id } : {}),
 <%_ for (field of fields.filter(field => !field.id)) { 
@@ -228,19 +241,15 @@ _%>
 <%_ } _%>
 <%_ for (const rel of persistableRelationships) { 
     const relationshipFieldName = rel.relationshipFieldName;
-    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
-    // Use appropriate primary key based on entity type
-    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id');
+    const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey?.name || 'id');
 _%>
 <% if (rel.collection) { %>
-      <%= relationshipFieldNamePlural %>: data.<%= relationshipFieldNamePlural %>?.map(id => ({ <%= otherEntityPkName %>: id })),
+      <%= relationshipFieldName %>: data.<%= relationshipFieldName %>?.map(id => ({ <%= otherEntityPkName %>: id })),
 <% } else { %>
       <%= relationshipFieldName %>: data.<%= relationshipFieldName %> ? { <%= otherEntityPkName %>: data.<%= relationshipFieldName %> } : null,
 <% } %>
 <%_ } _%>
-      // Include any existing fields not in the form to preserve required fields
       ...(entity && !isNew ? {
-        // Preserve any existing required fields that aren't in the form
         ...Object.keys(entity).reduce((acc, key) => {
           const isFormField = [<%_ for (field of fields.filter(field => !field.id)) { _%>'<%= field.fieldName %>',<%_ } _%><%_ for (const rel of persistableRelationships) { _%>'<%= rel.relationshipFieldName %>',<%_ } _%>].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
@@ -258,244 +267,418 @@ _%>
     }
   };
 
+  // Validate current step
+  const validateStep = async () => {
+    const currentStepId = STEPS[currentStep].id;
+    let fieldsToValidate: string[] = [];
+
+    switch (currentStepId) {
+      case 'basic':
+        fieldsToValidate = [<%_ for (field of [...textFields, ...numberFields, ...enumFields]) { _%>'<%= field.fieldName %>',<%_ } _%>];
+        break;
+      case 'dates':
+        fieldsToValidate = [<%_ for (field of dateFields) { _%>'<%= field.fieldName %>',<%_ } _%>];
+        break;
+      case 'settings':
+        fieldsToValidate = [<%_ for (field of [...booleanFields, ...binaryFields]) { _%>'<%= field.fieldName %>',<%_ } _%>];
+        break;
+      case 'relationships':
+        fieldsToValidate = [<%_ for (const rel of persistableRelationships) { _%>'<%= rel.relationshipFieldName %>',<%_ } _%>];
+        break;
+    }
+
+    const result = await form.trigger(fieldsToValidate);
+    return result;
+  };
+
+  const nextStep = async () => {
+    const isValid = await validateStep();
+    if (isValid && currentStep < STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const progress = ((currentStep + 1) / STEPS.length) * 100;
+
   if (id && isLoadingEntity) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-<%_ for (field of fields.filter(field => !field.id)) { 
-    const fieldName = field.fieldName;
-    const fieldNameHumanized = field.fieldNameHumanized || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-    const fieldValidateRules = field.fieldValidateRules || [];
-    const isRequired = fieldValidateRules.includes('required');
-_%>
-        <FormField
-          control={form.control}
-          name="<%= fieldName %>"
-          render={({ field }) => (
-<% if (field.fieldTypeBoolean) { %>
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel><%= fieldNameHumanized %></FormLabel>
-<% if (field.documentation) { %>
-                <FormDescription>
-                  <%= field.documentation %>
-                </FormDescription>
-<% } %>
-              </div>
-              <FormMessage />
-            </FormItem>
-<% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
-            <FormItem className="flex flex-col">
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full pl-3 text-left font-normal ${
-                        !field.value && "text-muted-foreground"
-                      }`}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } else if (field.fieldIsEnum) { %>
-            <FormItem>
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select <%= fieldName %>" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <% if (!isRequired) { %>
-                  <SelectItem value="__none__">None</SelectItem>
-                  <% } %>
-                  <% for (const enumValue of field.enumValues) { %>
-                  <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>"><%= enumValue.name || enumValue.value || 'Empty' %></SelectItem>
-                  <% } %>
-                </SelectContent>
-              </Select>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } else if (field.fieldTypeBinary && field.blobContentTypeText) { %>
-            <FormItem>
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Enter <%= fieldName %>"
-                />
-              </FormControl>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } else if (field.fieldType === 'TextBlob') { %>
-            <FormItem>
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Enter <%= fieldName %>"
-                />
-              </FormControl>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
-            <FormItem>
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  <% if (field.blobContentTypeImage) { %>accept="image/*"<% } %>
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        if (event.target?.result) {
-                          const base64 = event.target.result.toString().split(',')[1];
-                          field.onChange(base64);
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </FormControl>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } else { %>
-            <FormItem>
-              <FormLabel><%= fieldNameHumanized %><% if (isRequired) { %> *<% } %></FormLabel>
-              <FormControl>
-                <Input 
-                  {...field}
-                  <% if (field.fieldTypeNumeric) { %>type="number"<% } %>
-                  placeholder="Enter <%= fieldName %>"
-                />
-              </FormControl>
-<% if (field.documentation) { %>
-              <FormDescription>
-                <%= field.documentation %>
-              </FormDescription>
-<% } %>
-              <FormMessage />
-            </FormItem>
-<% } %>
-          )}
-        />
-<%_ } _%>
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <p className="text-muted-foreground">
+          {isNew ? "Follow the steps below to create a new" : "Update the information for this"} <%= entityClassHumanized.toLowerCase() %>
+        </p>
+      </div>
 
-<%_ for (const rel of persistableRelationships) { 
-    const relationshipFieldName = rel.relationshipFieldName;
-    const relationshipNameHumanized = rel.relationshipNameHumanized;
-    const relationshipRequired = rel.relationshipRequired;
-    const otherEntity = rel.otherEntity;
-    const otherEntityField = rel.otherEntityField;
-    // Use appropriate display field based on entity type
-    const displayField = otherEntity.builtInUser ? 'login' : otherEntityField;
-_%>
-        <FormField
-          control={form.control}
-          name="<%= relationshipFieldName %>"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel><%= relationshipNameHumanized %><% if (relationshipRequired) { %> *<% } %></FormLabel>
-              <FormControl>
-<%_ if (otherEntity.builtInUser) { _%>
-                {/* TODO: Implement user relationships with appropriate infinite query hook */}
-                <div className="p-2 text-muted-foreground border rounded">
-                  User relationship support - Please implement user infinite query hook
-                </div>
-<%_ } else { _%>
-                <PaginatedRelationshipCombobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  displayField="<%= displayField %>"
-                  placeholder="Select <%= relationshipNameHumanized.toLowerCase() %>"
-                  multiple={<%= rel.collection %>}
-                  useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                  searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
-                  entityName="<%= otherEntity.entityClassPlural %>"
-                  searchField="<%= displayField %>"
-                />
-<%_ } _%>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-<%_ } _%>
-
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/<%= entityRoute %>")}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isCreating || isUpdating}>
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
+      {/* Progress Bar */}
+      <div className="space-y-4">
+        <div className="flex justify-between text-sm font-medium">
+          <span>Step {currentStep + 1} of {STEPS.length}</span>
+          <span>{Math.round(progress)}% Complete</span>
         </div>
-      </form>
-    </Form>
+        <Progress value={progress} className="h-2" />
+      </div>
+
+      {/* Step Indicators */}
+      <div className="flex justify-center">
+        <div className="flex items-center space-x-4">
+          {STEPS.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
+                index < currentStep 
+                  ? "bg-primary border-primary text-primary-foreground" 
+                  : index === currentStep 
+                  ? "border-primary text-primary bg-primary/10" 
+                  : "border-muted-foreground/30 text-muted-foreground"
+              )}>
+                {index < currentStep ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <span className="text-sm font-medium">{index + 1}</span>
+                )}
+              </div>
+              {index < STEPS.length - 1 && (
+                <ChevronRight className="w-4 h-4 text-muted-foreground mx-2" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Current Step Info */}
+      <div className="text-center space-y-1">
+        <h2 className="text-xl font-semibold">{STEPS[currentStep].title}</h2>
+        <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
+      </div>
+
+      {/* Form Content */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              {/* Step 1: Basic Information */}
+              {STEPS[currentStep].id === 'basic' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% for (field of [...textFields, ...numberFields, ...enumFields]) { 
+                      const fieldName = field.fieldName;
+                      const fieldLabel = camelToTitleCase(fieldName);
+                      const fieldValidateRules = field.fieldValidateRules || [];
+                      const isRequired = fieldValidateRules.includes('required');
+                    %>
+                    <FormField
+                      control={form.control}
+                      name="<%= fieldName %>"
+                      render={({ field }) => (
+                        <% if (field.fieldIsEnum) { %>
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select <%= fieldLabel.toLowerCase() %>" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <% if (!isRequired) { %>
+                              <SelectItem value="__none__">None</SelectItem>
+                              <% } %>
+                              <% for (const enumValue of field.enumValues || []) { %>
+                              <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>">
+                                <%= enumValue.name || enumValue.value || 'Empty' %>
+                              </SelectItem>
+                              <% } %>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                        <% } else { %>
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field}
+                              <% if (field.fieldTypeNumeric) { %>type="number"<% } %>
+                              placeholder="Enter <%= fieldLabel.toLowerCase() %>"
+                              className="transition-colors"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                        <% } %>
+                      )}
+                    />
+                    <% } %>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Date & Time (if exists) */}
+              <% if (dateFields.length > 0) { %>
+              {STEPS[currentStep].id === 'dates' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% for (field of dateFields) { 
+                      const fieldName = field.fieldName;
+                      const fieldLabel = camelToTitleCase(fieldName);
+                      const fieldValidateRules = field.fieldValidateRules || [];
+                      const isRequired = fieldValidateRules.includes('required');
+                    %>
+                    <FormField
+                      control={form.control}
+                      name="<%= fieldName %>"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <% } %>
+                  </div>
+                </div>
+              )}
+              <% } %>
+
+              {/* Step 3: Settings & Files (if exists) */}
+              <% if (booleanFields.length > 0 || binaryFields.length > 0) { %>
+              {STEPS[currentStep].id === 'settings' && (
+                <div className="space-y-6">
+                  {/* Boolean Fields */}
+                  <% if (booleanFields.length > 0) { %>
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Settings</h4>
+                    <% for (field of booleanFields) { 
+                      const fieldName = field.fieldName;
+                      const fieldLabel = camelToTitleCase(fieldName);
+                    %>
+                    <FormField
+                      control={form.control}
+                      name="<%= fieldName %>"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base font-medium"><%= fieldLabel %></FormLabel>
+                          </div>
+                          <FormControl>
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <% } %>
+                  </div>
+                  <% } %>
+
+                  {/* Binary Fields */}
+                  <% if (binaryFields.length > 0) { %>
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Files & Additional Information</h4>
+                    <% for (field of binaryFields) { 
+                      const fieldName = field.fieldName;
+                      const fieldLabel = camelToTitleCase(fieldName);
+                      const fieldValidateRules = field.fieldValidateRules || [];
+                      const isRequired = fieldValidateRules.includes('required');
+                    %>
+                    <FormField
+                      control={form.control}
+                      name="<%= fieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+                          <FormControl>
+                            <% if (field.fieldTypeBinary && (field.blobContentTypeText || field.fieldType === 'TextBlob')) { %>
+                            <Textarea
+                              {...field}
+                              placeholder="Enter <%= fieldLabel.toLowerCase() %>"
+                              className="min-h-[100px]"
+                            />
+                            <% } else { %>
+                            <Input
+                              type="file"
+                              <% if (field.blobContentTypeImage) { %>accept="image/*"<% } %>
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    if (event.target?.result) {
+                                      const base64 = event.target.result.toString().split(',')[1];
+                                      field.onChange(base64);
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                            <% } %>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <% } %>
+                  </div>
+                  <% } %>
+                </div>
+              )}
+              <% } %>
+
+              {/* Step 4: Relationships (if exists) */}
+              <% if (persistableRelationships.length > 0) { %>
+              {STEPS[currentStep].id === 'relationships' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <% for (const rel of persistableRelationships) { 
+                      const relationshipFieldName = rel.relationshipFieldName;
+                      const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      const relationshipRequired = rel.relationshipRequired;
+                      const otherEntity = rel.otherEntity;
+                      const displayField = otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+                    %>
+                    <FormField
+                      control={form.control}
+                      name="<%= relationshipFieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium"><%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %></FormLabel>
+                          <FormControl>
+                            <%_ if (otherEntity.builtInUser) { _%>
+                            <div className="p-3 text-muted-foreground border rounded-md bg-muted/50">
+                              User relationship support - Please implement user infinite query hook
+                            </div>
+                            <%_ } else { _%>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              entityName="<%= otherEntity.entityClassPlural %>"
+                              searchField="<%= displayField %>"
+                            />
+                            <%_ } _%>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <% } %>
+                  </div>
+                </div>
+              )}
+              <% } %>
+
+              {/* Step 5: Review */}
+              {STEPS[currentStep].id === 'review' && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium mb-2">Review Your Information</h3>
+                    <p className="text-muted-foreground">Please review all the information before submitting</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% for (field of fields.filter(field => !field.id)) { 
+                      const fieldName = field.fieldName;
+                      const fieldLabel = camelToTitleCase(fieldName);
+                    %>
+                    <div className="space-y-1">
+                      <dt className="text-sm font-medium text-muted-foreground"><%= fieldLabel %></dt>
+                      <dd className="text-sm">
+                        <% if (field.fieldTypeBoolean) { %>
+                        <Badge variant={form.watch('<%= fieldName %>') ? "default" : "secondary"}>
+                          {form.watch('<%= fieldName %>') ? "Yes" : "No"}
+                        </Badge>
+                        <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
+                        {form.watch('<%= fieldName %>') ? format(form.watch('<%= fieldName %>'), "PPP") : "—"}
+                        <% } else if (field.fieldIsEnum) { %>
+                        <Badge variant="outline">{form.watch('<%= fieldName %>') || "—"}</Badge>
+                        <% } else { %>
+                        {form.watch('<%= fieldName %>') || "—"}
+                        <% } %>
+                      </dd>
+                    </div>
+                    <% } %>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={currentStep === 0 ? () => router.push("/<%= entityRoute %>") : prevStep}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {currentStep === 0 ? "Cancel" : "Previous"}
+            </Button>
+
+            {currentStep === STEPS.length - 1 ? (
+              <Button 
+                type="submit" 
+                disabled={isCreating || isUpdating}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {isNew ? "Create" : "Update"} <%= entityClassHumanized %>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={nextStep}
+                className="flex items-center gap-2"
+              >
+                Next Step
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }

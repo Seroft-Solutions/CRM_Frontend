@@ -37,14 +37,6 @@ export default async function SourcePage({ params }: SourcePageProps) {
               </Link>
             </Button>
           </PageHeader>
-          <InlinePermissionGuard requiredPermission="source:update">
-            <Button size="sm" asChild className="shrink-0">
-              <Link href={`/sources/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
         </div>
 
         <div className="max-w-4xl">

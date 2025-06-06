@@ -8,9 +8,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
 import type { CallCategoryDTO } from "@/core/api/generated/spring/schemas/CallCategoryDTO";
 
 
+
+interface RelationshipConfig {
+  name: string;
+  displayName: string;
+  options: Array<{ id: number; [key: string]: any }>;
+  displayField: string;
+  isEditable: boolean;
+}
 
 interface CallCategoryTableRowProps {
   callCategory: CallCategoryDTO;
@@ -18,9 +27,21 @@ interface CallCategoryTableRowProps {
   isDeleting: boolean;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  relationshipConfigs?: RelationshipConfig[];
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  isUpdating?: boolean;
 }
 
-export function CallCategoryTableRow({ callCategory, onDelete, isDeleting, isSelected, onSelect }: CallCategoryTableRowProps) {
+export function CallCategoryTableRow({ 
+  callCategory, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
+  onSelect,
+  relationshipConfigs = [],
+  onRelationshipUpdate,
+  isUpdating = false,
+}: CallCategoryTableRowProps) {
   return (
     <TableRow>
       <TableCell className="w-12 px-3 py-2">
