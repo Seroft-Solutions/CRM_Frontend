@@ -120,14 +120,5 @@ export type CountPartiesParams = {
 'interestedProductsId.specified'?: boolean;
 'interestedProductsId.in'?: number[];
 'interestedProductsId.notIn'?: number[];
-'cityId.greaterThan'?: number;
-'cityId.lessThan'?: number;
-'cityId.greaterThanOrEqual'?: number;
-'cityId.lessThanOrEqual'?: number;
-'cityId.equals'?: number;
-'cityId.notEquals'?: number;
-'cityId.specified'?: boolean;
-'cityId.in'?: number[];
-'cityId.notIn'?: number[];
 distinct?: boolean;
 };

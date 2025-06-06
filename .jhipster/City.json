@@ -26,13 +26,6 @@
       "relationshipType": "one-to-many"
     },
     {
-      "otherEntityName": "party",
-      "otherEntityRelationshipName": "city",
-      "relationshipName": "parties",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-many"
-    },
-    {
       "otherEntityField": "name",
       "otherEntityName": "district",
       "otherEntityRelationshipName": "cities",

@@ -64,10 +64,6 @@ import {
   useGetAllProductsInfinite,
   useSearchProductsInfinite 
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import { 
-  useGetAllCitiesInfinite,
-  useSearchCitiesInfinite 
-} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 interface PartyFormProps {
@@ -89,10 +85,9 @@ const formSchema = z.object({
   source: z.number().optional(),
   area: z.number().optional(),
   interestedProducts: z.array(z.number()).optional(),
-  city: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function PartyForm({ id }: PartyFormProps) {
   const router = useRouter();
@@ -101,6 +96,9 @@ export function PartyForm({ id }: PartyFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateParty({
@@ -202,9 +200,6 @@ export function PartyForm({ id }: PartyFormProps) {
 
 
       interestedProducts: [],
-
-
-      city: undefined,
 
     },
   });
@@ -430,9 +425,6 @@ export function PartyForm({ id }: PartyFormProps) {
 
         interestedProducts: entity.interestedProducts?.map(item => item.id),
 
-
-        city: entity.city?.id,
-
       };
       form.reset(formValues);
       console.log('Entity data loaded successfully');
@@ -510,12 +502,9 @@ export function PartyForm({ id }: PartyFormProps) {
 
       interestedProducts: data.interestedProducts?.map(id => ({ id: id })),
 
-
-      city: data.city ? { id: data.city } : null,
-
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','interestedProducts','city',].includes(key);
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','interestedProducts',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -546,8 +535,20 @@ export function PartyForm({ id }: PartyFormProps) {
       case 'settings':
         fieldsToValidate = ['isActive',];
         break;
-      case 'relationships':
-        fieldsToValidate = ['source','area','interestedProducts','city',];
+      case 'geographic':
+        fieldsToValidate = ['area',];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
+        fieldsToValidate = [];
+        break;
+      case 'business':
+        fieldsToValidate = ['source','interestedProducts',];
+        break;
+      case 'other':
+        fieldsToValidate = [];
         break;
     }
 
@@ -876,18 +877,70 @@ export function PartyForm({ id }: PartyFormProps) {
               )}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+              {STEPS[currentStep].id === 'geographic' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Location Information</h3>
+                    <p className="text-muted-foreground">Select location details in hierarchical order</p>
+                  </div>
                   <div className="grid grid-cols-1 gap-6">
-                    
+                    <FormField
+                      control={form.control}
+                      name="area"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Area
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setGeographicFilters(prev => ({ ...prev, area: value }));
+                              }}
+                              displayField="name"
+                              placeholder="Select area"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllAreasInfinite}
+                              searchHook={useSearchAreasInfinite}
+                              entityName="Areas"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/areas/new"
+                              createPermission="area:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'area')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+
+              {/* Business Relations Step */}
+              {STEPS[currentStep].id === 'business' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Business Relations</h3>
+                    <p className="text-muted-foreground">Connect with customers, products, and sources</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
                     <FormField
                       control={form.control}
                       name="source"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Source</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            Source
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -909,41 +962,14 @@ export function PartyForm({ id }: PartyFormProps) {
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="area"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">Area</FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select area"
-                              multiple={false}
-                              useInfiniteQueryHook={useGetAllAreasInfinite}
-                              searchHook={useSearchAreasInfinite}
-                              entityName="Areas"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/areas/new"
-                              createPermission="area:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'area')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
                     <FormField
                       control={form.control}
                       name="interestedProducts"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Interested Products</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            Interested Products
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -965,41 +991,13 @@ export function PartyForm({ id }: PartyFormProps) {
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">City</FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select city"
-                              multiple={false}
-                              useInfiniteQueryHook={useGetAllCitiesInfinite}
-                              searchHook={useSearchCitiesInfinite}
-                              entityName="Cities"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/cities/new"
-                              createPermission="city:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'city')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
                   </div>
                 </div>
               )}
-              
 
-              {/* Step 5: Review */}
+              {/* Other Relations Step */}
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -1007,101 +1005,119 @@ export function PartyForm({ id }: PartyFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('name') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                        <dd className="text-sm">
+                          {form.watch('name') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Mobile</dt>
+                        <dd className="text-sm">
+                          {form.watch('mobile') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Email</dt>
+                        <dd className="text-sm">
+                          {form.watch('email') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Whats App</dt>
+                        <dd className="text-sm">
+                          {form.watch('whatsApp') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Contact Person</dt>
+                        <dd className="text-sm">
+                          {form.watch('contactPerson') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Address1</dt>
+                        <dd className="text-sm">
+                          {form.watch('address1') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Address2</dt>
+                        <dd className="text-sm">
+                          {form.watch('address2') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Address3</dt>
+                        <dd className="text-sm">
+                          {form.watch('address3') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
+                        <dd className="text-sm">
+                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
+                            {form.watch('isActive') ? "Yes" : "No"}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
+                        <dd className="text-sm">
+                          {form.watch('remark') || "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Mobile</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('mobile') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Email</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('email') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Whats App</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('whatsApp') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Contact Person</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('contactPerson') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Address1</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('address1') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Address2</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('address2') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Address3</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('address3') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                      <dd className="text-sm">
-                        
-                        <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                          {form.watch('isActive') ? "Yes" : "No"}
-                        </Badge>
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('remark') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
                   </div>
+
+                  {/* Geographic Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Area</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('area') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+
+                  {/* Business Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏢 Business Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Source</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('source') ? 'Connected' : 'Not connected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Interested Products</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {Array.isArray(form.watch('interestedProducts')) ? 
+                              `${form.watch('interestedProducts').length} selected` : 'None selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Other Relations */}
                 </div>
               )}
             </CardContent>

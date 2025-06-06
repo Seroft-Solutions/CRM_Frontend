@@ -63,7 +63,12 @@ displayableRelationships.forEach(rel => {
   const otherEntityFileName = rel.otherEntity.entityFileName || otherEntityName.toLowerCase();
   const otherEntityClassPlural = rel.otherEntity.entityClassPlural || (otherEntityName + 's');
   
-  relationshipImports.push(`useGetAll${otherEntityClassPlural}`);
+  // Handle built-in user entity
+  if (rel.relationshipWithBuiltInEntity && otherEntityName === 'user') {
+    relationshipImports.push(`useGetAllPublicUsers`);
+  } else {
+    relationshipImports.push(`useGetAll${otherEntityClassPlural}`);
+  }
 });
 
 // Remove duplicates
@@ -74,17 +79,35 @@ const uniqueImports = [...new Set(relationshipImports)];
 // Relationship data imports
 <% 
 const importsByEntity = {};
+const publicUserImports = [];
+
 displayableRelationships.forEach(rel => {
   const otherEntityName = rel.otherEntityName;
   const otherEntityFileName = rel.otherEntity.entityFileName || otherEntityName.toLowerCase();
   const otherEntityClassPlural = rel.otherEntity.entityClassPlural || (otherEntityName + 's');
   
-  if (!importsByEntity[otherEntityFileName]) {
-    importsByEntity[otherEntityFileName] = [];
+  // Handle built-in user entity separately
+  if (rel.relationshipWithBuiltInEntity && otherEntityName === 'user') {
+    publicUserImports.push(`useGetAllPublicUsers`);
+  } else {
+    if (!importsByEntity[otherEntityFileName]) {
+      importsByEntity[otherEntityFileName] = [];
+    }
+    importsByEntity[otherEntityFileName].push(`useGetAll${otherEntityClassPlural}`);
   }
-  importsByEntity[otherEntityFileName].push(`useGetAll${otherEntityClassPlural}`);
 });
 
+// Import public user resources if needed
+if (publicUserImports.length > 0) {
+  const uniquePublicUserImports = [...new Set(publicUserImports)];
+%>
+import {
+  <%= uniquePublicUserImports.join(',\n  ') %>
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+<% } %>
+
+<% 
+// Import regular entity resources
 Object.keys(importsByEntity).forEach(entityFileName => {
   const imports = [...new Set(importsByEntity[entityFileName])];
 %>
@@ -241,12 +264,22 @@ export function <%= entityClass %>Table() {
     
     if (!fetchedEntities.has(otherEntityFileName)) {
       fetchedEntities.add(otherEntityFileName);
+      
+      if (rel.relationshipWithBuiltInEntity && otherEntityName === 'user') {
+  %>
+  const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAllPublicUsers(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  <% 
+      } else {
   %>
   const { data: <%= otherEntityName.toLowerCase() %>Options = [] } = useGetAll<%= otherEntityClassPlural %>(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
   <% 
+      }
     }
   });
   %>

@@ -97,9 +97,6 @@ export function PartySearchAndFilters({
       if (relationName === 'area') {
         return 'Area';
       }
-      if (relationName === 'city') {
-        return 'City';
-      }
       return relationName;
     }
     
@@ -230,18 +227,6 @@ export function PartySearchAndFilters({
                       placeholder="Filter by area..."
                       value={filters["area.name"] as string || ""}
                       onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      City
-                    </label>
-                    <Input
-                      placeholder="Filter by city..."
-                      value={filters["city.name"] as string || ""}
-                      onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

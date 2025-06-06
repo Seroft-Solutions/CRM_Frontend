@@ -37,14 +37,6 @@
       "relationshipWithBuiltInEntity": true
     },
     {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "channelParty",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
-    {
       "otherEntityField": "name",
       "otherEntityName": "priority",
       "relationshipName": "priority",

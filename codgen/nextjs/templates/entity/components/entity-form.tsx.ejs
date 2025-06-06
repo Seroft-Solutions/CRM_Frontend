@@ -58,11 +58,6 @@ import {
   useGet<%= entityClass %>,
 } from "@/core/api/generated/spring/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
 <%_ 
-// Group relationships by built-in entities vs regular entities
-const userRelationships = persistableRelationships.filter(r => r.otherEntity.builtInUser);
-const regularRelationships = persistableRelationships.filter(r => !r.otherEntity.builtInUser);
-const hasUserRelationships = userRelationships.length > 0;
-
 // Helper function to convert camelCase to Title Case
 function camelToTitleCase(str) {
   return str
@@ -83,12 +78,61 @@ const enumFields = basicFields.filter(field => field.fieldIsEnum);
 const booleanFields = basicFields.filter(field => field.fieldTypeBoolean);
 const binaryFields = fields.filter(field => field.fieldTypeBinary);
 
-// Define wizard steps
+// Intelligent relationship grouping
+const geographicKeywords = ['state', 'district', 'city', 'area', 'country', 'region', 'location'];
+const userKeywords = ['user', 'assignedTo', 'createdBy', 'updatedBy', 'channelParty', 'owner'];
+const classificationKeywords = ['priority', 'status', 'type', 'category', 'level', 'grade'];
+const businessKeywords = ['party', 'customer', 'supplier', 'vendor', 'product', 'source', 'channel'];
+
+function categorizeRelationship(rel) {
+  const name = rel.relationshipName.toLowerCase();
+  const otherEntity = rel.otherEntityName.toLowerCase();
+  
+  if (geographicKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'geographic';
+  }
+  if (userKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw)) || rel.otherEntity.builtInUser) {
+    return 'user';
+  }
+  if (classificationKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'classification';
+  }
+  if (businessKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'business';
+  }
+  return 'other';
+}
+
+// Group relationships by category
+const relationshipGroups = {
+  geographic: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'geographic'),
+  user: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'user'),
+  classification: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'classification'),
+  business: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'business'),
+  other: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'other')
+};
+
+// Legacy variables for template compatibility
+const hasUserRelationships = relationshipGroups.user.length > 0;
+
+// Create geographic hierarchy (State → District → City → Area)
+const geographicHierarchy = ['state', 'district', 'city', 'area'];
+const sortedGeographic = relationshipGroups.geographic.sort((a, b) => {
+  const aIndex = geographicHierarchy.findIndex(kw => a.relationshipName.toLowerCase().includes(kw));
+  const bIndex = geographicHierarchy.findIndex(kw => b.relationshipName.toLowerCase().includes(kw));
+  return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+});
+
+// Define wizard steps dynamically based on available fields
 const steps = [
-  { id: 'basic', title: 'Basic Information', description: 'Enter essential details' },
+  ...(textFields.length > 0 || numberFields.length > 0 || enumFields.length > 0 ? [{ id: 'basic', title: 'Basic Information', description: 'Enter essential details' }] : []),
   ...(dateFields.length > 0 ? [{ id: 'dates', title: 'Date & Time', description: 'Set relevant dates' }] : []),
   ...(booleanFields.length > 0 || binaryFields.length > 0 ? [{ id: 'settings', title: 'Settings & Files', description: 'Configure options' }] : []),
-  ...(persistableRelationships.length > 0 ? [{ id: 'relationships', title: 'Relationships', description: 'Associate with other entities' }] : []),
+  ...(relationshipGroups.geographic.length > 0 ? [{ id: 'geographic', title: 'Location Details', description: 'Select geographic information' }] : []),
+  ...(relationshipGroups.user.length > 0 ? [{ id: 'users', title: 'People & Assignment', description: 'Assign users and responsibilities' }] : []),
+  ...(relationshipGroups.classification.length > 0 ? [{ id: 'classification', title: 'Classification', description: 'Set priority, status, and categories' }] : []),
+  ...(relationshipGroups.business.length > 0 ? [{ id: 'business', title: 'Business Relations', description: 'Connect with customers and products' }] : []),
+  ...(relationshipGroups.other.length > 0 ? [{ id: 'other', title: 'Additional Relations', description: 'Other connections and references' }] : []),
   { id: 'review', title: 'Review', description: 'Confirm your details' }
 ];
 _%>
@@ -97,6 +141,12 @@ import {
   useGetAll<%= otherEntity.entityClassPlural %>Infinite,
   useSearch<%= otherEntity.entityClassPlural %>Infinite 
 } from "@/core/api/generated/spring/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
+<%_ } _%>
+<%_ if (otherEntitiesWithPersistableRelationship.some(e => e.builtInUser)) { _%>
+import { 
+  useGetAllPublicUsersInfinite,
+  useSearchInfinite as useSearchPublicUsersInfinite 
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 <%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/spring/schemas/<%= entityClass %>DTO";
 <%_ if (hasUserRelationships) { _%>
@@ -134,6 +184,9 @@ export function <%= entityClass %>Form({ id }: <%= entityClass %>FormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreate<%= entityClass %>({
@@ -517,8 +570,35 @@ _%>
       case 'settings':
         fieldsToValidate = [<%_ for (field of [...booleanFields, ...binaryFields]) { _%>'<%= field.fieldName %>',<%_ } _%>];
         break;
-      case 'relationships':
-        fieldsToValidate = [<%_ for (const rel of persistableRelationships) { _%>'<%= rel.relationshipFieldName %>',<%_ } _%>];
+      case 'geographic':
+        fieldsToValidate = [<%_ 
+        if (relationshipGroups.geographic) {
+          for (const rel of relationshipGroups.geographic) { _%>'<%= rel.relationshipFieldName %>',<%_ }
+        } _%>];
+        break;
+      case 'users':
+        fieldsToValidate = [<%_ 
+        if (relationshipGroups.user) {
+          for (const rel of relationshipGroups.user) { _%>'<%= rel.relationshipFieldName %>',<%_ }
+        } _%>];
+        break;
+      case 'classification':
+        fieldsToValidate = [<%_ 
+        if (relationshipGroups.classification) {
+          for (const rel of relationshipGroups.classification) { _%>'<%= rel.relationshipFieldName %>',<%_ }
+        } _%>];
+        break;
+      case 'business':
+        fieldsToValidate = [<%_ 
+        if (relationshipGroups.business) {
+          for (const rel of relationshipGroups.business) { _%>'<%= rel.relationshipFieldName %>',<%_ }
+        } _%>];
+        break;
+      case 'other':
+        fieldsToValidate = [<%_ 
+        if (relationshipGroups.other) {
+          for (const rel of relationshipGroups.other) { _%>'<%= rel.relationshipFieldName %>',<%_ }
+        } _%>];
         break;
     }
 
@@ -805,29 +885,101 @@ _%>
               )}
               <% } %>
 
-              {/* Step 4: Relationships (if exists) */}
-              <% if (persistableRelationships.length > 0) { %>
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+              <%_ if (relationshipGroups.geographic && relationshipGroups.geographic.length > 0) { _%>
+              {STEPS[currentStep].id === 'geographic' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Location Information</h3>
+                    <p className="text-muted-foreground">Select location details in hierarchical order</p>
+                  </div>
                   <div className="grid grid-cols-1 gap-6">
-                    <% for (const rel of persistableRelationships) { 
+                    <%_ for (const rel of relationshipGroups.geographic) { 
                       const relationshipFieldName = rel.relationshipFieldName;
                       const relationshipLabel = camelToTitleCase(rel.relationshipName);
                       const relationshipRequired = rel.relationshipRequired;
                       const otherEntity = rel.otherEntity;
-                      const displayField = otherEntity.builtInUser ? 'login' : rel.otherEntityField;
-                    %>
+                      const displayField = rel.otherEntityField;
+                    _%>
                     <FormField
                       control={form.control}
                       name="<%= relationshipFieldName %>"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium"><%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %></FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setGeographicFilters(prev => ({ ...prev, <%= relationshipFieldName %>: value }));
+                              }}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              entityName="<%= otherEntity.entityClassPlural %>"
+                              searchField="<%= displayField %>"
+                              canCreate={true}
+                              createEntityPath="/<%= otherEntity.routePath %>/new"
+                              createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <%_ } _%>
+                  </div>
+                </div>
+              )}
+              <%_ } _%>
+
+              {/* User Assignment Step */}
+              <%_ if (relationshipGroups.user && relationshipGroups.user.length > 0) { _%>
+              {STEPS[currentStep].id === 'users' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">People & Assignment</h3>
+                    <p className="text-muted-foreground">Assign users and responsibilities</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <%_ for (const rel of relationshipGroups.user) { 
+                      const relationshipFieldName = rel.relationshipFieldName;
+                      const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      const relationshipRequired = rel.relationshipRequired;
+                      const otherEntity = rel.otherEntity;
+                      const displayField = otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+                    _%>
+                    <FormField
+                      control={form.control}
+                      name="<%= relationshipFieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+                          </FormLabel>
                           <FormControl>
                             <%_ if (otherEntity.builtInUser) { _%>
-                            <div className="p-3 text-muted-foreground border rounded-md bg-muted/50">
-                              User relationship support - Please implement user infinite query hook
-                            </div>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAllPublicUsersInfinite}
+                              searchHook={useSearchPublicUsersInfinite}
+                              entityName="PublicUsers"
+                              searchField="<%= displayField %>"
+                              canCreate={false}
+                              createEntityPath=""
+                              createPermission=""
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                            />
                             <%_ } else { _%>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -850,13 +1002,166 @@ _%>
                         </FormItem>
                       )}
                     />
-                    <% } %>
+                    <%_ } _%>
                   </div>
                 </div>
               )}
-              <% } %>
+              <%_ } _%>
 
-              {/* Step 5: Review */}
+              {/* Classification Step */}
+              <%_ if (relationshipGroups.classification && relationshipGroups.classification.length > 0) { _%>
+              {STEPS[currentStep].id === 'classification' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Classification</h3>
+                    <p className="text-muted-foreground">Set priority, status, and categories</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <%_ for (const rel of relationshipGroups.classification) { 
+                      const relationshipFieldName = rel.relationshipFieldName;
+                      const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      const relationshipRequired = rel.relationshipRequired;
+                      const otherEntity = rel.otherEntity;
+                      const displayField = rel.otherEntityField;
+                    _%>
+                    <FormField
+                      control={form.control}
+                      name="<%= relationshipFieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              entityName="<%= otherEntity.entityClassPlural %>"
+                              searchField="<%= displayField %>"
+                              canCreate={true}
+                              createEntityPath="/<%= otherEntity.routePath %>/new"
+                              createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <%_ } _%>
+                  </div>
+                </div>
+              )}
+              <%_ } _%>
+
+              {/* Business Relations Step */}
+              <%_ if (relationshipGroups.business && relationshipGroups.business.length > 0) { _%>
+              {STEPS[currentStep].id === 'business' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Business Relations</h3>
+                    <p className="text-muted-foreground">Connect with customers, products, and sources</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    <%_ for (const rel of relationshipGroups.business) { 
+                      const relationshipFieldName = rel.relationshipFieldName;
+                      const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      const relationshipRequired = rel.relationshipRequired;
+                      const otherEntity = rel.otherEntity;
+                      const displayField = rel.otherEntityField;
+                    _%>
+                    <FormField
+                      control={form.control}
+                      name="<%= relationshipFieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              entityName="<%= otherEntity.entityClassPlural %>"
+                              searchField="<%= displayField %>"
+                              canCreate={true}
+                              createEntityPath="/<%= otherEntity.routePath %>/new"
+                              createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <%_ } _%>
+                  </div>
+                </div>
+              )}
+              <%_ } _%>
+
+              {/* Other Relations Step */}
+              <%_ if (relationshipGroups.other && relationshipGroups.other.length > 0) { _%>
+              {STEPS[currentStep].id === 'other' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Additional Relations</h3>
+                    <p className="text-muted-foreground">Other connections and references</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    <%_ for (const rel of relationshipGroups.other) { 
+                      const relationshipFieldName = rel.relationshipFieldName;
+                      const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      const relationshipRequired = rel.relationshipRequired;
+                      const otherEntity = rel.otherEntity;
+                      const displayField = rel.otherEntityField;
+                    _%>
+                    <FormField
+                      control={form.control}
+                      name="<%= relationshipFieldName %>"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="<%= displayField %>"
+                              placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                              multiple={<%= rel.collection %>}
+                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
+                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              entityName="<%= otherEntity.entityClassPlural %>"
+                              searchField="<%= displayField %>"
+                              canCreate={true}
+                              createEntityPath="/<%= otherEntity.routePath %>/new"
+                              createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <%_ } _%>
+                  </div>
+                </div>
+              )}
+              <%_ } _%>
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -864,29 +1169,155 @@ _%>
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <% for (field of fields.filter(field => !field.id)) { 
-                      const fieldName = field.fieldName;
-                      const fieldLabel = camelToTitleCase(fieldName);
-                    %>
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground"><%= fieldLabel %></dt>
-                      <dd className="text-sm">
-                        <% if (field.fieldTypeBoolean) { %>
-                        <Badge variant={form.watch('<%= fieldName %>') ? "default" : "secondary"}>
-                          {form.watch('<%= fieldName %>') ? "Yes" : "No"}
-                        </Badge>
-                        <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
-                        {form.watch('<%= fieldName %>') ? format(form.watch('<%= fieldName %>'), "PPP") : "—"}
-                        <% } else if (field.fieldIsEnum) { %>
-                        <Badge variant="outline">{form.watch('<%= fieldName %>') || "—"}</Badge>
-                        <% } else { %>
-                        {form.watch('<%= fieldName %>') || "—"}
-                        <% } %>
-                      </dd>
+                  {/* Basic Fields */}
+                  <%_ if (fields.filter(field => !field.id).length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (field of fields.filter(field => !field.id)) { 
+                        const fieldName = field.fieldName;
+                        const fieldLabel = camelToTitleCase(fieldName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= fieldLabel %></dt>
+                        <dd className="text-sm">
+                          <%_ if (field.fieldTypeBoolean) { _%>
+                          <Badge variant={form.watch('<%= fieldName %>') ? "default" : "secondary"}>
+                            {form.watch('<%= fieldName %>') ? "Yes" : "No"}
+                          </Badge>
+                          <%_ } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { _%>
+                          {form.watch('<%= fieldName %>') ? format(form.watch('<%= fieldName %>'), "PPP") : "—"}
+                          <%_ } else if (field.fieldIsEnum) { _%>
+                          <Badge variant="outline">{form.watch('<%= fieldName %>') || "—"}</Badge>
+                          <%_ } else { _%>
+                          {form.watch('<%= fieldName %>') || "—"}
+                          <%_ } _%>
+                        </dd>
+                      </div>
+                      <%_ } _%>
                     </div>
-                    <% } %>
                   </div>
+                  <%_ } _%>
+
+                  {/* Geographic Relations */}
+                  <%_ if (relationshipGroups.geographic && relationshipGroups.geographic.length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (const rel of relationshipGroups.geographic) { 
+                        const relationshipFieldName = rel.relationshipFieldName;
+                        const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= relationshipLabel %></dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('<%= relationshipFieldName %>') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <%_ } _%>
+                    </div>
+                  </div>
+                  <%_ } _%>
+
+                  {/* User Relations */}
+                  <%_ if (relationshipGroups.user && relationshipGroups.user.length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">👥 People & Assignment</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (const rel of relationshipGroups.user) { 
+                        const relationshipFieldName = rel.relationshipFieldName;
+                        const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= relationshipLabel %></dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            <%_ if (rel.collection) { _%>
+                            {Array.isArray(form.watch('<%= relationshipFieldName %>')) ? 
+                              `${form.watch('<%= relationshipFieldName %>').length} selected` : 'None selected'}
+                            <%_ } else { _%>
+                            {form.watch('<%= relationshipFieldName %>') ? 'Assigned' : 'Not assigned'}
+                            <%_ } _%>
+                          </Badge>
+                        </dd>
+                      </div>
+                      <%_ } _%>
+                    </div>
+                  </div>
+                  <%_ } _%>
+
+                  {/* Classification Relations */}
+                  <%_ if (relationshipGroups.classification && relationshipGroups.classification.length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏷️ Classification</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (const rel of relationshipGroups.classification) { 
+                        const relationshipFieldName = rel.relationshipFieldName;
+                        const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= relationshipLabel %></dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('<%= relationshipFieldName %>') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <%_ } _%>
+                    </div>
+                  </div>
+                  <%_ } _%>
+
+                  {/* Business Relations */}
+                  <%_ if (relationshipGroups.business && relationshipGroups.business.length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏢 Business Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (const rel of relationshipGroups.business) { 
+                        const relationshipFieldName = rel.relationshipFieldName;
+                        const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= relationshipLabel %></dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            <%_ if (rel.collection) { _%>
+                            {Array.isArray(form.watch('<%= relationshipFieldName %>')) ? 
+                              `${form.watch('<%= relationshipFieldName %>').length} selected` : 'None selected'}
+                            <%_ } else { _%>
+                            {form.watch('<%= relationshipFieldName %>') ? 'Connected' : 'Not connected'}
+                            <%_ } _%>
+                          </Badge>
+                        </dd>
+                      </div>
+                      <%_ } _%>
+                    </div>
+                  </div>
+                  <%_ } _%>
+
+                  {/* Other Relations */}
+                  <%_ if (relationshipGroups.other && relationshipGroups.other.length > 0) { _%>
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🔗 Additional Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <%_ for (const rel of relationshipGroups.other) { 
+                        const relationshipFieldName = rel.relationshipFieldName;
+                        const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                      _%>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground"><%= relationshipLabel %></dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('<%= relationshipFieldName %>') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <%_ } _%>
+                    </div>
+                  </div>
+                  <%_ } _%>
                 </div>
               )}
             </CardContent>

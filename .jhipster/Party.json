@@ -102,14 +102,6 @@
       "relationshipName": "interestedProducts",
       "relationshipSide": "left",
       "relationshipType": "many-to-many"
-    },
-    {
-      "otherEntityField": "name",
-      "otherEntityName": "city",
-      "otherEntityRelationshipName": "parties",
-      "relationshipName": "city",
-      "relationshipSide": "right",
-      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "elasticsearch",
