@@ -263,7 +263,7 @@ export function <%= entityClass %>Table() {
           query: searchTerm,
           page: apiPage,
           size: pageSize,
-          sort: [`${sort},${order}`],
+          sort: `${sort},${order}`,
           ...filterParams,
         },
         {
@@ -276,7 +276,7 @@ export function <%= entityClass %>Table() {
         {
           page: apiPage,
           size: pageSize,
-          sort: [`${sort},${order}`],
+          sort: `${sort},${order}`,
           ...filterParams,
         },
         {
@@ -290,7 +290,7 @@ export function <%= entityClass %>Table() {
     {
       page: apiPage,
       size: pageSize,
-      sort: [`${sort},${order}`],
+      sort: `${sort},${order}`,
       ...filterParams,
     },
     {

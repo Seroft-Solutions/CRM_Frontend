@@ -123,93 +123,6 @@ export function CallTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
-  // Build filter parameters for API
-  const buildFilterParams = () => {
-    const params: Record<string, any> = {};
-    
-    // Add regular filters
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        if (Array.isArray(value) && value.length > 0) {
-          params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
-        } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
-        }
-      }
-    });
-
-    // Add date range filters
-    
-    if (dateRange.from) {
-      params[`callDateTimeGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
-    }
-    if (dateRange.to) {
-      params[`callDateTimeLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
-    }
-    
-
-    return params;
-  };
-
-  const filterParams = buildFilterParams();
-
-  // Fetch data with React Query
-  
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchCalls(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllCalls(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
-  
-
-  // Get total count for pagination
-  const { data: countData } = useCountCalls(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
-
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCall({
-    mutation: {
-      onSuccess: () => {
-        refetch();
-      },
-      onError: (error) => {
-        console.error('Update failed:', error);
-        throw error;
-      },
-    },
-  });
-
   
   // Fetch relationship data for dropdowns
   
@@ -264,6 +177,183 @@ export function CallTable() {
   );
   
   
+
+  // Helper function to find entity ID by name
+  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    return entity?.id;
+  };
+
+  // Build filter parameters for API
+  const buildFilterParams = () => {
+    const params: Record<string, any> = {};
+    
+    
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      
+      'assignedTo.login': { 
+        apiParam: 'assignedToId.equals', 
+        options: userOptions, 
+        displayField: 'login' 
+      },
+      
+      'priority.name': { 
+        apiParam: 'priorityId.equals', 
+        options: priorityOptions, 
+        displayField: 'name' 
+      },
+      
+      'callType.name': { 
+        apiParam: 'callTypeId.equals', 
+        options: calltypeOptions, 
+        displayField: 'name' 
+      },
+      
+      'subCallType.name': { 
+        apiParam: 'subCallTypeId.equals', 
+        options: subcalltypeOptions, 
+        displayField: 'name' 
+      },
+      
+      'source.name': { 
+        apiParam: 'sourceId.equals', 
+        options: sourceOptions, 
+        displayField: 'name' 
+      },
+      
+      'area.name': { 
+        apiParam: 'areaId.equals', 
+        options: areaOptions, 
+        displayField: 'name' 
+      },
+      
+      'channelType.name': { 
+        apiParam: 'channelTypeId.equals', 
+        options: channeltypeOptions, 
+        displayField: 'name' 
+      },
+      
+      'callCategory.name': { 
+        apiParam: 'callCategoryId.equals', 
+        options: callcategoryOptions, 
+        displayField: 'name' 
+      },
+      
+      'callStatus.name': { 
+        apiParam: 'callStatusId.equals', 
+        options: callstatusOptions, 
+        displayField: 'name' 
+      },
+      
+      'party.name': { 
+        apiParam: 'partyId.equals', 
+        options: partyOptions, 
+        displayField: 'name' 
+      },
+      
+    };
+    
+    
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== "" && value !== null) {
+        
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
+        
+        
+        // Handle isActive filter
+        else if (key === 'isActive') {
+          params['isActive.equals'] = value === 'true';
+        }
+        
+        // Handle other direct filters
+        else if (Array.isArray(value) && value.length > 0) {
+          params[key] = value;
+        } else if (value instanceof Date) {
+          params[key] = value.toISOString().split('T')[0];
+        } else if (typeof value === 'string' && value.trim() !== '') {
+          params[key] = value;
+        }
+      }
+    });
+
+    // Add date range filters
+    
+    if (dateRange.from) {
+      params['callDateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['callDateTime.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+
+    return params;
+  };
+
+  const filterParams = buildFilterParams();
+
+  // Fetch data with React Query
+  
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchCalls(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllCalls(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
+  
+
+  // Get total count for pagination
+  const { data: countData } = useCountCalls(
+    filterParams,
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
+
+  // Partial update mutation for relationship editing
+  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCall({
+    mutation: {
+      onSuccess: () => {
+        refetch();
+      },
+      onError: (error) => {
+        console.error('Update failed:', error);
+        throw error;
+      },
+    },
+  });
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCall({

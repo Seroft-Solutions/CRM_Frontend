@@ -78,14 +78,32 @@ export function ProductTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
+  
+
+  // Helper function to find entity ID by name
+  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    return entity?.id;
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
     
-    // Add regular filters
+    
+    
+    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
-        if (Array.isArray(value) && value.length > 0) {
+        
+        
+        // Handle isActive filter
+        else if (key === 'isActive') {
+          params['isActive.equals'] = value === 'true';
+        }
+        
+        // Handle other direct filters
+        else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -111,7 +129,7 @@ export function ProductTable() {
           query: searchTerm,
           page: apiPage,
           size: pageSize,
-          sort: [`${sort},${order}`],
+          sort: `${sort},${order}`,
           ...filterParams,
         },
         {
@@ -124,7 +142,7 @@ export function ProductTable() {
         {
           page: apiPage,
           size: pageSize,
-          sort: [`${sort},${order}`],
+          sort: `${sort},${order}`,
           ...filterParams,
         },
         {
@@ -157,8 +175,6 @@ export function ProductTable() {
       },
     },
   });
-
-  
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteProduct({

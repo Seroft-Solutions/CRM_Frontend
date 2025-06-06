@@ -87,14 +87,55 @@ export function CallRemarkTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
+  
+  // Fetch relationship data for dropdowns
+  
+  const { data: callOptions = [] } = useGetAllCalls(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
+
+  // Helper function to find entity ID by name
+  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    return entity?.id;
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
     
-    // Add regular filters
+    
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      
+      'call.name': { 
+        apiParam: 'callId.equals', 
+        options: callOptions, 
+        displayField: 'name' 
+      },
+      
+    };
+    
+    
+    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
-        if (Array.isArray(value) && value.length > 0) {
+        
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
+        
+        
+        // Handle other direct filters
+        else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -107,10 +148,10 @@ export function CallRemarkTable() {
     // Add date range filters
     
     if (dateRange.from) {
-      params[`dateTimeGreaterThanOrEqual`] = dateRange.from.toISOString().split('T')[0];
+      params['dateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
-      params[`dateTimeLessThanOrEqual`] = dateRange.to.toISOString().split('T')[0];
+      params['dateTime.lessThanOrEqual'] = dateRange.to.toISOString();
     }
     
 
@@ -125,7 +166,7 @@ export function CallRemarkTable() {
     {
       page: apiPage,
       size: pageSize,
-      sort: [`${sort},${order}`],
+      sort: `${sort},${order}`,
       ...filterParams,
     },
     {
@@ -158,16 +199,6 @@ export function CallRemarkTable() {
       },
     },
   });
-
-  
-  // Fetch relationship data for dropdowns
-  
-  const { data: callOptions = [] } = useGetAllCalls(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
-  
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCallRemark({
