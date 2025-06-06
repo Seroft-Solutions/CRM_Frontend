@@ -582,6 +582,7 @@ export function CityForm({ id }: CityFormProps) {
                               value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value);
+                                // Clear dependent selections
                                 setGeographicFilters(prev => ({ ...prev, district: value }));
                               }}
                               displayField="name"

@@ -613,6 +613,7 @@ export function AreaForm({ id }: AreaFormProps) {
                               value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value);
+                                // Clear dependent selections
                                 setGeographicFilters(prev => ({ ...prev, city: value }));
                               }}
                               displayField="name"

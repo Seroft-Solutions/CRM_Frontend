@@ -140,6 +140,48 @@ export function PartyTableRow({
         />
       </TableCell>
       
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="state"
+          currentValue={party.state}
+          options={relationshipConfigs.find(config => config.name === "state")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="district"
+          currentValue={party.district}
+          options={relationshipConfigs.find(config => config.name === "district")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="city"
+          currentValue={party.city}
+          options={relationshipConfigs.find(config => config.name === "city")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "city")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+        />
+      </TableCell>
+      
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">
           <InlinePermissionGuard requiredPermission="party:read">

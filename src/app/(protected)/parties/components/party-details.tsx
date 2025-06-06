@@ -227,6 +227,45 @@ export function PartyDetails({ id }: PartyDetailsProps) {
                     </dd>
                   </div>
                   
+                  <div className="border-l-4 border-primary/20 pl-4 py-2">
+                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">State</dt>
+                    <dd className="text-base font-medium">
+                      
+                      {entity.state ? (
+                        <Badge variant="outline" className="text-sm font-medium">
+                          {(entity.state as any).name || entity.state.id}
+                        </Badge>
+                      ) : "—"}
+                      
+                    </dd>
+                  </div>
+                  
+                  <div className="border-l-4 border-primary/20 pl-4 py-2">
+                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">District</dt>
+                    <dd className="text-base font-medium">
+                      
+                      {entity.district ? (
+                        <Badge variant="outline" className="text-sm font-medium">
+                          {(entity.district as any).name || entity.district.id}
+                        </Badge>
+                      ) : "—"}
+                      
+                    </dd>
+                  </div>
+                  
+                  <div className="border-l-4 border-primary/20 pl-4 py-2">
+                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">City</dt>
+                    <dd className="text-base font-medium">
+                      
+                      {entity.city ? (
+                        <Badge variant="outline" className="text-sm font-medium">
+                          {(entity.city as any).name || entity.city.id}
+                        </Badge>
+                      ) : "—"}
+                      
+                    </dd>
+                  </div>
+                  
                 </div>
               </div>
             </div>

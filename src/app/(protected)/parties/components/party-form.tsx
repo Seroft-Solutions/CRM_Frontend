@@ -61,6 +61,18 @@ import {
   useSearchAreasInfinite 
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import { 
+  useGetAllStatesInfinite,
+  useSearchStatesInfinite 
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+import { 
+  useGetAllDistrictsInfinite,
+  useSearchDistrictsInfinite 
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+import { 
+  useGetAllCitiesInfinite,
+  useSearchCitiesInfinite 
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+import { 
   useGetAllProductsInfinite,
   useSearchProductsInfinite 
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
@@ -84,6 +96,9 @@ const formSchema = z.object({
   remark: z.string().max(1000).optional(),
   source: z.number().optional(),
   area: z.number().optional(),
+  state: z.number().optional(),
+  district: z.number().optional(),
+  city: z.number().optional(),
   interestedProducts: z.array(z.number()).optional(),
 });
 
@@ -197,6 +212,15 @@ export function PartyForm({ id }: PartyFormProps) {
 
 
       area: undefined,
+
+
+      state: undefined,
+
+
+      district: undefined,
+
+
+      city: undefined,
 
 
       interestedProducts: [],
@@ -423,6 +447,15 @@ export function PartyForm({ id }: PartyFormProps) {
         area: entity.area?.id,
 
 
+        state: entity.state?.id,
+
+
+        district: entity.district?.id,
+
+
+        city: entity.city?.id,
+
+
         interestedProducts: entity.interestedProducts?.map(item => item.id),
 
       };
@@ -500,11 +533,20 @@ export function PartyForm({ id }: PartyFormProps) {
       area: data.area ? { id: data.area } : null,
 
 
+      state: data.state ? { id: data.state } : null,
+
+
+      district: data.district ? { id: data.district } : null,
+
+
+      city: data.city ? { id: data.city } : null,
+
+
       interestedProducts: data.interestedProducts?.map(id => ({ id: id })),
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','interestedProducts',].includes(key);
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','state','district','city','interestedProducts',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -536,7 +578,7 @@ export function PartyForm({ id }: PartyFormProps) {
         fieldsToValidate = ['isActive',];
         break;
       case 'geographic':
-        fieldsToValidate = ['area',];
+        fieldsToValidate = ['state','district','city','area',];
         break;
       case 'users':
         fieldsToValidate = [];
@@ -887,6 +929,117 @@ export function PartyForm({ id }: PartyFormProps) {
                   <div className="grid grid-cols-1 gap-6">
                     <FormField
                       control={form.control}
+                      name="state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            State
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent selections
+                                form.setValue('district', undefined);
+                                form.setValue('city', undefined);
+                                form.setValue('area', undefined);
+                                setGeographicFilters(prev => ({ ...prev, state: value }));
+                              }}
+                              displayField="name"
+                              placeholder="Select state"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllStatesInfinite}
+                              searchHook={useSearchStatesInfinite}
+                              entityName="States"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/states/new"
+                              createPermission="state:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'state')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="district"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            District
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent selections
+                                form.setValue('city', undefined);
+                                form.setValue('area', undefined);
+                                setGeographicFilters(prev => ({ ...prev, district: value }));
+                              }}
+                              displayField="name"
+                              placeholder="Select district"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllDistrictsInfinite}
+                              searchHook={useSearchDistrictsInfinite}
+                              entityName="Districts"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/districts/new"
+                              createPermission="district:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'district')}
+                              parentFilter={form.watch('state')}
+                              parentField="state"
+                              disabled={!form.watch('state')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            City
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent selections
+                                form.setValue('area', undefined);
+                                setGeographicFilters(prev => ({ ...prev, city: value }));
+                              }}
+                              displayField="name"
+                              placeholder="Select city"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllCitiesInfinite}
+                              searchHook={useSearchCitiesInfinite}
+                              entityName="Cities"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/cities/new"
+                              createPermission="city:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'city')}
+                              parentFilter={form.watch('district')}
+                              parentField="district"
+                              disabled={!form.watch('district')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name="area"
                       render={({ field }) => (
                         <FormItem>
@@ -898,6 +1051,7 @@ export function PartyForm({ id }: PartyFormProps) {
                               value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value);
+                                // Clear dependent selections
                                 setGeographicFilters(prev => ({ ...prev, area: value }));
                               }}
                               displayField="name"
@@ -911,6 +1065,9 @@ export function PartyForm({ id }: PartyFormProps) {
                               createEntityPath="/areas/new"
                               createPermission="area:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, 'area')}
+                              parentFilter={form.watch('city')}
+                              parentField="city"
+                              disabled={!form.watch('city')}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1078,6 +1235,30 @@ export function PartyForm({ id }: PartyFormProps) {
                   <div className="space-y-4">
                     <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">State</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('state') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">District</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('district') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">City</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('city') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                       <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Area</dt>
                         <dd className="text-sm">

@@ -59,6 +59,18 @@ const partySchema = z.object({
   
   
   
+  stateId: z.number().optional(),
+  
+  
+  
+  districtId: z.number().optional(),
+  
+  
+  
+  cityId: z.number().optional(),
+  
+  
+  
   
 })
 
@@ -130,6 +142,18 @@ export async function createParty(
       
       
       areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
       
       
       
@@ -241,6 +265,18 @@ export async function updateParty(
       
       
       areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
       
       
       

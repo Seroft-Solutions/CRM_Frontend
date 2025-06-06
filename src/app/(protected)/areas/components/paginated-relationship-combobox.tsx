@@ -39,6 +39,9 @@ interface PaginatedRelationshipComboboxProps {
   createEntityPath?: string;
   createPermission?: string;
   onEntityCreated?: (entityId: number) => void;
+  // Cascading relationship support
+  parentFilter?: number;
+  parentField?: string;
 }
 
 export function PaginatedRelationshipCombobox({
@@ -57,6 +60,8 @@ export function PaginatedRelationshipCombobox({
   createEntityPath,
   createPermission,
   onEntityCreated,
+  parentFilter,
+  parentField,
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -71,25 +76,42 @@ export function PaginatedRelationshipCombobox({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Build query parameters with parent filter support
+  const buildQueryParams = (extraParams = {}) => {
+    const params = { size: 20, ...extraParams };
+    
+    // Add parent filter using JHipster LongFilter format
+    if (parentFilter && parentField) {
+      // JHipster expects: fieldName.equals=value for LongFilter
+      params[`${parentField}Id.equals`] = parentFilter;
+      
+      console.log('Adding JHipster parent filter:', { 
+        parentField, 
+        parentFilter, 
+        filterParam: `${parentField}Id.equals=${parentFilter}`,
+        allParams: params
+      });
+    }
+    
+    return params;
+  };
+
   // Use search if available and there's a search query, otherwise use infinite query
   const shouldUseSearch = searchHook && deferredSearchQuery.trim() !== "";
 
-  // Reset infinite query when switching to search mode
+  // Reset search query when parent filter changes
   React.useEffect(() => {
-    if (shouldUseSearch && infiniteQuery.data?.pages?.length) {
-      // We're switching to search mode, but this is handled by the enabled flags
-      // The data will naturally be separated by the shouldUseSearch condition
-    }
-  }, [shouldUseSearch]);
-  
+    setSearchQuery("");
+    setDeferredSearchQuery("");
+  }, [parentFilter]);
+
   // Infinite query for initial load and pagination
   const infiniteQuery = useInfiniteQueryHook(
-    shouldUseSearch ? undefined : { size: 20 }, // Don't pass params if using search
+    shouldUseSearch ? undefined : buildQueryParams(),
     {
       query: {
-        enabled: !shouldUseSearch,
+        enabled: !shouldUseSearch && (!parentField || !!parentFilter), // Don't load if parent is required but not selected
         getNextPageParam: (lastPage: any, allPages: any[]) => {
-          // Handle both array response and paginated response
           let lastPageItems = [];
           if (Array.isArray(lastPage)) {
             lastPageItems = lastPage;
@@ -98,13 +120,10 @@ export function PaginatedRelationshipCombobox({
           }
           
           const pageSize = 20;
-          
-          // If last page has fewer items than page size, we've reached the end
           if (lastPageItems.length < pageSize) {
             return undefined;
           }
           
-          // Calculate next page number
           const currentPage = allPages.length - 1;
           return currentPage + 1;
         },
@@ -115,13 +134,13 @@ export function PaginatedRelationshipCombobox({
 
   // Search query for filtered results
   const searchQuery_ = searchHook ? searchHook(
-    shouldUseSearch ? { 
+    shouldUseSearch ? buildQueryParams({ 
       query: deferredSearchQuery,
-      size: 50 // Show more results in search
-    } : undefined, // Don't pass params if not searching
+      size: 50 
+    }) : undefined,
     {
       query: {
-        enabled: shouldUseSearch && deferredSearchQuery.trim() !== "",
+        enabled: shouldUseSearch && deferredSearchQuery.trim() !== "" && (!parentField || !!parentFilter),
         staleTime: 10000,
       }
     }

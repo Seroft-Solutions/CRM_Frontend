@@ -785,6 +785,7 @@ export function CallForm({ id }: CallFormProps) {
                               value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value);
+                                // Clear dependent selections
                                 setGeographicFilters(prev => ({ ...prev, area: value }));
                               }}
                               displayField="name"
