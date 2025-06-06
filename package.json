@@ -2,13 +2,15 @@
   "name": "crm-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "generate-nextjs": "npx ts-node codgen/nextjs/generator.ts",
-    "generate-nextjs:entity": "cd codgen/nextjs && npm run generate:entity"
+    "generate-nextjs:entity": "cd codgen/nextjs && npm run generate:entity",
+    "sync:jhipster": "shx rm -rf .jhipster && shx cp -r ../CRM_Backend/.jhipster ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -91,6 +93,7 @@
     "plop": "^4.0.1",
     "pluralize": "^8.0.0",
     "prettier": "^3.5.3",
+    "shx": "^0.4.0",
     "tailwindcss": "^4",
     "ts-morph": "^25.0.1",
     "tsx": "^4.19.4",

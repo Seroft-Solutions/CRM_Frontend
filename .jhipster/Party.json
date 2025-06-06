@@ -92,7 +92,8 @@
       "otherEntityName": "area",
       "relationshipName": "area",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
