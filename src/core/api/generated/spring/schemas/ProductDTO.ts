@@ -21,7 +21,7 @@ export interface ProductDTO {
   /**
    * @minLength 2
    * @maxLength 20
-   * @pattern ^[A-Z0-9_-]+$
+   * @pattern ^[A-Za-z0-9_-]+$
    */
   code: string;
   /**
@@ -34,11 +34,20 @@ export interface ProductDTO {
    * @maxLength 50
    */
   category?: string;
-  /** @minimum 0 */
+  /**
+   * @minimum 0
+   * @maximum 999999
+   */
   basePrice?: number;
-  /** @minimum 0 */
+  /**
+   * @minimum 0
+   * @maximum 999999
+   */
   minPrice?: number;
-  /** @minimum 0 */
+  /**
+   * @minimum 0
+   * @maximum 999999
+   */
   maxPrice?: number;
   isActive: boolean;
   /**

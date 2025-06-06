@@ -24,7 +24,7 @@
       "fieldType": "String",
       "fieldValidateRules": ["pattern", "maxlength"],
       "fieldValidateRulesMaxlength": "254",
-      "fieldValidateRulesPattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+      "fieldValidateRulesPattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     },
     {
       "fieldName": "whatsApp",

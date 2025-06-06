@@ -5,10 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CountCallsStatusEquals } from './CountCallsStatusEquals';
-import type { CountCallsStatusNotEquals } from './CountCallsStatusNotEquals';
-import type { CountCallsStatusInItem } from './CountCallsStatusInItem';
-import type { CountCallsStatusNotInItem } from './CountCallsStatusNotInItem';
 
 export type CountCallsParams = {
 'id.greaterThan'?: number;
@@ -29,11 +25,6 @@ export type CountCallsParams = {
 'callDateTime.specified'?: boolean;
 'callDateTime.in'?: string[];
 'callDateTime.notIn'?: string[];
-'status.equals'?: CountCallsStatusEquals;
-'status.notEquals'?: CountCallsStatusNotEquals;
-'status.specified'?: boolean;
-'status.in'?: CountCallsStatusInItem[];
-'status.notIn'?: CountCallsStatusNotInItem[];
 'isActive.equals'?: boolean;
 'isActive.notEquals'?: boolean;
 'isActive.specified'?: boolean;
@@ -107,15 +98,6 @@ export type CountCallsParams = {
 'areaId.specified'?: boolean;
 'areaId.in'?: number[];
 'areaId.notIn'?: number[];
-'productId.greaterThan'?: number;
-'productId.lessThan'?: number;
-'productId.greaterThanOrEqual'?: number;
-'productId.lessThanOrEqual'?: number;
-'productId.equals'?: number;
-'productId.notEquals'?: number;
-'productId.specified'?: boolean;
-'productId.in'?: number[];
-'productId.notIn'?: number[];
 'channelTypeId.greaterThan'?: number;
 'channelTypeId.lessThan'?: number;
 'channelTypeId.greaterThanOrEqual'?: number;

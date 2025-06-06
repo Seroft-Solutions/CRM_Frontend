@@ -112,9 +112,6 @@ export function CallSearchAndFilters({
       if (relationName === 'area') {
         return 'Area';
       }
-      if (relationName === 'product') {
-        return 'Product';
-      }
       if (relationName === 'channelType') {
         return 'Channel Type';
       }
@@ -136,9 +133,6 @@ export function CallSearchAndFilters({
     }
     if (key === 'callDateTime') {
       return 'callDateTime';
-    }
-    if (key === 'status') {
-      return 'status';
     }
     return key;
   };
@@ -302,18 +296,6 @@ export function CallSearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      Product
-                    </label>
-                    <Input
-                      placeholder="Filter by product..."
-                      value={filters["product.name"] as string || ""}
-                      onChange={(e) => onFilterChange("product.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
                       Channel Type
                     </label>
                     <Input
@@ -419,28 +401,6 @@ export function CallSearchAndFilters({
               </div>
               
 
-              
-              <DropdownMenuSeparator />
-              
-              {/* Other Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      status
-                    </label>
-                    <Input
-                      placeholder="Filter by status..."
-                      value={filters["status"] as string || ""}
-                      onChange={(e) => onFilterChange("status", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                </div>
-              </div>
               
 
             </div>

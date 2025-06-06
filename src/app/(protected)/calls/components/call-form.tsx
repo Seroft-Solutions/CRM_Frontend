@@ -73,10 +73,6 @@ import {
   useSearchAreasInfinite 
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import { 
-  useGetAllProductsInfinite,
-  useSearchProductsInfinite 
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import { 
   useGetAllChannelTypesInfinite,
   useSearchChannelTypesInfinite 
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
@@ -88,6 +84,10 @@ import {
   useGetAllCallStatusesInfinite,
   useSearchCallStatusesInfinite 
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+import { 
+  useGetAllProductsInfinite,
+  useSearchProductsInfinite 
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
 import { 
   useGetAllPartiesInfinite,
   useSearchPartiesInfinite 
@@ -102,7 +102,6 @@ interface CallFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   callDateTime: z.date(),
-  status: z.string(),
   isActive: z.boolean(),
   assignedTo: z.string().optional(),
   channelParty: z.string().optional(),
@@ -111,7 +110,6 @@ const formSchema = z.object({
   subCallType: z.number().optional(),
   source: z.number().optional(),
   area: z.number().optional(),
-  product: z.number().optional(),
   channelType: z.number().optional(),
   callCategory: z.number().optional(),
   callStatus: z.number().optional(),
@@ -195,9 +193,6 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: new Date(),
 
 
-      status: "",
-
-
       isActive: false,
 
 
@@ -220,9 +215,6 @@ export function CallForm({ id }: CallFormProps) {
 
 
       area: undefined,
-
-
-      product: undefined,
 
 
       channelType: undefined,
@@ -428,9 +420,6 @@ export function CallForm({ id }: CallFormProps) {
         callDateTime: entity.callDateTime ? new Date(entity.callDateTime) : undefined,
 
 
-        status: entity.status || "",
-
-
         isActive: entity.isActive || "",
 
 
@@ -453,9 +442,6 @@ export function CallForm({ id }: CallFormProps) {
 
 
         area: entity.area?.id,
-
-
-        product: entity.product?.id,
 
 
         channelType: entity.channelType?.id,
@@ -514,9 +500,6 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: data.callDateTime === "__none__" ? undefined : data.callDateTime,
 
 
-      status: data.status === "__none__" ? undefined : data.status,
-
-
       isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
 
@@ -541,9 +524,6 @@ export function CallForm({ id }: CallFormProps) {
       area: data.area ? { id: data.area } : null,
 
 
-      product: data.product ? { id: data.product } : null,
-
-
       channelType: data.channelType ? { id: data.channelType } : null,
 
 
@@ -560,7 +540,7 @@ export function CallForm({ id }: CallFormProps) {
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['callDateTime','status','isActive','assignedTo','channelParty','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',].includes(key);
+          const isFormField = ['callDateTime','isActive','assignedTo','channelParty','priority','callType','subCallType','source','area','channelType','callCategory','callStatus','products','party',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -583,7 +563,7 @@ export function CallForm({ id }: CallFormProps) {
 
     switch (currentStepId) {
       case 'basic':
-        fieldsToValidate = ['status',];
+        fieldsToValidate = [];
         break;
       case 'dates':
         fieldsToValidate = ['callDateTime',];
@@ -592,7 +572,7 @@ export function CallForm({ id }: CallFormProps) {
         fieldsToValidate = ['isActive',];
         break;
       case 'relationships':
-        fieldsToValidate = ['assignedTo','channelParty','priority','callType','subCallType','source','area','product','channelType','callCategory','callStatus','products','party',];
+        fieldsToValidate = ['assignedTo','channelParty','priority','callType','subCallType','source','area','channelType','callCategory','callStatus','products','party',];
         break;
     }
 
@@ -691,27 +671,6 @@ export function CallForm({ id }: CallFormProps) {
               {STEPS[currentStep].id === 'basic' && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">Status *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field}
-                              
-                              placeholder="Enter status"
-                              className="transition-colors"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                        
-                      )}
-                    />
                     
                   </div>
                 </div>
@@ -976,34 +935,6 @@ export function CallForm({ id }: CallFormProps) {
                     
                     <FormField
                       control={form.control}
-                      name="product"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">Product</FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select product"
-                              multiple={false}
-                              useInfiniteQueryHook={useGetAllProductsInfinite}
-                              searchHook={useSearchProductsInfinite}
-                              entityName="Products"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/products/new"
-                              createPermission="product:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'product')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
                       name="channelType"
                       render={({ field }) => (
                         <FormItem>
@@ -1162,15 +1093,6 @@ export function CallForm({ id }: CallFormProps) {
                       <dd className="text-sm">
                         
                         {form.watch('callDateTime') ? format(form.watch('callDateTime'), "PPP") : "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Status</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('status') || "—"}
                         
                       </dd>
                     </div>

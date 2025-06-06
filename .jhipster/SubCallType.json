@@ -36,7 +36,6 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityField": "name",
       "otherEntityName": "callType",
       "otherEntityRelationshipName": "subTypes",
       "relationshipName": "callType",

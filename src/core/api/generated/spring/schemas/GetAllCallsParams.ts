@@ -5,10 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllCallsStatusEquals } from './GetAllCallsStatusEquals';
-import type { GetAllCallsStatusNotEquals } from './GetAllCallsStatusNotEquals';
-import type { GetAllCallsStatusInItem } from './GetAllCallsStatusInItem';
-import type { GetAllCallsStatusNotInItem } from './GetAllCallsStatusNotInItem';
 
 export type GetAllCallsParams = {
 'id.greaterThan'?: number;
@@ -29,11 +25,6 @@ export type GetAllCallsParams = {
 'callDateTime.specified'?: boolean;
 'callDateTime.in'?: string[];
 'callDateTime.notIn'?: string[];
-'status.equals'?: GetAllCallsStatusEquals;
-'status.notEquals'?: GetAllCallsStatusNotEquals;
-'status.specified'?: boolean;
-'status.in'?: GetAllCallsStatusInItem[];
-'status.notIn'?: GetAllCallsStatusNotInItem[];
 'isActive.equals'?: boolean;
 'isActive.notEquals'?: boolean;
 'isActive.specified'?: boolean;
@@ -107,15 +98,6 @@ export type GetAllCallsParams = {
 'areaId.specified'?: boolean;
 'areaId.in'?: number[];
 'areaId.notIn'?: number[];
-'productId.greaterThan'?: number;
-'productId.lessThan'?: number;
-'productId.greaterThanOrEqual'?: number;
-'productId.lessThanOrEqual'?: number;
-'productId.equals'?: number;
-'productId.notEquals'?: number;
-'productId.specified'?: boolean;
-'productId.in'?: number[];
-'productId.notIn'?: number[];
 'channelTypeId.greaterThan'?: number;
 'channelTypeId.lessThan'?: number;
 'channelTypeId.greaterThanOrEqual'?: number;

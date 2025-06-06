@@ -14,10 +14,6 @@ const callSchema = z.object({
   
   
   
-  status: z.any(),
-  
-  
-  
   isActive: z.boolean(),
   
   
@@ -48,10 +44,6 @@ const callSchema = z.object({
   
   
   areaId: z.number().optional(),
-  
-  
-  
-  productId: z.number().optional(),
   
   
   
@@ -100,10 +92,6 @@ export async function createCall(
       
       
       
-      status: formData.get('status') || undefined,
-      
-      
-      
       isActive: formData.get('isActive') === 'true',
       
       
@@ -134,10 +122,6 @@ export async function createCall(
       
       
       areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
-      
-      
-      
-      productId: formData.get('productId') ? Number(formData.get('productId')) : undefined,
       
       
       
@@ -223,10 +207,6 @@ export async function updateCall(
       
       
       
-      status: formData.get('status') || undefined,
-      
-      
-      
       isActive: formData.get('isActive') === 'true',
       
       
@@ -257,10 +237,6 @@ export async function updateCall(
       
       
       areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
-      
-      
-      
-      productId: formData.get('productId') ? Number(formData.get('productId')) : undefined,
       
       
       

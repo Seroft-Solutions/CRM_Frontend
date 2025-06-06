@@ -59,12 +59,6 @@ export function CallTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {call.status}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {call.isActive ? "Yes" : "No"}
         
       </TableCell>
@@ -163,20 +157,6 @@ export function CallTableRow({
           displayField="name"
           onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
           isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
-          isLoading={isUpdating}
-          className="min-w-[150px]"
-        />
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-1 py-2">
-        <RelationshipCell
-          entityId={call.id || 0}
-          relationshipName="product"
-          currentValue={call.product}
-          options={relationshipConfigs.find(config => config.name === "product")?.options || []}
-          displayField="name"
-          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
-          isEditable={relationshipConfigs.find(config => config.name === "product")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
         />

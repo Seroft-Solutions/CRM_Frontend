@@ -86,14 +86,6 @@
     },
     {
       "otherEntityField": "name",
-      "otherEntityName": "product",
-      "relationshipName": "product",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
-    },
-    {
-      "otherEntityField": "name",
       "otherEntityName": "channelType",
       "relationshipName": "channelType",
       "relationshipSide": "left",
@@ -125,7 +117,6 @@
       "relationshipType": "many-to-many"
     },
     {
-      "otherEntityField": "name",
       "otherEntityName": "party",
       "otherEntityRelationshipName": "calls",
       "relationshipName": "party",

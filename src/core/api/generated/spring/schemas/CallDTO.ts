@@ -5,18 +5,16 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CallDTOStatus } from './CallDTOStatus';
 import type { UserDTO } from './UserDTO';
 import type { PriorityDTO } from './PriorityDTO';
 import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { AreaDTO } from './AreaDTO';
-import type { ProductDTO } from './ProductDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { CallCategoryDTO } from './CallCategoryDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
-import type { CallDTOProductsItem } from './CallDTOProductsItem';
+import type { ProductDTO } from './ProductDTO';
 import type { PartyDTO } from './PartyDTO';
 
 /**
@@ -25,19 +23,17 @@ import type { PartyDTO } from './PartyDTO';
 export interface CallDTO {
   id?: number;
   callDateTime: string;
-  status: CallDTOStatus;
   isActive: boolean;
   assignedTo?: UserDTO;
   channelParty?: UserDTO;
-  priority?: PriorityDTO;
-  callType?: CallTypeDTO;
-  subCallType?: SubCallTypeDTO;
-  source?: SourceDTO;
-  area?: AreaDTO;
-  product?: ProductDTO;
-  channelType?: ChannelTypeDTO;
-  callCategory?: CallCategoryDTO;
-  callStatus?: CallStatusDTO;
-  products?: CallDTOProductsItem[];
+  priority: PriorityDTO;
+  callType: CallTypeDTO;
+  subCallType: SubCallTypeDTO;
+  source: SourceDTO;
+  area: AreaDTO;
+  channelType: ChannelTypeDTO;
+  callCategory: CallCategoryDTO;
+  callStatus: CallStatusDTO;
+  products?: ProductDTO[];
   party: PartyDTO;
 }
