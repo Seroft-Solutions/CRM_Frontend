@@ -87,14 +87,60 @@ export function SubCallTypeTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
+  
+  // Fetch relationship data for dropdowns
+  
+  const { data: calltypeOptions = [] } = useGetAllCallTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
+
+  // Helper function to find entity ID by name
+  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    return entity?.id;
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
     
-    // Add regular filters
+    
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      
+      'callType.name': { 
+        apiParam: 'callTypeId.equals', 
+        options: calltypeOptions, 
+        displayField: 'name' 
+      },
+      
+    };
+    
+    
+    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
-        if (Array.isArray(value) && value.length > 0) {
+        
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
+        
+        
+        // Handle isActive filter
+        else if (key === 'isActive') {
+          params['isActive.equals'] = value === 'true';
+        }
+        
+        // Handle other direct filters
+        else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -118,7 +164,7 @@ export function SubCallTypeTable() {
     {
       page: apiPage,
       size: pageSize,
-      sort: [`${sort},${order}`],
+      sort: `${sort},${order}`,
       ...filterParams,
     },
     {
@@ -151,16 +197,6 @@ export function SubCallTypeTable() {
       },
     },
   });
-
-  
-  // Fetch relationship data for dropdowns
-  
-  const { data: calltypeOptions = [] } = useGetAllCallTypes(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
-  
 
   // Delete mutation
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteSubCallType({
