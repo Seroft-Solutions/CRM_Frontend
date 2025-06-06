@@ -12,7 +12,6 @@
 
     "generate-nextjs": "npx ts-node codgen/nextjs/generator.ts",
     "generate-nextjs:entity": "cd codgen/nextjs && npm run generate:entity",
-
     "sync:jhipster": "shx rm -rf .jhipster && shx cp -r ../CRM_Backend/.jhipster .",
 
     "openapi:fetch": "shx mkdir -p openapi && curl -L --fail http://localhost:8080/v3/api-docs -o openapi/openapi.json",

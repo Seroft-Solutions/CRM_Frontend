@@ -225,19 +225,6 @@ export function PartyTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("city.name")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            City
-            <div className="text-gray-400">
-              {renderSortIcon("city.name")}
-            </div>
-          </Button>
-        </TableHead>
-        
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -386,15 +373,6 @@ export function PartyTableHeader({
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["area.name"] as string || ""}
             onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
-          />
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["city.name"] as string || ""}
-            onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
           />
         </TableHead>
         

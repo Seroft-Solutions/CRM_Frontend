@@ -81,7 +81,7 @@ const formSchema = z.object({
   interestedParties: z.array(z.number()).optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"other","title":"Additional Relations","description":"Other connections and references"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function ProductForm({ id }: ProductFormProps) {
   const router = useRouter();
@@ -90,6 +90,9 @@ export function ProductForm({ id }: ProductFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateProduct({
@@ -508,8 +511,20 @@ export function ProductForm({ id }: ProductFormProps) {
       case 'settings':
         fieldsToValidate = ['isActive',];
         break;
-      case 'relationships':
-        fieldsToValidate = ['calls','interestedParties',];
+      case 'geographic':
+        fieldsToValidate = [];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
+        fieldsToValidate = [];
+        break;
+      case 'business':
+        fieldsToValidate = ['interestedParties',];
+        break;
+      case 'other':
+        fieldsToValidate = ['calls',];
         break;
     }
 
@@ -817,46 +832,28 @@ export function ProductForm({ id }: ProductFormProps) {
               )}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+
+              {/* Business Relations Step */}
+              {STEPS[currentStep].id === 'business' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Business Relations</h3>
+                    <p className="text-muted-foreground">Connect with customers, products, and sources</p>
+                  </div>
                   <div className="grid grid-cols-1 gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="calls"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">Calls</FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select calls"
-                              multiple={true}
-                              useInfiniteQueryHook={useGetAllCallsInfinite}
-                              searchHook={useSearchCallsInfinite}
-                              entityName="Calls"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/calls/new"
-                              createPermission="call:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'calls')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
                     <FormField
                       control={form.control}
                       name="interestedParties"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Interested Parties</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            Interested Parties
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -878,13 +875,52 @@ export function ProductForm({ id }: ProductFormProps) {
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </div>
               )}
-              
 
-              {/* Step 5: Review */}
+              {/* Other Relations Step */}
+              {STEPS[currentStep].id === 'other' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Additional Relations</h3>
+                    <p className="text-muted-foreground">Other connections and references</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="calls"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Calls
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="name"
+                              placeholder="Select calls"
+                              multiple={true}
+                              useInfiniteQueryHook={useGetAllCallsInfinite}
+                              searchHook={useSearchCallsInfinite}
+                              entityName="Calls"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/calls/new"
+                              createPermission="call:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'calls')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -892,91 +928,104 @@ export function ProductForm({ id }: ProductFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('name') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                        <dd className="text-sm">
+                          {form.watch('name') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Code</dt>
+                        <dd className="text-sm">
+                          {form.watch('code') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Description</dt>
+                        <dd className="text-sm">
+                          {form.watch('description') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Category</dt>
+                        <dd className="text-sm">
+                          {form.watch('category') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Base Price</dt>
+                        <dd className="text-sm">
+                          {form.watch('basePrice') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Min Price</dt>
+                        <dd className="text-sm">
+                          {form.watch('minPrice') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Max Price</dt>
+                        <dd className="text-sm">
+                          {form.watch('maxPrice') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
+                        <dd className="text-sm">
+                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
+                            {form.watch('isActive') ? "Yes" : "No"}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
+                        <dd className="text-sm">
+                          {form.watch('remark') || "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Code</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('code') || "—"}
-                        
-                      </dd>
+                  </div>
+
+                  {/* Geographic Relations */}
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+
+                  {/* Business Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏢 Business Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Interested Parties</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {Array.isArray(form.watch('interestedParties')) ? 
+                              `${form.watch('interestedParties').length} selected` : 'None selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Description</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('description') || "—"}
-                        
-                      </dd>
+                  </div>
+
+                  {/* Other Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🔗 Additional Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Calls</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('calls') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Category</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('category') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Base Price</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('basePrice') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Min Price</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('minPrice') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Max Price</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('maxPrice') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                      <dd className="text-sm">
-                        
-                        <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                          {form.watch('isActive') ? "Yes" : "No"}
-                        </Badge>
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('remark') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
                   </div>
                 </div>
               )}

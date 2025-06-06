@@ -72,6 +72,9 @@ export function StateForm({ id }: StateFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateState({
@@ -409,7 +412,19 @@ export function StateForm({ id }: StateFormProps) {
       case 'settings':
         fieldsToValidate = [];
         break;
-      case 'relationships':
+      case 'geographic':
+        fieldsToValidate = [];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
+        fieldsToValidate = [];
+        break;
+      case 'business':
+        fieldsToValidate = [];
+        break;
+      case 'other':
         fieldsToValidate = [];
         break;
     }
@@ -562,10 +577,17 @@ export function StateForm({ id }: StateFormProps) {
               {/* Step 3: Settings & Files (if exists) */}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
+              {/* Geographic Information Step */}
 
-              {/* Step 5: Review */}
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+
+              {/* Business Relations Step */}
+
+              {/* Other Relations Step */}
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -573,27 +595,34 @@ export function StateForm({ id }: StateFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('name') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                        <dd className="text-sm">
+                          {form.watch('name') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Country</dt>
+                        <dd className="text-sm">
+                          {form.watch('country') || "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Country</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('country') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
                   </div>
+
+                  {/* Geographic Relations */}
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+
+                  {/* Business Relations */}
+
+                  {/* Other Relations */}
                 </div>
               )}
             </CardContent>

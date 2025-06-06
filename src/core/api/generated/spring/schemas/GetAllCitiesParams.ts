@@ -32,15 +32,6 @@ export type GetAllCitiesParams = {
 'areasId.specified'?: boolean;
 'areasId.in'?: number[];
 'areasId.notIn'?: number[];
-'partiesId.greaterThan'?: number;
-'partiesId.lessThan'?: number;
-'partiesId.greaterThanOrEqual'?: number;
-'partiesId.lessThanOrEqual'?: number;
-'partiesId.equals'?: number;
-'partiesId.notEquals'?: number;
-'partiesId.specified'?: boolean;
-'partiesId.in'?: number[];
-'partiesId.notIn'?: number[];
 'districtId.greaterThan'?: number;
 'districtId.lessThan'?: number;
 'districtId.greaterThanOrEqual'?: number;

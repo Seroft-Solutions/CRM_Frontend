@@ -69,7 +69,7 @@ const formSchema = z.object({
   city: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function AreaForm({ id }: AreaFormProps) {
   const router = useRouter();
@@ -78,6 +78,9 @@ export function AreaForm({ id }: AreaFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateArea({
@@ -424,8 +427,20 @@ export function AreaForm({ id }: AreaFormProps) {
       case 'settings':
         fieldsToValidate = [];
         break;
-      case 'relationships':
+      case 'geographic':
         fieldsToValidate = ['city',];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
+        fieldsToValidate = [];
+        break;
+      case 'business':
+        fieldsToValidate = [];
+        break;
+      case 'other':
+        fieldsToValidate = [];
         break;
     }
 
@@ -577,22 +592,29 @@ export function AreaForm({ id }: AreaFormProps) {
               {/* Step 3: Settings & Files (if exists) */}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+              {STEPS[currentStep].id === 'geographic' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Location Information</h3>
+                    <p className="text-muted-foreground">Select location details in hierarchical order</p>
+                  </div>
                   <div className="grid grid-cols-1 gap-6">
-                    
                     <FormField
                       control={form.control}
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">City</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            City
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setGeographicFilters(prev => ({ ...prev, city: value }));
+                              }}
                               displayField="name"
                               placeholder="Select city"
                               multiple={false}
@@ -610,13 +632,19 @@ export function AreaForm({ id }: AreaFormProps) {
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </div>
               )}
-              
 
-              {/* Step 5: Review */}
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+
+              {/* Business Relations Step */}
+
+              {/* Other Relations Step */}
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -624,27 +652,47 @@ export function AreaForm({ id }: AreaFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('name') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                        <dd className="text-sm">
+                          {form.watch('name') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Pincode</dt>
+                        <dd className="text-sm">
+                          {form.watch('pincode') || "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Pincode</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('pincode') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
                   </div>
+
+                  {/* Geographic Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">City</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('city') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+
+                  {/* Business Relations */}
+
+                  {/* Other Relations */}
                 </div>
               )}
             </CardContent>

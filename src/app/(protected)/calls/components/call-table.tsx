@@ -45,8 +45,10 @@ import {
 // Relationship data imports
 
 import {
-  useGetAllUsers
-} from "@/core/api/generated/spring/endpoints/user-resource/user-resource.gen";
+  useGetAllPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+
+
 
 import {
   useGetAllPriorities
@@ -211,7 +213,7 @@ export function CallTable() {
   
   // Fetch relationship data for dropdowns
   
-  const { data: userOptions = [] } = useGetAllUsers(
+  const { data: userOptions = [] } = useGetAllPublicUsers(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -418,14 +420,6 @@ export function CallTable() {
     },
     
     {
-      name: "channelParty",
-      displayName: "ChannelParty",
-      options: userOptions || [],
-      displayField: "login",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
       name: "priority",
       displayName: "Priority",
       options: priorityOptions || [],
@@ -565,7 +559,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={13}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -588,7 +582,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={13}
                   className="h-24 text-center"
                 >
                   No calls found

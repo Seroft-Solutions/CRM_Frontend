@@ -25,7 +25,6 @@ export interface CallDTO {
   callDateTime: string;
   isActive: boolean;
   assignedTo?: UserDTO;
-  channelParty?: UserDTO;
   priority: PriorityDTO;
   callType: CallTypeDTO;
   subCallType: SubCallTypeDTO;

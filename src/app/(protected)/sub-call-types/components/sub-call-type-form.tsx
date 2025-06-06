@@ -71,7 +71,7 @@ const formSchema = z.object({
   callType: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"classification","title":"Classification","description":"Set priority, status, and categories"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
   const router = useRouter();
@@ -80,6 +80,9 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateSubCallType({
@@ -444,8 +447,20 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
       case 'settings':
         fieldsToValidate = ['isActive',];
         break;
-      case 'relationships':
+      case 'geographic':
+        fieldsToValidate = [];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
         fieldsToValidate = ['callType',];
+        break;
+      case 'business':
+        fieldsToValidate = [];
+        break;
+      case 'other':
+        fieldsToValidate = [];
         break;
     }
 
@@ -648,18 +663,26 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
               )}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+              {STEPS[currentStep].id === 'classification' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Classification</h3>
+                    <p className="text-muted-foreground">Set priority, status, and categories</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="callType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Call Type</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            Call Type
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -681,13 +704,15 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </div>
               )}
-              
 
-              {/* Step 5: Review */}
+              {/* Business Relations Step */}
+
+              {/* Other Relations Step */}
+
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -695,47 +720,61 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('name') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                        <dd className="text-sm">
+                          {form.watch('name') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Description</dt>
+                        <dd className="text-sm">
+                          {form.watch('description') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
+                        <dd className="text-sm">
+                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
+                            {form.watch('isActive') ? "Yes" : "No"}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
+                        <dd className="text-sm">
+                          {form.watch('remark') || "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Description</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('description') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                      <dd className="text-sm">
-                        
-                        <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                          {form.watch('isActive') ? "Yes" : "No"}
-                        </Badge>
-                        
-                      </dd>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('remark') || "—"}
-                        
-                      </dd>
-                    </div>
-                    
                   </div>
+
+                  {/* Geographic Relations */}
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏷️ Classification</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Call Type</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('callType') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Relations */}
+
+                  {/* Other Relations */}
                 </div>
               )}
             </CardContent>

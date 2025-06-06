@@ -23,10 +23,6 @@ const callSchema = z.object({
   
   
   
-  channelPartyId: z.number().optional(),
-  
-  
-  
   priorityId: z.number().optional(),
   
   
@@ -98,10 +94,6 @@ export async function createCall(
       
       
       assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
-      
-      
-      
-      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
       
       
       
@@ -213,10 +205,6 @@ export async function updateCall(
       
       
       assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
-      
-      
-      
-      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
       
       
       

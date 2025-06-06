@@ -8,7 +8,6 @@
 import type { SourceDTO } from './SourceDTO';
 import type { AreaDTO } from './AreaDTO';
 import type { ProductDTO } from './ProductDTO';
-import type { CityDTO } from './CityDTO';
 
 /**
  * Party entity - represents customers/leads/contacts
@@ -59,5 +58,4 @@ export interface PartyDTO {
   source?: SourceDTO;
   area: AreaDTO;
   interestedProducts?: ProductDTO[];
-  city?: CityDTO;
 }

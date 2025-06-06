@@ -69,7 +69,7 @@ const formSchema = z.object({
   call: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"relationships","title":"Relationships","description":"Associate with other entities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"other","title":"Additional Relations","description":"Other connections and references"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function CallRemarkForm({ id }: CallRemarkFormProps) {
   const router = useRouter();
@@ -78,6 +78,9 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  
+  // Geographic hierarchy state for future cascading dropdowns
+  const [geographicFilters, setGeographicFilters] = useState<{[key: string]: number | null}>({});
 
   // Create or update mutation (IMPROVED with localStorage)
   const { mutate: createEntity, isPending: isCreating } = useCreateCallRemark({
@@ -424,7 +427,19 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
       case 'settings':
         fieldsToValidate = [];
         break;
-      case 'relationships':
+      case 'geographic':
+        fieldsToValidate = [];
+        break;
+      case 'users':
+        fieldsToValidate = [];
+        break;
+      case 'classification':
+        fieldsToValidate = [];
+        break;
+      case 'business':
+        fieldsToValidate = [];
+        break;
+      case 'other':
         fieldsToValidate = ['call',];
         break;
     }
@@ -599,18 +614,30 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
               {/* Step 3: Settings & Files (if exists) */}
               
 
-              {/* Step 4: Relationships (if exists) */}
-              
-              {STEPS[currentStep].id === 'relationships' && (
+              {/* Geographic Information Step */}
+
+              {/* User Assignment Step */}
+
+              {/* Classification Step */}
+
+              {/* Business Relations Step */}
+
+              {/* Other Relations Step */}
+              {STEPS[currentStep].id === 'other' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Additional Relations</h3>
+                    <p className="text-muted-foreground">Other connections and references</p>
+                  </div>
                   <div className="grid grid-cols-1 gap-6">
-                    
                     <FormField
                       control={form.control}
                       name="call"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Call</FormLabel>
+                          <FormLabel className="text-sm font-medium">
+                            Call
+                          </FormLabel>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
@@ -632,13 +659,11 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </div>
               )}
-              
 
-              {/* Step 5: Review */}
+              {/* Enhanced Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -646,26 +671,46 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
                     <p className="text-muted-foreground">Please review all the information before submitting</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('remark') || "—"}
-                        
-                      </dd>
+                  {/* Basic Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
+                        <dd className="text-sm">
+                          {form.watch('remark') || "—"}
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Date Time</dt>
+                        <dd className="text-sm">
+                          {form.watch('dateTime') ? format(form.watch('dateTime'), "PPP") : "—"}
+                        </dd>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1">
-                      <dt className="text-sm font-medium text-muted-foreground">Date Time</dt>
-                      <dd className="text-sm">
-                        
-                        {form.watch('dateTime') ? format(form.watch('dateTime'), "PPP") : "—"}
-                        
-                      </dd>
+                  </div>
+
+                  {/* Geographic Relations */}
+
+                  {/* User Relations */}
+
+                  {/* Classification Relations */}
+
+                  {/* Business Relations */}
+
+                  {/* Other Relations */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🔗 Additional Relations</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Call</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('call') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                     </div>
-                    
                   </div>
                 </div>
               )}

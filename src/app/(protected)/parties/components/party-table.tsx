@@ -44,6 +44,8 @@ import {
 
 // Relationship data imports
 
+
+
 import {
   useGetAllSources
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
@@ -51,10 +53,6 @@ import {
 import {
   useGetAllAreas
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-
-import {
-  useGetAllCities
-} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 
 
 
@@ -182,11 +180,6 @@ export function PartyTable() {
   );
   
   const { data: areaOptions = [] } = useGetAllAreas(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
-  const { data: cityOptions = [] } = useGetAllCities(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -355,14 +348,6 @@ export function PartyTable() {
       isEditable: false, // Disabled by default
     },
     
-    {
-      name: "city",
-      displayName: "City",
-      options: cityOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
   ];
 
   // Check if any filters are active
@@ -431,7 +416,7 @@ export function PartyTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={13}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -454,7 +439,7 @@ export function PartyTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={13}
                   className="h-24 text-center"
                 >
                   No parties found

@@ -46,13 +46,6 @@ export type GetAllCallsParams = {
 'assignedToId.specified'?: boolean;
 'assignedToId.in'?: string[];
 'assignedToId.notIn'?: string[];
-'channelPartyId.contains'?: string;
-'channelPartyId.doesNotContain'?: string;
-'channelPartyId.equals'?: string;
-'channelPartyId.notEquals'?: string;
-'channelPartyId.specified'?: boolean;
-'channelPartyId.in'?: string[];
-'channelPartyId.notIn'?: string[];
 'priorityId.greaterThan'?: number;
 'priorityId.lessThan'?: number;
 'priorityId.greaterThanOrEqual'?: number;

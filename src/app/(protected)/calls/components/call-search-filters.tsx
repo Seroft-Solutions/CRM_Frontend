@@ -94,9 +94,6 @@ export function CallSearchAndFilters({
       if (relationName === 'assignedTo') {
         return 'Assigned To';
       }
-      if (relationName === 'channelParty') {
-        return 'Channel Party';
-      }
       if (relationName === 'priority') {
         return 'Priority';
       }
@@ -218,18 +215,6 @@ export function CallSearchAndFilters({
                       placeholder="Filter by assigned to..."
                       value={filters["assignedTo.login"] as string || ""}
                       onChange={(e) => onFilterChange("assignedTo.login", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Channel Party
-                    </label>
-                    <Input
-                      placeholder="Filter by channel party..."
-                      value={filters["channelParty.login"] as string || ""}
-                      onChange={(e) => onFilterChange("channelParty.login", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
