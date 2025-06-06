@@ -78,7 +78,7 @@ const enumFields = basicFields.filter(field => field.fieldIsEnum);
 const booleanFields = basicFields.filter(field => field.fieldTypeBoolean);
 const binaryFields = fields.filter(field => field.fieldTypeBinary);
 
-// Intelligent relationship grouping
+// Intelligent relationship grouping with dependency detection
 const geographicKeywords = ['state', 'district', 'city', 'area', 'country', 'region', 'location'];
 const userKeywords = ['user', 'assignedTo', 'createdBy', 'updatedBy', 'channelParty', 'owner'];
 const classificationKeywords = ['priority', 'status', 'type', 'category', 'level', 'grade'];
@@ -103,6 +103,93 @@ function categorizeRelationship(rel) {
   return 'other';
 }
 
+// Enhanced function to detect relationship dependencies with intelligent cascading detection
+function findRelationshipDependencies(relationships) {
+  const dependencies = new Map();
+  
+  relationships.forEach(rel => {
+    const relationshipName = rel.relationshipName.toLowerCase();
+    const otherEntityName = rel.otherEntityName.toLowerCase();
+    
+    // Find potential parent relationships using multiple strategies
+    const potentialParents = relationships.filter(otherRel => {
+      const otherRelationshipName = otherRel.relationshipName.toLowerCase();
+      const otherOtherEntityName = otherRel.otherEntityName.toLowerCase();
+      
+      // Strategy 1: Entity name containment (e.g., "callType" in "subCallType")
+      const entityContainment = relationshipName.includes(otherOtherEntityName) && 
+                               relationshipName !== otherRelationshipName;
+      
+      // Strategy 2: Common semantic patterns (e.g., "type" -> "subType")
+      const semanticPattern = (
+        relationshipName.includes('sub') && otherRelationshipName.includes('type') && 
+        relationshipName.includes(otherOtherEntityName)
+      ) || (
+        relationshipName.includes('child') && otherRelationshipName.includes('parent')
+      ) || (
+        relationshipName.includes('district') && otherRelationshipName.includes('state')
+      ) || (
+        relationshipName.includes('city') && otherRelationshipName.includes('district')
+      ) || (
+        relationshipName.includes('area') && otherRelationshipName.includes('city')
+      );
+      
+      // Strategy 3: Bidirectional relationship detection (avoid immediate cycles)
+      const bidirectional = rel.relationshipType === 'many-to-one' && 
+                            otherRel.relationshipType === 'one-to-many' &&
+                            rel.otherEntityName === otherRel.entityName;
+      
+      return (entityContainment || semanticPattern) && !bidirectional;
+    });
+    
+    // Select the most specific parent (shortest name usually indicates more specific)
+    if (potentialParents.length > 0) {
+      const bestParent = potentialParents.sort((a, b) => 
+        a.relationshipName.length - b.relationshipName.length
+      )[0];
+      dependencies.set(rel.relationshipName, bestParent.relationshipName);
+    }
+  });
+  
+  return dependencies;
+}
+
+// Function to sort relationships by dependencies with circular dependency detection
+function sortRelationshipsByDependency(relationships) {
+  const dependencies = findRelationshipDependencies(relationships);
+  const sorted = [];
+  const processed = new Set();
+  
+  function addRelationship(rel, visiting = new Set()) {
+    if (processed.has(rel.relationshipName)) return;
+    
+    // Circular dependency detection
+    if (visiting.has(rel.relationshipName)) {
+      console.warn(`Circular dependency detected: ${rel.relationshipName}, breaking cycle`);
+      sorted.push(rel);
+      processed.add(rel.relationshipName);
+      return;
+    }
+    
+    visiting.add(rel.relationshipName);
+    
+    const parentName = dependencies.get(rel.relationshipName);
+    if (parentName) {
+      const parent = relationships.find(r => r.relationshipName === parentName);
+      if (parent && !processed.has(parent.relationshipName)) {
+        addRelationship(parent, visiting);
+      }
+    }
+    
+    visiting.delete(rel.relationshipName);
+    sorted.push(rel);
+    processed.add(rel.relationshipName);
+  }
+  
+  relationships.forEach(rel => addRelationship(rel));
+  return sorted;
+}
+
 // Group relationships by category
 const relationshipGroups = {
   geographic: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'geographic'),
@@ -111,6 +198,11 @@ const relationshipGroups = {
   business: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'business'),
   other: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'other')
 };
+
+// Sort each group by dependencies
+Object.keys(relationshipGroups).forEach(key => {
+  relationshipGroups[key] = sortRelationshipsByDependency(relationshipGroups[key]);
+});
 
 // Legacy variables for template compatibility
 const hasUserRelationships = relationshipGroups.user.length > 0;
@@ -1040,7 +1132,7 @@ _%>
               )}
               <%_ } _%>
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
               <%_ if (relationshipGroups.classification && relationshipGroups.classification.length > 0) { _%>
               {STEPS[currentStep].id === 'classification' && (
                 <div className="space-y-6">
@@ -1049,12 +1141,21 @@ _%>
                     <p className="text-muted-foreground">Set priority, status, and categories</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <%_ for (const rel of relationshipGroups.classification) { 
+                    <%_ 
+                    // Process classification relationships with dependency detection
+                    const classificationDeps = findRelationshipDependencies(relationshipGroups.classification);
+                    
+                    for (let i = 0; i < relationshipGroups.classification.length; i++) {
+                      const rel = relationshipGroups.classification[i];
                       const relationshipFieldName = rel.relationshipFieldName;
                       const relationshipLabel = camelToTitleCase(rel.relationshipName);
                       const relationshipRequired = rel.relationshipRequired;
                       const otherEntity = rel.otherEntity;
                       const displayField = rel.otherEntityField;
+                      
+                      // Find parent relationship for cascading
+                      const parentRelName = classificationDeps.get(rel.relationshipName);
+                      const parentRel = parentRelName ? relationshipGroups.classification.find(r => r.relationshipName === parentRelName) : null;
                     _%>
                     <FormField
                       control={form.control}
@@ -1067,7 +1168,18 @@ _%>
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                <%_ 
+                                // Clear dependent relationships when parent changes
+                                const dependentRels = relationshipGroups.classification.filter(depRel => 
+                                  classificationDeps.get(depRel.relationshipName) === rel.relationshipName
+                                );
+                                for (const depRel of dependentRels) {
+                                _%>
+                                form.setValue('<%= depRel.relationshipFieldName %>', undefined);
+                                <%_ } _%>
+                              }}
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
@@ -1079,6 +1191,11 @@ _%>
                               createEntityPath="/<%= otherEntity.routePath %>/new"
                               createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                              <%_ if (parentRel) { _%>
+                              parentFilter={form.watch('<%= parentRel.relationshipFieldName %>')}
+                              parentField="<%= parentRel.relationshipName %>"
+                              disabled={!form.watch('<%= parentRel.relationshipFieldName %>')}
+                              <%_ } _%>
                             />
                           </FormControl>
                           <FormMessage />

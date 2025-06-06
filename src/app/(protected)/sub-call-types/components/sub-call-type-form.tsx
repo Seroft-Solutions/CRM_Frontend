@@ -667,7 +667,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
 
               {/* User Assignment Step */}
 
-              {/* Classification Step */}
+              {/* Classification Step with Cascading Logic */}
               {STEPS[currentStep].id === 'classification' && (
                 <div className="space-y-6">
                   <div className="text-center mb-6">
@@ -686,7 +686,9 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                           <FormControl>
                             <PaginatedRelationshipCombobox
                               value={field.value}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
                               displayField="name"
                               placeholder="Select call type"
                               multiple={false}
