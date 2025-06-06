@@ -894,12 +894,31 @@ _%>
                     <p className="text-muted-foreground">Select location details in hierarchical order</p>
                   </div>
                   <div className="grid grid-cols-1 gap-6">
-                    <%_ for (const rel of relationshipGroups.geographic) { 
+                    <%_ 
+                    // Sort geographic relationships in hierarchy order
+                    const geographicHierarchy = ['state', 'district', 'city', 'area'];
+                    const sortedGeographic = relationshipGroups.geographic.sort((a, b) => {
+                      const aIndex = geographicHierarchy.findIndex(kw => a.relationshipName.toLowerCase().includes(kw));
+                      const bIndex = geographicHierarchy.findIndex(kw => b.relationshipName.toLowerCase().includes(kw));
+                      return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+                    });
+                    
+                    for (let i = 0; i < sortedGeographic.length; i++) {
+                      const rel = sortedGeographic[i];
                       const relationshipFieldName = rel.relationshipFieldName;
                       const relationshipLabel = camelToTitleCase(rel.relationshipName);
                       const relationshipRequired = rel.relationshipRequired;
                       const otherEntity = rel.otherEntity;
                       const displayField = rel.otherEntityField;
+                      
+                      // Find parent relationship for filtering
+                      let parentFilter = null;
+                      let parentField = null;
+                      if (i > 0) {
+                        const parentRel = sortedGeographic[i - 1];
+                        parentFilter = `form.watch('${parentRel.relationshipFieldName}')`;
+                        parentField = parentRel.relationshipName;
+                      }
                     _%>
                     <FormField
                       control={form.control}
@@ -914,6 +933,12 @@ _%>
                               value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value);
+                                // Clear dependent selections
+                                <%_ for (let j = i + 1; j < sortedGeographic.length; j++) { 
+                                  const dependentRel = sortedGeographic[j];
+                                _%>
+                                form.setValue('<%= dependentRel.relationshipFieldName %>', undefined);
+                                <%_ } _%>
                                 setGeographicFilters(prev => ({ ...prev, <%= relationshipFieldName %>: value }));
                               }}
                               displayField="<%= displayField %>"
@@ -927,6 +952,13 @@ _%>
                               createEntityPath="/<%= otherEntity.routePath %>/new"
                               createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                              <%_ if (parentFilter) { _%>
+                              parentFilter={<%= parentFilter %>}
+                              parentField="<%= parentField %>"
+                              <%_ } _%>
+                              <%_ if (i > 0) { _%>
+                              disabled={!<%= `form.watch('${sortedGeographic[i-1].relationshipFieldName}')` %>}
+                              <%_ } _%>
                             />
                           </FormControl>
                           <FormMessage />

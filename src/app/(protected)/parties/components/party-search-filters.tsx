@@ -97,6 +97,15 @@ export function PartySearchAndFilters({
       if (relationName === 'area') {
         return 'Area';
       }
+      if (relationName === 'state') {
+        return 'State';
+      }
+      if (relationName === 'district') {
+        return 'District';
+      }
+      if (relationName === 'city') {
+        return 'City';
+      }
       return relationName;
     }
     
@@ -227,6 +236,42 @@ export function PartySearchAndFilters({
                       placeholder="Filter by area..."
                       value={filters["area.name"] as string || ""}
                       onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      State
+                    </label>
+                    <Input
+                      placeholder="Filter by state..."
+                      value={filters["state.name"] as string || ""}
+                      onChange={(e) => onFilterChange("state.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      District
+                    </label>
+                    <Input
+                      placeholder="Filter by district..."
+                      value={filters["district.name"] as string || ""}
+                      onChange={(e) => onFilterChange("district.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      City
+                    </label>
+                    <Input
+                      placeholder="Filter by city..."
+                      value={filters["city.name"] as string || ""}
+                      onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

@@ -54,6 +54,18 @@ import {
   useGetAllAreas
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 
+import {
+  useGetAllStates
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+
+import {
+  useGetAllDistricts
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+
+import {
+  useGetAllCities
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+
 
 
 import { PartySearchAndFilters } from "./party-search-filters";
@@ -180,6 +192,21 @@ export function PartyTable() {
   );
   
   const { data: areaOptions = [] } = useGetAllAreas(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: stateOptions = [] } = useGetAllStates(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: districtOptions = [] } = useGetAllDistricts(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: cityOptions = [] } = useGetAllCities(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -348,6 +375,30 @@ export function PartyTable() {
       isEditable: false, // Disabled by default
     },
     
+    {
+      name: "state",
+      displayName: "State",
+      options: stateOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "district",
+      displayName: "District",
+      options: districtOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "city",
+      displayName: "City",
+      options: cityOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
   ];
 
   // Check if any filters are active
@@ -416,7 +467,7 @@ export function PartyTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -439,7 +490,7 @@ export function PartyTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   No parties found
