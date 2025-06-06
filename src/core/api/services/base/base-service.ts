@@ -146,12 +146,11 @@ export class BaseService {
             const { tokenStorage } = await import('@/lib/token-storage');
             return tokenStorage.getToken() || tokenStorage.getTokenSession();
           } else {
-            // Server-side: Get token from auth session
-            const { auth } = await import('@/auth');
-            const session = await auth();
-            
-            if (session?.access_token) {
-              return session.access_token;
+            // Server-side: Get token from cached session
+            const { getAccessToken } = await import('@/lib/dal');
+            const token = await getAccessToken();
+            if (token) {
+              return token;
             }
           }
           return null;

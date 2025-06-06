@@ -48,7 +48,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     // Track login time for grace period
     if (hasValidSession && !hadSessionBefore) {
       loginTime.current = Date.now()
-      console.log('Login detected, starting grace period')
     }
 
     // Check if we're still in grace period
@@ -56,7 +55,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     const isInGracePeriod = timeSinceLogin < (gracePeriod * 60 * 1000)
     
     if (isInGracePeriod && hasValidSession) {
-      console.log(`Still in grace period, ${Math.floor((gracePeriod * 60 * 1000 - timeSinceLogin) / 1000)}s remaining`)
       lastSessionState.current = hasValidSession
       return
     }
@@ -64,10 +62,8 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     // Session state changed
     if (hasValidSession !== hadSessionBefore) {
       if (!hasValidSession && hadSessionBefore) {
-        console.log('Session expired detected')
         onSessionExpired?.()
       } else if (hasValidSession && !hadSessionBefore) {
-        console.log('Session restored detected')
         warningShown.current = false
         lastTokenExpiry.current = 0
         onSessionRestored?.()
@@ -83,14 +79,12 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
         const timeUntilExpiry = expiryTime - currentTime
         const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60000)
 
-        console.log(`Token expires in ${minutesUntilExpiry} minutes. User ${isIdle ? 'idle' : 'active'} for ${minutesIdle}min`)
+
 
         // Auto-refresh session if user is active and token is about to expire
         if (autoRefreshOnActivity && !isIdle && minutesUntilExpiry <= warningThreshold) {
-          console.log('User is active, auto-refreshing session via Keycloak')
           const refreshSuccess = await refreshSession()
           if (refreshSuccess) {
-            console.log('Keycloak session auto-refreshed due to activity')
             return
           } else {
             console.error('Auto-refresh failed, will show warning')
@@ -101,7 +95,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
         if (lastTokenExpiry.current !== expiryTime) {
           warningShown.current = false
           lastTokenExpiry.current = expiryTime
-          console.log('Token refreshed, resetting warning state. New expiry:', new Date(expiryTime))
         }
 
         // Only show warning if user is idle AND token is expiring
@@ -119,7 +112,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
           debounceTimer.current = setTimeout(() => {
             if (!warningShown.current && isIdle) {
               warningShown.current = true
-              console.log('Showing session warning - user idle for', minutesIdle, 'minutes')
               onSessionWarning?.(minutesUntilExpiry)
             }
           }, 1000)
@@ -127,7 +119,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
 
         // Token has expired
         if (timeUntilExpiry <= 0) {
-          console.log('Token expired based on exp claim')
           onSessionExpired?.()
         }
       } catch (error) {
