@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface ReferrerInfo {
-  url: string;
-  title: string;
-  entityType: string;
-  timestamp: number;
+interface EntityCreationContext {
+  originRoute: string;
+  originEntityName: string;
+  targetEntityName: string;
+  createdFrom: string;
 }
 
 interface ContextAwareBackButtonProps {
@@ -28,28 +27,38 @@ export function ContextAwareBackButton({
     route: defaultRoute,
     label: defaultLabel
   });
-  const router = useRouter();
 
   useEffect(() => {
-    // Check if we have referrer information
-    const referrerInfoStr = localStorage.getItem('referrerInfo');
-    if (referrerInfoStr) {
+    const contextStr = localStorage.getItem('entityCreationContext');
+    if (contextStr) {
       try {
-        const referrerInfo: ReferrerInfo = JSON.parse(referrerInfoStr);
+        const context: EntityCreationContext = JSON.parse(contextStr);
         
-        // Check if the referrer info is recent (within last 10 minutes)
+        if (context.createdFrom === 'relationship' && context.originEntityName) {
+          setBackInfo({
+            route: localStorage.getItem('returnUrl') || defaultRoute,
+            label: `Back to ${context.originEntityName}`
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to parse entity creation context:', error);
+        localStorage.removeItem('entityCreationContext');
+      }
+    }
+
+    const referrerInfoStr = localStorage.getItem('referrerInfo');
+    if (referrerInfoStr && !contextStr) {
+      try {
+        const referrerInfo = JSON.parse(referrerInfoStr);
         const isRecent = Date.now() - referrerInfo.timestamp < 10 * 60 * 1000;
         
         if (isRecent && referrerInfo.url && referrerInfo.entityType) {
-          // Determine the entity display name
           const entityDisplayName = getEntityDisplayName(referrerInfo.entityType);
-          
           setBackInfo({
             route: referrerInfo.url,
             label: `Back to ${entityDisplayName}`
           });
         } else {
-          // Clean up old referrer info
           localStorage.removeItem('referrerInfo');
         }
       } catch (error) {
@@ -57,32 +66,25 @@ export function ContextAwareBackButton({
         localStorage.removeItem('referrerInfo');
       }
     }
-  }, []);
+  }, [defaultRoute]);
 
   const getEntityDisplayName = (entityType: string): string => {
-    // Convert entity class names to human-readable display names
-    const displayNames: Record<string, string> = {
-      'Call': 'Calls',
-      'Party': 'Parties', 
-      'CallType': 'Call Types',
-      'SubCallType': 'Sub Call Types',
-      'Priority': 'Priorities',
-      'Source': 'Sources',
-      'Area': 'Areas',
-      'CallCategory': 'Call Categories',
-      'CallStatus': 'Call Status',
-      'ChannelType': 'Channel Types',
-      'Product': 'Products',
-      'State': 'States',
-      'District': 'Districts',
-      'City': 'Cities',
-    };
-
-    return displayNames[entityType] || `${entityType}s`;
+    // Convert from PascalCase to Title Case and pluralize
+    const words = entityType.replace(/([A-Z])/g, ' $1').trim();
+    const titleCase = words.charAt(0).toUpperCase() + words.slice(1).toLowerCase();
+    
+    // Simple pluralization
+    if (titleCase.endsWith('y')) {
+      return titleCase.slice(0, -1) + 'ies';
+    } else if (titleCase.endsWith('s') || titleCase.endsWith('ch') || titleCase.endsWith('sh')) {
+      return titleCase + 'es';
+    } else {
+      return titleCase + 's';
+    }
   };
 
   const handleBackClick = () => {
-    // Clear referrer info after using it
+    localStorage.removeItem('entityCreationContext');
     localStorage.removeItem('referrerInfo');
   };
 
