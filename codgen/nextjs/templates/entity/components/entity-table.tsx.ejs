@@ -225,12 +225,12 @@ export function <%= entityClass %>Table() {
         <% } %>
         <% booleanFields.forEach(field => { %>
         // Handle <%= field.fieldName %> filter
-        else if (key === '<%= field.fieldName %>') {
+        <% if (displayableRelationships.length > 0) { %>else <% } %>if (key === '<%= field.fieldName %>') {
           params['<%= field.fieldName %>.equals'] = value === 'true';
         }
         <% }); %>
         // Handle other direct filters
-        else if (Array.isArray(value) && value.length > 0) {
+        <% if (displayableRelationships.length > 0 || booleanFields.length > 0) { %>else <% } %>if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
