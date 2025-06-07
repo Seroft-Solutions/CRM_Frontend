@@ -63,6 +63,7 @@ export function CallRemarkTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -75,6 +76,8 @@ export function CallRemarkTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "call")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="calls"
+          showNavigationIcon={true}
         />
       </TableCell>
       

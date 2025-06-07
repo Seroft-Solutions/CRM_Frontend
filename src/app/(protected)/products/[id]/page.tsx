@@ -6,6 +6,7 @@ import { ProductDetails } from "../components/product-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface ProductPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/products">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Products
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/products"
+              defaultLabel="Back to Products"
+              entityName="Product"
+            />
           </PageHeader>
         </div>
 

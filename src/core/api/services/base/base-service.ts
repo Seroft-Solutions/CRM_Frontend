@@ -59,19 +59,34 @@ export class BaseService {
     // Response interceptor for error handling
     this.instance.interceptors.response.use(
       (response) => response,
-      (error) => {
-        // If unauthorized, invalidate token cache and emit session event
+      async (error) => {
         if (error.response?.status === 401) {
           this.tokenCache.invalidate();
-          
-          // Emit session expired event instead of immediate redirect
-          if (typeof window !== 'undefined') {
+
+          if (typeof window !== 'undefined' && !error.config?._retry) {
+            try {
+              const { refreshSession } = await import('@/lib/token-refresh');
+              const refreshed = await refreshSession();
+              if (refreshed) {
+                error.config._retry = true;
+                const token = await this.tokenCache.getToken(() => this.getAuthTokenFromSession());
+                if (token) {
+                  error.config.headers = error.config.headers || {};
+                  error.config.headers.Authorization = `Bearer ${token}`;
+                }
+                return this.instance.request(error.config);
+              }
+            } catch (refreshError) {
+              console.error('Auto refresh failed:', refreshError);
+            }
+
             sessionEventEmitter.emit('session-expired', {
               message: 'Your session has expired',
               statusCode: 401
             });
           }
         }
+
         return this.handleError(error);
       }
     );

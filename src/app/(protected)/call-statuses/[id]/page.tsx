@@ -6,6 +6,7 @@ import { CallStatusDetails } from "../components/call-status-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallStatusPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function CallStatusPage({ params }: CallStatusPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/call-statuses">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Call Statuses
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/call-statuses"
+              defaultLabel="Back to Call Statuses"
+              entityName="CallStatus"
+            />
           </PageHeader>
         </div>
 

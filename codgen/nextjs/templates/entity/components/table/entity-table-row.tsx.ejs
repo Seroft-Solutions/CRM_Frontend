@@ -85,9 +85,26 @@ export function <%= entityClass %>TableRow({
         <% } %>
       </TableCell>
       <% } %>
+<%
+// Helper function to convert entity name to route
+function entityToRoute(entityName) {
+  if (!entityName) return '';
+  const kebabCase = entityName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  // Simple pluralization logic
+  if (kebabCase.endsWith('y') && kebabCase.length > 1 && !'aeiou'.includes(kebabCase[kebabCase.length - 2])) {
+    return kebabCase.slice(0, -1) + 'ies';
+  } else if (kebabCase.endsWith('s') || kebabCase.endsWith('sh') || kebabCase.endsWith('ch') || kebabCase.endsWith('x') || kebabCase.endsWith('z')) {
+    return kebabCase + 'es';
+  } else {
+    return kebabCase + 's';
+  }
+}
+%>
       <% for (const rel of displayableRelationships) { 
            const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
            const relationshipFieldName = rel.relationshipFieldName;
+           // Generate the route for the related entity
+           const otherEntityRoute = rel.otherEntity.builtInUser ? 'users' : entityToRoute(rel.otherEntityName);
       %>
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -100,6 +117,8 @@ export function <%= entityClass %>TableRow({
           isEditable={relationshipConfigs.find(config => config.name === "<%= relationshipFieldName %>")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="<%= otherEntityRoute %>"
+          showNavigationIcon={true}
         />
       </TableCell>
       <% } %>

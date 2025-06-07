@@ -6,6 +6,7 @@ import { PriorityDetails } from "../components/priority-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface PriorityPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function PriorityPage({ params }: PriorityPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/priorities">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Priorities
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/priorities"
+              defaultLabel="Back to Priorities"
+              entityName="Priority"
+            />
           </PageHeader>
         </div>
 

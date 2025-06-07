@@ -6,6 +6,7 @@ import { CallRemarkForm } from "../../components/call-remark-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditCallRemarkPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function EditCallRemarkPage({ params }: EditCallRemarkPageP
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/call-remarks">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Call Remarks
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/call-remarks"
+              defaultLabel="Back to Call Remarks"
+              entityName="CallRemark"
+            />
           </PageHeader>
         </div>
 

@@ -6,6 +6,7 @@ import { CityDetails } from "../components/city-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CityPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function CityPage({ params }: CityPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/cities">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Cities
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/cities"
+              defaultLabel="Back to Cities"
+              entityName="City"
+            />
           </PageHeader>
         </div>
 

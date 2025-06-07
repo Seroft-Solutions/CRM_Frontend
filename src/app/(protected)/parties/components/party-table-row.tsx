@@ -111,6 +111,7 @@ export function PartyTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -123,6 +124,8 @@ export function PartyTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="sources"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -137,6 +140,8 @@ export function PartyTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="areas"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -151,6 +156,8 @@ export function PartyTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="states"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -165,6 +172,8 @@ export function PartyTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="districts"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -179,6 +188,8 @@ export function PartyTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "city")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="cities"
+          showNavigationIcon={true}
         />
       </TableCell>
       

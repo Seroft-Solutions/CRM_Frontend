@@ -57,6 +57,7 @@ export function CityTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -69,6 +70,8 @@ export function CityTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="districts"
+          showNavigationIcon={true}
         />
       </TableCell>
       

@@ -57,6 +57,7 @@ export function DistrictTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -69,6 +70,8 @@ export function DistrictTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="states"
+          showNavigationIcon={true}
         />
       </TableCell>
       
