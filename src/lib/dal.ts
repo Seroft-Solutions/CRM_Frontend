@@ -5,10 +5,14 @@
  * across the application, with caching to prevent redundant session calls.
  */
 
-import 'server-only'
 import { cache } from 'react'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+
+// Cached auth() call to avoid repeated session lookups within a request
+const getAuthSession = cache(async () => {
+  return auth()
+})
 
 interface Organization {
   name: string;
@@ -22,7 +26,7 @@ interface Organization {
  * during a single render pass, preventing multiple auth() calls.
  */
 export const verifySession = cache(async () => {
-  const session = await auth()
+  const session = await getAuthSession()
   
   if (!session?.user) {
     redirect('/')
@@ -42,7 +46,7 @@ export const verifySession = cache(async () => {
  * Get session without redirect (for optional auth checks)
  */
 export const getSession = cache(async () => {
-  const session = await auth()
+  const session = await getAuthSession()
   
   if (!session?.user) {
     return null
@@ -146,7 +150,7 @@ export const getOrganizationById = async (organizationId: string): Promise<Organ
  * Check if user has role AND belongs to organization (combined check)
  */
 export const hasRoleInOrganization = async (
-  requiredRole: string, 
+  requiredRole: string,
   organizationId: string
 ): Promise<boolean> => {
   const [roleCheck, orgCheck] = await Promise.all([
@@ -156,3 +160,11 @@ export const hasRoleInOrganization = async (
   
   return roleCheck && orgCheck
 }
+
+/**
+ * Retrieve the current access token
+ */
+export const getAccessToken = cache(async (): Promise<string | null> => {
+  const session = await getAuthSession()
+  return session?.access_token ?? null
+})

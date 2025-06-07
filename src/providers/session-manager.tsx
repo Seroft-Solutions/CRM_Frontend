@@ -1,10 +1,10 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useSessionMonitor } from '@/hooks/use-session-monitor'
 import { SessionExpiredModal } from '@/components/auth/session-expired-modal'
 import { useSessionEvents } from '@/lib/session-events'
+import { refreshSession as refreshKeycloakSession } from '@/lib/token-refresh'
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void
@@ -22,7 +22,6 @@ interface SessionManagerProviderProps {
 }
 
 export function SessionManagerProvider({ children }: SessionManagerProviderProps) {
-  const { update: updateSession } = useSession()
   const [modalState, setModalState] = useState<{
     isOpen: boolean
     type: 'expired' | 'warning'
@@ -57,16 +56,13 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
   }, [])
 
   const refreshSession = useCallback(async () => {
-    try {
-      console.log('Refreshing session...')
-      await updateSession()
+    const success = await refreshKeycloakSession()
+    if (success) {
       hideSessionModal()
-      console.log('Session refreshed successfully')
-    } catch (error) {
-      console.error('Failed to refresh session:', error)
+    } else {
       showSessionExpiredModal()
     }
-  }, [updateSession, hideSessionModal, showSessionExpiredModal])
+  }, [hideSessionModal, showSessionExpiredModal])
 
   const handleRetryAuth = useCallback(() => {
     // Force a hard reload to clear any stale state
