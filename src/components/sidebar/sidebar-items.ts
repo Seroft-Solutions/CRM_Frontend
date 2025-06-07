@@ -64,6 +64,7 @@ export const sidebarItems: SidebarItem[] = [
     icon: PhoneCall,
     children: [
       { key: 'callTracking', label: 'Call Tracking', path: '/calls' },
+      { key: 'callRemarks', label: 'Call Remarks', path: '/call-remarks' },
     ],
   },
 ];
