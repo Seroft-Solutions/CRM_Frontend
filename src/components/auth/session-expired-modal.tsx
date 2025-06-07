@@ -36,7 +36,7 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true)
     try {
-      await signIn('keycloak', { 
+      await signIn('keycloak', {
         callbackUrl: window.location.href,
         redirect: true 
       })
@@ -66,6 +66,11 @@ export function SessionExpiredModal({
   }
 
   useEffect(() => {
+    // Automatically attempt re-authentication when expired modal opens
+    if (isOpen && type === 'expired') {
+      handleContinue()
+    }
+
     // Prevent closing modal with escape key for expired sessions
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && type === 'expired') {
@@ -132,14 +137,12 @@ export function SessionExpiredModal({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button 
-            onClick={handleContinue}
-            disabled={isReauthorizing}
-            className="w-full"
-          >
-            {isReauthorizing && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
-            Continue to Sign In
-          </Button>
+          <div className="flex w-full items-center justify-center gap-2 py-2">
+            {isReauthorizing && (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            )}
+            <span>Re-authenticating...</span>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

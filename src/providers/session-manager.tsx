@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { signIn } from 'next-auth/react';
 import { useSessionMonitor } from '@/hooks/use-session-monitor';
 import { SessionExpiredModal } from '@/components/auth/session-expired-modal';
 import { useSessionEvents } from '@/lib/session-events';
@@ -69,28 +70,43 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
     window.location.href = '/';
   }, []);
 
-  const { isAuthenticated, isLoading, isIdle } = useSessionMonitor({
+  const minutesIdleRef = useRef(0);
+
+  const attemptSessionRecovery = useCallback(async () => {
+    if (minutesIdleRef.current < 10) {
+      const refreshed = await refreshKeycloakSession();
+      if (!refreshed) {
+        // Attempt silent re-authentication without showing the modal
+        await signIn('keycloak', {
+          callbackUrl: window.location.href,
+          redirect: true,
+        });
+      }
+    } else {
+      showSessionExpiredModal();
+    }
+  }, [showSessionExpiredModal]);
+
+  const { isAuthenticated, isLoading, isIdle, minutesIdle } = useSessionMonitor({
     checkInterval: 60000, // Check every minute
-    onSessionExpired: showSessionExpiredModal,
+    onSessionExpired: attemptSessionRecovery,
     onSessionRestored: hideSessionModal,
     warningThreshold: 2, // Show warning 2 minutes before expiry
     onSessionWarning: showSessionWarningModal,
+    idleTimeout: 10, // User considered idle after 10 minutes
   });
+
+  useEffect(() => {
+    minutesIdleRef.current = minutesIdle;
+  }, [minutesIdle]);
 
   // Listen to API session events
   useEffect(() => {
     const unsubscribe = onApiSessionExpired(async () => {
-      if (!isIdle) {
-        const refreshed = await refreshKeycloakSession();
-        if (!refreshed) {
-          showSessionExpiredModal();
-        }
-      } else {
-        showSessionExpiredModal();
-      }
+      await attemptSessionRecovery();
     });
     return unsubscribe;
-  }, [onApiSessionExpired, isIdle, showSessionExpiredModal]);
+  }, [onApiSessionExpired, attemptSessionRecovery]);
 
   const contextValue: SessionManagerContextType = {
     showSessionExpiredModal,
