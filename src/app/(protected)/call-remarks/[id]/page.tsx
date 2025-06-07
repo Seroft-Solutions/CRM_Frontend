@@ -39,12 +39,16 @@ export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
           </PageHeader>
         </div>
 
-        <div className="max-w-4xl">
-          <PageTitle>Call Remark Details</PageTitle>
-          
-          <div className="mt-6">
-            <CallRemarkDetails id={id} />
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Call Remark Details</h1>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this call remark</p>
+            </div>
           </div>
+          
+          <CallRemarkDetails id={id} />
         </div>
       </div>
     </PermissionGuard>

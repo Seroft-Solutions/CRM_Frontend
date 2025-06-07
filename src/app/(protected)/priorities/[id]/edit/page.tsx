@@ -39,12 +39,16 @@ export default async function EditPriorityPage({ params }: EditPriorityPageProps
           </PageHeader>
         </div>
 
-        <div className="max-w-2xl">
-          <PageTitle>Edit Priority</PageTitle>
-          
-          <div className="mt-6">
-            <PriorityForm id={id} />
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Edit Priority</h1>
+              <p className="text-sm text-gray-600 mt-1">Update the information for this priority</p>
+            </div>
           </div>
+          
+          <PriorityForm id={id} />
         </div>
       </div>
     </PermissionGuard>

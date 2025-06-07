@@ -289,14 +289,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <p className="text-muted-foreground">
-          {isNew ? "Follow the steps below to create a new" : "Update the information for this"} sub call type
-        </p>
-      </div>
-
+    <div className="w-full space-y-6">
       {/* Progress Bar */}
       <div className="space-y-4">
         <div className="flex justify-between text-sm font-medium">
@@ -308,11 +301,11 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
 
       {/* Step Indicators */}
       <div className="flex justify-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
+                "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0",
                 index < currentStep 
                   ? "bg-primary border-primary text-primary-foreground" 
                   : index === currentStep 
@@ -320,13 +313,13 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                   : "border-muted-foreground/30 text-muted-foreground"
               )}>
                 {index < currentStep ? (
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                 ) : (
-                  <span className="text-sm font-medium">{index + 1}</span>
+                  <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
                 )}
               </div>
               {index < STEPS.length - 1 && (
-                <ChevronRight className="w-4 h-4 text-muted-foreground mx-2" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground mx-1 sm:mx-2 flex-shrink-0" />
               )}
             </div>
           ))}
@@ -335,19 +328,19 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
 
       {/* Current Step Info */}
       <div className="text-center space-y-1">
-        <h2 className="text-xl font-semibold">{STEPS[currentStep].title}</h2>
-        <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
+        <h2 className="text-lg sm:text-xl font-semibold">{STEPS[currentStep].title}</h2>
+        <p className="text-sm text-muted-foreground">{STEPS[currentStep].description}</p>
       </div>
 
       {/* Form Content */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-4 sm:p-6">
               {/* Step 1: Basic Information */}
               {STEPS[currentStep].id === 'basic' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     
                     <FormField
                       control={form.control}
@@ -426,22 +419,24 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                   
                   <div className="space-y-4">
                     <h4 className="font-medium">Settings</h4>
-                    
-                    <FormField
-                      control={form.control}
-                      name="isActive"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      
+                      <FormField
+                        control={form.control}
+                        name="isActive"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
+                            </div>
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                    </div>
                   </div>
                   
 
@@ -457,7 +452,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                     <h3 className="text-lg font-medium">Classification</h3>
                     <p className="text-muted-foreground">Set priority, status, and categories</p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     <FormField
                       control={form.control}
                       name="callType"
@@ -512,7 +507,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                   {/* Basic Fields Review */}
                   <div className="space-y-4">
                     <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                       <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Name</dt>
                         <dd className="text-sm">
@@ -545,7 +540,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                   {/* Relationship Reviews */}
                   <div className="space-y-4">
                     <h4 className="font-medium text-lg border-b pb-2">🏷️ Classification</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                       <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Call Type</dt>
                         <dd className="text-sm">
@@ -562,12 +557,12 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
           </Card>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={currentStep === 0 ? () => router.push("/sub-call-types") : prevStep}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 justify-center"
             >
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 0 ? "Cancel" : "Previous"}
@@ -578,7 +573,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                 <Button 
                   type="button"
                   onClick={() => setConfirmSubmission(true)}
-                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 justify-center"
                 >
                   <Check className="h-4 w-4" />
                   Confirm {isNew ? "Create" : "Update"}
@@ -587,7 +582,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isCreating || isUpdating}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
                 >
                   <Save className="h-4 w-4" />
                   {isCreating || isUpdating ? "Submitting..." : `${isNew ? "Create" : "Update"} Sub Call Type`}
@@ -597,7 +592,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
               <Button
                 type="button"
                 onClick={nextStep}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center"
               >
                 Next Step
                 <ArrowRight className="h-4 w-4" />

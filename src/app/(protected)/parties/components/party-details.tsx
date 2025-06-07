@@ -84,213 +84,218 @@ export function PartyDetails({ id }: PartyDetailsProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardDescription>
-            Viewing details for Party #id{entity.id}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Basic Information */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Basic Information</h3>
-                <div className="space-y-5">
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Name</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.name || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Mobile</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.mobile || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Email</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.email || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Whats App</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.whatsApp || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Contact Person</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.contactPerson || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Address1</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.address1 || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Address2</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.address2 || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Address3</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.address3 || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Is Active</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                        {entity.isActive ? "Yes" : "No"}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Basic Information */}
+        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mobile</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.mobile || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.email || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Whats App</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.whatsApp || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Person</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.contactPerson || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address1</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.address1 || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address2</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.address2 || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address3</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.address3 || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
+                      {entity.isActive ? "Yes" : "No"}
+                    </Badge>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.remark || "—"}</span>
+                    
+                  </dd>
+                </div>
+                
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        
+        {/* Relationships */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Related Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.source ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.source as any).name || entity.source.id}
                       </Badge>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Remark</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.remark || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
+                    ) : "—"}
+                    
+                  </dd>
                 </div>
-              </div>
-            </div>
-
-            
-            {/* Relationships */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Related Information</h3>
-                <div className="space-y-5">
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Source</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.source ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.source as any).name || entity.source.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Area</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.area ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.area as any).name || entity.area.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">State</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.state ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.state as any).name || entity.state.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">District</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.district ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.district as any).name || entity.district.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">City</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.city ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.city as any).name || entity.city.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.area ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.area as any).name || entity.area.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
                 </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.state ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.state as any).name || entity.state.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.district ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.district as any).name || entity.district.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.city ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.city as any).name || entity.city.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
               </div>
-            </div>
-            
-          </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+      </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
-            <Button variant="outline" asChild>
-              <Link href={`/parties/${id}/edit`} className="flex items-center gap-2">
-                <Pencil className="h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Action Buttons */}
+      <div className="mt-8 pt-6 border-t">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <Button variant="outline" asChild className="flex items-center gap-2 justify-center">
+            <Link href={`/parties/${id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 justify-center"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        </div>
+      </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

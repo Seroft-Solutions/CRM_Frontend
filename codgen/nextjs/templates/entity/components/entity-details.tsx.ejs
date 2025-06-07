@@ -101,119 +101,124 @@ export function <%= entityClass %>Details({ id }: <%= entityClass %>DetailsProps
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardDescription>
-            Viewing details for <%= entityClassHumanized %> #<%= primaryKey.name %>{entity.<%= primaryKey.name %>}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Basic Information */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Basic Information</h3>
-                <div className="space-y-5">
-                  <% for (field of fields) { 
-                    const fieldName = field.fieldName;
-                    const fieldLabel = camelToTitleCase(fieldName);
-                  %>
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1"><%= fieldLabel %></dt>
-                    <dd className="text-base font-medium">
-                      <% if (field.fieldTypeBoolean) { %>
-                      <Badge variant={entity.<%= fieldName %> ? "default" : "secondary"} className="text-sm">
-                        {entity.<%= fieldName %> ? "Yes" : "No"}
-                      </Badge>
-                      <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
-                      <span className="text-foreground">
-                        {entity.<%= fieldName %> ? format(new Date(entity.<%= fieldName %>), "PPP") : "—"}
-                      </span>
-                      <% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
-                      <div>
-                        {entity.<%= fieldName %> ? (
-                          <% if (field.blobContentTypeImage) { %>
-                          <img
-                            src={`data:${entity.<%= fieldName %>ContentType};base64,${entity.<%= fieldName %>}`}
-                            alt="<%= fieldLabel %>"
-                            className="max-h-40 rounded-lg border shadow-sm"
-                          />
-                          <% } else { %>
-                          <Badge variant="outline" className="text-sm">Binary data</Badge>
-                          <% } %>
-                        ) : "—"}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Basic Information */}
+        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <% for (field of fields) { 
+                  const fieldName = field.fieldName;
+                  const fieldLabel = camelToTitleCase(fieldName);
+                %>
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><%= fieldLabel %></dt>
+                  <dd className="text-sm font-medium">
+                    <% if (field.fieldTypeBoolean) { %>
+                    <Badge variant={entity.<%= fieldName %> ? "default" : "secondary"} className="text-sm">
+                      {entity.<%= fieldName %> ? "Yes" : "No"}
+                    </Badge>
+                    <% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>
+                    <span className="text-foreground">
+                      {entity.<%= fieldName %> ? format(new Date(entity.<%= fieldName %>), "PPP") : "—"}
+                    </span>
+                    <% } else if (field.fieldTypeBinary && !field.blobContentTypeText) { %>
+                    <div>
+                      {entity.<%= fieldName %> ? (
+                        <% if (field.blobContentTypeImage) { %>
+                        <img
+                          src={`data:${entity.<%= fieldName %>ContentType};base64,${entity.<%= fieldName %>}`}
+                          alt="<%= fieldLabel %>"
+                          className="max-h-32 rounded-lg border shadow-sm"
+                        />
+                        <% } else { %>
+                        <Badge variant="outline" className="text-sm">Binary data</Badge>
+                        <% } %>
+                      ) : "—"}
+                    </div>
+                    <% } else if (field.fieldIsEnum) { %>
+                    <Badge variant="outline" className="text-sm font-medium">{entity.<%= fieldName %> || "—"}</Badge>
+                    <% } else { %>
+                    <span className="text-foreground break-words">{entity.<%= fieldName %> || "—"}</span>
+                    <% } %>
+                  </dd>
+                </div>
+                <% } %>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <% if (safeRelationships.length > 0) { %>
+        {/* Relationships */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Related Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <% for (const rel of safeRelationships) { 
+                  const relationshipFieldName = rel.relationshipFieldName;
+                  const relationshipLabel = camelToTitleCase(rel.relationshipName);
+                  const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+                %>
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><%= relationshipLabel %></dt>
+                  <dd className="text-sm font-medium">
+                    <% if (rel.collection) { %>
+                    {entity.<%= relationshipFieldName %>?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {entity.<%= relationshipFieldName %>.map((item, index) => (
+                          <Badge key={index} variant="outline" className="text-sm">
+                            {item.<%= displayField %> || item.id}
+                          </Badge>
+                        ))}
                       </div>
-                      <% } else if (field.fieldIsEnum) { %>
-                      <Badge variant="outline" className="text-sm font-medium">{entity.<%= fieldName %> || "—"}</Badge>
-                      <% } else { %>
-                      <span className="text-foreground break-words">{entity.<%= fieldName %> || "—"}</span>
-                      <% } %>
-                    </dd>
-                  </div>
-                  <% } %>
+                    ) : "—"}
+                    <% } else { %>
+                    {entity.<%= relationshipFieldName %> ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.<%= relationshipFieldName %> as any).<%= displayField %> || entity.<%= relationshipFieldName %>.id}
+                      </Badge>
+                    ) : "—"}
+                    <% } %>
+                  </dd>
                 </div>
+                <% } %>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
+        <% } %>
+      </div>
 
-            <% if (safeRelationships.length > 0) { %>
-            {/* Relationships */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Related Information</h3>
-                <div className="space-y-5">
-                  <% for (const rel of safeRelationships) { 
-                    const relationshipFieldName = rel.relationshipFieldName;
-                    const relationshipLabel = camelToTitleCase(rel.relationshipName);
-                    const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
-                  %>
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1"><%= relationshipLabel %></dt>
-                    <dd className="text-base font-medium">
-                      <% if (rel.collection) { %>
-                      {entity.<%= relationshipFieldName %>?.length ? (
-                        <div className="flex flex-wrap gap-2">
-                          {entity.<%= relationshipFieldName %>.map((item, index) => (
-                            <Badge key={index} variant="outline" className="text-sm">
-                              {item.<%= displayField %> || item.id}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : "—"}
-                      <% } else { %>
-                      {entity.<%= relationshipFieldName %> ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.<%= relationshipFieldName %> as any).<%= displayField %> || entity.<%= relationshipFieldName %>.id}
-                        </Badge>
-                      ) : "—"}
-                      <% } %>
-                    </dd>
-                  </div>
-                  <% } %>
-                </div>
-              </div>
-            </div>
-            <% } %>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
-            <Button variant="outline" asChild>
-              <Link href={`/<%= entityRoute %>/${id}/edit`} className="flex items-center gap-2">
-                <Pencil className="h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Action Buttons */}
+      <div className="mt-8 pt-6 border-t">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <Button variant="outline" asChild className="flex items-center gap-2 justify-center">
+            <Link href={`/<%= entityRoute %>/${id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 justify-center"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        </div>
+      </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
