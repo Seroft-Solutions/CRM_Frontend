@@ -10,27 +10,14 @@ class RolesManager {
    * Set roles for a user
    */
   setUserRoles(userId: string, roles: string[]): void {
-    console.log('🔧 Setting roles in manager:', { userId, roles });
     this.userRoles.set(userId, roles);
-    console.log('🔧 Manager state after set:', {
-      totalUsers: this.userRoles.size,
-      allUsers: Array.from(this.userRoles.keys())
-    });
   }
   
   /**
    * Get roles for a user
    */
   getUserRoles(userId: string): string[] {
-    const roles = this.userRoles.get(userId) || [];
-    console.log('🔍 Getting roles from manager:', { 
-      userId, 
-      roles, 
-      totalUsers: this.userRoles.size,
-      allUsers: Array.from(this.userRoles.keys()),
-      hasUser: this.userRoles.has(userId)
-    });
-    return roles;
+    return this.userRoles.get(userId) || [];
   }
   
   /**

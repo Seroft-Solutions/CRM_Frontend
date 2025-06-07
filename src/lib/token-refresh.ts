@@ -34,7 +34,6 @@ export async function refreshKeycloakToken(refreshToken: string): Promise<TokenR
     }
 
     const data = await response.json()
-    console.log('Token refreshed successfully')
     
     return {
       success: true,

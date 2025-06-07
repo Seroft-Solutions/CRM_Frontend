@@ -1,6 +1,16 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '../base/types';
 import { SPRING_SERVICE_CONFIG } from './config';
+import { TokenCache } from '@/lib/token-cache';
+import { fetchAccessToken } from '@/lib/auth-token';
+
+const tokenCache = new TokenCache();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('token-refreshed', ((event: CustomEvent) => {
+    tokenCache.invalidate();
+  }) as EventListener);
+}
 
 export const springServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
@@ -10,20 +20,11 @@ export const springServiceMutator = async <T>(
   
   const instance = axios.create(SPRING_SERVICE_CONFIG);
   
-  // Add auth interceptor
+  // Add auth interceptor with token caching
   instance.interceptors.request.use(async (config) => {
-    if (typeof window !== 'undefined') {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const session = await response.json();
-          if (session?.access_token) {
-            config.headers.Authorization = `Bearer ${session.access_token}`;
-          }
-        }
-      } catch (error) {
-        console.warn('Auth token fetch failed:', error);
-      }
+    const token = await tokenCache.getToken(fetchAccessToken);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });

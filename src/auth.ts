@@ -13,11 +13,15 @@ declare module "next-auth" {
       roles?: string[]
     }
     access_token?: string
+    refresh_token?: string
   }
   
   interface JWT {
     id_token?: string
     access_token?: string
+    refresh_token?: string
+    expires_at?: number
+    error?: string
     organizations?: Array<{ name: string; id: string }>
     roles?: string[]
   }
@@ -33,8 +37,6 @@ interface KeycloakTokenPayload {
 
 function parseOrganizations(accessToken: string): Array<{ name: string; id: string }> {
   try {
-    console.log('=== ACCESS TOKEN ===')
-    console.log('Access Token:', accessToken)
     
     const [, payload] = accessToken.split('.')
     if (!payload) return []
@@ -42,15 +44,12 @@ function parseOrganizations(accessToken: string): Array<{ name: string; id: stri
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
     const organizations = decoded.organizations || {}
     
-    console.log('=== PARSED ORGANIZATIONS ===')
-    console.log('Raw organizations from token:', organizations)
     
     const parsedOrgs = Object.entries(organizations).map(([name, data]) => ({
       name,
       id: data?.id || name
     }))
     
-    console.log('Formatted organizations:', parsedOrgs)
     
     return parsedOrgs
   } catch (error) {
@@ -66,11 +65,6 @@ function parseRoles(accessToken: string): string[] {
     
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
     
-    console.log('=== PARSED ROLES ===')
-    console.log('Raw token payload for roles:', {
-      realm_access: decoded.realm_access,
-      resource_access: decoded.resource_access
-    })
     
     const roles: string[] = []
     
@@ -88,12 +82,49 @@ function parseRoles(accessToken: string): string[] {
       })
     }
     
-    console.log('Parsed roles:', roles)
     
     return [...new Set(roles)] // Remove duplicates
   } catch (error) {
     console.error('Failed to parse roles from token:', error)
     return []
+  }
+}
+
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  try {
+    if (!token.refresh_token) return token
+
+    const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: process.env.AUTH_KEYCLOAK_ID!,
+        client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
+        refresh_token: token.refresh_token
+      })
+    })
+
+    if (!response.ok) {
+      console.error('Failed to refresh token:', response.status)
+      return { ...token, error: 'RefreshAccessTokenError' }
+    }
+
+    const data = await response.json()
+
+    return {
+      ...token,
+      access_token: data.access_token,
+      refresh_token: data.refresh_token ?? token.refresh_token,
+      id_token: data.id_token ?? token.id_token,
+      expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
+      organizations: parseOrganizations(data.access_token),
+      roles: parseRoles(data.access_token)
+    }
+  } catch (error) {
+    console.error('Error refreshing access token:', error)
+    return { ...token, error: 'RefreshAccessTokenError' }
   }
 }
 
@@ -110,17 +141,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, account, trigger }) {
+    async jwt({ token, account }) {
       if (account?.provider === "keycloak") {
-        console.log('=== JWT CALLBACK - KEYCLOAK AUTH ===')
-        console.log('Account access token available:', !!account.access_token)
-        console.log('Token sub:', token.sub)
-        
+        // Handle login with Keycloak
+
         token.id_token = account.id_token
         token.access_token = account.access_token
-        
+        token.refresh_token = account.refresh_token
+        token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0)
+
         if (account.access_token && token.sub) {
-          console.log('Processing access token for organizations and roles...')
           token.organizations = parseOrganizations(account.access_token)
           
           // Store roles in JWT token for client access
@@ -128,17 +158,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.roles = roles
           rolesManager.setUserRoles(token.sub, roles)
           
-          console.log('Organizations set on token:', token.organizations)
-          console.log('Roles set in JWT and roles manager for user:', token.sub, roles)
         }
       }
-      
+
+      // Refresh token if expired
+      if (token.expires_at && Date.now() / 1000 >= token.expires_at - 60) {
+        token = await refreshAccessToken(token)
+      }
+
       return token
     },
     async session({ session, token }) {
-      console.log('=== SESSION CALLBACK ===')
-      console.log('Token sub:', token.sub)
-      console.log('Session user before:', session.user.id)
       
       if (token.sub) {
         session.user.id = token.sub
@@ -155,9 +185,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.access_token) {
         session.access_token = token.access_token
       }
+
+      if (token.refresh_token) {
+        session.refresh_token = token.refresh_token
+      }
       
-      console.log('Session user after:', session.user.id)
-      console.log('Session roles:', session.user.roles)
       return session
     },
     authorized({ auth, request: { nextUrl } }) {
@@ -195,7 +227,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Clear roles from roles manager on signout
       if (token?.sub) {
         rolesManager.clearUserRoles(token.sub)
-        console.log('Roles cleared from roles manager for user:', token.sub)
       }
       
       if (token?.id_token) {
