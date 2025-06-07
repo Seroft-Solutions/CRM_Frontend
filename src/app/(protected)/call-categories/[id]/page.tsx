@@ -39,12 +39,16 @@ export default async function CallCategoryPage({ params }: CallCategoryPageProps
           </PageHeader>
         </div>
 
-        <div className="max-w-4xl">
-          <PageTitle>Call Category Details</PageTitle>
-          
-          <div className="mt-6">
-            <CallCategoryDetails id={id} />
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Call Category Details</h1>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this call category</p>
+            </div>
           </div>
+          
+          <CallCategoryDetails id={id} />
         </div>
       </div>
     </PermissionGuard>

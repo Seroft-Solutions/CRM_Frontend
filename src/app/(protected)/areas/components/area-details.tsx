@@ -84,87 +84,92 @@ export function AreaDetails({ id }: AreaDetailsProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardDescription>
-            Viewing details for Area #id{entity.id}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Basic Information */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Basic Information</h3>
-                <div className="space-y-5">
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Name</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.name || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Pincode</dt>
-                    <dd className="text-base font-medium">
-                      
-                      <span className="text-foreground break-words">{entity.pincode || "—"}</span>
-                      
-                    </dd>
-                  </div>
-                  
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Basic Information */}
+        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
+                  </dd>
                 </div>
-              </div>
-            </div>
-
-            
-            {/* Relationships */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-6 text-foreground border-b pb-2">Related Information</h3>
-                <div className="space-y-5">
-                  
-                  <div className="border-l-4 border-primary/20 pl-4 py-2">
-                    <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">City</dt>
-                    <dd className="text-base font-medium">
-                      
-                      {entity.city ? (
-                        <Badge variant="outline" className="text-sm font-medium">
-                          {(entity.city as any).name || entity.city.id}
-                        </Badge>
-                      ) : "—"}
-                      
-                    </dd>
-                  </div>
-                  
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pincode</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground break-words">{entity.pincode || "—"}</span>
+                    
+                  </dd>
                 </div>
+                
               </div>
-            </div>
-            
-          </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
-            <Button variant="outline" asChild>
-              <Link href={`/areas/${id}/edit`} className="flex items-center gap-2">
-                <Pencil className="h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        
+        {/* Relationships */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Related Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.city ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.city as any).name || entity.city.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mt-8 pt-6 border-t">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <Button variant="outline" asChild className="flex items-center gap-2 justify-center">
+            <Link href={`/areas/${id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 justify-center"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        </div>
+      </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
