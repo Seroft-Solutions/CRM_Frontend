@@ -98,7 +98,7 @@ export function CallCategoryTable() {
         
         
         // Handle isActive filter
-        else if (key === 'isActive') {
+        if (key === 'isActive') {
           params['isActive.equals'] = value === 'true';
         }
         

@@ -98,7 +98,7 @@ export function StateTable() {
         
         
         // Handle other direct filters
-        else if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
