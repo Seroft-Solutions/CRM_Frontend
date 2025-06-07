@@ -161,5 +161,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     isAuthenticated: !!session?.user,
     isLoading: status === 'loading',
     isIdle,
+    minutesIdle,
   };
 }
