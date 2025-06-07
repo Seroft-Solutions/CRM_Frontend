@@ -6,6 +6,7 @@ import { CallCategoryDetails } from "../components/call-category-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallCategoryPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function CallCategoryPage({ params }: CallCategoryPageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/call-categories">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Call Categories
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/call-categories"
+              defaultLabel="Back to Call Categories"
+              entityName="CallCategory"
+            />
           </PageHeader>
         </div>
 

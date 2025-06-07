@@ -6,6 +6,7 @@ import { StateDetails } from "../components/state-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface StatePageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function StatePage({ params }: StatePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/states">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to States
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/states"
+              defaultLabel="Back to States"
+              entityName="State"
+            />
           </PageHeader>
         </div>
 

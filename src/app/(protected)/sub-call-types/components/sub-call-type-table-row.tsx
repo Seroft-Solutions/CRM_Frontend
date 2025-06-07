@@ -75,6 +75,7 @@ export function SubCallTypeTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -87,6 +88,8 @@ export function SubCallTypeTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="call-types"
+          showNavigationIcon={true}
         />
       </TableCell>
       

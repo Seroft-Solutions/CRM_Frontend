@@ -75,6 +75,7 @@ export function CallStatusTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">

@@ -132,6 +132,18 @@ export class NextJsGenerator {
       console.warn(`Unauthorized page template not found: ${unauthorizedPageTemplate}`);
     }
     
+    // Generate ContextAwareBackButton component
+    const contextBackButtonTemplate = path.join(this.templateDir, 'components', 'context-aware-back-button.tsx');
+    const contextBackButtonOutput = path.join(componentsDir, 'context-aware-back-button.tsx');
+    
+    if (fs.existsSync(contextBackButtonTemplate)) {
+      const template = fs.readFileSync(contextBackButtonTemplate, 'utf8');
+      fs.writeFileSync(contextBackButtonOutput, template);
+      console.log(`Generated shared component: ${contextBackButtonOutput}`);
+    } else {
+      console.warn(`Context aware back button template not found: ${contextBackButtonTemplate}`);
+    }
+    
     console.log('Shared components generated successfully');
   }
 

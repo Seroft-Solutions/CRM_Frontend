@@ -6,6 +6,7 @@ import { DistrictForm } from "../components/district-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 export const metadata = {
   title: "Create District",
@@ -21,12 +22,11 @@ export default function CreateDistrictPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/districts">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Districts
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/districts"
+              defaultLabel="Back to Districts"
+              entityName="District"
+            />
           </PageHeader>
         </div>
 

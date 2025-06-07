@@ -6,6 +6,7 @@ import { PartyDetails } from "../components/party-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface PartyPageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function PartyPage({ params }: PartyPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/parties">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Parties
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/parties"
+              defaultLabel="Back to Parties"
+              entityName="Party"
+            />
           </PageHeader>
         </div>
 

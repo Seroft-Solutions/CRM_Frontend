@@ -63,6 +63,7 @@ export function CallTableRow({
         
       </TableCell>
       
+
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -75,6 +76,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "assignedTo")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="users"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -89,6 +92,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "priority")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="priorities"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -103,6 +108,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="call-types"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -117,6 +124,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "subCallType")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="sub-call-types"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -131,6 +140,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="sources"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -145,6 +156,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="areas"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -159,6 +172,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "channelType")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="channel-types"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -173,6 +188,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "callCategory")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="call-categories"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -187,6 +204,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "callStatus")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="call-statuses"
+          showNavigationIcon={true}
         />
       </TableCell>
       
@@ -201,6 +220,8 @@ export function CallTableRow({
           isEditable={relationshipConfigs.find(config => config.name === "party")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
+          relatedEntityRoute="parties"
+          showNavigationIcon={true}
         />
       </TableCell>
       

@@ -6,6 +6,7 @@ import { CallTypeDetails } from "../components/call-type-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallTypePageProps {
   params: Promise<{
@@ -30,12 +31,11 @@ export default async function CallTypePage({ params }: CallTypePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/call-types">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Call Types
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/call-types"
+              defaultLabel="Back to Call Types"
+              entityName="CallType"
+            />
           </PageHeader>
         </div>
 

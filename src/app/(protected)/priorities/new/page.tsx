@@ -6,6 +6,7 @@ import { PriorityForm } from "../components/priority-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 export const metadata = {
   title: "Create Priority",
@@ -21,12 +22,11 @@ export default function CreatePriorityPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/priorities">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Priorities
-              </Link>
-            </Button>
+            <ContextAwareBackButton 
+              defaultRoute="/priorities"
+              defaultLabel="Back to Priorities"
+              entityName="Priority"
+            />
           </PageHeader>
         </div>
 

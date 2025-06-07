@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Check, ChevronDown, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 
@@ -31,6 +38,9 @@ interface RelationshipCellProps {
   isEditable?: boolean;
   isLoading?: boolean;
   className?: string;
+  // Add props for navigation
+  relatedEntityRoute?: string; // The route to the related entity (e.g., 'call-types', 'sources')
+  showNavigationIcon?: boolean;
 }
 
 export function RelationshipCell({
@@ -43,6 +53,8 @@ export function RelationshipCell({
   isEditable = false,
   isLoading = false,
   className,
+  relatedEntityRoute,
+  showNavigationIcon = true,
 }: RelationshipCellProps) {
   const [open, setOpen] = React.useState(false);
   const [updating, setUpdating] = React.useState(false);
@@ -84,18 +96,81 @@ export function RelationshipCell({
     }
   };
 
-  // If not editable, just display the value
+  // If not editable, display as clickable link or plain text
   if (!isEditable) {
-    return (
-      <div className={cn("px-2 py-1", className)}>
-        {isLoading ? (
+    if (isLoading) {
+      return (
+        <div className={cn("px-2 py-1", className)}>
           <div className="flex items-center gap-2">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span className="text-sm text-muted-foreground">Loading...</span>
           </div>
-        ) : (
-          <span className="text-sm">{currentDisplayValue || "—"}</span>
-        )}
+        </div>
+      );
+    }
+
+    // If no current value, show empty state
+    if (!currentDisplayValue) {
+      return (
+        <div className={cn("px-1 py-1", className)}>
+          <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50/50 border border-slate-100">
+            <span className="text-xs text-slate-400">—</span>
+          </div>
+        </div>
+      );
+    }
+
+    // If we have a route and current ID, make it clickable
+    const currentId = currentValue?.id || currentValue;
+    if (relatedEntityRoute && currentId) {
+      return (
+        <div className={cn("px-1 py-1", className)}>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-auto p-0 text-left justify-start font-normal hover:bg-transparent group"
+                >
+                  <Link 
+                    href={`/${relatedEntityRoute}/${currentId}`} 
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-blue-100 border border-slate-200 hover:border-blue-300 transition-all duration-200 hover:shadow-sm"
+                    onClick={() => {
+                      // Store the current page info for context-aware back navigation
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('referrerInfo', JSON.stringify({
+                          url: window.location.pathname,
+                          title: document.title,
+                          entityType: 'Source',
+                          timestamp: Date.now()
+                        }));
+                      }
+                    }}
+                  >
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700 transition-colors">
+                      {currentDisplayValue}
+                    </span>
+                    <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-500 opacity-60 group-hover:opacity-100 transition-all" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Click to view {relationshipName} details</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      );
+    }
+
+    // Fallback: display as styled badge (non-clickable)
+    return (
+      <div className={cn("px-1 py-1", className)}>
+        <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50 border border-slate-200">
+          <span className="text-sm font-medium text-slate-600">{currentDisplayValue}</span>
+        </div>
       </div>
     );
   }
