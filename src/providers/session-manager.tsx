@@ -1,89 +1,96 @@
-'use client'
+'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
-import { useSessionMonitor } from '@/hooks/use-session-monitor'
-import { SessionExpiredModal } from '@/components/auth/session-expired-modal'
-import { useSessionEvents } from '@/lib/session-events'
-import { refreshSession as refreshKeycloakSession } from '@/lib/token-refresh'
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { useSessionMonitor } from '@/hooks/use-session-monitor';
+import { SessionExpiredModal } from '@/components/auth/session-expired-modal';
+import { useSessionEvents } from '@/lib/session-events';
+import { refreshSession as refreshKeycloakSession } from '@/lib/token-refresh';
 
 interface SessionManagerContextType {
-  showSessionExpiredModal: () => void
-  showSessionWarningModal: (minutesLeft: number) => void
-  hideSessionModal: () => void
-  refreshSession: () => Promise<void>
-  isAuthenticated: boolean
-  isLoading: boolean
+  showSessionExpiredModal: () => void;
+  showSessionWarningModal: (minutesLeft: number) => void;
+  hideSessionModal: () => void;
+  refreshSession: () => Promise<void>;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
-const SessionManagerContext = createContext<SessionManagerContextType | undefined>(undefined)
+const SessionManagerContext = createContext<SessionManagerContextType | undefined>(undefined);
 
 interface SessionManagerProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function SessionManagerProvider({ children }: SessionManagerProviderProps) {
   const [modalState, setModalState] = useState<{
-    isOpen: boolean
-    type: 'expired' | 'warning'
-    minutesLeft?: number
+    isOpen: boolean;
+    type: 'expired' | 'warning';
+    minutesLeft?: number;
   }>({
     isOpen: false,
-    type: 'expired'
-  })
+    type: 'expired',
+  });
 
-  const { onSessionExpired: onApiSessionExpired } = useSessionEvents()
+  const { onSessionExpired: onApiSessionExpired } = useSessionEvents();
 
   const showSessionExpiredModal = useCallback(() => {
     setModalState({
       isOpen: true,
-      type: 'expired'
-    })
-  }, [])
+      type: 'expired',
+    });
+  }, []);
 
   const showSessionWarningModal = useCallback((minutesLeft: number) => {
     setModalState({
       isOpen: true,
       type: 'warning',
-      minutesLeft
-    })
-  }, [])
+      minutesLeft,
+    });
+  }, []);
 
   const hideSessionModal = useCallback(() => {
     setModalState(prev => ({
       ...prev,
-      isOpen: false
-    }))
-  }, [])
+      isOpen: false,
+    }));
+  }, []);
 
   const refreshSession = useCallback(async () => {
-    const success = await refreshKeycloakSession()
+    const success = await refreshKeycloakSession();
     if (success) {
-      hideSessionModal()
+      hideSessionModal();
     } else {
-      showSessionExpiredModal()
+      showSessionExpiredModal();
     }
-  }, [hideSessionModal, showSessionExpiredModal])
+  }, [hideSessionModal, showSessionExpiredModal]);
 
   const handleRetryAuth = useCallback(() => {
     // Force a hard reload to clear any stale state
-    window.location.href = '/'
-  }, [])
+    window.location.href = '/';
+  }, []);
 
-  // Listen to API session events
-  useEffect(() => {
-    const unsubscribe = onApiSessionExpired(() => {
-      showSessionExpiredModal()
-    })
-    return unsubscribe
-  }, [onApiSessionExpired, showSessionExpiredModal])
-
-  const { isAuthenticated, isLoading } = useSessionMonitor({
+  const { isAuthenticated, isLoading, isIdle } = useSessionMonitor({
     checkInterval: 60000, // Check every minute
     onSessionExpired: showSessionExpiredModal,
     onSessionRestored: hideSessionModal,
     warningThreshold: 2, // Show warning 2 minutes before expiry
-    onSessionWarning: showSessionWarningModal
-  })
+    onSessionWarning: showSessionWarningModal,
+  });
+
+  // Listen to API session events
+  useEffect(() => {
+    const unsubscribe = onApiSessionExpired(async () => {
+      if (!isIdle) {
+        const refreshed = await refreshKeycloakSession();
+        if (!refreshed) {
+          showSessionExpiredModal();
+        }
+      } else {
+        showSessionExpiredModal();
+      }
+    });
+    return unsubscribe;
+  }, [onApiSessionExpired, isIdle, showSessionExpiredModal]);
 
   const contextValue: SessionManagerContextType = {
     showSessionExpiredModal,
@@ -91,8 +98,8 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
     hideSessionModal,
     refreshSession,
     isAuthenticated,
-    isLoading
-  }
+    isLoading,
+  };
 
   return (
     <SessionManagerContext.Provider value={contextValue}>
@@ -105,13 +112,13 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
         minutesLeft={modalState.minutesLeft}
       />
     </SessionManagerContext.Provider>
-  )
+  );
 }
 
 export function useSessionManager() {
-  const context = useContext(SessionManagerContext)
+  const context = useContext(SessionManagerContext);
   if (context === undefined) {
-    throw new Error('useSessionManager must be used within a SessionManagerProvider')
+    throw new Error('useSessionManager must be used within a SessionManagerProvider');
   }
-  return context
+  return context;
 }

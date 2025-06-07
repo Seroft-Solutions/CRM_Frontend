@@ -82,6 +82,9 @@ export function CityForm({ id }: CityFormProps) {
   const { mutate: createEntity, isPending: isCreating } = useCreateCity({
     mutation: {
       onSuccess: (data) => {
+        // Clear saved form state on successful submission
+        localStorage.removeItem('CityFormState');
+        
         const returnUrl = localStorage.getItem('returnUrl');
         const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
         
@@ -106,6 +109,9 @@ export function CityForm({ id }: CityFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCity({
     mutation: {
       onSuccess: () => {
+        // Clear saved form state on successful submission
+        localStorage.removeItem('CityFormState');
+        
         toast.success("City updated successfully");
         router.push("/cities");
       },
@@ -137,6 +143,60 @@ export function CityForm({ id }: CityFormProps) {
     },
   });
 
+  // Form state persistence functions
+  const saveFormState = React.useCallback(() => {
+    const formData = form.getValues();
+    const formState = {
+      data: formData,
+      currentStep,
+      timestamp: Date.now(),
+      entity: 'City'
+    };
+    
+    localStorage.setItem('CityFormState', JSON.stringify(formState));
+    console.log('Form state saved:', formState);
+  }, [form, currentStep]);
+
+  const restoreFormState = React.useCallback(() => {
+    const savedStateStr = localStorage.getItem('CityFormState');
+    if (savedStateStr) {
+      try {
+        const savedState = JSON.parse(savedStateStr);
+        const isRecent = Date.now() - savedState.timestamp < 30 * 60 * 1000; // 30 minutes
+        
+        if (isRecent && savedState.entity === 'City') {
+          setIsRestoring(true);
+          
+          // Restore form values
+          Object.keys(savedState.data).forEach(key => {
+            const value = savedState.data[key];
+            if (value !== undefined && value !== null) {
+              form.setValue(key as any, value);
+            }
+          });
+          
+          // Restore current step
+          setCurrentStep(savedState.currentStep || 0);
+          
+          // Clear saved state after restoration
+          localStorage.removeItem('CityFormState');
+          
+          setTimeout(() => setIsRestoring(false), 100);
+          toast.success('Form data restored');
+          
+          console.log('Form state restored:', savedState);
+          return true;
+        } else {
+          localStorage.removeItem('CityFormState');
+        }
+      } catch (error) {
+        console.error('Failed to restore form state:', error);
+        localStorage.removeItem('CityFormState');
+      }
+    }
+    return false;
+  }, [form]);
+
   // Handle newly created relationship entities
   const handleEntityCreated = React.useCallback((entityId: number, relationshipName: string) => {
     const currentValue = form.getValues(relationshipName as any);
@@ -150,6 +210,56 @@ export function CityForm({ id }: CityFormProps) {
     
     form.trigger(relationshipName as any);
   }, [form]);
+
+  // Form restoration and event listeners
+  useEffect(() => {
+    if (!restorationAttempted && isNew) {
+      setRestorationAttempted(true);
+      
+      // Check for newly created entity first
+      const newEntityId = localStorage.getItem('newlyCreatedEntityId');
+      const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
+      
+      if (newEntityId && relationshipInfo) {
+        try {
+          const info = JSON.parse(relationshipInfo);
+          console.log('Found newly created entity:', { newEntityId, info });
+          
+          // Restore form state first, then add the new entity
+          const restored = restoreFormState();
+          
+          setTimeout(() => {
+            handleEntityCreated(parseInt(newEntityId), Object.keys(info)[0] || 'id');
+            
+            // Clean up
+            localStorage.removeItem('newlyCreatedEntityId');
+            localStorage.removeItem('relationshipFieldInfo');
+            localStorage.removeItem('returnUrl');
+            localStorage.removeItem('entityCreationContext');
+          }, restored ? 500 : 100);
+          
+        } catch (error) {
+          console.error('Error processing newly created entity:', error);
+          restoreFormState();
+        }
+      } else {
+        // Just restore form state
+        restoreFormState();
+      }
+    }
+
+    // Listen for save form state events
+    const handleSaveFormState = () => {
+      console.log('Save form state event received');
+      saveFormState();
+    };
+
+    window.addEventListener('saveFormState', handleSaveFormState);
+    
+    return () => {
+      window.removeEventListener('saveFormState', handleSaveFormState);
+    };
+  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated]);
 
   // Update form values when entity data is loaded
   useEffect(() => {
@@ -166,7 +276,20 @@ export function CityForm({ id }: CityFormProps) {
     }
   }, [entity, form, isRestoring]);
 
-  // Form submission handler
+  // Auto-save form state on field changes (debounced)
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      if (!isRestoring && isNew) {
+        const timeoutId = setTimeout(() => {
+          saveFormState();
+        }, 2000); // Auto-save every 2 seconds after changes
+        
+        return () => clearTimeout(timeoutId);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, isRestoring, isNew, saveFormState]);
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (currentStep !== STEPS.length - 1) return;
 
