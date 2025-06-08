@@ -39,10 +39,14 @@ export function OrganizationSetupForm({
     e.preventDefault();
     if (!formData.organizationName.trim()) return;
     
+    // Auto-generate domain from organization name
+    const orgName = formData.organizationName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const domain = `${orgName}.crmcup.com`;
+    
     await onSubmit({
       organizationName: formData.organizationName.trim(),
       displayName: formData.displayName.trim() || formData.organizationName.trim(),
-      domain: formData.domain.trim() || undefined,
+      domain: domain,
     });
   };
 
@@ -52,16 +56,16 @@ export function OrganizationSetupForm({
     };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
           <Building2 className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">
+        <h1 className="text-2xl font-bold">
           Setup Your Organization
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-muted-foreground">
           Create your workspace to get started with CRM Cup
         </p>
       </div>
@@ -73,144 +77,88 @@ export function OrganizationSetupForm({
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Info Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-lg">
-              <User className="w-5 h-5 mr-2 text-primary" />
-              User Information
-            </CardTitle>
-            <CardDescription>Your account details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center">
-                <CheckCircle2 className="w-4 h-4 mr-1 text-green-600" />
-                Name
-              </Label>
-              <div className="p-3 bg-muted rounded-md">
-                <span className="font-medium">{session?.user?.name || 'User'}</span>
-              </div>
+      {/* User Info Card */}
+      <Card className="border-primary/20">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center text-lg">
+            <User className="w-5 h-5 mr-2 text-primary" />
+            User Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium">Name</span>
             </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center">
-                <Mail className="w-4 h-4 mr-1 text-blue-600" />
-                Email
-              </Label>
-              <div className="p-3 bg-muted rounded-md">
-                <span className="font-medium">{session?.user?.email}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Organization Setup Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-lg">
-              <Building2 className="w-5 h-5 mr-2 text-primary" />
-              Organization Details
-            </CardTitle>
-            <CardDescription>Configure your workspace</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="orgName" className="text-sm font-medium">
-                  Organization Name *
-                </Label>
-                <Input
-                  id="orgName"
-                  type="text"
-                  value={formData.organizationName}
-                  onChange={handleChange('organizationName')}
-                  placeholder="Enter organization name"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-sm font-medium">
-                  Display Name
-                </Label>
-                <Input
-                  id="displayName"
-                  type="text"
-                  value={formData.displayName}
-                  onChange={handleChange('displayName')}
-                  placeholder="Friendly display name (optional)"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="domain" className="text-sm font-medium">
-                  Domain
-                </Label>
-                <Input
-                  id="domain"
-                  type="text"
-                  value={formData.domain}
-                  onChange={handleChange('domain')}
-                  placeholder="company.com (optional)"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading || !formData.organizationName.trim()}
-                className="w-full"
-                size="lg"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Organization...
-                  </>
-                ) : (
-                  'Create Organization'
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Info Section */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-foreground mb-2">What happens next?</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground">
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
-                  Create organization workspace
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
-                  Set up user profile
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
-                  Configure admin permissions
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
-                  Initialize default data
-                </div>
-              </div>
-            </div>
+            <span className="font-medium">{session?.user?.name || 'User'}</span>
           </div>
+
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium">Email</span>
+            </div>
+            <span className="font-medium">{session?.user?.email}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Organization Setup Form */}
+      <Card className="border-primary/20">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center text-lg">
+            <Building2 className="w-5 h-5 mr-2 text-primary" />
+            Organization Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="orgName" className="text-sm font-medium">
+                Organization Name *
+              </Label>
+              <Input
+                id="orgName"
+                type="text"
+                value={formData.organizationName}
+                onChange={handleChange('organizationName')}
+                placeholder="Enter organization name"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="displayName" className="text-sm font-medium">
+                Display Name
+              </Label>
+              <Input
+                id="displayName"
+                type="text"
+                value={formData.displayName}
+                onChange={handleChange('displayName')}
+                placeholder="Friendly display name (optional)"
+                disabled={isLoading}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading || !formData.organizationName.trim()}
+              className="w-full"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Organization...
+                </>
+              ) : (
+                'Create Organization'
+              )}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
