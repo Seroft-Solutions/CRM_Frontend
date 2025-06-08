@@ -24,3 +24,4 @@ export * from './endpoints/user-profile-resource/user-profile-resource.gen';
 export * from './endpoints/role-resource/role-resource.gen';
 export * from './endpoints/organization-resource/organization-resource.gen';
 export * from './endpoints/group-resource/group-resource.gen';
+export * from './endpoints/schema-test-controller/schema-test-controller.gen';

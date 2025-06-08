@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { OrganizationSetupForm } from './OrganizationSetupForm';
 import { OrganizationWelcomePage } from './OrganizationWelcomePage';
+import { OrganizationSetupProgress } from './OrganizationSetupProgress';
 import { useOrganizationSetup } from '@/hooks/useOrganizationSetup';
 import { logoutAction } from '@/lib/auth-actions';
 
@@ -94,6 +95,26 @@ export function OrganizationSetupWizard() {
   // Setup/Sync in progress
   if (state.isSetupInProgress || state.isSyncInProgress) {
     const isSync = state.isSyncInProgress;
+    
+    // If we have an organization name, show the modern progress component
+    if (state.organizationName) {
+      return (
+        <div className="relative container mx-auto py-8">
+          <Header />
+          <OrganizationSetupProgress
+            organizationName={state.organizationName}
+            onComplete={() => {
+              actions.setShowWelcome(true);
+            }}
+            onError={(error) => {
+              actions.setError(error);
+            }}
+          />
+        </div>
+      );
+    }
+
+    // Fallback to original progress display
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
         <Header />
