@@ -561,7 +561,151 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const countOrganizations = (
+    export const getSetupProgress = (
+    name: string,
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<string>(
+      {url: `/api/organizations/setup-progress/${name}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+export const getGetSetupProgressQueryKey = (name: string,) => {
+    return [`/api/organizations/setup-progress/${name}`] as const;
+    }
+
+    
+export const getGetSetupProgressInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSetupProgress>>>, TError = unknown>(name: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSetupProgressQueryKey(name);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSetupProgress>>> = ({ signal }) => getSetupProgress(name, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(name),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSetupProgressInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSetupProgress>>>
+export type GetSetupProgressInfiniteQueryError = unknown
+
+
+export function useGetSetupProgressInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSetupProgress>>>, TError = unknown>(
+ name: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSetupProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getSetupProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSetupProgressInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSetupProgress>>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSetupProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getSetupProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSetupProgressInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSetupProgress>>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetSetupProgressInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSetupProgress>>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSetupProgressInfiniteQueryOptions(name,options)
+
+  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const getGetSetupProgressQueryOptions = <TData = Awaited<ReturnType<typeof getSetupProgress>>, TError = unknown>(name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSetupProgressQueryKey(name);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSetupProgress>>> = ({ signal }) => getSetupProgress(name, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(name),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSetupProgressQueryResult = NonNullable<Awaited<ReturnType<typeof getSetupProgress>>>
+export type GetSetupProgressQueryError = unknown
+
+
+export function useGetSetupProgress<TData = Awaited<ReturnType<typeof getSetupProgress>>, TError = unknown>(
+ name: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSetupProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getSetupProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSetupProgress<TData = Awaited<ReturnType<typeof getSetupProgress>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSetupProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getSetupProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSetupProgress<TData = Awaited<ReturnType<typeof getSetupProgress>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetSetupProgress<TData = Awaited<ReturnType<typeof getSetupProgress>>, TError = unknown>(
+ name: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSetupProgressQueryOptions(name,options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const countOrganizations = (
     params?: CountOrganizationsParams,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {

@@ -28,6 +28,7 @@ export interface OrganizationSetupActions {
   syncExistingData: () => Promise<void>;
   clearError: () => void;
   checkSetupStatus: () => void;
+  setShowWelcome: (show: boolean) => void;
 }
 
 export interface UseOrganizationSetupResult {
@@ -156,6 +157,11 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     setState(prev => ({ ...prev, error: null }));
   }, []);
 
+  // Set show welcome
+  const setShowWelcome = useCallback((show: boolean) => {
+    setState(prev => ({ ...prev, showWelcome: show }));
+  }, []);
+
   // Auto-check setup status when session changes
   useEffect(() => {
     checkSetupStatus();
@@ -168,6 +174,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       syncExistingData,
       clearError,
       checkSetupStatus,
+      setShowWelcome,
     },
   };
 }
