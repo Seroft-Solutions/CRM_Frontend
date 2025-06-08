@@ -1,6 +1,6 @@
 /**
  * Organization Members API Route
- * Uses unified Keycloak admin service with generated endpoints
+ * Uses the unified Keycloak admin service with generated endpoints
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -160,7 +160,21 @@ export async function POST(
     const body = await request.json();
     const realm = keycloakService.getRealm();
 
-    // Type-safe body validation with enhanced fields
+    // Check if this is a simple member addition (for organization setup)
+    if (body.userId && !body.email) {
+      console.log('Simple member addition:', { organizationId, userId: body.userId });
+      
+      // Add existing user to organization using generated endpoint
+      await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, body.userId);
+
+      return NextResponse.json({
+        message: 'User added to organization successfully',
+        organizationId,
+        userId: body.userId
+      });
+    }
+
+    // Full invitation flow (existing functionality)
     const inviteData: UserInvitationWithGroups = {
       email: body.email,
       firstName: body.firstName,
