@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { signIn } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { Coffee, CheckCircle, Sparkles, ArrowRight } from 'lucide-react'
 
@@ -9,7 +10,7 @@ const MotionItem = dynamic(() => import('@/features/home/components/motion-compo
 
 export function OrganizationWelcomePage() {
   const handleLetsBrew = () => {
-    window.location.href = '/dashboard'
+    signIn('keycloak', { redirectTo: '/dashboard' })
   }
 
   return (
