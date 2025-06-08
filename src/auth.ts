@@ -210,9 +210,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                          nextUrl.pathname.startsWith('/call-categories') ||
                          nextUrl.pathname.startsWith('/call-statuses') ||
                          nextUrl.pathname.startsWith('/call-remarks') ||
-                         nextUrl.pathname.startsWith('/channel-types')
+                         nextUrl.pathname.startsWith('/channel-types') ||
+                         nextUrl.pathname.startsWith('/organizations')
+      
+      const isOrganizationSetup = nextUrl.pathname.startsWith('/organization-setup')
       
       if (isProtected) {
+        if (isLoggedIn) return true
+        return false
+      } else if (isOrganizationSetup) {
+        // Allow access to organization setup if logged in
         if (isLoggedIn) return true
         return false
       } else if (isLoggedIn && nextUrl.pathname === '/') {
