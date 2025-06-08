@@ -22,9 +22,9 @@ interface OrganizationSetupProgressProps {
 }
 
 const setupSteps = [
-  { key: 'Creating schema...', label: 'Setting up workspace', icon: Building2, progress: 25 },
-  { key: 'Running migrations...', label: 'Configuring database', icon: Database, progress: 50 },
-  { key: 'Loading data...', label: 'Loading default data', icon: Settings, progress: 75 },
+  { key: 'Creating workspace schema', label: 'Setting up workspace', icon: Building2, progress: 25 },
+  { key: 'Running migrations', label: 'Configuring database', icon: Database, progress: 60 },
+  { key: 'Loading default data', label: 'Loading default data', icon: Settings, progress: 85 },
   { key: 'COMPLETED', label: 'Setup complete', icon: CheckCircle, progress: 100 },
 ];
 
@@ -58,15 +58,41 @@ export function OrganizationSetupProgress({
         return;
       }
 
-      // Find current step
-      const stepIndex = setupSteps.findIndex(step => progressData.includes(step.key));
+      // Find current step using simple keyword matching
+      let stepIndex = -1;
+      
+      if (progressData.includes('Creating workspace schema') || progressData.includes('Initializing setup')) {
+        stepIndex = 0;
+      } else if (progressData.includes('Running migrations')) {
+        stepIndex = 1;
+        // Handle migration percentage updates
+        const match = progressData.match(/(\d+)%/);
+        if (match) {
+          const percentage = parseInt(match[1]);
+          setProgress(25 + (percentage * 0.35)); // 25% base + up to 35% for migrations (25% to 60%)
+        } else {
+          setProgress(setupSteps[stepIndex].progress);
+        }
+      } else if (progressData.includes('Loading') && progressData.includes('data')) {
+        stepIndex = 2;
+        // Handle data loading percentage updates
+        const match = progressData.match(/(\d+)%/);
+        if (match) {
+          const percentage = parseInt(match[1]);
+          setProgress(85 + (percentage * 0.1)); // 85% base + up to 10% for loading
+        } else {
+          setProgress(setupSteps[stepIndex].progress);
+        }
+      } else if (progressData === 'COMPLETED') {
+        stepIndex = 3;
+        setIsComplete(true);
+        setTimeout(() => onComplete(), 1500);
+      }
+      
       if (stepIndex !== -1) {
         setCurrentStep(stepIndex);
-        setProgress(setupSteps[stepIndex].progress);
-        
-        if (progressData === 'COMPLETED') {
-          setIsComplete(true);
-          setTimeout(() => onComplete(), 1500);
+        if ((stepIndex !== 1 && stepIndex !== 2) || !progressData.includes('%')) {
+          setProgress(setupSteps[stepIndex].progress);
         }
       }
     }
@@ -99,25 +125,25 @@ export function OrganizationSetupProgress({
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-2">
         <div className="relative">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
             {isComplete ? (
-              <CheckCircle className="w-10 h-10 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-green-600" />
             ) : (
-              <Sparkles className="w-10 h-10 animate-pulse" />
+              <Sparkles className="w-8 h-8 animate-pulse" />
             )}
           </div>
           {!isComplete && (
             <div className="absolute -inset-1 rounded-full border-2 border-primary/20 animate-ping" />
           )}
         </div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl font-bold">
           {isComplete ? 'Setup Complete!' : 'Setting Up Your Workspace'}
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-muted-foreground">
           {isComplete 
             ? `Welcome to ${organizationName}! Redirecting to dashboard...`
             : `Creating workspace for ${organizationName}`
@@ -127,46 +153,45 @@ export function OrganizationSetupProgress({
 
       {/* Progress Card */}
       <Card className="border-primary/20">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             Setup Progress
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {/* Main Progress Bar */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="font-medium">Progress</span>
               <span className="text-muted-foreground">{progress}%</span>
             </div>
             <Progress 
               value={progress} 
-              className="h-3 bg-muted"
+              className="h-2 bg-muted"
             />
           </div>
 
-          {/* Step List */}
-          <div className="space-y-4">
+          {/* Step List - Compact */}
+          <div className="space-y-2">
             {setupSteps.map((step, index) => {
               const Icon = step.icon;
               const isCurrentStep = index === currentStep;
               const isCompleted = index < currentStep || isComplete;
-              const isFutureStep = index > currentStep && !isComplete;
 
               return (
                 <div
                   key={step.key}
-                  className={`flex items-center space-x-4 p-3 rounded-lg transition-all duration-300 ${
+                  className={`flex items-center space-x-3 p-2 rounded-lg transition-all duration-300 ${
                     isCurrentStep
-                      ? 'bg-primary/10 border border-primary/20 scale-105'
+                      ? 'bg-primary/10 border border-primary/20'
                       : isCompleted
                       ? 'bg-green-50 border border-green-200'
-                      : 'bg-muted/50 border border-transparent'
+                      : 'bg-muted/30'
                   }`}
                 >
                   <div
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isCompleted
                         ? 'bg-green-100 text-green-600'
                         : isCurrentStep
@@ -175,35 +200,26 @@ export function OrganizationSetupProgress({
                     }`}
                   >
                     {isCompleted ? (
-                      <CheckCircle className="w-5 h-5" />
+                      <CheckCircle className="w-4 h-4" />
                     ) : isCurrentStep ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-4 h-4" />
                     )}
                   </div>
                   
-                  <div className="flex-1">
-                    <h4
-                      className={`font-medium transition-colors ${
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-medium text-sm ${
                         isCompleted
                           ? 'text-green-700'
                           : isCurrentStep
                           ? 'text-primary'
-                          : isFutureStep
-                          ? 'text-muted-foreground'
-                          : 'text-foreground'
+                          : 'text-muted-foreground'
                       }`}
                     >
                       {step.label}
                     </h4>
-                    <p
-                      className={`text-sm ${
-                        isCurrentStep
-                          ? 'text-primary/70'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
+                    <p className="text-xs text-muted-foreground">
                       {isCompleted
                         ? 'Completed'
                         : isCurrentStep
@@ -214,24 +230,33 @@ export function OrganizationSetupProgress({
                   </div>
 
                   {isCompleted && (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                   )}
                 </div>
               );
             })}
           </div>
 
-          {/* Status Message */}
-          <div className="text-center p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              {isComplete
-                ? '🎉 Your workspace is ready!'
-                : progressData || 'Initializing setup...'
-              }
-            </p>
+          {/* Status Message - Compact */}
+          <div className="text-center p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center justify-center space-x-2 mb-1">
+              {!isComplete && (
+                <div className="flex space-x-1">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"></div>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground">
+                {isComplete
+                  ? '🎉 Your workspace is ready!'
+                  : progressData || 'Initializing setup...'
+                }
+              </p>
+            </div>
             {!isComplete && (
-              <p className="text-xs text-muted-foreground mt-2">
-                This usually takes 30-60 seconds
+              <p className="text-xs text-muted-foreground/70">
+                ⚡ Setting up your personalized CRM workspace (2-5 minutes)
               </p>
             )}
           </div>

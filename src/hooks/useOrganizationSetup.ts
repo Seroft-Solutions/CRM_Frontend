@@ -27,6 +27,7 @@ export interface OrganizationSetupActions {
   setupOrganization: (request: OrganizationSetupRequest) => Promise<void>;
   syncExistingData: () => Promise<void>;
   clearError: () => void;
+  setError: (error: string) => void;
   checkSetupStatus: () => void;
   setShowWelcome: (show: boolean) => void;
 }
@@ -67,13 +68,13 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     onMutate: () => {
       setState(prev => ({ ...prev, isSetupInProgress: true, error: null }));
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      // Keep setup in progress to show progress tracking component
       setState(prev => ({
         ...prev,
-        isSetupInProgress: false,
-        isSetupCompleted: true,
-        isSetupRequired: false,
-        showWelcome: true,
+        isSetupInProgress: true, // Keep true to trigger progress tracking
+        error: null,
+        organizationName: variables.organizationName, // Set organization name for progress tracking
       }));
     },
     onError: (error: Error) => {
@@ -102,14 +103,14 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           error: `Sync completed with warnings: ${result.errors.join(', ')}`,
         }));
       } else {
+        // Keep sync in progress to show progress tracking component
         setState(prev => ({
           ...prev,
-          isSyncInProgress: false,
-          isSetupCompleted: true,
-          isSetupRequired: false,
+          isSyncInProgress: true, // Keep true to trigger progress tracking
+          error: null,
+          // organizationName should already be set from checkSetupStatus
         }));
         queryClient.invalidateQueries({ queryKey: ['session'] });
-        setTimeout(() => router.push('/dashboard'), 1000);
       }
     },
     onError: (error: Error) => {
@@ -157,6 +158,11 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     setState(prev => ({ ...prev, error: null }));
   }, []);
 
+  // Set error
+  const setError = useCallback((error: string) => {
+    setState(prev => ({ ...prev, error, isSetupInProgress: false, isSyncInProgress: false }));
+  }, []);
+
   // Set show welcome
   const setShowWelcome = useCallback((show: boolean) => {
     setState(prev => ({ ...prev, showWelcome: show }));
@@ -173,6 +179,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       setupOrganization,
       syncExistingData,
       clearError,
+      setError,
       checkSetupStatus,
       setShowWelcome,
     },
