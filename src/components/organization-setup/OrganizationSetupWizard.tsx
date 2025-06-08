@@ -57,11 +57,16 @@ export function OrganizationSetupWizard() {
     return (
       <div className="relative flex items-center justify-center min-h-screen">
         <Header />
-        <div className="flex flex-col items-center space-y-4">
-          <Coffee className="w-12 h-12 text-primary animate-bounce" />
-          <div className="flex items-center space-x-2">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-lg">Checking organization setup...</span>
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
+              <Coffee className="w-8 h-8 animate-bounce" />
+            </div>
+            <h1 className="text-2xl font-bold">Checking Setup</h1>
+            <div className="flex items-center justify-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Checking organization setup...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -73,21 +78,25 @@ export function OrganizationSetupWizard() {
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
         <Header />
-        <Card>
-          <CardHeader className="text-center">
-            <CheckCircle className="w-20 h-20 text-green-600 mx-auto mb-4" />
-            <CardTitle className="text-3xl text-green-700">Setup Complete!</CardTitle>
-            <CardDescription className="text-lg">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-3">
+              <CheckCircle className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold text-green-700">Setup Complete!</h1>
+            <p className="text-muted-foreground">
               Your organization is ready to use CRM Cup.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">
-              Redirecting to dashboard...
             </p>
-            <div className="w-8 h-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent mx-auto"></div>
-          </CardContent>
-        </Card>
+          </div>
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Redirecting to dashboard...
+              </p>
+              <div className="w-6 h-6 animate-spin rounded-full border-2 border-green-500 border-t-transparent mx-auto"></div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -118,63 +127,66 @@ export function OrganizationSetupWizard() {
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
         <Header />
-        <Card>
-          <CardHeader className="text-center">
-            <Building2 className="w-20 h-20 text-primary mx-auto mb-4" />
-            <CardTitle className="text-3xl">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
+              <Building2 className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold">
               {isSync ? 'Syncing Organization Data' : 'Setting Up Organization'}
-            </CardTitle>
-            <CardDescription className="text-lg">
+            </h1>
+            <p className="text-muted-foreground">
               {state.organizationName && 
                 `${isSync ? 'Syncing' : 'Creating'} workspace for ${state.organizationName}`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
+            </p>
+          </div>
+
+          <Card className="border-primary/20">
+            <CardContent className="p-4 space-y-3">
               {isSync ? (
                 <>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Checking organization in Spring backend...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Checking organization in Spring backend...</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Syncing user profile data...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Syncing user profile data...</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Updating associations...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Updating associations...</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Creating Keycloak organization...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Creating Keycloak organization...</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Setting up user membership...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Setting up user membership...</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Creating backend workspace...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Creating backend workspace...</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span>Initializing user profile...</span>
+                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm">Initializing user profile...</span>
                   </div>
                 </>
               )}
-            </div>
-            
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                This usually takes {isSync ? '15-30' : '30-60'} seconds...
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground">
+                  This usually takes {isSync ? '15-30' : '30-60'} seconds...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -184,38 +196,39 @@ export function OrganizationSetupWizard() {
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
         <Header />
-        <Card>
-          <CardHeader className="text-center">
-            <AlertCircle className="w-20 h-20 text-red-600 mx-auto mb-4" />
-            <CardTitle className="text-3xl text-red-700">Setup Failed</CardTitle>
-            <CardDescription className="text-lg">
-              There was an issue setting up your organization.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{state.error}</AlertDescription>
-            </Alert>
-            
-            <div className="flex space-x-2">
-              <Button 
-                onClick={() => setShowForm(true)} 
-                disabled={state.isSetupInProgress}
-                className="flex-1"
-              >
-                Try Again
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={actions.clearError}
-                className="flex-1"
-              >
-                Start Over
-              </Button>
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-3">
+              <AlertCircle className="w-8 h-8" />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-2xl font-bold text-red-700">Setup Failed</h1>
+            <p className="text-muted-foreground">
+              There was an issue setting up your organization.
+            </p>
+          </div>
+
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+          
+          <div className="flex space-x-2">
+            <Button 
+              onClick={() => setShowForm(true)} 
+              disabled={state.isSetupInProgress}
+              className="flex-1"
+            >
+              Try Again
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={actions.clearError}
+              className="flex-1"
+            >
+              Start Over
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -227,28 +240,28 @@ export function OrganizationSetupWizard() {
         <Header />
         {/* User has organization in Keycloak - show sync option */}
         {state.organizationName ? (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
                 <Database className="w-8 h-8" />
               </div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-2xl font-bold">
                 Sync Organization Data
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-muted-foreground">
                 We found your organization <span className="font-semibold">{state.organizationName}</span> in Keycloak.
                 Let's sync it to your CRM workspace.
               </p>
             </div>
 
             <Card className="border-blue-200 bg-blue-50">
-              <CardContent className="p-6">
-                <div className="text-center space-y-4">
+              <CardContent className="p-4">
+                <div className="text-center space-y-3">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
                     <ArrowRight className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-2">Sync Required</h3>
+                    <h3 className="font-semibold text-blue-900 mb-1">Sync Required</h3>
                     <p className="text-blue-700 text-sm">
                       Your organization exists in Keycloak but needs to be synced with the CRM database.
                       This will create your user profile and organization workspace.
@@ -292,25 +305,29 @@ export function OrganizationSetupWizard() {
   return (
     <div className="relative container mx-auto max-w-2xl py-8">
       <Header />
-      <Card>
-        <CardHeader className="text-center">
-          <Building2 className="w-20 h-20 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl">Welcome to CRM Cup</CardTitle>
-          <CardDescription className="text-lg">
+      <div className="max-w-2xl mx-auto space-y-4">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold">Welcome to CRM Cup</h1>
+          <p className="text-muted-foreground">
             Let's set up your organization to get started
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <Button 
-            onClick={() => setShowForm(true)}
-            size="lg"
-            className="inline-flex items-center"
-          >
-            Get Started
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        <Card className="border-primary/20">
+          <CardContent className="p-4 text-center">
+            <Button 
+              onClick={() => setShowForm(true)}
+              size="lg"
+              className="inline-flex items-center"
+            >
+              Get Started
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
