@@ -138,15 +138,6 @@ export type GetAllPartiesParams = {
 'cityId.specified'?: boolean;
 'cityId.in'?: number[];
 'cityId.notIn'?: number[];
-'interestedProductsId.greaterThan'?: number;
-'interestedProductsId.lessThan'?: number;
-'interestedProductsId.greaterThanOrEqual'?: number;
-'interestedProductsId.lessThanOrEqual'?: number;
-'interestedProductsId.equals'?: number;
-'interestedProductsId.notEquals'?: number;
-'interestedProductsId.specified'?: boolean;
-'interestedProductsId.in'?: number[];
-'interestedProductsId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

@@ -83,24 +83,6 @@ export type GetAllProductsParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
-'callsId.greaterThan'?: number;
-'callsId.lessThan'?: number;
-'callsId.greaterThanOrEqual'?: number;
-'callsId.lessThanOrEqual'?: number;
-'callsId.equals'?: number;
-'callsId.notEquals'?: number;
-'callsId.specified'?: boolean;
-'callsId.in'?: number[];
-'callsId.notIn'?: number[];
-'interestedPartiesId.greaterThan'?: number;
-'interestedPartiesId.lessThan'?: number;
-'interestedPartiesId.greaterThanOrEqual'?: number;
-'interestedPartiesId.lessThanOrEqual'?: number;
-'interestedPartiesId.equals'?: number;
-'interestedPartiesId.notEquals'?: number;
-'interestedPartiesId.specified'?: boolean;
-'interestedPartiesId.in'?: number[];
-'interestedPartiesId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

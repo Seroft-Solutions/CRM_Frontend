@@ -136,19 +136,6 @@ export function CallDetails({ id }: CallDetailsProps) {
               <div className="space-y-4">
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned To</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.assignedTo ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedTo as any).login || entity.assignedTo.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Priority</dt>
                   <dd className="text-sm font-medium">
                     
@@ -246,6 +233,32 @@ export function CallDetails({ id }: CallDetailsProps) {
                     {entity.callStatus ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.callStatus as any).name || entity.callStatus.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned To</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.assignedTo ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.assignedTo as any).email || entity.assignedTo.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Party</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.channelParty ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.channelParty as any).email || entity.channelParty.id}
                       </Badge>
                     ) : "—"}
                     

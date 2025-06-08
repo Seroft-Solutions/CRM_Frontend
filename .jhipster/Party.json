@@ -118,14 +118,6 @@
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"
-    },
-    {
-      "otherEntityField": "name",
-      "otherEntityName": "product",
-      "otherEntityRelationshipName": "interestedParties",
-      "relationshipName": "interestedProducts",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-many"
     }
   ],
   "searchEngine": "elasticsearch",

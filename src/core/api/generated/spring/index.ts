@@ -20,3 +20,7 @@ export * from './endpoints/public-user-resource/public-user-resource.gen';
 export * from './endpoints/account-resource/account-resource.gen';
 export * from './endpoints/auth-info-resource/auth-info-resource.gen';
 export * from './schemas';
+export * from './endpoints/user-profile-resource/user-profile-resource.gen';
+export * from './endpoints/role-resource/role-resource.gen';
+export * from './endpoints/organization-resource/organization-resource.gen';
+export * from './endpoints/group-resource/group-resource.gen';

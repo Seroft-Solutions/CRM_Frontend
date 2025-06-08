@@ -10,7 +10,6 @@ import type { AreaDTO } from './AreaDTO';
 import type { StateDTO } from './StateDTO';
 import type { DistrictDTO } from './DistrictDTO';
 import type { CityDTO } from './CityDTO';
-import type { ProductDTO } from './ProductDTO';
 
 /**
  * Party entity - represents customers/leads/contacts
@@ -63,5 +62,4 @@ export interface PartyDTO {
   state: StateDTO;
   district: DistrictDTO;
   city: CityDTO;
-  interestedProducts?: ProductDTO[];
 }

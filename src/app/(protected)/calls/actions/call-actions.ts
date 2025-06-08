@@ -19,10 +19,6 @@ const callSchema = z.object({
   
   
   
-  assignedToId: z.number().optional(),
-  
-  
-  
   priorityId: z.number().optional(),
   
   
@@ -54,6 +50,12 @@ const callSchema = z.object({
   callStatusId: z.number().optional(),
   
   
+  
+  assignedToId: z.number().optional(),
+  
+  
+  
+  channelPartyId: z.number().optional(),
   
   
   
@@ -93,10 +95,6 @@ export async function createCall(
       
       
       
-      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
-      
-      
-      
       priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
       
       
@@ -128,6 +126,12 @@ export async function createCall(
       callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
       
       
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
       
       
       
@@ -204,10 +208,6 @@ export async function updateCall(
       
       
       
-      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
-      
-      
-      
       priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
       
       
@@ -239,6 +239,12 @@ export async function updateCall(
       callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
       
       
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
       
       
       

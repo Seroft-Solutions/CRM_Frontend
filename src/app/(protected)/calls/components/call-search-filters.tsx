@@ -91,9 +91,6 @@ export function CallSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      if (relationName === 'assignedTo') {
-        return 'Assigned To';
-      }
       if (relationName === 'priority') {
         return 'Priority';
       }
@@ -117,6 +114,12 @@ export function CallSearchAndFilters({
       }
       if (relationName === 'callStatus') {
         return 'Call Status';
+      }
+      if (relationName === 'assignedTo') {
+        return 'Assigned To';
+      }
+      if (relationName === 'channelParty') {
+        return 'Channel Party';
       }
       if (relationName === 'party') {
         return 'Party';
@@ -206,18 +209,6 @@ export function CallSearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">People & Relationships</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Assigned To
-                    </label>
-                    <Input
-                      placeholder="Filter by assigned to..."
-                      value={filters["assignedTo.login"] as string || ""}
-                      onChange={(e) => onFilterChange("assignedTo.login", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
@@ -311,6 +302,30 @@ export function CallSearchAndFilters({
                       placeholder="Filter by call status..."
                       value={filters["callStatus.name"] as string || ""}
                       onChange={(e) => onFilterChange("callStatus.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Assigned To
+                    </label>
+                    <Input
+                      placeholder="Filter by assigned to..."
+                      value={filters["assignedTo.email"] as string || ""}
+                      onChange={(e) => onFilterChange("assignedTo.email", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Channel Party
+                    </label>
+                    <Input
+                      placeholder="Filter by channel party..."
+                      value={filters["channelParty.email"] as string || ""}
+                      onChange={(e) => onFilterChange("channelParty.email", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
