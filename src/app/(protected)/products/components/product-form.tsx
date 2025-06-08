@@ -45,21 +45,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 
 import { 
   useCreateProduct,
   useUpdateProduct,
   useGetProduct,
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import { 
-  useGetAllCallsInfinite,
-  useSearchCallsInfinite 
-} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-import { 
-  useGetAllPartiesInfinite,
-  useSearchPartiesInfinite 
-} from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 import type { ProductDTO } from "@/core/api/generated/spring/schemas/ProductDTO";
 
 interface ProductFormProps {
@@ -77,11 +68,9 @@ const formSchema = z.object({
   maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
   isActive: z.boolean(),
   remark: z.string().max(1000).optional(),
-  calls: z.array(z.number()).optional(),
-  interestedParties: z.array(z.number()).optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"other","title":"Additional Relations","description":"Other connections and references"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function ProductForm({ id }: ProductFormProps) {
   const router = useRouter();
@@ -173,12 +162,6 @@ export function ProductForm({ id }: ProductFormProps) {
 
 
       remark: "",
-
-
-      calls: [],
-
-
-      interestedParties: [],
 
     },
   });
@@ -332,12 +315,6 @@ export function ProductForm({ id }: ProductFormProps) {
 
         remark: entity.remark || "",
 
-
-        calls: entity.calls?.map(item => item.id),
-
-
-        interestedParties: entity.interestedParties?.map(item => item.id),
-
       };
       form.reset(formValues);
     }
@@ -389,15 +366,9 @@ export function ProductForm({ id }: ProductFormProps) {
 
       remark: data.remark === "__none__" ? undefined : data.remark,
 
-
-      calls: data.calls?.map(id => ({ id: id })),
-
-
-      interestedParties: data.interestedParties?.map(id => ({ id: id })),
-
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','isActive','remark','calls','interestedParties',].includes(key);
+          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','isActive','remark',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -438,10 +409,10 @@ export function ProductForm({ id }: ProductFormProps) {
         fieldsToValidate = [];
         break;
       case 'business':
-        fieldsToValidate = ['interestedParties',];
+        fieldsToValidate = [];
         break;
       case 'other':
-        fieldsToValidate = ['calls',];
+        fieldsToValidate = [];
         break;
     }
 
@@ -744,86 +715,8 @@ export function ProductForm({ id }: ProductFormProps) {
               {/* User Assignment Step */}
 
               {/* Business Relations Step */}
-              {STEPS[currentStep].id === 'business' && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-medium">Business Relations</h3>
-                    <p className="text-muted-foreground">Connect with customers, products, and sources</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="interestedParties"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Interested Parties
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select interested parties"
-                              multiple={true}
-                              useInfiniteQueryHook={useGetAllPartiesInfinite}
-                              searchHook={useSearchPartiesInfinite}
-                              entityName="Parties"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/parties/new"
-                              createPermission="party:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'interestedParties')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Other Relations Step */}
-              {STEPS[currentStep].id === 'other' && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-medium">Additional Relations</h3>
-                    <p className="text-muted-foreground">Other connections and references</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="calls"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Calls
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select calls"
-                              multiple={true}
-                              useInfiniteQueryHook={useGetAllCallsInfinite}
-                              searchHook={useSearchCallsInfinite}
-                              entityName="Calls"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/calls/new"
-                              createPermission="call:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'calls')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Review Step */}
               {STEPS[currentStep].id === 'review' && (
@@ -897,34 +790,6 @@ export function ProductForm({ id }: ProductFormProps) {
                   </div>
 
                   {/* Relationship Reviews */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-lg border-b pb-2">🏢 Business Relations</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Interested Parties</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {Array.isArray(form.watch('interestedParties')) ? 
-                              `${form.watch('interestedParties').length} selected` : 'None selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-lg border-b pb-2">🔗 Additional Relations</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Calls</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {Array.isArray(form.watch('calls')) ? 
-                              `${form.watch('calls').length} selected` : 'None selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
             </CardContent>

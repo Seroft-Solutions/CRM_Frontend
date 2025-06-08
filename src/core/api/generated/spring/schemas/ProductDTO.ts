@@ -5,8 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CallDTO } from './CallDTO';
-import type { PartyDTO } from './PartyDTO';
 
 /**
  * Product master entity
@@ -55,6 +53,4 @@ export interface ProductDTO {
    * @maxLength 1000
    */
   remark?: string;
-  calls?: CallDTO[];
-  interestedParties?: PartyDTO[];
 }

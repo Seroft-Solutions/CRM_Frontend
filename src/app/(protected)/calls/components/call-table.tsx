@@ -44,10 +44,6 @@ import {
 
 // Relationship data imports
 
-import {
-  useGetAllPublicUsers
-} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
-
 
 
 import {
@@ -81,6 +77,10 @@ import {
 import {
   useGetAllCallStatuses
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+
+import {
+  useGetAllUserProfiles
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 import {
   useGetAllParties
@@ -126,11 +126,6 @@ export function CallTable() {
   
   // Fetch relationship data for dropdowns
   
-  const { data: userOptions = [] } = useGetAllPublicUsers(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
   const { data: priorityOptions = [] } = useGetAllPriorities(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -171,6 +166,11 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
+  const { data: userprofileOptions = [] } = useGetAllUserProfiles(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
   const { data: partyOptions = [] } = useGetAllParties(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -191,12 +191,6 @@ export function CallTable() {
     
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      
-      'assignedTo.login': { 
-        apiParam: 'assignedToId.equals', 
-        options: userOptions, 
-        displayField: 'login' 
-      },
       
       'priority.name': { 
         apiParam: 'priorityId.equals', 
@@ -244,6 +238,18 @@ export function CallTable() {
         apiParam: 'callStatusId.equals', 
         options: callstatusOptions, 
         displayField: 'name' 
+      },
+      
+      'assignedTo.email': { 
+        apiParam: 'assignedToId.equals', 
+        options: userprofileOptions, 
+        displayField: 'email' 
+      },
+      
+      'channelParty.email': { 
+        apiParam: 'channelPartyId.equals', 
+        options: userprofileOptions, 
+        displayField: 'email' 
       },
       
       'party.name': { 
@@ -502,14 +508,6 @@ export function CallTable() {
   const relationshipConfigs = [
     
     {
-      name: "assignedTo",
-      displayName: "AssignedTo",
-      options: userOptions || [],
-      displayField: "login",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
       name: "priority",
       displayName: "Priority",
       options: priorityOptions || [],
@@ -570,6 +568,22 @@ export function CallTable() {
       displayName: "CallStatus",
       options: callstatusOptions || [],
       displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "assignedTo",
+      displayName: "AssignedTo",
+      options: userprofileOptions || [],
+      displayField: "email",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "channelParty",
+      displayName: "ChannelParty",
+      options: userprofileOptions || [],
+      displayField: "email",
       isEditable: false, // Disabled by default
     },
     
@@ -649,7 +663,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -672,7 +686,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   No calls found

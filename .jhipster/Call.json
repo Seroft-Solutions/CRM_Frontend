@@ -29,14 +29,6 @@
       "relationshipType": "one-to-many"
     },
     {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "assignedTo",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
-    {
       "otherEntityField": "name",
       "otherEntityName": "priority",
       "relationshipName": "priority",
@@ -101,12 +93,18 @@
       "relationshipValidateRules": "required"
     },
     {
-      "otherEntityField": "name",
-      "otherEntityName": "product",
-      "otherEntityRelationshipName": "calls",
-      "relationshipName": "products",
+      "otherEntityField": "email",
+      "otherEntityName": "userProfile",
+      "relationshipName": "assignedTo",
       "relationshipSide": "left",
-      "relationshipType": "many-to-many"
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "email",
+      "otherEntityName": "userProfile",
+      "relationshipName": "channelParty",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
     },
     {
       "otherEntityName": "party",

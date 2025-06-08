@@ -69,22 +69,7 @@
   "jpaMetamodelFiltering": true,
   "name": "Product",
   "pagination": "pagination",
-  "relationships": [
-    {
-      "otherEntityName": "call",
-      "otherEntityRelationshipName": "products",
-      "relationshipName": "calls",
-      "relationshipSide": "right",
-      "relationshipType": "many-to-many"
-    },
-    {
-      "otherEntityName": "party",
-      "otherEntityRelationshipName": "interestedProducts",
-      "relationshipName": "interestedParties",
-      "relationshipSide": "right",
-      "relationshipType": "many-to-many"
-    }
-  ],
+  "relationships": [],
   "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

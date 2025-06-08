@@ -72,10 +72,6 @@ import {
   useGetAllCitiesInfinite,
   useSearchCitiesInfinite 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
-import { 
-  useGetAllProductsInfinite,
-  useSearchProductsInfinite 
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 interface PartyFormProps {
@@ -99,7 +95,6 @@ const formSchema = z.object({
   state: z.number().optional(),
   district: z.number().optional(),
   city: z.number().optional(),
-  interestedProducts: z.array(z.number()).optional(),
 });
 
 const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"review","title":"Review","description":"Confirm your details"}];
@@ -212,9 +207,6 @@ export function PartyForm({ id }: PartyFormProps) {
 
 
       city: undefined,
-
-
-      interestedProducts: [],
 
     },
   });
@@ -386,9 +378,6 @@ export function PartyForm({ id }: PartyFormProps) {
 
         city: entity.city?.id,
 
-
-        interestedProducts: entity.interestedProducts?.map(item => item.id),
-
       };
       form.reset(formValues);
     }
@@ -458,12 +447,9 @@ export function PartyForm({ id }: PartyFormProps) {
 
       city: data.city ? { id: data.city } : null,
 
-
-      interestedProducts: data.interestedProducts?.map(id => ({ id: id })),
-
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','state','district','city','interestedProducts',].includes(key);
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','state','district','city',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -504,7 +490,7 @@ export function PartyForm({ id }: PartyFormProps) {
         fieldsToValidate = [];
         break;
       case 'business':
-        fieldsToValidate = ['source','interestedProducts',];
+        fieldsToValidate = ['source',];
         break;
       case 'other':
         fieldsToValidate = [];
@@ -1020,35 +1006,6 @@ export function PartyForm({ id }: PartyFormProps) {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="interestedProducts"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Interested Products
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select interested products"
-                              multiple={true}
-                              useInfiniteQueryHook={useGetAllProductsInfinite}
-                              searchHook={useSearchProductsInfinite}
-                              entityName="Products"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/products/new"
-                              createPermission="product:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'interestedProducts')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                 </div>
               )}
@@ -1178,15 +1135,6 @@ export function PartyForm({ id }: PartyFormProps) {
                         <dd className="text-sm">
                           <Badge variant="outline">
                             {form.watch('source') ? 'Selected' : 'Not selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Interested Products</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {Array.isArray(form.watch('interestedProducts')) ? 
-                              `${form.watch('interestedProducts').length} selected` : 'None selected'}
                           </Badge>
                         </dd>
                       </div>

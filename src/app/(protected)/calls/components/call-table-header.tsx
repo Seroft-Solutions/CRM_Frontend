@@ -98,19 +98,6 @@ export function CallTableHeader({
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("assignedTo.login")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Assigned To
-            <div className="text-gray-400">
-              {renderSortIcon("assignedTo.login")}
-            </div>
-          </Button>
-        </TableHead>
-        
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
             onClick={() => onSort("priority.name")}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
@@ -215,6 +202,32 @@ export function CallTableHeader({
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
+            onClick={() => onSort("assignedTo.email")}
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+          >
+            Assigned To
+            <div className="text-gray-400">
+              {renderSortIcon("assignedTo.email")}
+            </div>
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-3 py-2">
+          <Button
+            variant="ghost"
+            onClick={() => onSort("channelParty.email")}
+            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+          >
+            Channel Party
+            <div className="text-gray-400">
+              {renderSortIcon("channelParty.email")}
+            </div>
+          </Button>
+        </TableHead>
+        
+        <TableHead className="whitespace-nowrap px-3 py-2">
+          <Button
+            variant="ghost"
             onClick={() => onSort("party.name")}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
@@ -269,15 +282,6 @@ export function CallTableHeader({
         </TableHead>
         
         
-        
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["assignedTo.login"] as string || ""}
-            onChange={(e) => onFilterChange("assignedTo.login", e.target.value || undefined)}
-          />
-        </TableHead>
         
         <TableHead className="px-3 py-2">
           <Input
@@ -348,6 +352,24 @@ export function CallTableHeader({
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["callStatus.name"] as string || ""}
             onChange={(e) => onFilterChange("callStatus.name", e.target.value || undefined)}
+          />
+        </TableHead>
+        
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={filters["assignedTo.email"] as string || ""}
+            onChange={(e) => onFilterChange("assignedTo.email", e.target.value || undefined)}
+          />
+        </TableHead>
+        
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={filters["channelParty.email"] as string || ""}
+            onChange={(e) => onFilterChange("channelParty.email", e.target.value || undefined)}
           />
         </TableHead>
         

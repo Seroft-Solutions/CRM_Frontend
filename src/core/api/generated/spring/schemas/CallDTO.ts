@@ -5,7 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { UserDTO } from './UserDTO';
 import type { PriorityDTO } from './PriorityDTO';
 import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
@@ -14,7 +13,7 @@ import type { AreaDTO } from './AreaDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { CallCategoryDTO } from './CallCategoryDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
-import type { ProductDTO } from './ProductDTO';
+import type { UserProfileDTO } from './UserProfileDTO';
 import type { PartyDTO } from './PartyDTO';
 
 /**
@@ -24,7 +23,6 @@ export interface CallDTO {
   id?: number;
   callDateTime: string;
   isActive: boolean;
-  assignedTo?: UserDTO;
   priority: PriorityDTO;
   callType: CallTypeDTO;
   subCallType: SubCallTypeDTO;
@@ -33,6 +31,7 @@ export interface CallDTO {
   channelType: ChannelTypeDTO;
   callCategory: CallCategoryDTO;
   callStatus: CallStatusDTO;
-  products?: ProductDTO[];
+  assignedTo?: UserProfileDTO;
+  channelParty?: UserProfileDTO;
   party: PartyDTO;
 }

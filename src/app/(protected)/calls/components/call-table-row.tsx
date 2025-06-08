@@ -68,22 +68,6 @@ export function CallTableRow({
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
           entityId={call.id || 0}
-          relationshipName="assignedTo"
-          currentValue={call.assignedTo}
-          options={relationshipConfigs.find(config => config.name === "assignedTo")?.options || []}
-          displayField="login"
-          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
-          isEditable={relationshipConfigs.find(config => config.name === "assignedTo")?.isEditable || false}
-          isLoading={isUpdating}
-          className="min-w-[150px]"
-          relatedEntityRoute="users"
-          showNavigationIcon={true}
-        />
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-1 py-2">
-        <RelationshipCell
-          entityId={call.id || 0}
           relationshipName="priority"
           currentValue={call.priority}
           options={relationshipConfigs.find(config => config.name === "priority")?.options || []}
@@ -205,6 +189,38 @@ export function CallTableRow({
           isLoading={isUpdating}
           className="min-w-[150px]"
           relatedEntityRoute="call-statuses"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="assignedTo"
+          currentValue={call.assignedTo}
+          options={relationshipConfigs.find(config => config.name === "assignedTo")?.options || []}
+          displayField="email"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "assignedTo")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="user-profiles"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="channelParty"
+          currentValue={call.channelParty}
+          options={relationshipConfigs.find(config => config.name === "channelParty")?.options || []}
+          displayField="email"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "channelParty")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="user-profiles"
           showNavigationIcon={true}
         />
       </TableCell>

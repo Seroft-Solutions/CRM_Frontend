@@ -46,10 +46,6 @@ const productSchema = z.object({
   
   
   
-  
-  
-  
-  
 })
 
 export type ProductFormData = z.infer<typeof productSchema>
@@ -107,10 +103,6 @@ export async function createProduct(
       
       
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      
       
       
       
@@ -208,10 +200,6 @@ export async function updateProduct(
       
       
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      
       
       
       

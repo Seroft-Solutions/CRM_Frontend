@@ -70,8 +70,6 @@ const partySchema = z.object({
   cityId: z.number().optional(),
   
   
-  
-  
 })
 
 export type PartyFormData = z.infer<typeof partySchema>
@@ -154,8 +152,6 @@ export async function createParty(
       
       
       cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
-      
-      
       
       
     }
@@ -277,8 +273,6 @@ export async function updateParty(
       
       
       cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
-      
-      
       
       
     }

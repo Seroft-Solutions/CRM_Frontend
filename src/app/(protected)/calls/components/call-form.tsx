@@ -85,17 +85,13 @@ import {
   useSearchCallStatusesInfinite 
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
 import { 
-  useGetAllProductsInfinite,
-  useSearchProductsInfinite 
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+  useGetAllUserProfilesInfinite,
+  useSearchUserProfilesInfinite 
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 import { 
   useGetAllPartiesInfinite,
   useSearchPartiesInfinite 
 } from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
-import { 
-  useGetAllPublicUsersInfinite,
-  useSearchInfinite as useSearchPublicUsersInfinite 
-} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 import type { CallDTO } from "@/core/api/generated/spring/schemas/CallDTO";
 import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
 
@@ -107,7 +103,6 @@ interface CallFormProps {
 const formSchema = z.object({
   callDateTime: z.date(),
   isActive: z.boolean(),
-  assignedTo: z.string().optional(),
   priority: z.number().optional(),
   callType: z.number().optional(),
   subCallType: z.number().optional(),
@@ -116,7 +111,8 @@ const formSchema = z.object({
   channelType: z.number().optional(),
   callCategory: z.number().optional(),
   callStatus: z.number().optional(),
-  products: z.array(z.number()).optional(),
+  assignedTo: z.number().optional(),
+  channelParty: z.number().optional(),
   party: z.number().optional(),
 });
 
@@ -193,9 +189,6 @@ export function CallForm({ id }: CallFormProps) {
       isActive: false,
 
 
-      assignedTo: undefined,
-
-
       priority: undefined,
 
 
@@ -220,7 +213,10 @@ export function CallForm({ id }: CallFormProps) {
       callStatus: undefined,
 
 
-      products: [],
+      assignedTo: undefined,
+
+
+      channelParty: undefined,
 
 
       party: undefined,
@@ -357,9 +353,6 @@ export function CallForm({ id }: CallFormProps) {
         isActive: entity.isActive || "",
 
 
-        assignedTo: entity.assignedTo?.id,
-
-
         priority: entity.priority?.id,
 
 
@@ -384,7 +377,10 @@ export function CallForm({ id }: CallFormProps) {
         callStatus: entity.callStatus?.id,
 
 
-        products: entity.products?.map(item => item.id),
+        assignedTo: entity.assignedTo?.id,
+
+
+        channelParty: entity.channelParty?.id,
 
 
         party: entity.party?.id,
@@ -420,9 +416,6 @@ export function CallForm({ id }: CallFormProps) {
       isActive: data.isActive === "__none__" ? undefined : data.isActive,
 
 
-      assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
-
-
       priority: data.priority ? { id: data.priority } : null,
 
 
@@ -447,14 +440,17 @@ export function CallForm({ id }: CallFormProps) {
       callStatus: data.callStatus ? { id: data.callStatus } : null,
 
 
-      products: data.products?.map(id => ({ id: id })),
+      assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
+
+
+      channelParty: data.channelParty ? { id: data.channelParty } : null,
 
 
       party: data.party ? { id: data.party } : null,
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['callDateTime','isActive','assignedTo','priority','callType','subCallType','source','area','channelType','callCategory','callStatus','products','party',].includes(key);
+          const isFormField = ['callDateTime','isActive','priority','callType','subCallType','source','area','channelType','callCategory','callStatus','assignedTo','channelParty','party',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -489,13 +485,13 @@ export function CallForm({ id }: CallFormProps) {
         fieldsToValidate = ['area',];
         break;
       case 'users':
-        fieldsToValidate = ['assignedTo',];
+        fieldsToValidate = ['assignedTo','channelParty',];
         break;
       case 'classification':
         fieldsToValidate = ['priority','callType','subCallType','channelType','callCategory','callStatus',];
         break;
       case 'business':
-        fieldsToValidate = ['source','products','party',];
+        fieldsToValidate = ['source','party',];
         break;
       case 'other':
         fieldsToValidate = [];
@@ -938,17 +934,46 @@ export function CallForm({ id }: CallFormProps) {
                             <PaginatedRelationshipCombobox
                               value={field.value}
                               onValueChange={field.onChange}
-                              displayField="login"
+                              displayField="email"
                               placeholder="Select assigned to"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllPublicUsersInfinite}
-                              searchHook={useSearchPublicUsersInfinite}
-                              entityName="PublicUsers"
-                              searchField="login"
-                              canCreate={false}
-                              createEntityPath=""
-                              createPermission=""
+                              useInfiniteQueryHook={useGetAllUserProfilesInfinite}
+                              searchHook={useSearchUserProfilesInfinite}
+                              entityName="UserProfiles"
+                              searchField="email"
+                              canCreate={true}
+                              createEntityPath="/user-profiles/new"
+                              createPermission="userProfile:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, 'assignedTo')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="channelParty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Channel Party
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              displayField="email"
+                              placeholder="Select channel party"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllUserProfilesInfinite}
+                              searchHook={useSearchUserProfilesInfinite}
+                              entityName="UserProfiles"
+                              searchField="email"
+                              canCreate={true}
+                              createEntityPath="/user-profiles/new"
+                              createPermission="userProfile:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'channelParty')}
                             />
                           </FormControl>
                           <FormMessage />
@@ -990,35 +1015,6 @@ export function CallForm({ id }: CallFormProps) {
                               createEntityPath="/sources/new"
                               createPermission="source:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, 'source')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="products"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Products
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select products"
-                              multiple={true}
-                              useInfiniteQueryHook={useGetAllProductsInfinite}
-                              searchHook={useSearchProductsInfinite}
-                              entityName="Products"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/products/new"
-                              createPermission="product:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'products')}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1167,6 +1163,14 @@ export function CallForm({ id }: CallFormProps) {
                           </Badge>
                         </dd>
                       </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Channel Party</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('channelParty') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -1177,15 +1181,6 @@ export function CallForm({ id }: CallFormProps) {
                         <dd className="text-sm">
                           <Badge variant="outline">
                             {form.watch('source') ? 'Selected' : 'Not selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Products</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {Array.isArray(form.watch('products')) ? 
-                              `${form.watch('products').length} selected` : 'None selected'}
                           </Badge>
                         </dd>
                       </div>
