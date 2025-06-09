@@ -14,6 +14,7 @@ import {
   postAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
+  putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   getAdminRealmsRealmGroups
 } from '@/core/api/generated/keycloak';
 import type { 
@@ -183,7 +184,8 @@ export async function POST(
       selectedGroups: body.selectedGroups || [],
       selectedRoles: body.selectedRoles || [],
       invitationNote: body.invitationNote,
-      sendWelcomeEmail: body.sendWelcomeEmail !== false
+      sendWelcomeEmail: body.sendWelcomeEmail !== false,
+      sendPasswordReset: body.sendPasswordReset !== false // New option for password reset
     };
 
     // Validate required fields
@@ -223,17 +225,37 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing user to organization');
         
-        // Then send invite
-        const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
-          id: userId
-        };
-        
-        await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
-          realm,
-          organizationId,
-          inviteExistingUserData
-        );
-        console.log('Invited existing user to organization');
+        // Then send appropriate email
+        if (inviteData.sendPasswordReset !== false) {
+          // Send UPDATE_PASSWORD email if user needs to set/reset password
+          try {
+            await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
+              realm,
+              userId,
+              ['UPDATE_PASSWORD'],
+              {
+                client_id: 'web_app',
+                lifespan: 43200, // 12 hours
+                redirect_uri: body.redirectUri
+              }
+            );
+            console.log('Sent UPDATE_PASSWORD email to existing user');
+          } catch (emailError) {
+            console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
+          }
+        } else {
+          // Send organization invite
+          const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
+            id: userId
+          };
+          
+          await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
+            realm,
+            organizationId,
+            inviteExistingUserData
+          );
+          console.log('Invited existing user to organization');
+        }
         
       } else {
         // SCENARIO 1: User doesn't exist - create then invite
@@ -280,8 +302,27 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added user to organization');
 
-        // 4. Send invite (optional email)
-        if (inviteData.sendWelcomeEmail !== false) {
+        // 4. Send appropriate email based on configuration
+        if (inviteData.sendPasswordReset !== false) {
+          // Send UPDATE_PASSWORD email for new users to set their password
+          try {
+            await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
+              realm,
+              userId,
+              ['UPDATE_PASSWORD'],
+              {
+                client_id: 'web_app',
+                lifespan: 43200, // 12 hours
+                redirect_uri: body.redirectUri // Optional redirect after password setup
+              }
+            );
+            console.log('Sent UPDATE_PASSWORD email to new user');
+          } catch (emailError) {
+            console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
+            // Continue with invitation flow even if email fails
+          }
+        } else if (inviteData.sendWelcomeEmail !== false) {
+          // Fallback to organization invite email
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
             id: userId
           };
@@ -291,7 +332,7 @@ export async function POST(
             organizationId,
             inviteUserData
           );
-          console.log('Sent invitation email');
+          console.log('Sent organization invitation email');
         }
       }
 
@@ -355,7 +396,8 @@ export async function POST(
       email: inviteData.email,
       userId,
       invitationId,
-      selectedGroups: inviteData.selectedGroups?.length || 0
+      selectedGroups: inviteData.selectedGroups?.length || 0,
+      emailType: inviteData.sendPasswordReset !== false ? 'password_reset' : 'organization_invite'
     });
   } catch (error: any) {
     console.error('Enhanced invite user API error:', error);
