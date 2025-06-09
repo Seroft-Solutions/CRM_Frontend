@@ -32,6 +32,11 @@ export {
 
 // Services
 export { UserManagementService, userManagementService } from './services/user-management.service';
+export { 
+  UserOnboardingService, 
+  userOnboardingService, 
+  createOnboardingService 
+} from './services/user-onboarding.service';
 
 // Configuration
 export { USER_MANAGEMENT_CONFIG } from './config';
@@ -40,6 +45,7 @@ export { USER_MANAGEMENT_CONFIG } from './config';
 export type {
   OrganizationUser,
   UserInvitation,
+  UserInvitationWithGroups,
   BulkUserInvitation,
   RoleAssignment,
   GroupAssignment,
@@ -48,9 +54,15 @@ export type {
   AvailableRolesResponse,
   AvailableGroupsResponse,
   InviteUserFormData,
+  InviteUserFormDataWithGroups,
   BulkInviteFormData,
   UserDetailData,
   UserManagementError,
   LoadingStates,
   OrganizationContext,
+  PendingInvitation,
+  InvitationStatus,
+  InvitationActionResult,
+  InvitationListResponse,
+  OrganizationWithInvitations
 } from './types';

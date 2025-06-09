@@ -151,11 +151,15 @@ export interface UserInvitationWithGroups {
   lastName?: string;
   organizationId: string;
   sendWelcomeEmail?: boolean;
+  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email instead of org invite
   
   // Group and role assignment
   selectedGroups?: GroupRepresentation[];
   selectedRoles?: RoleRepresentation[];
   invitationNote?: string;
+  
+  // Optional redirect after password setup
+  redirectUri?: string;
 }
 
 // ENHANCED: Form types with group selection
@@ -164,9 +168,11 @@ export interface InviteUserFormDataWithGroups {
   firstName: string;
   lastName: string;
   sendWelcomeEmail: boolean;
+  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email
   selectedGroups: string[]; // Group IDs
   selectedRoles?: string[]; // Role IDs
   invitationNote?: string;
+  redirectUri?: string; // Post-password setup redirect
 }
 
 export interface BulkInviteFormDataWithGroups {
