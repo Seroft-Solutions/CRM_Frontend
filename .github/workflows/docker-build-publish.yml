@@ -1,5 +1,14 @@
 name: Build and Publish to Docker Hub
 
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+
 env:
   # Docker Hub Configuration - CHANGE YOUR USERNAME
   IMAGE_NAME: syedus06/crm-frontend
