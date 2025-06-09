@@ -13,6 +13,8 @@ import {
   postAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
+  deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
+  putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserIdGroups
 } from '@/core/api/generated/keycloak';
@@ -28,7 +30,9 @@ interface PartnerInvitation {
   lastName: string;
   organizationId: string;
   sendWelcomeEmail: boolean;
+  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email
   invitationNote?: string;
+  redirectUri?: string; // Post-password setup redirect
 }
 
 interface PendingPartnerInvitation {
@@ -43,6 +47,43 @@ interface PendingPartnerInvitation {
   expiresAt?: number;
   invitationNote?: string;
   sendWelcomeEmail?: boolean;
+}
+
+// Helper function to ensure Business Partners group assignment and remove Admins group if present
+async function ensureProperPartnerGroupAssignment(realm: string, userId: string): Promise<{
+  businessPartnersGroupAssigned: boolean;
+  adminsGroupRemoved: boolean;
+}> {
+  let businessPartnersGroupAssigned = false;
+  let adminsGroupRemoved = false;
+  
+  try {
+    // Get all groups
+    const allGroups = await getAdminRealmsRealmGroups(realm);
+    const businessPartnersGroup = allGroups.find(g => g.name === 'Business Partners');
+    const adminsGroup = allGroups.find(g => g.name === 'Admins');
+    
+    // Get user's current groups
+    const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
+    
+    // Assign Business Partners group if not already assigned
+    if (businessPartnersGroup && !userGroups.some(g => g.id === businessPartnersGroup.id)) {
+      await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, businessPartnersGroup.id!);
+      businessPartnersGroupAssigned = true;
+      console.log('Assigned Business Partners group to user:', userId);
+    }
+    
+    // Remove Admins group if present
+    if (adminsGroup && userGroups.some(g => g.id === adminsGroup.id)) {
+      await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
+      adminsGroupRemoved = true;
+      console.log('Removed Admins group from partner user:', userId);
+    }
+  } catch (error) {
+    console.warn('Failed to manage group assignments for partner user:', userId, error);
+  }
+  
+  return { businessPartnersGroupAssigned, adminsGroupRemoved };
 }
 
 // Helper function to generate invitation ID
@@ -133,7 +174,9 @@ export async function POST(
       lastName: body.lastName,
       organizationId,
       invitationNote: body.invitationNote,
-      sendWelcomeEmail: body.sendWelcomeEmail !== false
+      sendWelcomeEmail: body.sendWelcomeEmail !== false,
+      sendPasswordReset: body.sendPasswordReset !== false, // Default to true
+      redirectUri: body.redirectUri
     };
 
     // Validate required fields
@@ -155,6 +198,7 @@ export async function POST(
     // CLEAR SCENARIO-BASED FLOW FOR PARTNERS
     let userId: string;
     let invitationId: string;
+    let groupManagement = { businessPartnersGroupAssigned: false, adminsGroupRemoved: false };
     
     try {
       // Check if user exists
@@ -177,17 +221,42 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing partner to organization');
         
-        // Then send invite
-        const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
-          id: userId
-        };
+        // Ensure proper group assignment for existing partner
+        const groupResult = await ensureProperPartnerGroupAssignment(realm, userId);
+        groupManagement.businessPartnersGroupAssigned = groupResult.businessPartnersGroupAssigned || groupManagement.businessPartnersGroupAssigned;
+        groupManagement.adminsGroupRemoved = groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
         
-        await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
-          realm,
-          organizationId,
-          inviteExistingUserData
-        );
-        console.log('Invited existing partner to organization');
+        // Send appropriate email
+        if (inviteData.sendPasswordReset !== false) {
+          // Send UPDATE_PASSWORD email for partners to set their password
+          try {
+            await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
+              realm,
+              userId,
+              ['UPDATE_PASSWORD'],
+              {
+                client_id: 'web_app',
+                lifespan: 43200, // 12 hours
+                redirect_uri: inviteData.redirectUri
+              }
+            );
+            console.log('Sent UPDATE_PASSWORD email to existing partner');
+          } catch (emailError) {
+            console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
+          }
+        } else {
+          // Send organization invite
+          const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
+            id: userId
+          };
+          
+          await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
+            realm,
+            organizationId,
+            inviteExistingUserData
+          );
+          console.log('Invited existing partner to organization');
+        }
         
       } else {
         // SCENARIO 1: User doesn't exist - create then invite
@@ -222,23 +291,36 @@ export async function POST(
         userId = createdUsers[0].id!;
         console.log('Found created partner user ID:', userId);
 
-        // 2. Assign Business Partners Group
-        const allGroups = await getAdminRealmsRealmGroups(realm);
-        const businessPartnersGroup = allGroups.find(g => g.name === 'Business Partners');
-        
-        if (businessPartnersGroup) {
-          await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, businessPartnersGroup.id!);
-          console.log('Assigned Business Partners group');
-        } else {
-          console.warn('Business Partners group not found');
-        }
+        // 2. Ensure proper group assignment (Business Partners group + remove Admins if present)
+        const groupResult1 = await ensureProperPartnerGroupAssignment(realm, userId);
+        groupManagement.businessPartnersGroupAssigned = groupResult1.businessPartnersGroupAssigned || groupManagement.businessPartnersGroupAssigned;
+        groupManagement.adminsGroupRemoved = groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
         // 3. Add Partner to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added partner to organization');
 
-        // 4. Send invite (optional email)
-        if (inviteData.sendWelcomeEmail !== false) {
+        // 4. Send appropriate email based on configuration
+        if (inviteData.sendPasswordReset !== false) {
+          // Send UPDATE_PASSWORD email for new partners to set their password
+          try {
+            await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
+              realm,
+              userId,
+              ['UPDATE_PASSWORD'],
+              {
+                client_id: 'web_app',
+                lifespan: 43200, // 12 hours
+                redirect_uri: inviteData.redirectUri
+              }
+            );
+            console.log('Sent UPDATE_PASSWORD email to new partner');
+          } catch (emailError) {
+            console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
+            // Continue with invitation flow even if email fails
+          }
+        } else if (inviteData.sendWelcomeEmail !== false) {
+          // Fallback to organization invite email
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
             id: userId
           };
@@ -248,7 +330,7 @@ export async function POST(
             organizationId,
             inviteUserData
           );
-          console.log('Sent partner invitation email');
+          console.log('Sent partner organization invitation email');
         }
       }
 
@@ -310,7 +392,17 @@ export async function POST(
       email: inviteData.email,
       userId,
       invitationId,
-      partnerGroup: 'Business Partners'
+      partnerGroup: 'Business Partners',
+      emailType: inviteData.sendPasswordReset !== false ? 'password_reset' : 'organization_invite',
+      groupManagement: {
+        businessPartnersGroupAssigned: groupManagement.businessPartnersGroupAssigned,
+        adminsGroupRemoved: groupManagement.adminsGroupRemoved,
+        message: groupManagement.adminsGroupRemoved 
+          ? 'Partner was removed from Admins group and assigned to Business Partners group'
+          : groupManagement.businessPartnersGroupAssigned 
+            ? 'Partner was assigned to Business Partners group'
+            : 'Partner group assignments unchanged'
+      }
     });
   } catch (error: any) {
     console.error('Partner invitation API error:', error);

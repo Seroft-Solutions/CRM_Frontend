@@ -44,6 +44,66 @@ export class UserOnboardingService {
   }
 
   /**
+   * Invite business partner with password setup
+   */
+  async invitePartnerWithPasswordSetup(
+    organizationId: string,
+    inviteData: Omit<UserInvitationWithGroups, 'selectedGroups'> & {
+      invitationNote?: string;
+    }
+  ): Promise<OnboardingResult> {
+    try {
+      // Prepare partner invitation data with proper defaults
+      const partnerData = {
+        ...inviteData,
+        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true
+        sendWelcomeEmail: false, // Prefer password reset over org invite
+        redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
+      };
+
+      // Call the partners API endpoint
+      const response = await fetch(`/api/keycloak/organizations/${organizationId}/partners`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(partnerData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          emailType: 'none',
+          message: result.error || 'Failed to invite business partner',
+          errors: [result.error]
+        };
+      }
+
+      const baseMessage = `Business partner invited successfully. ${result.emailType === 'password_reset' ? 'Password setup email sent.' : 'Organization invite sent.'}`;
+      const groupMessage = result.groupManagement ? ` ${result.groupManagement.message}` : '';
+      
+      return {
+        success: true,
+        userId: result.userId,
+        invitationId: result.invitationId,
+        emailType: result.emailType || 'password_reset',
+        message: baseMessage + groupMessage,
+        groupManagement: result.groupManagement
+      };
+
+    } catch (error: any) {
+      return {
+        success: false,
+        emailType: 'none',
+        message: 'Network error during partner invitation',
+        errors: [error.message]
+      };
+    }
+  }
+
+  /**
    * Complete user onboarding with password setup
    */
   async inviteUserWithPasswordSetup(
