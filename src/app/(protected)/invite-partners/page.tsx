@@ -29,7 +29,9 @@ interface PartnerInvitation {
   lastName: string;
   organizationId: string;
   sendWelcomeEmail: boolean;
+  sendPasswordReset?: boolean;
   invitationNote?: string;
+  redirectUri?: string;
 }
 
 export default function InvitePartnersPage() {
@@ -41,7 +43,8 @@ export default function InvitePartnersPage() {
     lastName: '',
     email: '',
     invitationNote: '',
-    sendWelcomeEmail: true
+    sendWelcomeEmail: false, // Change to false since we prefer password reset
+    sendPasswordReset: true // Default to password reset for partners
   });
   
   const [isInviting, setIsInviting] = useState(false);
@@ -76,7 +79,17 @@ export default function InvitePartnersPage() {
       }
 
       const result = await response.json();
-      toast.success('Partner invited successfully');
+      
+      // Show appropriate success message based on email type
+      const emailMessage = result.emailType === 'password_reset' 
+        ? 'Partner invited successfully. Password setup email sent.'
+        : 'Partner invited successfully';
+      
+      const groupMessage = result.groupManagement?.message 
+        ? ` ${result.groupManagement.message}`
+        : '';
+      
+      toast.success(emailMessage + groupMessage);
       
       // Clear form
       setFormData({
@@ -84,7 +97,8 @@ export default function InvitePartnersPage() {
         lastName: '',
         email: '',
         invitationNote: '',
-        sendWelcomeEmail: true
+        sendWelcomeEmail: false,
+        sendPasswordReset: true
       });
 
     } catch (error) {
@@ -101,7 +115,8 @@ export default function InvitePartnersPage() {
       lastName: '',
       email: '',
       invitationNote: '',
-      sendWelcomeEmail: true
+      sendWelcomeEmail: false,
+      sendPasswordReset: true
     });
   };
 
@@ -186,18 +201,18 @@ export default function InvitePartnersPage() {
                 {/* Send Email Checkbox */}
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="sendWelcomeEmail"
-                    checked={formData.sendWelcomeEmail}
+                    id="sendPasswordReset"
+                    checked={formData.sendPasswordReset}
                     onCheckedChange={(checked) => 
-                      setFormData({ ...formData, sendWelcomeEmail: checked as boolean })
+                      setFormData({ ...formData, sendPasswordReset: checked as boolean })
                     }
                   />
-                  <Label htmlFor="sendWelcomeEmail" className="text-sm">
-                    Send welcome email
+                  <Label htmlFor="sendPasswordReset" className="text-sm">
+                    Send password setup email
                   </Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  The partner will receive an email with instructions to set up their account
+                  The partner will receive an email to set up their password and access their account
                 </p>
 
                 {/* Action Buttons */}
@@ -237,6 +252,10 @@ export default function InvitePartnersPage() {
                   <li>Shared documents and resources</li>
                   <li>Organization communications</li>
                 </ul>
+                
+                <p className="pt-2 text-xs text-orange-600 font-medium">
+                  Note: Admin privileges are automatically removed to ensure proper access control
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -250,19 +269,19 @@ export default function InvitePartnersPage() {
                 <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
                   1
                 </div>
-                <p>Partner receives invitation email</p>
+                <p>Partner receives password setup email</p>
               </div>
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
                   2
                 </div>
-                <p>Partner accepts and sets up account</p>
+                <p>Partner sets password and verifies account</p>
               </div>
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
                   3
                 </div>
-                <p>Automatic access to partner resources</p>
+                <p>Automatic access to Business Partners group and resources</p>
               </div>
             </CardContent>
           </Card>
