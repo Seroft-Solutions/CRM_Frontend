@@ -199,13 +199,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user, profile }) {
       console.log('🎫 AUTH JWT CALLBACK: Processing JWT callback', { 
         hasToken: !!token,
         hasAccount: !!account,
+        hasUser: !!user,
+        hasProfile: !!profile,
         provider: account?.provider,
         tokenSub: token?.sub,
-        accountType: account?.type
+        accountType: account?.type,
+        userEmail: user?.email,
+        profileInfo: profile ? Object.keys(profile) : []
       })
 
       if (account?.provider === "keycloak") {
@@ -278,56 +282,82 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token
     },
     async session({ session, token }) {
-      console.log('👤 AUTH SESSION CALLBACK: Processing session callback', { 
-        hasSession: !!session,
-        hasToken: !!token,
-        tokenSub: token?.sub,
-        sessionUserId: session?.user?.id
-      })
-      
-      if (token.sub) {
-        session.user.id = token.sub
-        console.log('🆔 AUTH SESSION: User ID set from token:', token.sub)
-      }
-      
-      if (token.organizations) {
-        session.user.organizations = token.organizations
-        console.log('🏢 AUTH SESSION: Organizations added to session', { 
-          count: token.organizations.length,
-          organizations: token.organizations.map(org => org.name)
+      try {
+        console.log('👤 AUTH SESSION CALLBACK: Processing session callback', { 
+          hasSession: !!session,
+          hasToken: !!token,
+          tokenSub: token?.sub,
+          sessionUserId: session?.user?.id,
+          tokenError: token?.error
         })
-      }
-      
-      if (token.roles) {
-        session.user.roles = token.roles
-        console.log('👥 AUTH SESSION: Roles added to session', { 
-          count: token.roles.length,
-          roles: token.roles 
+
+        // Handle token errors
+        if (token.error) {
+          console.error('❌ AUTH SESSION: Token error present:', token.error)
+          // Return minimal session to avoid callback errors
+          return {
+            user: {
+              id: token.sub || 'unknown',
+              name: session.user?.name || null,
+              email: session.user?.email || null,
+              image: session.user?.image || null,
+            },
+            expires: session.expires
+          }
+        }
+        
+        if (token.sub) {
+          session.user.id = token.sub
+          console.log('🆔 AUTH SESSION: User ID set from token:', token.sub)
+        }
+        
+        if (token.organizations) {
+          session.user.organizations = token.organizations
+          console.log('🏢 AUTH SESSION: Organizations added to session', { 
+            count: token.organizations.length,
+            organizations: token.organizations.map(org => org.name)
+          })
+        }
+        
+        if (token.roles) {
+          session.user.roles = token.roles
+          console.log('👥 AUTH SESSION: Roles added to session', { 
+            count: token.roles.length,
+            roles: token.roles 
+          })
+        }
+        
+        if (token.access_token) {
+          session.access_token = token.access_token
+          console.log('🔑 AUTH SESSION: Access token added to session')
+        }
+
+        if (token.refresh_token) {
+          session.refresh_token = token.refresh_token
+          console.log('🔄 AUTH SESSION: Refresh token added to session')
+        }
+        
+        console.log('✅ AUTH SESSION CALLBACK: Session processing completed', {
+          userId: session.user.id,
+          hasOrganizations: !!session.user.organizations,
+          hasRoles: !!session.user.roles,
+          hasAccessToken: !!session.access_token
         })
+        
+        return session
+      } catch (error) {
+        console.error('❌ AUTH SESSION CALLBACK: Error processing session:', error)
+        // Return minimal valid session to prevent callback errors
+        return {
+          user: {
+            id: token?.sub || 'error',
+            name: session?.user?.name || null,
+            email: session?.user?.email || null,
+            image: session?.user?.image || null,
+          },
+          expires: session?.expires || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        }
       }
-      
-      if (token.access_token) {
-        session.access_token = token.access_token
-        console.log('🔑 AUTH SESSION: Access token added to session')
-      }
-
-      if (token.refresh_token) {
-        session.refresh_token = token.refresh_token
-        console.log('🔄 AUTH SESSION: Refresh token added to session')
-      }
-
-      if (token.error) {
-        console.error('❌ AUTH SESSION: Token error present:', token.error)
-      }
-      
-      console.log('✅ AUTH SESSION CALLBACK: Session processing completed', {
-        userId: session.user.id,
-        hasOrganizations: !!session.user.organizations,
-        hasRoles: !!session.user.roles,
-        hasAccessToken: !!session.access_token
-      })
-      
-      return session
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
