@@ -283,7 +283,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       })
 
       console.log('⏳ AUTH JWT: About to return token, triggering session callback...')
-      return token
+      
+      // Ensure token has required fields for NextAuth
+      const sanitizedToken = {
+        ...token,
+        sub: token.sub || 'unknown',
+        iat: token.iat || Math.floor(Date.now() / 1000),
+        exp: token.exp || (Math.floor(Date.now() / 1000) + 86400),
+        jti: token.jti || 'default'
+      }
+      
+      console.log('🔍 AUTH JWT: Returning sanitized token with fields:', Object.keys(sanitizedToken))
+      return sanitizedToken
     },
     async session({ session, token }) {
       console.log('🚨 AUTH SESSION: ENTRY POINT - Session callback called!')
