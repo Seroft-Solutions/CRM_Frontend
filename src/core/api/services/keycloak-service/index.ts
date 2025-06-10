@@ -277,21 +277,50 @@ export class KeycloakService extends BaseService {
       // In a server environment, we can access the session
       if (typeof window === 'undefined') {
         const { auth } = await import('@/auth');
+        const { rolesManager } = await import('@/components/auth/roles-manager');
         const session = await auth();
         
         if (!session?.user) {
           return { authorized: false, error: 'Not authenticated' };
         }
 
-        // Check if user has manage-users role or is admin
-        const hasPermission = session.user.roles?.includes('manage-users') || 
-                            session.user.roles?.includes('admin') || 
-                            session.user.roles?.includes('realm-admin') ||
-                            session.user.roles?.includes('realm-management') ||
+        // Get roles from rolesManager instead of session
+        const userRoles = rolesManager.getUserRoles(session.user.id);
+        
+        // Also check session.user.roles as fallback
+        const sessionRoles = session.user.roles || [];
+        const allRoles = [...userRoles, ...sessionRoles];
+        
+        console.log('Permission check:', {
+          userId: session.user.id,
+          rolesFromManager: userRoles.length,
+          rolesFromSession: sessionRoles.length,
+          totalRoles: allRoles.length,
+          hasManageUsers: allRoles.includes('manage-users'),
+          hasAdmin: allRoles.includes('admin'),
+          hasRoleAdmin: allRoles.includes('ROLE_ADMIN'),
+          hasRealmAdmin: allRoles.includes('realm-admin'),
+          hasSystemSuperAdmin: allRoles.includes('system:superadmin')
+        });
+
+        // Check if user has required permissions
+        const hasPermission = allRoles.includes('manage-users') || 
+                            allRoles.includes('admin') || 
+                            allRoles.includes('ROLE_ADMIN') ||
+                            allRoles.includes('realm-admin') ||
+                            allRoles.includes('realm-management') ||
+                            allRoles.includes('system:superadmin') ||
                             false;
         
         if (!hasPermission) {
-          return { authorized: false, error: 'Insufficient permissions. Required: manage-users, admin, realm-admin, or realm-management role' };
+          return { 
+            authorized: false, 
+            error: 'Insufficient permissions. Required: manage-users, admin, realm-admin, or realm-management role',
+            debug: {
+              totalRoles: allRoles.length,
+              rolesFound: allRoles.slice(0, 10) // First 10 roles for debugging
+            }
+          };
         }
 
         return { authorized: true };
