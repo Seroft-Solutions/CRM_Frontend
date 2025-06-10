@@ -35,85 +35,170 @@ interface KeycloakTokenPayload {
   [key: string]: any
 }
 
+// Enhanced logging utility
+const logger = {
+  info: (message: string, data?: any) => {
+    console.log(`[AUTH][INFO] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  warn: (message: string, data?: any) => {
+    console.warn(`[AUTH][WARN] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  error: (message: string, error?: any) => {
+    console.error(`[AUTH][ERROR] ${message}`, error);
+    if (error instanceof Error) {
+      console.error(`[AUTH][ERROR] Stack:`, error.stack);
+    }
+  },
+  debug: (message: string, data?: any) => {
+    if (process.env.AUTH_DEBUG === 'true') {
+      console.log(`[AUTH][DEBUG] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+    }
+  }
+};
+
 function parseOrganizations(accessToken: string): Array<{ name: string; id: string }> {
   try {
+    logger.debug('Parsing organizations from access token');
     
     const [, payload] = accessToken.split('.')
-    if (!payload) return []
+    if (!payload) {
+      logger.warn('No payload found in access token for organizations parsing');
+      return []
+    }
     
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
-    const organizations = decoded.organizations || {}
+    logger.debug('Decoded token payload for organizations', { 
+      hasOrganizations: !!decoded.organizations,
+      organizationsKeys: decoded.organizations ? Object.keys(decoded.organizations) : []
+    });
     
+    const organizations = decoded.organizations || {}
     
     const parsedOrgs = Object.entries(organizations).map(([name, data]) => ({
       name,
       id: data?.id || name
     }))
     
-    
+    logger.info(`Successfully parsed ${parsedOrgs.length} organizations`, { organizations: parsedOrgs });
     return parsedOrgs
   } catch (error) {
-    console.error('Failed to parse organizations from token:', error)
+    logger.error('Failed to parse organizations from token', error)
     return []
   }
 }
 
 function parseRoles(accessToken: string): string[] {
   try {
+    logger.debug('Parsing roles from access token');
+    
     const [, payload] = accessToken.split('.')
-    if (!payload) return []
+    if (!payload) {
+      logger.warn('No payload found in access token for roles parsing');
+      return []
+    }
     
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
-    
+    logger.debug('Decoded token payload for roles', {
+      hasRealmAccess: !!decoded.realm_access,
+      hasResourceAccess: !!decoded.resource_access,
+      realmRoles: decoded.realm_access?.roles || [],
+      resourceAccessKeys: decoded.resource_access ? Object.keys(decoded.resource_access) : []
+    });
     
     const roles: string[] = []
     
     // Get realm roles
     if (decoded.realm_access?.roles) {
       roles.push(...decoded.realm_access.roles)
+      logger.debug(`Added ${decoded.realm_access.roles.length} realm roles`);
     }
     
     // Get client roles (resource_access)
     if (decoded.resource_access) {
-      Object.values(decoded.resource_access).forEach(client => {
+      Object.entries(decoded.resource_access).forEach(([clientId, client]) => {
         if (client.roles) {
           roles.push(...client.roles)
+          logger.debug(`Added ${client.roles.length} roles from client: ${clientId}`);
         }
       })
     }
     
-    
-    return [...new Set(roles)] // Remove duplicates
+    const uniqueRoles = [...new Set(roles)] // Remove duplicates
+    logger.info(`Successfully parsed ${uniqueRoles.length} unique roles`, { roles: uniqueRoles });
+    return uniqueRoles
   } catch (error) {
-    console.error('Failed to parse roles from token:', error)
+    logger.error('Failed to parse roles from token', error)
     return []
   }
 }
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
+  const refreshStartTime = Date.now();
+  logger.info('Starting token refresh process', { 
+    hasRefreshToken: !!token.refresh_token,
+    tokenExpiresAt: token.expires_at ? new Date(token.expires_at * 1000).toISOString() : 'unknown',
+    currentTime: new Date().toISOString()
+  });
+
   try {
-    if (!token.refresh_token) return token
-
-    const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: process.env.AUTH_KEYCLOAK_ID!,
-        client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
-        refresh_token: token.refresh_token
-      })
-    })
-
-    if (!response.ok) {
-      console.error('Failed to refresh token:', response.status)
-      return { ...token, error: 'RefreshAccessTokenError' }
+    if (!token.refresh_token) {
+      logger.warn('No refresh token available for token refresh');
+      return token;
     }
 
-    const data = await response.json()
+    const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
+    logger.debug('Token refresh URL', { url: tokenUrl });
 
-    return {
+    const requestBody = {
+      grant_type: 'refresh_token',
+      client_id: process.env.AUTH_KEYCLOAK_ID!,
+      client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
+      refresh_token: token.refresh_token
+    };
+
+    logger.debug('Token refresh request', { 
+      grant_type: requestBody.grant_type,
+      client_id: requestBody.client_id,
+      hasClientSecret: !!requestBody.client_secret,
+      hasRefreshToken: !!requestBody.refresh_token
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'NextAuth-CRM-Frontend'
+      },
+      body: new URLSearchParams(requestBody)
+    });
+
+    const responseTime = Date.now() - refreshStartTime;
+    logger.info(`Token refresh response received in ${responseTime}ms`, { 
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error('Token refresh failed', { 
+        status: response.status,
+        statusText: response.statusText,
+        errorResponse: errorText
+      });
+      return { ...token, error: 'RefreshAccessTokenError' };
+    }
+
+    const data = await response.json();
+    logger.debug('Token refresh successful', {
+      hasAccessToken: !!data.access_token,
+      hasRefreshToken: !!data.refresh_token,
+      hasIdToken: !!data.id_token,
+      expiresIn: data.expires_in,
+      tokenType: data.token_type
+    });
+
+    const refreshedToken = {
       ...token,
       access_token: data.access_token,
       refresh_token: data.refresh_token ?? token.refresh_token,
@@ -121,10 +206,19 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
       organizations: parseOrganizations(data.access_token),
       roles: parseRoles(data.access_token)
-    }
+    };
+
+    logger.info('Token refresh completed successfully', {
+      newExpiresAt: new Date(refreshedToken.expires_at! * 1000).toISOString(),
+      organizationsCount: refreshedToken.organizations?.length || 0,
+      rolesCount: refreshedToken.roles?.length || 0
+    });
+
+    return refreshedToken;
   } catch (error) {
-    console.error('Error refreshing access token:', error)
-    return { ...token, error: 'RefreshAccessTokenError' }
+    const responseTime = Date.now() - refreshStartTime;
+    logger.error(`Token refresh failed after ${responseTime}ms`, error);
+    return { ...token, error: 'RefreshAccessTokenError' };
   }
 }
 
@@ -134,6 +228,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientId: process.env.AUTH_KEYCLOAK_ID!,
       clientSecret: process.env.AUTH_KEYCLOAK_SECRET!,
       issuer: process.env.AUTH_KEYCLOAK_ISSUER!,
+      // Add PKCE configuration explicitly
+      checks: ["pkce", "state"],
+      // Ensure proper redirect URI handling
+      allowDangerousEmailAccountLinking: false,
     }),
   ],
   session: {
@@ -141,130 +239,272 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, account }) {
-      if (account?.provider === "keycloak") {
-        // Handle login with Keycloak
+    async jwt({ token, account, user, trigger }) {
+      const callbackStartTime = Date.now();
+      logger.info('JWT callback triggered', { 
+        trigger,
+        hasAccount: !!account,
+        hasUser: !!user,
+        hasToken: !!token,
+        accountProvider: account?.provider,
+        tokenSub: token.sub
+      });
 
-        token.id_token = account.id_token
-        token.access_token = account.access_token
-        token.refresh_token = account.refresh_token
-        token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0)
+      try {
+        if (account?.provider === "keycloak") {
+          logger.info('Processing Keycloak login', {
+            accountType: account.type,
+            providerAccountId: account.providerAccountId,
+            hasAccessToken: !!account.access_token,
+            hasRefreshToken: !!account.refresh_token,
+            hasIdToken: !!account.id_token,
+            expiresIn: account.expires_in,
+            scope: account.scope
+          });
 
-        if (account.access_token && token.sub) {
-          token.organizations = parseOrganizations(account.access_token)
-          
-          // Store roles in JWT token for client access
-          const roles = parseRoles(account.access_token)
-          token.roles = roles
-          rolesManager.setUserRoles(token.sub, roles)
-          
+          // Handle login with Keycloak
+          token.id_token = account.id_token;
+          token.access_token = account.access_token;
+          token.refresh_token = account.refresh_token;
+          token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
+
+          logger.debug('Token expiration set', {
+            expiresIn: account.expires_in,
+            expiresAt: token.expires_at,
+            expiresAtISO: new Date(token.expires_at * 1000).toISOString()
+          });
+
+          if (account.access_token && token.sub) {
+            logger.debug('Processing user data from access token', { userSub: token.sub });
+            
+            token.organizations = parseOrganizations(account.access_token);
+            
+            // Store roles in JWT token for client access
+            const roles = parseRoles(account.access_token);
+            token.roles = roles;
+            rolesManager.setUserRoles(token.sub, roles);
+            
+            logger.info('User roles set in roles manager', { 
+              userSub: token.sub,
+              rolesCount: roles.length 
+            });
+          }
         }
-      }
 
-      // Refresh token if expired
-      if (token.expires_at && Date.now() / 1000 >= token.expires_at - 60) {
-        token = await refreshAccessToken(token)
-      }
+        // Check if token needs refresh
+        const currentTime = Date.now() / 1000;
+        const shouldRefresh = token.expires_at && currentTime >= (token.expires_at - 60); // 60 seconds buffer
+        
+        logger.debug('Token expiration check', {
+          currentTime: new Date(currentTime * 1000).toISOString(),
+          expiresAt: token.expires_at ? new Date(token.expires_at * 1000).toISOString() : 'unknown',
+          timeUntilExpiry: token.expires_at ? token.expires_at - currentTime : 'unknown',
+          shouldRefresh
+        });
 
-      return token
+        // Refresh token if expired
+        if (shouldRefresh) {
+          logger.info('Token is expiring soon, attempting refresh');
+          token = await refreshAccessToken(token);
+        }
+
+        const callbackDuration = Date.now() - callbackStartTime;
+        logger.info(`JWT callback completed in ${callbackDuration}ms`, {
+          hasError: !!token.error,
+          tokenError: token.error
+        });
+
+        return token;
+      } catch (error) {
+        const callbackDuration = Date.now() - callbackStartTime;
+        logger.error(`JWT callback failed after ${callbackDuration}ms`, error);
+        return { ...token, error: 'JWTCallbackError' };
+      }
     },
+    
     async session({ session, token }) {
-      
-      if (token.sub) {
-        session.user.id = token.sub
-      }
-      
-      if (token.organizations) {
-        session.user.organizations = token.organizations
-      }
-      
-      if (token.roles) {
-        session.user.roles = token.roles
-      }
-      
-      if (token.access_token) {
-        session.access_token = token.access_token
-      }
+      const sessionStartTime = Date.now();
+      logger.debug('Session callback triggered', {
+        hasToken: !!token,
+        tokenSub: token.sub,
+        tokenError: token.error
+      });
 
-      if (token.refresh_token) {
-        session.refresh_token = token.refresh_token
+      try {
+        if (token.sub) {
+          session.user.id = token.sub;
+        }
+        
+        if (token.organizations) {
+          session.user.organizations = token.organizations;
+        }
+        
+        if (token.roles) {
+          session.user.roles = token.roles;
+        }
+        
+        if (token.access_token) {
+          session.access_token = token.access_token;
+        }
+
+        if (token.refresh_token) {
+          session.refresh_token = token.refresh_token;
+        }
+
+        const sessionDuration = Date.now() - sessionStartTime;
+        logger.debug(`Session callback completed in ${sessionDuration}ms`, {
+          userId: session.user.id,
+          organizationsCount: session.user.organizations?.length || 0,
+          rolesCount: session.user.roles?.length || 0,
+          hasAccessToken: !!session.access_token
+        });
+        
+        return session;
+      } catch (error) {
+        const sessionDuration = Date.now() - sessionStartTime;
+        logger.error(`Session callback failed after ${sessionDuration}ms`, error);
+        return session;
       }
-      
-      return session
     },
+    
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      const isProtected = nextUrl.pathname.startsWith('/dashboard') || 
-                         nextUrl.pathname.startsWith('/areas') ||
-                         nextUrl.pathname.startsWith('/calls') ||
-                         nextUrl.pathname.startsWith('/parties') ||
-                         nextUrl.pathname.startsWith('/user-management') ||
-                         nextUrl.pathname.startsWith('/cities') ||
-                         nextUrl.pathname.startsWith('/districts') ||
-                         nextUrl.pathname.startsWith('/states') ||
-                         nextUrl.pathname.startsWith('/products') ||
-                         nextUrl.pathname.startsWith('/sources') ||
-                         nextUrl.pathname.startsWith('/priorities') ||
-                         nextUrl.pathname.startsWith('/call-types') ||
-                         nextUrl.pathname.startsWith('/sub-call-types') ||
-                         nextUrl.pathname.startsWith('/call-categories') ||
-                         nextUrl.pathname.startsWith('/call-statuses') ||
-                         nextUrl.pathname.startsWith('/call-remarks') ||
-                         nextUrl.pathname.startsWith('/channel-types') ||
-                         nextUrl.pathname.startsWith('/organizations')
+      const isLoggedIn = !!auth?.user;
+      const pathname = nextUrl.pathname;
       
-      const isOrganizationSetup = nextUrl.pathname.startsWith('/organization-setup')
+      logger.debug('Authorization check', {
+        pathname,
+        isLoggedIn,
+        userId: auth?.user?.id,
+        userRoles: auth?.user?.roles
+      });
+
+      const isProtected = pathname.startsWith('/dashboard') || 
+                         pathname.startsWith('/areas') ||
+                         pathname.startsWith('/calls') ||
+                         pathname.startsWith('/parties') ||
+                         pathname.startsWith('/user-management') ||
+                         pathname.startsWith('/cities') ||
+                         pathname.startsWith('/districts') ||
+                         pathname.startsWith('/states') ||
+                         pathname.startsWith('/products') ||
+                         pathname.startsWith('/sources') ||
+                         pathname.startsWith('/priorities') ||
+                         pathname.startsWith('/call-types') ||
+                         pathname.startsWith('/sub-call-types') ||
+                         pathname.startsWith('/call-categories') ||
+                         pathname.startsWith('/call-statuses') ||
+                         pathname.startsWith('/call-remarks') ||
+                         pathname.startsWith('/channel-types') ||
+                         pathname.startsWith('/organizations');
+      
+      const isOrganizationSetup = pathname.startsWith('/organization-setup');
       
       if (isProtected) {
-        if (isLoggedIn) return true
-        return false
+        if (isLoggedIn) {
+          logger.debug('Access granted to protected route', { pathname, userId: auth.user.id });
+          return true;
+        }
+        logger.info('Access denied to protected route - not logged in', { pathname });
+        return false;
       } else if (isOrganizationSetup) {
         // Allow access to organization setup if logged in
-        if (isLoggedIn) return true
-        return false
-      } else if (isLoggedIn && nextUrl.pathname === '/') {
-        return Response.redirect(new URL('/dashboard', nextUrl))
+        if (isLoggedIn) {
+          logger.debug('Access granted to organization setup', { pathname, userId: auth.user.id });
+          return true;
+        }
+        logger.info('Access denied to organization setup - not logged in', { pathname });
+        return false;
+      } else if (isLoggedIn && pathname === '/') {
+        logger.info('Redirecting logged in user from root to dashboard', { userId: auth.user.id });
+        return Response.redirect(new URL('/dashboard', nextUrl));
       }
       
-      return true
+      logger.debug('Access granted to public route', { pathname });
+      return true;
     },
   },
   events: {
     async signOut({ token }) {
+      logger.info('Sign out event triggered', { 
+        userSub: token?.sub,
+        hasIdToken: !!token?.id_token 
+      });
+
       // Clear roles from roles manager on signout
       if (token?.sub) {
-        rolesManager.clearUserRoles(token.sub)
+        rolesManager.clearUserRoles(token.sub);
+        logger.info('Cleared user roles from roles manager', { userSub: token.sub });
       }
       
       if (token?.id_token) {
         try {
-          const keycloakIssuer = process.env.AUTH_KEYCLOAK_ISSUER
-          const authUrl = process.env.AUTH_URL
+          const keycloakIssuer = process.env.AUTH_KEYCLOAK_ISSUER;
+          const authUrl = process.env.AUTH_URL;
           
           if (!keycloakIssuer || !authUrl) {
-            console.warn('Missing KEYCLOAK_ISSUER or AUTH_URL for logout')
-            return
+            logger.warn('Missing KEYCLOAK_ISSUER or AUTH_URL for logout', {
+              hasKeycloakIssuer: !!keycloakIssuer,
+              hasAuthUrl: !!authUrl
+            });
+            return;
           }
           
-          const logoutUrl = new URL(`${keycloakIssuer}/protocol/openid-connect/logout`)
-          logoutUrl.searchParams.set('id_token_hint', token.id_token as string)
-          logoutUrl.searchParams.set('post_logout_redirect_uri', authUrl)
+          const logoutUrl = new URL(`${keycloakIssuer}/protocol/openid-connect/logout`);
+          logoutUrl.searchParams.set('id_token_hint', token.id_token as string);
+          logoutUrl.searchParams.set('post_logout_redirect_uri', authUrl);
+          
+          logger.info('Attempting Keycloak logout', { 
+            logoutUrl: logoutUrl.toString(),
+            postLogoutRedirectUri: authUrl
+          });
           
           const response = await fetch(logoutUrl.toString(), {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
+              'User-Agent': 'NextAuth-CRM-Frontend'
             },
-          })
+          });
           
           if (!response.ok) {
-            console.warn(`Keycloak logout warning: ${response.status} ${response.statusText}`)
+            logger.warn(`Keycloak logout warning: ${response.status} ${response.statusText}`, {
+              status: response.status,
+              statusText: response.statusText
+            });
+          } else {
+            logger.info('Keycloak logout successful');
           }
         } catch (error) {
-          console.error('Keycloak logout error:', error)
+          logger.error('Keycloak logout error', error);
         }
       }
     },
+    async signIn({ user, account, profile }) {
+      logger.info('Sign in event triggered', {
+        userId: user?.id,
+        userEmail: user?.email,
+        accountProvider: account?.provider,
+        accountType: account?.type,
+        hasProfile: !!profile
+      });
+      return true;
+    }
   },
+  pages: {
+    error: '/auth/error',
+  },
+  debug: process.env.AUTH_DEBUG === 'true',
   trustHost: true,
-})
+  // Additional configuration for better error handling
+  logger: {
+    error(code, metadata) {
+      logger.error(`NextAuth Error [${code}]`, metadata);
+    },
+    warn(code) {
+      logger.warn(`NextAuth Warning [${code}]`);
+    },
+    debug(code, metadata) {
+      logger.debug(`NextAuth Debug [${code}]`, metadata);
+    },
+  },
+});
