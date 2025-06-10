@@ -56,29 +56,6 @@ const logger = {
   }
 };
 
-// Add code reuse prevention tracking
-const processedCodes = new Set<string>();
-const codeProcessingAttempts = new Map<string, number>();
-
-function isCodeAlreadyProcessed(code: string): boolean {
-  return processedCodes.has(code);
-}
-
-function markCodeAsProcessed(code: string): void {
-  processedCodes.add(code);
-  // Clean up old codes after 10 minutes
-  setTimeout(() => {
-    processedCodes.delete(code);
-    codeProcessingAttempts.delete(code);
-  }, 10 * 60 * 1000);
-}
-
-function incrementCodeAttempt(code: string): number {
-  const attempts = (codeProcessingAttempts.get(code) || 0) + 1;
-  codeProcessingAttempts.set(code, attempts);
-  return attempts;
-}
-
 function parseOrganizations(accessToken: string): Array<{ name: string; id: string }> {
   try {
     logger.debug('Parsing organizations from access token');
@@ -251,16 +228,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientId: process.env.AUTH_KEYCLOAK_ID!,
       clientSecret: process.env.AUTH_KEYCLOAK_SECRET!,
       issuer: process.env.AUTH_KEYCLOAK_ISSUER!,
-      // Enhanced PKCE and security configuration
+      // Add PKCE configuration explicitly
       checks: ["pkce", "state"],
+      // Ensure proper redirect URI handling
       allowDangerousEmailAccountLinking: false,
-      // Add authorization URL parameters to prevent caching
-      authorization: {
-        params: {
-          prompt: "select_account",
-          max_age: "0", // Force fresh authentication
-        }
-      }
     }),
   ],
   session: {
@@ -270,9 +241,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, account, user, trigger }) {
       const callbackStartTime = Date.now();
-      const callbackId = Math.random().toString(36).substring(7);
-      
-      logger.info(`JWT callback triggered [${callbackId}]`, { 
+      logger.info('JWT callback triggered', { 
         trigger,
         hasAccount: !!account,
         hasUser: !!user,
@@ -283,44 +252,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       try {
         if (account?.provider === "keycloak") {
-          // Enhanced code reuse prevention
-          const authCode = account.access_token?.substring(0, 10) || 'unknown';
-          const attempts = incrementCodeAttempt(authCode);
-          
-          logger.info(`Processing Keycloak login [${callbackId}]`, {
+          logger.info('Processing Keycloak login', {
             accountType: account.type,
             providerAccountId: account.providerAccountId,
             hasAccessToken: !!account.access_token,
             hasRefreshToken: !!account.refresh_token,
             hasIdToken: !!account.id_token,
             expiresIn: account.expires_in,
-            scope: account.scope,
-            codeAttempts: attempts,
-            authCodePrefix: authCode
+            scope: account.scope
           });
-
-          // Check for code reuse
-          if (isCodeAlreadyProcessed(authCode)) {
-            logger.error(`CODE REUSE DETECTED [${callbackId}]`, {
-              authCodePrefix: authCode,
-              attempts,
-              message: 'This authorization code has already been processed'
-            });
-            return { ...token, error: 'CodeAlreadyUsed' };
-          }
-
-          // Check for too many attempts
-          if (attempts > 2) {
-            logger.error(`TOO MANY CODE ATTEMPTS [${callbackId}]`, {
-              authCodePrefix: authCode,
-              attempts,
-              message: 'Too many attempts with this authorization code'
-            });
-            return { ...token, error: 'TooManyAttempts' };
-          }
-
-          // Mark code as processed
-          markCodeAsProcessed(authCode);
 
           // Handle login with Keycloak
           token.id_token = account.id_token;
@@ -328,14 +268,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.refresh_token = account.refresh_token;
           token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
 
-          logger.debug(`Token expiration set [${callbackId}]`, {
+          logger.debug('Token expiration set', {
             expiresIn: account.expires_in,
             expiresAt: token.expires_at,
             expiresAtISO: new Date(token.expires_at * 1000).toISOString()
           });
 
           if (account.access_token && token.sub) {
-            logger.debug(`Processing user data from access token [${callbackId}]`, { userSub: token.sub });
+            logger.debug('Processing user data from access token', { userSub: token.sub });
             
             token.organizations = parseOrganizations(account.access_token);
             
@@ -344,7 +284,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.roles = roles;
             rolesManager.setUserRoles(token.sub, roles);
             
-            logger.info(`User roles set in roles manager [${callbackId}]`, { 
+            logger.info('User roles set in roles manager', { 
               userSub: token.sub,
               rolesCount: roles.length 
             });
@@ -355,7 +295,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const currentTime = Date.now() / 1000;
         const shouldRefresh = token.expires_at && currentTime >= (token.expires_at - 60); // 60 seconds buffer
         
-        logger.debug(`Token expiration check [${callbackId}]`, {
+        logger.debug('Token expiration check', {
           currentTime: new Date(currentTime * 1000).toISOString(),
           expiresAt: token.expires_at ? new Date(token.expires_at * 1000).toISOString() : 'unknown',
           timeUntilExpiry: token.expires_at ? token.expires_at - currentTime : 'unknown',
@@ -364,12 +304,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Refresh token if expired
         if (shouldRefresh) {
-          logger.info(`Token is expiring soon, attempting refresh [${callbackId}]`);
+          logger.info('Token is expiring soon, attempting refresh');
           token = await refreshAccessToken(token);
         }
 
         const callbackDuration = Date.now() - callbackStartTime;
-        logger.info(`JWT callback completed in ${callbackDuration}ms [${callbackId}]`, {
+        logger.info(`JWT callback completed in ${callbackDuration}ms`, {
           hasError: !!token.error,
           tokenError: token.error
         });
@@ -377,7 +317,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token;
       } catch (error) {
         const callbackDuration = Date.now() - callbackStartTime;
-        logger.error(`JWT callback failed after ${callbackDuration}ms [${callbackId}]`, error);
+        logger.error(`JWT callback failed after ${callbackDuration}ms`, error);
         return { ...token, error: 'JWTCallbackError' };
       }
     },
