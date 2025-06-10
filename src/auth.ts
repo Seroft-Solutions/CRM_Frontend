@@ -24,6 +24,9 @@ declare module "next-auth" {
     error?: string
     organizations?: Array<{ name: string; id: string }>
     roles?: string[]
+    // Add session size tracking and server-side storage
+    sessionSize?: number
+    sessionId?: string
   }
 }
 
@@ -59,6 +62,87 @@ const logger = {
 // Add code reuse prevention tracking
 const processedCodes = new Set<string>();
 const codeProcessingAttempts = new Map<string, number>();
+
+// Server-side session storage for large data (global to persist across requests)
+const serverSideSessionData = globalThis.serverSideSessionData || new Map<string, {
+  roles: string[];
+  organizations: Array<{ name: string; id: string }>;
+  accessToken: string;
+  refreshToken: string;
+  lastUpdated: number;
+}>();
+
+// Ensure global persistence
+if (typeof globalThis !== 'undefined') {
+  globalThis.serverSideSessionData = serverSideSessionData;
+}
+
+// Clean up old server-side sessions (every 30 minutes)
+if (typeof globalThis !== 'undefined' && !globalThis.sessionCleanupInterval) {
+  globalThis.sessionCleanupInterval = setInterval(() => {
+    const now = Date.now();
+    const thirtyMinutes = 30 * 60 * 1000;
+    
+    for (const [sessionId, data] of serverSideSessionData.entries()) {
+      if (now - data.lastUpdated > thirtyMinutes) {
+        serverSideSessionData.delete(sessionId);
+        logger.debug('Cleaned up expired server-side session', { sessionId });
+      }
+    }
+  }, 30 * 60 * 1000);
+}
+
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+function storeServerSideData(sessionId: string, data: {
+  roles: string[];
+  organizations: Array<{ name: string; id: string }>;
+  accessToken: string;
+  refreshToken: string;
+}) {
+  serverSideSessionData.set(sessionId, {
+    ...data,
+    lastUpdated: Date.now()
+  });
+  
+  logger.info('Stored server-side session data', {
+    sessionId,
+    rolesCount: data.roles.length,
+    organizationsCount: data.organizations.length,
+    hasAccessToken: !!data.accessToken,
+    hasRefreshToken: !!data.refreshToken,
+    totalStoredSessions: serverSideSessionData.size
+  });
+  
+  // Verify storage immediately
+  const verified = serverSideSessionData.get(sessionId);
+  if (verified) {
+    logger.debug('Session storage verified successfully', { sessionId });
+  } else {
+    logger.error('Session storage verification failed', { sessionId });
+  }
+}
+
+function getServerSideData(sessionId: string) {
+  const data = serverSideSessionData.get(sessionId);
+  if (data) {
+    data.lastUpdated = Date.now(); // Update access time
+    logger.debug('Retrieved server-side session data', {
+      sessionId,
+      rolesCount: data.roles.length,
+      organizationsCount: data.organizations.length
+    });
+  } else {
+    logger.warn('Server-side session data not found', { 
+      sessionId,
+      availableSessions: Array.from(serverSideSessionData.keys()),
+      totalSessions: serverSideSessionData.size
+    });
+  }
+  return data;
+}
 
 function isCodeAlreadyProcessed(code: string): boolean {
   return processedCodes.has(code);
@@ -124,7 +208,7 @@ function parseRoles(accessToken: string): string[] {
     logger.debug('Decoded token payload for roles', {
       hasRealmAccess: !!decoded.realm_access,
       hasResourceAccess: !!decoded.resource_access,
-      realmRoles: decoded.realm_access?.roles || [],
+      realmRolesCount: decoded.realm_access?.roles?.length || 0,
       resourceAccessKeys: decoded.resource_access ? Object.keys(decoded.resource_access) : []
     });
     
@@ -147,7 +231,19 @@ function parseRoles(accessToken: string): string[] {
     }
     
     const uniqueRoles = [...new Set(roles)] // Remove duplicates
-    logger.info(`Successfully parsed ${uniqueRoles.length} unique roles`, { roles: uniqueRoles });
+    logger.info(`Successfully parsed ${uniqueRoles.length} unique roles`);
+    
+    // Don't log all roles in production due to size, just count and sample
+    if (process.env.AUTH_DEBUG === 'true' && uniqueRoles.length <= 10) {
+      logger.debug('Parsed roles sample', { roles: uniqueRoles });
+    } else if (uniqueRoles.length > 10) {
+      logger.debug('Large role set detected', { 
+        totalRoles: uniqueRoles.length, 
+        sampleRoles: uniqueRoles.slice(0, 5),
+        estimatedSize: `${JSON.stringify(uniqueRoles).length} bytes`
+      });
+    }
+    
     return uniqueRoles
   } catch (error) {
     logger.error('Failed to parse roles from token', error)
@@ -198,8 +294,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     const responseTime = Date.now() - refreshStartTime;
     logger.info(`Token refresh response received in ${responseTime}ms`, { 
       status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
+      statusText: response.statusText
     });
 
     if (!response.ok) {
@@ -322,33 +417,94 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Mark code as processed
           markCodeAsProcessed(authCode);
 
-          // Handle login with Keycloak
-          token.id_token = account.id_token;
-          token.access_token = account.access_token;
-          token.refresh_token = account.refresh_token;
-          token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
+          // Parse roles and organizations
+          const organizations = parseOrganizations(account.access_token);
+          const roles = parseRoles(account.access_token);
+
+          // Calculate session size before storing
+          const sessionData = {
+            id: token.sub || user?.id || '',
+            organizations,
+            roles,
+            access_token: account.access_token,
+            refresh_token: account.refresh_token
+          };
+          
+          const estimatedSize = JSON.stringify(sessionData).length;
+          logger.info(`Session data size estimate [${callbackId}]`, {
+            estimatedBytes: estimatedSize,
+            rolesCount: roles.length,
+            organizationsCount: organizations.length,
+            willExceedLimit: estimatedSize > 3000 // Conservative limit
+          });
+
+          // Use server-side storage for large sessions
+          if (estimatedSize > 3000 || roles.length > 20) {
+            logger.warn(`Large session detected, using server-side storage [${callbackId}]`, {
+              estimatedBytes: estimatedSize,
+              rolesCount: roles.length
+            });
+
+            // Generate session ID and store data server-side
+            const sessionId = generateSessionId();
+            storeServerSideData(sessionId, {
+              roles,
+              organizations,
+              accessToken: account.access_token,
+              refreshToken: account.refresh_token
+            });
+
+            // Store minimal data in JWT
+            token.id_token = account.id_token;
+            token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
+            token.sessionId = sessionId; // Reference to server-side data
+            token.sessionSize = estimatedSize;
+            
+            // Also store access_token and refresh_token for token refresh
+            token.access_token = account.access_token;
+            token.refresh_token = account.refresh_token;
+            
+            // Store critical role information as backup (first 10 roles to fit in token)
+            token.roles = roles.slice(0, 10);
+            token.organizations = organizations;
+            
+            // Store roles in roles manager
+            if (token.sub) {
+              rolesManager.setUserRoles(token.sub, roles);
+              logger.info(`User roles set in roles manager [${callbackId}]`, { 
+                userSub: token.sub,
+                rolesCount: roles.length 
+              });
+            }
+          } else {
+            logger.info(`Normal session size, using JWT storage [${callbackId}]`, {
+              estimatedBytes: estimatedSize,
+              rolesCount: roles.length
+            });
+
+            // Store data normally in JWT
+            token.id_token = account.id_token;
+            token.access_token = account.access_token;
+            token.refresh_token = account.refresh_token;
+            token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
+            token.organizations = organizations;
+            token.roles = roles;
+            token.sessionSize = estimatedSize;
+
+            if (token.sub) {
+              rolesManager.setUserRoles(token.sub, roles);
+              logger.info(`User roles set in roles manager [${callbackId}]`, { 
+                userSub: token.sub,
+                rolesCount: roles.length 
+              });
+            }
+          }
 
           logger.debug(`Token expiration set [${callbackId}]`, {
             expiresIn: account.expires_in,
             expiresAt: token.expires_at,
             expiresAtISO: new Date(token.expires_at * 1000).toISOString()
           });
-
-          if (account.access_token && token.sub) {
-            logger.debug(`Processing user data from access token [${callbackId}]`, { userSub: token.sub });
-            
-            token.organizations = parseOrganizations(account.access_token);
-            
-            // Store roles in JWT token for client access
-            const roles = parseRoles(account.access_token);
-            token.roles = roles;
-            rolesManager.setUserRoles(token.sub, roles);
-            
-            logger.info(`User roles set in roles manager [${callbackId}]`, { 
-              userSub: token.sub,
-              rolesCount: roles.length 
-            });
-          }
         }
 
         // Check if token needs refresh
@@ -371,7 +527,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const callbackDuration = Date.now() - callbackStartTime;
         logger.info(`JWT callback completed in ${callbackDuration}ms [${callbackId}]`, {
           hasError: !!token.error,
-          tokenError: token.error
+          tokenError: token.error,
+          sessionSize: token.sessionSize,
+          usingServerSideStorage: !!token.sessionId
         });
 
         return token;
@@ -387,7 +545,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       logger.debug('Session callback triggered', {
         hasToken: !!token,
         tokenSub: token.sub,
-        tokenError: token.error
+        tokenError: token.error,
+        usingServerSideStorage: !!token.sessionId,
+        sessionSize: token.sessionSize
       });
 
       try {
@@ -395,20 +555,61 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.id = token.sub;
         }
         
-        if (token.organizations) {
-          session.user.organizations = token.organizations;
-        }
-        
-        if (token.roles) {
-          session.user.roles = token.roles;
-        }
-        
-        if (token.access_token) {
-          session.access_token = token.access_token;
-        }
+        // Get data from server-side storage if using it
+        if (token.sessionId) {
+          const serverData = getServerSideData(token.sessionId as string);
+          if (serverData) {
+            session.user.organizations = serverData.organizations;
+            session.user.roles = serverData.roles;
+            session.access_token = serverData.accessToken;
+            session.refresh_token = serverData.refreshToken;
+            logger.debug('Loaded session data from server-side storage', {
+              sessionId: token.sessionId,
+              rolesCount: serverData.roles.length,
+              organizationsCount: serverData.organizations.length
+            });
+          } else {
+            logger.error('Server-side session data not found - falling back to JWT data', { 
+              sessionId: token.sessionId,
+              hasJwtRoles: !!token.roles,
+              hasJwtOrganizations: !!token.organizations,
+              hasJwtAccessToken: !!token.access_token
+            });
+            // Fallback to JWT data if available
+            if (token.organizations) {
+              session.user.organizations = token.organizations;
+            }
+            if (token.roles) {
+              session.user.roles = token.roles;
+              logger.warn('Using fallback roles from JWT', { 
+                rolesCount: token.roles.length,
+                isPartialRoles: token.roles.length === 10 // Indicates truncated roles
+              });
+            }
+            if (token.access_token) {
+              session.access_token = token.access_token;
+            }
+            if (token.refresh_token) {
+              session.refresh_token = token.refresh_token;
+            }
+          }
+        } else {
+          // Get data from JWT normally
+          if (token.organizations) {
+            session.user.organizations = token.organizations;
+          }
+          
+          if (token.roles) {
+            session.user.roles = token.roles;
+          }
+          
+          if (token.access_token) {
+            session.access_token = token.access_token;
+          }
 
-        if (token.refresh_token) {
-          session.refresh_token = token.refresh_token;
+          if (token.refresh_token) {
+            session.refresh_token = token.refresh_token;
+          }
         }
 
         const sessionDuration = Date.now() - sessionStartTime;
@@ -416,7 +617,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userId: session.user.id,
           organizationsCount: session.user.organizations?.length || 0,
           rolesCount: session.user.roles?.length || 0,
-          hasAccessToken: !!session.access_token
+          hasAccessToken: !!session.access_token,
+          sessionSize: token.sessionSize
         });
         
         return session;
@@ -435,7 +637,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         pathname,
         isLoggedIn,
         userId: auth?.user?.id,
-        userRoles: auth?.user?.roles
+        userRolesCount: auth?.user?.roles?.length || 0
       });
 
       const isProtected = pathname.startsWith('/dashboard') || 
@@ -487,8 +689,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signOut({ token }) {
       logger.info('Sign out event triggered', { 
         userSub: token?.sub,
-        hasIdToken: !!token?.id_token 
+        hasIdToken: !!token?.id_token,
+        sessionId: token?.sessionId
       });
+
+      // Clear server-side session data
+      if (token?.sessionId) {
+        serverSideSessionData.delete(token.sessionId as string);
+        logger.info('Cleared server-side session data', { sessionId: token.sessionId });
+      }
 
       // Clear roles from roles manager on signout
       if (token?.sub) {
