@@ -198,9 +198,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
-  pages: {
-    error: '/auth/error'
-  },
   callbacks: {
     async jwt({ token, account, user, profile }) {
       console.log('🎫 AUTH JWT CALLBACK: Processing JWT callback', { 
@@ -282,12 +279,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         roleCount: token.roles?.length || 0
       })
 
-      console.log('⏳ AUTH JWT: About to return token, triggering session callback...')
       return token
     },
     async session({ session, token }) {
       console.log('🚨 AUTH SESSION: ENTRY POINT - Session callback called!')
-      return session
+      console.log('🚨 AUTH SESSION: Basic validation', { 
+        sessionExists: !!session,
+        sessionUserExists: !!session?.user,
+        tokenExists: !!token,
+        tokenSub: token?.sub
+      })
+      
+      try {
+        // Ensure session.user exists
+        if (!session?.user) {
+          console.error('❌ AUTH SESSION: No session.user found, creating minimal user')
+          session = {
+            user: { id: token?.sub || 'unknown' },
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          }
+        }
+
+        // Ensure user ID
+        if (token?.sub) {
+          session.user.id = token.sub
+        }
+
+        console.log('✅ AUTH SESSION: Returning session', { userId: session.user.id })
+        return session
+        
+      } catch (error) {
+        console.error('❌ AUTH SESSION: Critical error:', error)
+        return {
+          user: { id: 'error' },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        }
+      }
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
