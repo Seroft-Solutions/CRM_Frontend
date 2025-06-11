@@ -22,10 +22,6 @@ const prioritySchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
 })
 
 export type PriorityFormData = z.infer<typeof prioritySchema>
@@ -59,10 +55,6 @@ export async function createPriority(
       
       
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       
@@ -136,10 +128,6 @@ export async function updatePriority(
       
       
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       

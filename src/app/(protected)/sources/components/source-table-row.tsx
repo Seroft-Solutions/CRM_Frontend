@@ -65,12 +65,6 @@ export function SourceTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {source.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {source.remark}
         
       </TableCell>

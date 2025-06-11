@@ -57,12 +57,6 @@ export function CallTableRow({
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {call.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
 
       
       <TableCell className="whitespace-nowrap px-1 py-2">
@@ -132,22 +126,6 @@ export function CallTableRow({
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
           entityId={call.id || 0}
-          relationshipName="area"
-          currentValue={call.area}
-          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
-          displayField="name"
-          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
-          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
-          isLoading={isUpdating}
-          className="min-w-[150px]"
-          relatedEntityRoute="areas"
-          showNavigationIcon={true}
-        />
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-1 py-2">
-        <RelationshipCell
-          entityId={call.id || 0}
           relationshipName="channelType"
           currentValue={call.channelType}
           options={relationshipConfigs.find(config => config.name === "channelType")?.options || []}
@@ -189,6 +167,70 @@ export function CallTableRow({
           isLoading={isUpdating}
           className="min-w-[150px]"
           relatedEntityRoute="call-statuses"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="state"
+          currentValue={call.state}
+          options={relationshipConfigs.find(config => config.name === "state")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="states"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="district"
+          currentValue={call.district}
+          options={relationshipConfigs.find(config => config.name === "district")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="districts"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="city"
+          currentValue={call.city}
+          options={relationshipConfigs.find(config => config.name === "city")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "city")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="cities"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={call.id || 0}
+          relationshipName="area"
+          currentValue={call.area}
+          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="areas"
           showNavigationIcon={true}
         />
       </TableCell>

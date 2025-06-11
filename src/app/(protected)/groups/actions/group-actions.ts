@@ -26,10 +26,6 @@ const groupSchema = z.object({
   
   
   
-  createdDate: z.string().datetime().optional(),
-  
-  
-  
   
   
 })
@@ -69,10 +65,6 @@ export async function createGroup(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       
@@ -152,10 +144,6 @@ export async function updateGroup(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       

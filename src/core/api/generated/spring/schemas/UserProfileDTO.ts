@@ -8,6 +8,7 @@
 import type { OrganizationDTO } from './OrganizationDTO';
 import type { GroupDTO } from './GroupDTO';
 import type { RoleDTO } from './RoleDTO';
+import type { ChannelTypeDTO } from './ChannelTypeDTO';
 
 /**
  * Represents a user synced from Keycloak.
@@ -30,9 +31,8 @@ export interface UserProfileDTO {
    * @maxLength 50
    */
   lastName?: string;
-  isActive: boolean;
-  createdDate?: string;
   organizations?: OrganizationDTO[];
   groups?: GroupDTO[];
   roles?: RoleDTO[];
+  channelType?: ChannelTypeDTO;
 }

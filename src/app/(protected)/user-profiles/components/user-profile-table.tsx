@@ -42,6 +42,15 @@ import {
 
 
 
+// Relationship data imports
+
+
+
+import {
+  useGetAllChannelTypes
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+
+
 
 import { UserProfileSearchAndFilters } from "./user-profile-search-filters";
 import { UserProfileTableHeader } from "./user-profile-table-header";
@@ -79,6 +88,14 @@ export function UserProfileTable() {
   const pageSize = 10;
 
   
+  // Fetch relationship data for dropdowns
+  
+  const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
@@ -91,16 +108,31 @@ export function UserProfileTable() {
     const params: Record<string, any> = {};
     
     
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      
+      'channelType.name': { 
+        apiParam: 'channelTypeId.equals', 
+        options: channeltypeOptions, 
+        displayField: 'name' 
+      },
+      
+    };
+    
     
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
         
-        
-        // Handle isActive filter
-        if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
         }
+        
         
         // Handle other direct filters
         else if (Array.isArray(value) && value.length > 0) {
@@ -114,13 +146,6 @@ export function UserProfileTable() {
     });
 
     // Add date range filters
-    
-    if (dateRange.from) {
-      params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
     
 
     return params;
@@ -308,6 +333,14 @@ export function UserProfileTable() {
   // Prepare relationship configurations for components
   const relationshipConfigs = [
     
+    {
+      name: "channelType",
+      displayName: "ChannelType",
+      options: channeltypeOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
   ];
 
   // Check if any filters are active
@@ -376,7 +409,7 @@ export function UserProfileTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={6}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -399,7 +432,7 @@ export function UserProfileTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={6}
                   className="h-24 text-center"
                 >
                   No user profiles found

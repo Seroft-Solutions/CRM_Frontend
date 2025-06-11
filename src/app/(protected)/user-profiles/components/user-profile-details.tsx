@@ -132,24 +132,32 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
                   </dd>
                 </div>
                 
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        
+        {/* Relationships */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Related Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created Date</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
                   <dd className="text-sm font-medium">
                     
-                    <span className="text-foreground">
-                      {entity.createdDate ? format(new Date(entity.createdDate), "PPP") : "—"}
-                    </span>
+                    {entity.channelType ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.channelType as any).name || entity.channelType.id}
+                      </Badge>
+                    ) : "—"}
                     
                   </dd>
                 </div>
@@ -158,7 +166,6 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
             </CardContent>
           </Card>
         </div>
-
         
       </div>
 

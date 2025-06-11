@@ -65,12 +65,6 @@ export function CallStatusTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {callStatus.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {callStatus.remark}
         
       </TableCell>

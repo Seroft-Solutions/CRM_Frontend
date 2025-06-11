@@ -23,5 +23,4 @@ export interface GroupDTO {
    * @maxLength 255
    */
   description?: string;
-  createdDate?: string;
 }

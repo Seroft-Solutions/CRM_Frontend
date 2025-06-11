@@ -28,7 +28,5 @@ export interface OrganizationDTO {
    * @maxLength 100
    */
   domain?: string;
-  isActive: boolean;
-  createdDate?: string;
   userProfiles?: UserProfileDTO[];
 }

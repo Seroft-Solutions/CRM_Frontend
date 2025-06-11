@@ -26,14 +26,6 @@ const organizationSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
-  createdDate: z.string().datetime().optional(),
-  
-  
-  
 })
 
 export type OrganizationFormData = z.infer<typeof organizationSchema>
@@ -71,14 +63,6 @@ export async function createOrganization(
       
       
       domain: formData.get('domain') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       
@@ -156,14 +140,6 @@ export async function updateOrganization(
       
       
       domain: formData.get('domain') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       

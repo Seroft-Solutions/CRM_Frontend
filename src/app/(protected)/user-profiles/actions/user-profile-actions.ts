@@ -26,11 +26,6 @@ const userprofileSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
-  createdDate: z.string().datetime().optional(),
   
   
   
@@ -38,6 +33,7 @@ const userprofileSchema = z.object({
   
   
   
+  channelTypeId: z.number().optional(),
   
   
 })
@@ -80,11 +76,6 @@ export async function createUserProfile(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       
@@ -92,6 +83,7 @@ export async function createUserProfile(
       
       
       
+      channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
       
       
     }
@@ -171,11 +163,6 @@ export async function updateUserProfile(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
-      createdDate: formData.get('createdDate') || undefined,
       
       
       
@@ -183,6 +170,7 @@ export async function updateUserProfile(
       
       
       
+      channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
       
       
     }

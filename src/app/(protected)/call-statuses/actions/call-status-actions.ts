@@ -18,10 +18,6 @@ const callstatusSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
   
   
@@ -55,10 +51,6 @@ export async function createCallStatus(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       
@@ -132,10 +124,6 @@ export async function updateCallStatus(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       

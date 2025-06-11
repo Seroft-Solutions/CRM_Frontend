@@ -107,19 +107,6 @@ export function ChannelTypeTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("isActive")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Is Active
-            <div className="text-gray-400">
-              {renderSortIcon("isActive")}
-            </div>
-          </Button>
-        </TableHead>
-        
         
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
@@ -165,24 +152,6 @@ export function ChannelTypeTableHeader({
             value={filters["commissionRate"] as string || ""}
             onChange={(e) => onFilterChange("commissionRate", e.target.value || undefined)}
           />
-          
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Select
-            value={filters["isActive"] as string || "__all__"}
-            onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
-          >
-            <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All</SelectItem>
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
           
         </TableHead>
         

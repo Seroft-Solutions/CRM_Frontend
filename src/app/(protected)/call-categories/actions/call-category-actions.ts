@@ -18,15 +18,7 @@ const callcategorySchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
-  
-  
-  
-  lastModifiedDate: z.string().datetime().optional(),
   
   
   
@@ -62,15 +54,7 @@ export async function createCallCategory(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       
@@ -143,15 +127,7 @@ export async function updateCallCategory(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       remark: formData.get('remark') || undefined,
-      
-      
-      
-      lastModifiedDate: formData.get('lastModifiedDate') || undefined,
       
       
       

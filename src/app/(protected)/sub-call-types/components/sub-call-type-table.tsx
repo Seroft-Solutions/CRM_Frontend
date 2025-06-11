@@ -134,11 +134,6 @@ export function SubCallTypeTable() {
         }
         
         
-        // Handle isActive filter
-        else if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
-        
         // Handle other direct filters
         else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
@@ -414,7 +409,7 @@ export function SubCallTypeTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -437,7 +432,7 @@ export function SubCallTypeTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   No sub call types found

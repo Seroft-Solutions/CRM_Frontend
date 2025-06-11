@@ -22,10 +22,6 @@ const channeltypeSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
 })
 
 export type ChannelTypeFormData = z.infer<typeof channeltypeSchema>
@@ -59,10 +55,6 @@ export async function createChannelType(
       
       
       commissionRate: formData.get('commissionRate') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       
@@ -136,10 +128,6 @@ export async function updateChannelType(
       
       
       commissionRate: formData.get('commissionRate') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       

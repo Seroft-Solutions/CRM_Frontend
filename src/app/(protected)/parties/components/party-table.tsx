@@ -47,14 +47,6 @@ import {
 
 
 import {
-  useGetAllSources
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
-
-import {
-  useGetAllAreas
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-
-import {
   useGetAllStates
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
 
@@ -65,6 +57,10 @@ import {
 import {
   useGetAllCities
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+
+import {
+  useGetAllAreas
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 
 
 
@@ -106,16 +102,6 @@ export function PartyTable() {
   
   // Fetch relationship data for dropdowns
   
-  const { data: sourceOptions = [] } = useGetAllSources(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
-  const { data: areaOptions = [] } = useGetAllAreas(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
   const { data: stateOptions = [] } = useGetAllStates(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -127,6 +113,11 @@ export function PartyTable() {
   );
   
   const { data: cityOptions = [] } = useGetAllCities(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: areaOptions = [] } = useGetAllAreas(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -147,18 +138,6 @@ export function PartyTable() {
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
       
-      'source.name': { 
-        apiParam: 'sourceId.equals', 
-        options: sourceOptions, 
-        displayField: 'name' 
-      },
-      
-      'area.name': { 
-        apiParam: 'areaId.equals', 
-        options: areaOptions, 
-        displayField: 'name' 
-      },
-      
       'state.name': { 
         apiParam: 'stateId.equals', 
         options: stateOptions, 
@@ -174,6 +153,12 @@ export function PartyTable() {
       'city.name': { 
         apiParam: 'cityId.equals', 
         options: cityOptions, 
+        displayField: 'name' 
+      },
+      
+      'area.name': { 
+        apiParam: 'areaId.equals', 
+        options: areaOptions, 
         displayField: 'name' 
       },
       
@@ -193,11 +178,6 @@ export function PartyTable() {
           }
         }
         
-        
-        // Handle isActive filter
-        else if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
         
         // Handle other direct filters
         else if (Array.isArray(value) && value.length > 0) {
@@ -420,22 +400,6 @@ export function PartyTable() {
   const relationshipConfigs = [
     
     {
-      name: "source",
-      displayName: "Source",
-      options: sourceOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
-      name: "area",
-      displayName: "Area",
-      options: areaOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
       name: "state",
       displayName: "State",
       options: stateOptions || [],
@@ -455,6 +419,14 @@ export function PartyTable() {
       name: "city",
       displayName: "City",
       options: cityOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "area",
+      displayName: "Area",
+      options: areaOptions || [],
       displayField: "name",
       isEditable: false, // Disabled by default
     },
@@ -527,7 +499,7 @@ export function PartyTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={16}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -550,7 +522,7 @@ export function PartyTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={16}
+                  colSpan={14}
                   className="h-24 text-center"
                 >
                   No parties found

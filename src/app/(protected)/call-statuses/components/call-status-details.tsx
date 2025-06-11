@@ -115,17 +115,6 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
                     

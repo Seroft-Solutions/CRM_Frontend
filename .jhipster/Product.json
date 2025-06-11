@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183926"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Product master entity",
   "dto": "mapstruct",
   "fields": [
@@ -53,11 +53,6 @@
       "fieldValidateRules": ["min", "max"],
       "fieldValidateRulesMax": "999999",
       "fieldValidateRulesMin": "0"
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
     },
     {
       "fieldName": "remark",

@@ -95,9 +95,6 @@ export function SourceSearchAndFilters({
     }
     
     // Handle regular field filters
-    if (key === 'isActive') {
-      return 'isActive';
-    }
     if (key === 'name') {
       return 'name';
     }
@@ -144,35 +141,6 @@ export function SourceSearchAndFilters({
               
               
 
-              
-              <DropdownMenuSeparator />
-              
-              {/* Boolean Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isActive
-                    </label>
-                    <Select
-                      value={filters["isActive"] as string || "__all__"}
-                      onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__all__">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                </div>
-              </div>
               
 
               

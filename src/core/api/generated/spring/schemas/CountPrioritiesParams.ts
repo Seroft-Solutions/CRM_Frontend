@@ -37,10 +37,5 @@ export type CountPrioritiesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
 distinct?: boolean;
 };

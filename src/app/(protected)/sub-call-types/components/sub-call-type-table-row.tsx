@@ -65,12 +65,6 @@ export function SubCallTypeTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {subCallType.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {subCallType.remark}
         
       </TableCell>

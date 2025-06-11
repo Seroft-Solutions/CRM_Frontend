@@ -47,7 +47,6 @@ export interface ProductDTO {
    * @maximum 999999
    */
   maxPrice?: number;
-  isActive: boolean;
   /**
    * @minLength 0
    * @maxLength 1000

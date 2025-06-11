@@ -26,5 +26,4 @@ export interface PriorityDTO {
    * @maxLength 1000
    */
   remark?: string;
-  isActive: boolean;
 }

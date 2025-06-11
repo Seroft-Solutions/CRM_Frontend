@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250607212207"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Represents a Keycloak Organization.",
   "dto": "mapstruct",
   "fields": [
@@ -29,15 +29,6 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "100"
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "createdDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

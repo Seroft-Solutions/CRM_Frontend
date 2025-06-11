@@ -95,12 +95,6 @@ export function ProductTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {product.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {product.remark}
         
       </TableCell>

@@ -75,18 +75,6 @@ export function OrganizationTableRow({
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {organization.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {organization.createdDate ? format(new Date(organization.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
 
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

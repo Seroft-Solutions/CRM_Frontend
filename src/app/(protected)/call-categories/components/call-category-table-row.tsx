@@ -65,19 +65,7 @@ export function CallCategoryTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {callCategory.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {callCategory.remark}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {callCategory.lastModifiedDate ? format(new Date(callCategory.lastModifiedDate), "PPP") : ""}
         
       </TableCell>
       

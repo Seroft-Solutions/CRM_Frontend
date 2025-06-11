@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183923"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Call category master entity",
   "dto": "mapstruct",
   "fields": [
@@ -20,19 +20,10 @@
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
-    },
-    {
-      "fieldName": "lastModifiedDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

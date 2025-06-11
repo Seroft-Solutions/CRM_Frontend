@@ -64,6 +64,10 @@ import {
   useGetAllRolesInfinite,
   useSearchRolesInfinite 
 } from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
+import { 
+  useGetAllChannelTypesInfinite,
+  useSearchChannelTypesInfinite 
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 import type { UserProfileDTO } from "@/core/api/generated/spring/schemas/UserProfileDTO";
 
 interface UserProfileFormProps {
@@ -76,14 +80,13 @@ const formSchema = z.object({
   email: z.string().min(5).max(100),
   firstName: z.string().max(50).optional(),
   lastName: z.string().max(50).optional(),
-  isActive: z.boolean(),
-  createdDate: z.date().optional(),
   organization: z.array(z.number()).optional(),
   groups: z.array(z.number()).optional(),
   roles: z.array(z.number()).optional(),
+  channelType: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"other","title":"Additional Relations","description":"Other connections and references"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"classification","title":"Classification","description":"Set priority, status, and categories"},{"id":"other","title":"Additional Relations","description":"Other connections and references"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function UserProfileForm({ id }: UserProfileFormProps) {
   const router = useRouter();
@@ -162,12 +165,6 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
       lastName: "",
 
 
-      isActive: false,
-
-
-      createdDate: new Date(),
-
-
       organization: [],
 
 
@@ -175,6 +172,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
 
 
       roles: [],
+
+
+      channelType: undefined,
 
     },
   });
@@ -314,12 +314,6 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
         lastName: entity.lastName || "",
 
 
-        isActive: entity.isActive || "",
-
-
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
-
         organization: entity.organization?.map(item => item.id),
 
 
@@ -327,6 +321,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
 
 
         roles: entity.roles?.map(item => item.id),
+
+
+        channelType: entity.channelType?.id,
 
       };
       form.reset(formValues);
@@ -365,12 +362,6 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
       lastName: data.lastName === "__none__" ? undefined : data.lastName,
 
 
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
-      createdDate: data.createdDate === "__none__" ? undefined : data.createdDate,
-
-
       organization: data.organization?.map(id => ({ id: id })),
 
 
@@ -379,9 +370,12 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
 
       roles: data.roles?.map(id => ({ id: id })),
 
+
+      channelType: data.channelType ? { id: data.channelType } : null,
+
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['keycloakId','email','firstName','lastName','isActive','createdDate','organization','groups','roles',].includes(key);
+          const isFormField = ['keycloakId','email','firstName','lastName','organization','groups','roles','channelType',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -407,10 +401,10 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
         fieldsToValidate = ['keycloakId','email','firstName','lastName',];
         break;
       case 'dates':
-        fieldsToValidate = ['createdDate',];
+        fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = [];
@@ -419,7 +413,7 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
         fieldsToValidate = [];
         break;
       case 'classification':
-        fieldsToValidate = [];
+        fieldsToValidate = ['channelType',];
         break;
       case 'business':
         fieldsToValidate = [];
@@ -603,84 +597,52 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
 
               {/* Step 2: Date & Time */}
               
-              {STEPS[currentStep].id === 'dates' && (
+
+              {/* Step 3: Settings & Files */}
+              
+
+              {/* Classification Step with Intelligent Cascading */}
+              {STEPS[currentStep].id === 'classification' && (
                 <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Classification</h3>
+                    <p className="text-muted-foreground">Set priority, status, and categories</p>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    
                     <FormField
                       control={form.control}
-                      name="createdDate"
+                      name="channelType"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-sm font-medium">Created Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Channel Type
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                              }}
+                              displayField="name"
+                              placeholder="Select channel type"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllChannelTypesInfinite}
+                              searchHook={useSearchChannelTypesInfinite}
+                              entityName="ChannelTypes"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/channel-types/new"
+                              createPermission="channelType:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'channelType')}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </div>
               )}
-              
-
-              {/* Step 3: Settings & Files */}
-              
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
-              
-
-              {/* Classification Step with Intelligent Cascading */}
 
               {/* Geographic Step with Cascading */}
 
@@ -823,24 +785,23 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
                           {form.watch('lastName') || "—"}
                         </dd>
                       </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Created Date</dt>
-                        <dd className="text-sm">
-                          {form.watch('createdDate') ? format(form.watch('createdDate'), "PPP") : "—"}
-                        </dd>
-                      </div>
                     </div>
                   </div>
 
                   {/* Relationship Reviews */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-lg border-b pb-2">🏷️ Classification</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">Channel Type</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('channelType') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
                   <div className="space-y-4">
                     <h4 className="font-medium text-lg border-b pb-2">🔗 Additional Relations</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

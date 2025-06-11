@@ -107,17 +107,6 @@ export function CallDetails({ id }: CallDetailsProps) {
                   </dd>
                 </div>
                 
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
-                
               </div>
             </CardContent>
           </Card>
@@ -188,19 +177,6 @@ export function CallDetails({ id }: CallDetailsProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.area ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.area as any).name || entity.area.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
                   <dd className="text-sm font-medium">
                     
@@ -233,6 +209,58 @@ export function CallDetails({ id }: CallDetailsProps) {
                     {entity.callStatus ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.callStatus as any).name || entity.callStatus.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.state ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.state as any).name || entity.state.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.district ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.district as any).name || entity.district.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.city ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.city as any).name || entity.city.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.area ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.area as any).name || entity.area.id}
                       </Badge>
                     ) : "—"}
                     

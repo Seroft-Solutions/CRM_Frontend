@@ -69,10 +69,6 @@ import {
   useSearchSourcesInfinite 
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
 import { 
-  useGetAllAreasInfinite,
-  useSearchAreasInfinite 
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-import { 
   useGetAllChannelTypesInfinite,
   useSearchChannelTypesInfinite 
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
@@ -84,6 +80,22 @@ import {
   useGetAllCallStatusesInfinite,
   useSearchCallStatusesInfinite 
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+import { 
+  useGetAllStatesInfinite,
+  useSearchStatesInfinite 
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+import { 
+  useGetAllDistrictsInfinite,
+  useSearchDistrictsInfinite 
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+import { 
+  useGetAllCitiesInfinite,
+  useSearchCitiesInfinite 
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+import { 
+  useGetAllAreasInfinite,
+  useSearchAreasInfinite 
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import { 
   useGetAllUserProfilesInfinite,
   useSearchUserProfilesInfinite 
@@ -102,21 +114,23 @@ interface CallFormProps {
 // Create Zod schema for form validation
 const formSchema = z.object({
   callDateTime: z.date(),
-  isActive: z.boolean(),
   priority: z.number().optional(),
   callType: z.number().optional(),
   subCallType: z.number().optional(),
   source: z.number().optional(),
-  area: z.number().optional(),
   channelType: z.number().optional(),
   callCategory: z.number().optional(),
   callStatus: z.number().optional(),
+  state: z.number().optional(),
+  district: z.number().optional(),
+  city: z.number().optional(),
+  area: z.number().optional(),
   assignedTo: z.number().optional(),
   channelParty: z.number().optional(),
   party: z.number().optional(),
 });
 
-const STEPS = [{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"users","title":"People & Assignment","description":"Assign users and responsibilities"},{"id":"classification","title":"Classification","description":"Set priority, status, and categories"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"users","title":"People & Assignment","description":"Assign users and responsibilities"},{"id":"classification","title":"Classification","description":"Set priority, status, and categories"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function CallForm({ id }: CallFormProps) {
   const router = useRouter();
@@ -186,9 +200,6 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: new Date(),
 
 
-      isActive: false,
-
-
       priority: undefined,
 
 
@@ -201,9 +212,6 @@ export function CallForm({ id }: CallFormProps) {
       source: undefined,
 
 
-      area: undefined,
-
-
       channelType: undefined,
 
 
@@ -211,6 +219,18 @@ export function CallForm({ id }: CallFormProps) {
 
 
       callStatus: undefined,
+
+
+      state: undefined,
+
+
+      district: undefined,
+
+
+      city: undefined,
+
+
+      area: undefined,
 
 
       assignedTo: undefined,
@@ -350,9 +370,6 @@ export function CallForm({ id }: CallFormProps) {
         callDateTime: entity.callDateTime ? new Date(entity.callDateTime) : undefined,
 
 
-        isActive: entity.isActive || "",
-
-
         priority: entity.priority?.id,
 
 
@@ -365,9 +382,6 @@ export function CallForm({ id }: CallFormProps) {
         source: entity.source?.id,
 
 
-        area: entity.area?.id,
-
-
         channelType: entity.channelType?.id,
 
 
@@ -375,6 +389,18 @@ export function CallForm({ id }: CallFormProps) {
 
 
         callStatus: entity.callStatus?.id,
+
+
+        state: entity.state?.id,
+
+
+        district: entity.district?.id,
+
+
+        city: entity.city?.id,
+
+
+        area: entity.area?.id,
 
 
         assignedTo: entity.assignedTo?.id,
@@ -413,9 +439,6 @@ export function CallForm({ id }: CallFormProps) {
       callDateTime: data.callDateTime === "__none__" ? undefined : data.callDateTime,
 
 
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
       priority: data.priority ? { id: data.priority } : null,
 
 
@@ -428,9 +451,6 @@ export function CallForm({ id }: CallFormProps) {
       source: data.source ? { id: data.source } : null,
 
 
-      area: data.area ? { id: data.area } : null,
-
-
       channelType: data.channelType ? { id: data.channelType } : null,
 
 
@@ -438,6 +458,18 @@ export function CallForm({ id }: CallFormProps) {
 
 
       callStatus: data.callStatus ? { id: data.callStatus } : null,
+
+
+      state: data.state ? { id: data.state } : null,
+
+
+      district: data.district ? { id: data.district } : null,
+
+
+      city: data.city ? { id: data.city } : null,
+
+
+      area: data.area ? { id: data.area } : null,
 
 
       assignedTo: data.assignedTo ? { id: data.assignedTo } : null,
@@ -450,7 +482,7 @@ export function CallForm({ id }: CallFormProps) {
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['callDateTime','isActive','priority','callType','subCallType','source','area','channelType','callCategory','callStatus','assignedTo','channelParty','party',].includes(key);
+          const isFormField = ['callDateTime','priority','callType','subCallType','source','channelType','callCategory','callStatus','state','district','city','area','assignedTo','channelParty','party',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -479,10 +511,10 @@ export function CallForm({ id }: CallFormProps) {
         fieldsToValidate = ['callDateTime',];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
-        fieldsToValidate = ['area',];
+        fieldsToValidate = ['state','district','city','area',];
         break;
       case 'users':
         fieldsToValidate = ['assignedTo','channelParty',];
@@ -633,36 +665,6 @@ export function CallForm({ id }: CallFormProps) {
               
 
               {/* Step 3: Settings & Files */}
-              
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
               
 
               {/* Classification Step with Intelligent Cascading */}
@@ -880,6 +882,114 @@ export function CallForm({ id }: CallFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                     <FormField
                       control={form.control}
+                      name="state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            State
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent geographic selections
+                                form.setValue('district', undefined);
+                                form.setValue('city', undefined);
+                                form.setValue('area', undefined);
+                              }}
+                              displayField="name"
+                              placeholder="Select state"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllStatesInfinite}
+                              searchHook={useSearchStatesInfinite}
+                              entityName="States"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/states/new"
+                              createPermission="state:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'state')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="district"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            District
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent geographic selections
+                                form.setValue('city', undefined);
+                                form.setValue('area', undefined);
+                              }}
+                              displayField="name"
+                              placeholder="Select district"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllDistrictsInfinite}
+                              searchHook={useSearchDistrictsInfinite}
+                              entityName="Districts"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/districts/new"
+                              createPermission="district:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'district')}
+                              parentFilter={form.watch('state')}
+                              parentField="state"
+                              disabled={!form.watch('state')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            City
+                          </FormLabel>
+                          <FormControl>
+                            <PaginatedRelationshipCombobox
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Clear dependent geographic selections
+                                form.setValue('area', undefined);
+                              }}
+                              displayField="name"
+                              placeholder="Select city"
+                              multiple={false}
+                              useInfiniteQueryHook={useGetAllCitiesInfinite}
+                              searchHook={useSearchCitiesInfinite}
+                              entityName="Cities"
+                              searchField="name"
+                              canCreate={true}
+                              createEntityPath="/cities/new"
+                              createPermission="city:create"
+                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'city')}
+                              parentFilter={form.watch('district')}
+                              parentField="district"
+                              disabled={!form.watch('district')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name="area"
                       render={({ field }) => (
                         <FormItem>
@@ -904,6 +1014,9 @@ export function CallForm({ id }: CallFormProps) {
                               createEntityPath="/areas/new"
                               createPermission="area:create"
                               onEntityCreated={(entityId) => handleEntityCreated(entityId, 'area')}
+                              parentFilter={form.watch('city')}
+                              parentField="city"
+                              disabled={!form.watch('city')}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1074,14 +1187,6 @@ export function CallForm({ id }: CallFormProps) {
                           {form.watch('callDateTime') ? format(form.watch('callDateTime'), "PPP") : "—"}
                         </dd>
                       </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
-                        </dd>
-                      </div>
                     </div>
                   </div>
 
@@ -1142,6 +1247,30 @@ export function CallForm({ id }: CallFormProps) {
                   <div className="space-y-4">
                     <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">State</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('state') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">District</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('district') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-muted-foreground">City</dt>
+                        <dd className="text-sm">
+                          <Badge variant="outline">
+                            {form.watch('city') ? 'Selected' : 'Not selected'}
+                          </Badge>
+                        </dd>
+                      </div>
                       <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Area</dt>
                         <dd className="text-sm">

@@ -97,13 +97,8 @@ export function OrganizationTable() {
       if (value !== undefined && value !== "" && value !== null) {
         
         
-        // Handle isActive filter
-        if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
-        
         // Handle other direct filters
-        else if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -114,13 +109,6 @@ export function OrganizationTable() {
     });
 
     // Add date range filters
-    
-    if (dateRange.from) {
-      params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
     
 
     return params;
@@ -376,7 +364,7 @@ export function OrganizationTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -399,7 +387,7 @@ export function OrganizationTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   No organizations found

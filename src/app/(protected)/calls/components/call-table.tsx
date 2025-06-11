@@ -63,10 +63,6 @@ import {
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
 
 import {
-  useGetAllAreas
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-
-import {
   useGetAllChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 
@@ -77,6 +73,22 @@ import {
 import {
   useGetAllCallStatuses
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+
+import {
+  useGetAllStates
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+
+import {
+  useGetAllDistricts
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+
+import {
+  useGetAllCities
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+
+import {
+  useGetAllAreas
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 
 import {
   useGetAllUserProfiles
@@ -146,11 +158,6 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
-  const { data: areaOptions = [] } = useGetAllAreas(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
   const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -162,6 +169,26 @@ export function CallTable() {
   );
   
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: stateOptions = [] } = useGetAllStates(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: districtOptions = [] } = useGetAllDistricts(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: cityOptions = [] } = useGetAllCities(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  const { data: areaOptions = [] } = useGetAllAreas(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -216,12 +243,6 @@ export function CallTable() {
         displayField: 'name' 
       },
       
-      'area.name': { 
-        apiParam: 'areaId.equals', 
-        options: areaOptions, 
-        displayField: 'name' 
-      },
-      
       'channelType.name': { 
         apiParam: 'channelTypeId.equals', 
         options: channeltypeOptions, 
@@ -237,6 +258,30 @@ export function CallTable() {
       'callStatus.name': { 
         apiParam: 'callStatusId.equals', 
         options: callstatusOptions, 
+        displayField: 'name' 
+      },
+      
+      'state.name': { 
+        apiParam: 'stateId.equals', 
+        options: stateOptions, 
+        displayField: 'name' 
+      },
+      
+      'district.name': { 
+        apiParam: 'districtId.equals', 
+        options: districtOptions, 
+        displayField: 'name' 
+      },
+      
+      'city.name': { 
+        apiParam: 'cityId.equals', 
+        options: cityOptions, 
+        displayField: 'name' 
+      },
+      
+      'area.name': { 
+        apiParam: 'areaId.equals', 
+        options: areaOptions, 
         displayField: 'name' 
       },
       
@@ -274,11 +319,6 @@ export function CallTable() {
           }
         }
         
-        
-        // Handle isActive filter
-        else if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
         
         // Handle other direct filters
         else if (Array.isArray(value) && value.length > 0) {
@@ -540,14 +580,6 @@ export function CallTable() {
     },
     
     {
-      name: "area",
-      displayName: "Area",
-      options: areaOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
       name: "channelType",
       displayName: "ChannelType",
       options: channeltypeOptions || [],
@@ -567,6 +599,38 @@ export function CallTable() {
       name: "callStatus",
       displayName: "CallStatus",
       options: callstatusOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "state",
+      displayName: "State",
+      options: stateOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "district",
+      displayName: "District",
+      options: districtOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "city",
+      displayName: "City",
+      options: cityOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "area",
+      displayName: "Area",
+      options: areaOptions || [],
       displayField: "name",
       isEditable: false, // Disabled by default
     },
@@ -663,7 +727,7 @@ export function CallTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -686,7 +750,7 @@ export function CallTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={16}
                   className="h-24 text-center"
                 >
                   No calls found

@@ -69,12 +69,6 @@ export function PriorityTableRow({
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {priority.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
 
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
