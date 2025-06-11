@@ -4,10 +4,8 @@ on:
   push:
     branches: [ main, master ]
     tags: [ 'v*' ]
-  # Only build on PR open/reopen, not every commit
   pull_request:
     branches: [ main, master ]
-    types: [ opened, reopened ]
   workflow_dispatch:
 
 
@@ -49,8 +47,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          # Single platform for faster builds (add linux/arm64 only if needed)
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

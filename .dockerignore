@@ -1,23 +1,31 @@
+# Exclude .env files since they're handled separately in Dockerfile
+.env
+.env.*
+
+# Exclude development files
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.next
-.nuxt
-dist
-.cache
-.parcel-cache
-.DS_Store
-*.log
+
+# Exclude Git and GitHub
 .git
-.gitignore
-README.md
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-coverage
-.nyc_output
 .github
-Dockerfile*
-docker-compose*
+.gitignore
+
+# Exclude build artifacts that will be generated
+.next
+.tsbuildinfo
+
+# Exclude IDE files
+*.iml
+.vscode
+.idea
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
+
+# Exclude logs
+logs
+*.log
