@@ -2,18 +2,16 @@
 FROM node:20.17.0-alpine AS builder
 WORKDIR /app
 
-# Copy package files first for better layer caching
-COPY package*.json ./
-
-# Install dependencies (remove cache clean and verbose for speed)
-RUN npm ci --legacy-peer-deps --omit=dev
-
-# Copy source code and env file
 ARG ENV_FILE
 COPY ${ENV_FILE} .env
-COPY . .
+COPY package*.json ./
 
-# Build the application
+RUN npm --version && \
+    node --version && \
+    npm cache clean --force && \
+    npm ci --legacy-peer-deps --verbose || (cat /root/.npm/_logs/*-debug.log && exit 1)
+
+COPY . .
 RUN npm run build
 
 # Production stage
