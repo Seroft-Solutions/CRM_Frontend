@@ -60,13 +60,6 @@ class RolesManager {
   }
   
   /**
-   * Check if user exists in roles manager
-   */
-  hasUser(userId: string): boolean {
-    return this.userRoles.has(userId);
-  }
-  
-  /**
    * Clear roles for a user (on logout)
    */
   clearUserRoles(userId: string): void {

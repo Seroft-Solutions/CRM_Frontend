@@ -555,9 +555,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.id = token.sub;
         }
         
-        let rolesFound = false;
-        let organizationsFound = false;
-        
         // Get data from server-side storage if using it
         if (token.sessionId) {
           const serverData = getServerSideData(token.sessionId as string);
@@ -566,95 +563,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             session.user.roles = serverData.roles;
             session.access_token = serverData.accessToken;
             session.refresh_token = serverData.refreshToken;
-            rolesFound = true;
-            organizationsFound = true;
             logger.debug('Loaded session data from server-side storage', {
               sessionId: token.sessionId,
               rolesCount: serverData.roles.length,
               organizationsCount: serverData.organizations.length
             });
           } else {
-            logger.error('Server-side session data not found - trying fallback methods', { 
+            logger.error('Server-side session data not found - falling back to JWT data', { 
               sessionId: token.sessionId,
               hasJwtRoles: !!token.roles,
               hasJwtOrganizations: !!token.organizations,
               hasJwtAccessToken: !!token.access_token
             });
-          }
-        }
-        
-        // Fallback 1: Get data from JWT if not found in server storage
-        if (!rolesFound && token.roles) {
-          session.user.roles = token.roles;
-          rolesFound = true;
-          logger.warn('Using fallback roles from JWT', { 
-            rolesCount: token.roles.length,
-            isPartialRoles: token.roles.length === 10 // Indicates truncated roles
-          });
-        }
-        
-        if (!organizationsFound && token.organizations) {
-          session.user.organizations = token.organizations;
-          organizationsFound = true;
-          logger.debug('Using fallback organizations from JWT', {
-            organizationsCount: token.organizations.length
-          });
-        }
-        
-        // Fallback 2: Get roles from rolesManager if still not found
-        if (!rolesFound && token.sub) {
-          const rolesFromManager = rolesManager.getUserRoles(token.sub);
-          if (rolesFromManager && rolesFromManager.length > 0) {
-            session.user.roles = rolesFromManager;
-            rolesFound = true;
-            logger.info('Retrieved roles from rolesManager', {
-              userSub: token.sub,
-              rolesCount: rolesFromManager.length
-            });
-          } else {
-            logger.warn('No roles found in rolesManager either', {
-              userSub: token.sub,
-              rolesManagerHasUser: rolesManager.hasUser(token.sub)
-            });
-          }
-        }
-        
-        // Fallback 3: Parse roles from access token if available
-        if (!rolesFound && token.access_token) {
-          logger.warn('Attempting to re-parse roles from access token');
-          const rolesFromToken = parseRoles(token.access_token);
-          if (rolesFromToken.length > 0) {
-            session.user.roles = rolesFromToken;
-            rolesFound = true;
-            // Store back in rolesManager for future use
-            if (token.sub) {
-              rolesManager.setUserRoles(token.sub, rolesFromToken);
+            // Fallback to JWT data if available
+            if (token.organizations) {
+              session.user.organizations = token.organizations;
             }
-            logger.info('Re-parsed roles from access token', {
-              rolesCount: rolesFromToken.length
-            });
+            if (token.roles) {
+              session.user.roles = token.roles;
+              logger.warn('Using fallback roles from JWT', { 
+                rolesCount: token.roles.length,
+                isPartialRoles: token.roles.length === 10 // Indicates truncated roles
+              });
+            }
+            if (token.access_token) {
+              session.access_token = token.access_token;
+            }
+            if (token.refresh_token) {
+              session.refresh_token = token.refresh_token;
+            }
           }
-        }
-        
-        // Set access and refresh tokens
-        if (token.access_token) {
-          session.access_token = token.access_token;
-        }
-        if (token.refresh_token) {
-          session.refresh_token = token.refresh_token;
-        }
-        
-        // Final check and warning
-        if (!rolesFound) {
-          logger.error('CRITICAL: No roles found for user session', {
-            userSub: token.sub,
-            hasServerSideStorage: !!token.sessionId,
-            hasJwtRoles: !!token.roles,
-            hasAccessToken: !!token.access_token,
-            rolesManagerStatus: token.sub ? rolesManager.hasUser(token.sub) : false
-          });
-          // Set empty array to prevent undefined
-          session.user.roles = [];
+        } else {
+          // Get data from JWT normally
+          if (token.organizations) {
+            session.user.organizations = token.organizations;
+          }
+          
+          if (token.roles) {
+            session.user.roles = token.roles;
+          }
+          
+          if (token.access_token) {
+            session.access_token = token.access_token;
+          }
+
+          if (token.refresh_token) {
+            session.refresh_token = token.refresh_token;
+          }
         }
 
         const sessionDuration = Date.now() - sessionStartTime;
@@ -663,8 +618,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           organizationsCount: session.user.organizations?.length || 0,
           rolesCount: session.user.roles?.length || 0,
           hasAccessToken: !!session.access_token,
-          sessionSize: token.sessionSize,
-          rolesSource: rolesFound ? 'found' : 'empty'
+          sessionSize: token.sessionSize
         });
         
         return session;
