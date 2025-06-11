@@ -8,12 +8,10 @@ COPY package*.json ./
 # Install dependencies (remove cache clean and verbose for speed)
 RUN npm ci --legacy-peer-deps --omit=dev
 
-# Copy source code first
-COPY . .
-
-# Copy env file (after source to avoid conflicts)
+# Copy source code and env file
 ARG ENV_FILE
 COPY ${ENV_FILE} .env
+COPY . .
 
 # Build the application
 RUN npm run build
