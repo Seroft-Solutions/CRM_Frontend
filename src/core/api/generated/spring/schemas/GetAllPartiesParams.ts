@@ -72,11 +72,6 @@ export type GetAllPartiesParams = {
 'address3.specified'?: boolean;
 'address3.in'?: string[];
 'address3.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
 'remark.contains'?: string;
 'remark.doesNotContain'?: string;
 'remark.equals'?: string;
@@ -93,24 +88,6 @@ export type GetAllPartiesParams = {
 'callsId.specified'?: boolean;
 'callsId.in'?: number[];
 'callsId.notIn'?: number[];
-'sourceId.greaterThan'?: number;
-'sourceId.lessThan'?: number;
-'sourceId.greaterThanOrEqual'?: number;
-'sourceId.lessThanOrEqual'?: number;
-'sourceId.equals'?: number;
-'sourceId.notEquals'?: number;
-'sourceId.specified'?: boolean;
-'sourceId.in'?: number[];
-'sourceId.notIn'?: number[];
-'areaId.greaterThan'?: number;
-'areaId.lessThan'?: number;
-'areaId.greaterThanOrEqual'?: number;
-'areaId.lessThanOrEqual'?: number;
-'areaId.equals'?: number;
-'areaId.notEquals'?: number;
-'areaId.specified'?: boolean;
-'areaId.in'?: number[];
-'areaId.notIn'?: number[];
 'stateId.greaterThan'?: number;
 'stateId.lessThan'?: number;
 'stateId.greaterThanOrEqual'?: number;
@@ -138,6 +115,15 @@ export type GetAllPartiesParams = {
 'cityId.specified'?: boolean;
 'cityId.in'?: number[];
 'cityId.notIn'?: number[];
+'areaId.greaterThan'?: number;
+'areaId.lessThan'?: number;
+'areaId.greaterThanOrEqual'?: number;
+'areaId.lessThanOrEqual'?: number;
+'areaId.equals'?: number;
+'areaId.notEquals'?: number;
+'areaId.specified'?: boolean;
+'areaId.in'?: number[];
+'areaId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

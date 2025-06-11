@@ -91,12 +91,6 @@ export function PartySearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
-      if (relationName === 'source') {
-        return 'Source';
-      }
-      if (relationName === 'area') {
-        return 'Area';
-      }
       if (relationName === 'state') {
         return 'State';
       }
@@ -106,13 +100,13 @@ export function PartySearchAndFilters({
       if (relationName === 'city') {
         return 'City';
       }
+      if (relationName === 'area') {
+        return 'Area';
+      }
       return relationName;
     }
     
     // Handle regular field filters
-    if (key === 'isActive') {
-      return 'isActive';
-    }
     if (key === 'name') {
       return 'name';
     }
@@ -178,35 +172,6 @@ export function PartySearchAndFilters({
               
 
               
-              <DropdownMenuSeparator />
-              
-              {/* Boolean Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isActive
-                    </label>
-                    <Select
-                      value={filters["isActive"] as string || "__all__"}
-                      onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__all__">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                </div>
-              </div>
-              
 
               
               <DropdownMenuSeparator />
@@ -215,30 +180,6 @@ export function PartySearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">People & Relationships</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Source
-                    </label>
-                    <Input
-                      placeholder="Filter by source..."
-                      value={filters["source.name"] as string || ""}
-                      onChange={(e) => onFilterChange("source.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Area
-                    </label>
-                    <Input
-                      placeholder="Filter by area..."
-                      value={filters["area.name"] as string || ""}
-                      onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
@@ -272,6 +213,18 @@ export function PartySearchAndFilters({
                       placeholder="Filter by city..."
                       value={filters["city.name"] as string || ""}
                       onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Area
+                    </label>
+                    <Input
+                      placeholder="Filter by area..."
+                      value={filters["area.name"] as string || ""}
+                      onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

@@ -97,13 +97,8 @@ export function CallStatusTable() {
       if (value !== undefined && value !== "" && value !== null) {
         
         
-        // Handle isActive filter
-        if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
-        
         // Handle other direct filters
-        else if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -369,7 +364,7 @@ export function CallStatusTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -392,7 +387,7 @@ export function CallStatusTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   No call statuses found

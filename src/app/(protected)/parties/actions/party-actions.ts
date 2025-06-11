@@ -42,20 +42,8 @@ const partySchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
   
-  
-  
-  
-  sourceId: z.number().optional(),
-  
-  
-  
-  areaId: z.number().optional(),
   
   
   
@@ -68,6 +56,10 @@ const partySchema = z.object({
   
   
   cityId: z.number().optional(),
+  
+  
+  
+  areaId: z.number().optional(),
   
   
 })
@@ -126,20 +118,8 @@ export async function createParty(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       remark: formData.get('remark') || undefined,
       
-      
-      
-      
-      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
-      
-      
-      
-      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
       
@@ -152,6 +132,10 @@ export async function createParty(
       
       
       cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
     }
@@ -247,20 +231,8 @@ export async function updateParty(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       remark: formData.get('remark') || undefined,
       
-      
-      
-      
-      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
-      
-      
-      
-      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
       
@@ -273,6 +245,10 @@ export async function updateParty(
       
       
       cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
     }

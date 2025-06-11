@@ -39,11 +39,15 @@ export type GetAllChannelTypesParams = {
 'commissionRate.specified'?: boolean;
 'commissionRate.in'?: number[];
 'commissionRate.notIn'?: number[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
+'channelPartiesId.greaterThan'?: number;
+'channelPartiesId.lessThan'?: number;
+'channelPartiesId.greaterThanOrEqual'?: number;
+'channelPartiesId.lessThanOrEqual'?: number;
+'channelPartiesId.equals'?: number;
+'channelPartiesId.notEquals'?: number;
+'channelPartiesId.specified'?: boolean;
+'channelPartiesId.in'?: number[];
+'channelPartiesId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

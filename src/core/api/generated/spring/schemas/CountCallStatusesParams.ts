@@ -30,11 +30,6 @@ export type CountCallStatusesParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
 'remark.contains'?: string;
 'remark.doesNotContain'?: string;
 'remark.equals'?: string;

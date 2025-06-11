@@ -30,11 +30,6 @@ export type GetAllCallCategoriesParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
 'remark.contains'?: string;
 'remark.doesNotContain'?: string;
 'remark.equals'?: string;
@@ -42,15 +37,6 @@ export type GetAllCallCategoriesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
-'lastModifiedDate.greaterThan'?: string;
-'lastModifiedDate.lessThan'?: string;
-'lastModifiedDate.greaterThanOrEqual'?: string;
-'lastModifiedDate.lessThanOrEqual'?: string;
-'lastModifiedDate.equals'?: string;
-'lastModifiedDate.notEquals'?: string;
-'lastModifiedDate.specified'?: boolean;
-'lastModifiedDate.in'?: string[];
-'lastModifiedDate.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

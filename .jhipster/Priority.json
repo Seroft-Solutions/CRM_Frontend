@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183919"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Priority master entity for calls and leads",
   "dto": "mapstruct",
   "fields": [
@@ -24,11 +24,6 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
     }
   ],
   "jpaMetamodelFiltering": true,

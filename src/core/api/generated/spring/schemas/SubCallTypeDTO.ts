@@ -22,7 +22,6 @@ export interface SubCallTypeDTO {
    * @maxLength 255
    */
   description?: string;
-  isActive: boolean;
   /**
    * @minLength 0
    * @maxLength 1000

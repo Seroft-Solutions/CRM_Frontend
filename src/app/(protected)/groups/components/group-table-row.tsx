@@ -75,12 +75,6 @@ export function GroupTableRow({
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {group.createdDate ? format(new Date(group.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
 
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">

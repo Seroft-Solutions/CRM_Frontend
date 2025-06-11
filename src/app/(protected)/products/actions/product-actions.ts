@@ -38,10 +38,6 @@ const productSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
   
   
@@ -95,10 +91,6 @@ export async function createProduct(
       
       
       maxPrice: formData.get('maxPrice') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       
@@ -192,10 +184,6 @@ export async function updateProduct(
       
       
       maxPrice: formData.get('maxPrice') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       

@@ -120,19 +120,6 @@ export function GroupTableHeader({
           </Button>
         </TableHead>
         
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("createdDate")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Created Date
-            <div className="text-gray-400">
-              {renderSortIcon("createdDate")}
-            </div>
-          </Button>
-        </TableHead>
-        
         
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
@@ -188,17 +175,6 @@ export function GroupTableHeader({
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
             value={filters["description"] as string || ""}
             onChange={(e) => onFilterChange("description", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={filters["createdDate"] as string || ""}
-            onChange={(e) => onFilterChange("createdDate", e.target.value || undefined)}
           />
           
         </TableHead>

@@ -18,10 +18,6 @@ const subcalltypeSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   remark: z.string().max(1000).optional(),
   
   
@@ -59,10 +55,6 @@ export async function createSubCallType(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       
@@ -140,10 +132,6 @@ export async function updateSubCallType(
       
       
       description: formData.get('description') || undefined,
-      
-      
-      
-      isActive: formData.get('isActive') === 'true',
       
       
       

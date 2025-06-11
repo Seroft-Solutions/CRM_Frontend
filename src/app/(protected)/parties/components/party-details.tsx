@@ -169,17 +169,6 @@ export function PartyDetails({ id }: PartyDetailsProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
                     
@@ -204,32 +193,6 @@ export function PartyDetails({ id }: PartyDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.source ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.source as any).name || entity.source.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.area ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.area as any).name || entity.area.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
                 
                 <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
@@ -264,6 +227,19 @@ export function PartyDetails({ id }: PartyDetailsProps) {
                     {entity.city ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.city as any).name || entity.city.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.area ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.area as any).name || entity.area.id}
                       </Badge>
                     ) : "—"}
                     

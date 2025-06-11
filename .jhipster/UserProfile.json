@@ -2,19 +2,19 @@
   "annotations": {
     "changelogDate": "20250607212208"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Represents a user synced from Keycloak.",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "keycloakId",
       "fieldType": "UUID",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "unique"]
     },
     {
       "fieldName": "email",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRules": ["required", "minlength", "maxlength", "unique"],
       "fieldValidateRulesMaxlength": "100",
       "fieldValidateRulesMinlength": "5"
     },
@@ -29,15 +29,6 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "50"
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "createdDate",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -66,6 +57,14 @@
       "relationshipName": "roles",
       "relationshipSide": "left",
       "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "channelType",
+      "otherEntityRelationshipName": "channelParties",
+      "relationshipName": "channelType",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
     }
   ],
   "service": "serviceImpl"

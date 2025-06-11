@@ -63,11 +63,9 @@ const formSchema = z.object({
   name: z.string().min(2).max(100),
   displayName: z.string().max(150).optional(),
   domain: z.string().max(100).optional(),
-  isActive: z.boolean(),
-  createdDate: z.date().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function OrganizationForm({ id }: OrganizationFormProps) {
   const router = useRouter();
@@ -144,12 +142,6 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
 
 
       domain: "",
-
-
-      isActive: false,
-
-
-      createdDate: new Date(),
 
     },
   });
@@ -288,12 +280,6 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
 
         domain: entity.domain || "",
 
-
-        isActive: entity.isActive || "",
-
-
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
       };
       form.reset(formValues);
     }
@@ -330,15 +316,9 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
 
       domain: data.domain === "__none__" ? undefined : data.domain,
 
-
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
-      createdDate: data.createdDate === "__none__" ? undefined : data.createdDate,
-
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['keycloakOrgId','name','displayName','domain','isActive','createdDate',].includes(key);
+          const isFormField = ['keycloakOrgId','name','displayName','domain',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -364,10 +344,10 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
         fieldsToValidate = ['keycloakOrgId','name','displayName','domain',];
         break;
       case 'dates':
-        fieldsToValidate = ['createdDate',];
+        fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = [];
@@ -560,81 +540,8 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
 
               {/* Step 2: Date & Time */}
               
-              {STEPS[currentStep].id === 'dates' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="createdDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-sm font-medium">Created Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                  </div>
-                </div>
-              )}
-              
 
               {/* Step 3: Settings & Files */}
-              
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
               
 
               {/* Classification Step with Intelligent Cascading */}
@@ -681,20 +588,6 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
                         <dt className="text-sm font-medium text-muted-foreground">Domain</dt>
                         <dd className="text-sm">
                           {form.watch('domain') || "—"}
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Created Date</dt>
-                        <dd className="text-sm">
-                          {form.watch('createdDate') ? format(form.watch('createdDate'), "PPP") : "—"}
                         </dd>
                       </div>
                     </div>

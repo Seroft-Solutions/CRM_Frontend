@@ -42,20 +42,6 @@ export type GetAllUserProfilesParams = {
 'lastName.specified'?: boolean;
 'lastName.in'?: string[];
 'lastName.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
-'createdDate.greaterThan'?: string;
-'createdDate.lessThan'?: string;
-'createdDate.greaterThanOrEqual'?: string;
-'createdDate.lessThanOrEqual'?: string;
-'createdDate.equals'?: string;
-'createdDate.notEquals'?: string;
-'createdDate.specified'?: boolean;
-'createdDate.in'?: string[];
-'createdDate.notIn'?: string[];
 'organizationId.greaterThan'?: number;
 'organizationId.lessThan'?: number;
 'organizationId.greaterThanOrEqual'?: number;
@@ -83,6 +69,15 @@ export type GetAllUserProfilesParams = {
 'rolesId.specified'?: boolean;
 'rolesId.in'?: number[];
 'rolesId.notIn'?: number[];
+'channelTypeId.greaterThan'?: number;
+'channelTypeId.lessThan'?: number;
+'channelTypeId.greaterThanOrEqual'?: number;
+'channelTypeId.lessThanOrEqual'?: number;
+'channelTypeId.equals'?: number;
+'channelTypeId.notEquals'?: number;
+'channelTypeId.specified'?: boolean;
+'channelTypeId.in'?: number[];
+'channelTypeId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

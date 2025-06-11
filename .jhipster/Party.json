@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183924"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Party entity - represents customers/leads/contacts",
   "dto": "mapstruct",
   "fields": [
@@ -58,11 +58,6 @@
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
       "fieldName": "remark",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
@@ -79,21 +74,6 @@
       "relationshipName": "calls",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
-    },
-    {
-      "otherEntityField": "name",
-      "otherEntityName": "source",
-      "relationshipName": "source",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one"
-    },
-    {
-      "otherEntityField": "name",
-      "otherEntityName": "area",
-      "relationshipName": "area",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "name",
@@ -115,6 +95,14 @@
       "otherEntityField": "name",
       "otherEntityName": "city",
       "relationshipName": "city",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "area",
+      "relationshipName": "area",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"

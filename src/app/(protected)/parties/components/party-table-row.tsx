@@ -101,49 +101,11 @@ export function PartyTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {party.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {party.remark}
         
       </TableCell>
       
 
-      
-      <TableCell className="whitespace-nowrap px-1 py-2">
-        <RelationshipCell
-          entityId={party.id || 0}
-          relationshipName="source"
-          currentValue={party.source}
-          options={relationshipConfigs.find(config => config.name === "source")?.options || []}
-          displayField="name"
-          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
-          isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
-          isLoading={isUpdating}
-          className="min-w-[150px]"
-          relatedEntityRoute="sources"
-          showNavigationIcon={true}
-        />
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-1 py-2">
-        <RelationshipCell
-          entityId={party.id || 0}
-          relationshipName="area"
-          currentValue={party.area}
-          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
-          displayField="name"
-          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
-          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
-          isLoading={isUpdating}
-          className="min-w-[150px]"
-          relatedEntityRoute="areas"
-          showNavigationIcon={true}
-        />
-      </TableCell>
       
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
@@ -189,6 +151,22 @@ export function PartyTableRow({
           isLoading={isUpdating}
           className="min-w-[150px]"
           relatedEntityRoute="cities"
+          showNavigationIcon={true}
+        />
+      </TableCell>
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={party.id || 0}
+          relationshipName="area"
+          currentValue={party.area}
+          options={relationshipConfigs.find(config => config.name === "area")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="areas"
           showNavigationIcon={true}
         />
       </TableCell>

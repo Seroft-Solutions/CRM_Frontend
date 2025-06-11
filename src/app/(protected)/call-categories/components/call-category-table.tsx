@@ -97,13 +97,8 @@ export function CallCategoryTable() {
       if (value !== undefined && value !== "" && value !== null) {
         
         
-        // Handle isActive filter
-        if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
-        }
-        
         // Handle other direct filters
-        else if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (value instanceof Date) {
           params[key] = value.toISOString().split('T')[0];
@@ -114,13 +109,6 @@ export function CallCategoryTable() {
     });
 
     // Add date range filters
-    
-    if (dateRange.from) {
-      params['lastModifiedDate.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
     
 
     return params;
@@ -376,7 +364,7 @@ export function CallCategoryTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -399,7 +387,7 @@ export function CallCategoryTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={4}
                   className="h-24 text-center"
                 >
                   No call categories found

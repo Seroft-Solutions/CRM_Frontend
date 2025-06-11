@@ -2,18 +2,13 @@
   "annotations": {
     "changelogDate": "20250603183928"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Call entity - core CRM activity",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "callDateTime",
       "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     }
   ],
@@ -62,14 +57,6 @@
     },
     {
       "otherEntityField": "name",
-      "otherEntityName": "area",
-      "relationshipName": "area",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
-    },
-    {
-      "otherEntityField": "name",
       "otherEntityName": "channelType",
       "relationshipName": "channelType",
       "relationshipSide": "left",
@@ -88,6 +75,38 @@
       "otherEntityField": "name",
       "otherEntityName": "callStatus",
       "relationshipName": "callStatus",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "state",
+      "relationshipName": "state",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "district",
+      "relationshipName": "district",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "city",
+      "relationshipName": "city",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "area",
+      "relationshipName": "area",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"

@@ -62,10 +62,9 @@ const formSchema = z.object({
   name: z.string().min(2).max(50),
   description: z.string().max(255).optional(),
   remark: z.string().max(1000).optional(),
-  isActive: z.boolean(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function PriorityForm({ id }: PriorityFormProps) {
   const router = useRouter();
@@ -139,9 +138,6 @@ export function PriorityForm({ id }: PriorityFormProps) {
 
 
       remark: "",
-
-
-      isActive: false,
 
     },
   });
@@ -277,9 +273,6 @@ export function PriorityForm({ id }: PriorityFormProps) {
 
         remark: entity.remark || "",
 
-
-        isActive: entity.isActive || "",
-
       };
       form.reset(formValues);
     }
@@ -313,12 +306,9 @@ export function PriorityForm({ id }: PriorityFormProps) {
 
       remark: data.remark === "__none__" ? undefined : data.remark,
 
-
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','description','remark','isActive',].includes(key);
+          const isFormField = ['name','description','remark',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -347,7 +337,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
         fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = [];
@@ -522,36 +512,6 @@ export function PriorityForm({ id }: PriorityFormProps) {
 
               {/* Step 3: Settings & Files */}
               
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
-              
 
               {/* Classification Step with Intelligent Cascading */}
 
@@ -591,14 +551,6 @@ export function PriorityForm({ id }: PriorityFormProps) {
                         <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
                         <dd className="text-sm">
                           {form.watch('remark') || "—"}
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
                         </dd>
                       </div>
                     </div>

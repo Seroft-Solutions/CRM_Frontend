@@ -103,9 +103,6 @@ export function CallSearchAndFilters({
       if (relationName === 'source') {
         return 'Source';
       }
-      if (relationName === 'area') {
-        return 'Area';
-      }
       if (relationName === 'channelType') {
         return 'Channel Type';
       }
@@ -114,6 +111,18 @@ export function CallSearchAndFilters({
       }
       if (relationName === 'callStatus') {
         return 'Call Status';
+      }
+      if (relationName === 'state') {
+        return 'State';
+      }
+      if (relationName === 'district') {
+        return 'District';
+      }
+      if (relationName === 'city') {
+        return 'City';
+      }
+      if (relationName === 'area') {
+        return 'Area';
       }
       if (relationName === 'assignedTo') {
         return 'Assigned To';
@@ -128,9 +137,6 @@ export function CallSearchAndFilters({
     }
     
     // Handle regular field filters
-    if (key === 'isActive') {
-      return 'isActive';
-    }
     if (key === 'callDateTime') {
       return 'callDateTime';
     }
@@ -171,35 +177,6 @@ export function CallSearchAndFilters({
               
               
 
-              
-              <DropdownMenuSeparator />
-              
-              {/* Boolean Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isActive
-                    </label>
-                    <Select
-                      value={filters["isActive"] as string || "__all__"}
-                      onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__all__">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                </div>
-              </div>
               
 
               
@@ -260,18 +237,6 @@ export function CallSearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      Area
-                    </label>
-                    <Input
-                      placeholder="Filter by area..."
-                      value={filters["area.name"] as string || ""}
-                      onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
                       Channel Type
                     </label>
                     <Input
@@ -302,6 +267,54 @@ export function CallSearchAndFilters({
                       placeholder="Filter by call status..."
                       value={filters["callStatus.name"] as string || ""}
                       onChange={(e) => onFilterChange("callStatus.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      State
+                    </label>
+                    <Input
+                      placeholder="Filter by state..."
+                      value={filters["state.name"] as string || ""}
+                      onChange={(e) => onFilterChange("state.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      District
+                    </label>
+                    <Input
+                      placeholder="Filter by district..."
+                      value={filters["district.name"] as string || ""}
+                      onChange={(e) => onFilterChange("district.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      City
+                    </label>
+                    <Input
+                      placeholder="Filter by city..."
+                      value={filters["city.name"] as string || ""}
+                      onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Area
+                    </label>
+                    <Input
+                      placeholder="Filter by area..."
+                      value={filters["area.name"] as string || ""}
+                      onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

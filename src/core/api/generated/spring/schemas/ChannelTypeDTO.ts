@@ -26,5 +26,4 @@ export interface ChannelTypeDTO {
    * @maximum 100
    */
   commissionRate?: number;
-  isActive: boolean;
 }

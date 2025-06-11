@@ -115,32 +115,10 @@ export function CallCategoryDetails({ id }: CallCategoryDetailsProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
                     
                     <span className="text-foreground break-words">{entity.remark || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Last Modified Date</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.lastModifiedDate ? format(new Date(entity.lastModifiedDate), "PPP") : "—"}
-                    </span>
                     
                   </dd>
                 </div>

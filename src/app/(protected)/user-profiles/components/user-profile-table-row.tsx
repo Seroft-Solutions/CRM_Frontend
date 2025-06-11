@@ -75,19 +75,23 @@ export function UserProfileTableRow({
         
       </TableCell>
       
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {userProfile.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {userProfile.createdDate ? format(new Date(userProfile.createdDate), "PPP") : ""}
-        
-      </TableCell>
-      
 
+      
+      <TableCell className="whitespace-nowrap px-1 py-2">
+        <RelationshipCell
+          entityId={userProfile.id || 0}
+          relationshipName="channelType"
+          currentValue={userProfile.channelType}
+          options={relationshipConfigs.find(config => config.name === "channelType")?.options || []}
+          displayField="name"
+          onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+          isEditable={relationshipConfigs.find(config => config.name === "channelType")?.isEditable || false}
+          isLoading={isUpdating}
+          className="min-w-[150px]"
+          relatedEntityRoute="channel-types"
+          showNavigationIcon={true}
+        />
+      </TableCell>
       
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">

@@ -71,11 +71,6 @@ export type CountProductsParams = {
 'maxPrice.specified'?: boolean;
 'maxPrice.in'?: number[];
 'maxPrice.notIn'?: number[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
 'remark.contains'?: string;
 'remark.doesNotContain'?: string;
 'remark.equals'?: string;

@@ -53,14 +53,6 @@ import {
   useGetParty,
 } from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 import { 
-  useGetAllSourcesInfinite,
-  useSearchSourcesInfinite 
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
-import { 
-  useGetAllAreasInfinite,
-  useSearchAreasInfinite 
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-import { 
   useGetAllStatesInfinite,
   useSearchStatesInfinite 
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
@@ -72,6 +64,10 @@ import {
   useGetAllCitiesInfinite,
   useSearchCitiesInfinite 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+import { 
+  useGetAllAreasInfinite,
+  useSearchAreasInfinite 
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
 interface PartyFormProps {
@@ -88,16 +84,14 @@ const formSchema = z.object({
   address1: z.string().max(255).optional(),
   address2: z.string().max(255).optional(),
   address3: z.string().max(255).optional(),
-  isActive: z.boolean(),
   remark: z.string().max(1000).optional(),
-  source: z.number().optional(),
-  area: z.number().optional(),
   state: z.number().optional(),
   district: z.number().optional(),
   city: z.number().optional(),
+  area: z.number().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"business","title":"Business Relations","description":"Connect with customers and products"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function PartyForm({ id }: PartyFormProps) {
   const router = useRouter();
@@ -188,16 +182,7 @@ export function PartyForm({ id }: PartyFormProps) {
       address3: "",
 
 
-      isActive: false,
-
-
       remark: "",
-
-
-      source: undefined,
-
-
-      area: undefined,
 
 
       state: undefined,
@@ -207,6 +192,9 @@ export function PartyForm({ id }: PartyFormProps) {
 
 
       city: undefined,
+
+
+      area: undefined,
 
     },
   });
@@ -358,16 +346,7 @@ export function PartyForm({ id }: PartyFormProps) {
         address3: entity.address3 || "",
 
 
-        isActive: entity.isActive || "",
-
-
         remark: entity.remark || "",
-
-
-        source: entity.source?.id,
-
-
-        area: entity.area?.id,
 
 
         state: entity.state?.id,
@@ -377,6 +356,9 @@ export function PartyForm({ id }: PartyFormProps) {
 
 
         city: entity.city?.id,
+
+
+        area: entity.area?.id,
 
       };
       form.reset(formValues);
@@ -427,16 +409,7 @@ export function PartyForm({ id }: PartyFormProps) {
       address3: data.address3 === "__none__" ? undefined : data.address3,
 
 
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
       remark: data.remark === "__none__" ? undefined : data.remark,
-
-
-      source: data.source ? { id: data.source } : null,
-
-
-      area: data.area ? { id: data.area } : null,
 
 
       state: data.state ? { id: data.state } : null,
@@ -447,9 +420,12 @@ export function PartyForm({ id }: PartyFormProps) {
 
       city: data.city ? { id: data.city } : null,
 
+
+      area: data.area ? { id: data.area } : null,
+
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','isActive','remark','source','area','state','district','city',].includes(key);
+          const isFormField = ['name','mobile','email','whatsApp','contactPerson','address1','address2','address3','remark','state','district','city','area',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -478,7 +454,7 @@ export function PartyForm({ id }: PartyFormProps) {
         fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = ['state','district','city','area',];
@@ -490,7 +466,7 @@ export function PartyForm({ id }: PartyFormProps) {
         fieldsToValidate = [];
         break;
       case 'business':
-        fieldsToValidate = ['source',];
+        fieldsToValidate = [];
         break;
       case 'other':
         fieldsToValidate = [];
@@ -779,36 +755,6 @@ export function PartyForm({ id }: PartyFormProps) {
 
               {/* Step 3: Settings & Files */}
               
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
-              
 
               {/* Classification Step with Intelligent Cascading */}
 
@@ -970,45 +916,6 @@ export function PartyForm({ id }: PartyFormProps) {
               {/* User Assignment Step */}
 
               {/* Business Relations Step */}
-              {STEPS[currentStep].id === 'business' && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-medium">Business Relations</h3>
-                    <p className="text-muted-foreground">Connect with customers, products, and sources</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="source"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Source
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              displayField="name"
-                              placeholder="Select source"
-                              multiple={false}
-                              useInfiniteQueryHook={useGetAllSourcesInfinite}
-                              searchHook={useSearchSourcesInfinite}
-                              entityName="Sources"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/sources/new"
-                              createPermission="source:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'source')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Other Relations Step */}
 
@@ -1073,14 +980,6 @@ export function PartyForm({ id }: PartyFormProps) {
                         </dd>
                       </div>
                       <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
                         <dd className="text-sm">
                           {form.watch('remark') || "—"}
@@ -1122,19 +1021,6 @@ export function PartyForm({ id }: PartyFormProps) {
                         <dd className="text-sm">
                           <Badge variant="outline">
                             {form.watch('area') ? 'Selected' : 'Not selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-lg border-b pb-2">🏢 Business Relations</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Source</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {form.watch('source') ? 'Selected' : 'Not selected'}
                           </Badge>
                         </dd>
                       </div>

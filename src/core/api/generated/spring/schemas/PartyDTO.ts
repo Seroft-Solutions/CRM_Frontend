@@ -5,11 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { SourceDTO } from './SourceDTO';
-import type { AreaDTO } from './AreaDTO';
 import type { StateDTO } from './StateDTO';
 import type { DistrictDTO } from './DistrictDTO';
 import type { CityDTO } from './CityDTO';
+import type { AreaDTO } from './AreaDTO';
 
 /**
  * Party entity - represents customers/leads/contacts
@@ -51,15 +50,13 @@ export interface PartyDTO {
    * @maxLength 255
    */
   address3?: string;
-  isActive: boolean;
   /**
    * @minLength 0
    * @maxLength 1000
    */
   remark?: string;
-  source?: SourceDTO;
-  area: AreaDTO;
   state: StateDTO;
   district: DistrictDTO;
   city: CityDTO;
+  area: AreaDTO;
 }

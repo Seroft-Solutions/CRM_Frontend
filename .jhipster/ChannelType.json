@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183927"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Channel type master entity",
   "dto": "mapstruct",
   "fields": [
@@ -25,16 +25,19 @@
       "fieldValidateRules": ["min", "max"],
       "fieldValidateRulesMax": "100",
       "fieldValidateRulesMin": "0"
-    },
-    {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "ChannelType",
   "pagination": "pagination",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityName": "userProfile",
+      "otherEntityRelationshipName": "channelType",
+      "relationshipName": "channelParties",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
   "service": "serviceImpl"
 }

@@ -61,12 +61,10 @@ interface CallCategoryFormProps {
 const formSchema = z.object({
   name: z.string().min(2).max(50),
   description: z.string().max(255).optional(),
-  isActive: z.boolean(),
   remark: z.string().max(1000).optional(),
-  lastModifiedDate: z.date().optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function CallCategoryForm({ id }: CallCategoryFormProps) {
   const router = useRouter();
@@ -139,13 +137,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
       description: "",
 
 
-      isActive: false,
-
-
       remark: "",
-
-
-      lastModifiedDate: new Date(),
 
     },
   });
@@ -279,13 +271,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
         description: entity.description || "",
 
 
-        isActive: entity.isActive || "",
-
-
         remark: entity.remark || "",
-
-
-        lastModifiedDate: entity.lastModifiedDate ? new Date(entity.lastModifiedDate) : undefined,
 
       };
       form.reset(formValues);
@@ -318,17 +304,11 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
       description: data.description === "__none__" ? undefined : data.description,
 
 
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
       remark: data.remark === "__none__" ? undefined : data.remark,
-
-
-      lastModifiedDate: data.lastModifiedDate === "__none__" ? undefined : data.lastModifiedDate,
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','description','isActive','remark','lastModifiedDate',].includes(key);
+          const isFormField = ['name','description','remark',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -354,10 +334,10 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
         fieldsToValidate = ['name','description','remark',];
         break;
       case 'dates':
-        fieldsToValidate = ['lastModifiedDate',];
+        fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = [];
@@ -529,81 +509,8 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
 
               {/* Step 2: Date & Time */}
               
-              {STEPS[currentStep].id === 'dates' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="lastModifiedDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-sm font-medium">Last Modified Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                  </div>
-                </div>
-              )}
-              
 
               {/* Step 3: Settings & Files */}
-              
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
               
 
               {/* Classification Step with Intelligent Cascading */}
@@ -641,23 +548,9 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
                         </dd>
                       </div>
                       <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
                         <dt className="text-sm font-medium text-muted-foreground">Remark</dt>
                         <dd className="text-sm">
                           {form.watch('remark') || "—"}
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Last Modified Date</dt>
-                        <dd className="text-sm">
-                          {form.watch('lastModifiedDate') ? format(form.watch('lastModifiedDate'), "PPP") : "—"}
                         </dd>
                       </div>
                     </div>

@@ -110,13 +110,6 @@ export function GroupTable() {
 
     // Add date range filters
     
-    if (dateRange.from) {
-      params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
-    
 
     return params;
   };
@@ -371,7 +364,7 @@ export function GroupTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -394,7 +387,7 @@ export function GroupTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 text-center"
                 >
                   No groups found

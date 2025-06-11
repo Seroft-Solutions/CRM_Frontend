@@ -66,11 +66,10 @@ const formSchema = z.object({
   basePrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
   minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
   maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Must be at least 0" }).refine(val => !val || Number(val) <= 999999, { message: "Must be at most 999999" }).optional(),
-  isActive: z.boolean(),
   remark: z.string().max(1000).optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"settings","title":"Settings & Files","description":"Configure options"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function ProductForm({ id }: ProductFormProps) {
   const router = useRouter();
@@ -156,9 +155,6 @@ export function ProductForm({ id }: ProductFormProps) {
 
 
       maxPrice: "",
-
-
-      isActive: false,
 
 
       remark: "",
@@ -310,9 +306,6 @@ export function ProductForm({ id }: ProductFormProps) {
         maxPrice: entity.maxPrice != null ? String(entity.maxPrice) : "",
 
 
-        isActive: entity.isActive || "",
-
-
         remark: entity.remark || "",
 
       };
@@ -361,14 +354,11 @@ export function ProductForm({ id }: ProductFormProps) {
       maxPrice: data.maxPrice ? Number(data.maxPrice) : undefined,
 
 
-      isActive: data.isActive === "__none__" ? undefined : data.isActive,
-
-
       remark: data.remark === "__none__" ? undefined : data.remark,
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','isActive','remark',].includes(key);
+          const isFormField = ['name','code','description','category','basePrice','minPrice','maxPrice','remark',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -397,7 +387,7 @@ export function ProductForm({ id }: ProductFormProps) {
         fieldsToValidate = [];
         break;
       case 'settings':
-        fieldsToValidate = ['isActive',];
+        fieldsToValidate = [];
         break;
       case 'geographic':
         fieldsToValidate = [];
@@ -677,36 +667,6 @@ export function ProductForm({ id }: ProductFormProps) {
 
               {/* Step 3: Settings & Files */}
               
-              {STEPS[currentStep].id === 'settings' && (
-                <div className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base font-medium">Is Active</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                    </div>
-                  </div>
-                  
-
-                  
-                </div>
-              )}
-              
 
               {/* Classification Step with Intelligent Cascading */}
 
@@ -770,14 +730,6 @@ export function ProductForm({ id }: ProductFormProps) {
                         <dt className="text-sm font-medium text-muted-foreground">Max Price</dt>
                         <dd className="text-sm">
                           {form.watch('maxPrice') || "—"}
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Is Active</dt>
-                        <dd className="text-sm">
-                          <Badge variant={form.watch('isActive') ? "default" : "secondary"}>
-                            {form.watch('isActive') ? "Yes" : "No"}
-                          </Badge>
                         </dd>
                       </div>
                       <div className="space-y-1">

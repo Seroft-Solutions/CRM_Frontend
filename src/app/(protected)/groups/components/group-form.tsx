@@ -69,11 +69,10 @@ const formSchema = z.object({
   name: z.string().min(2).max(100),
   path: z.string(),
   description: z.string().max(255).optional(),
-  createdDate: z.date().optional(),
   members: z.array(z.number()).optional(),
 });
 
-const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"dates","title":"Date & Time","description":"Set relevant dates"},{"id":"users","title":"People & Assignment","description":"Assign users and responsibilities"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"users","title":"People & Assignment","description":"Assign users and responsibilities"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function GroupForm({ id }: GroupFormProps) {
   const router = useRouter();
@@ -150,9 +149,6 @@ export function GroupForm({ id }: GroupFormProps) {
 
 
       description: "",
-
-
-      createdDate: new Date(),
 
 
       members: [],
@@ -295,9 +291,6 @@ export function GroupForm({ id }: GroupFormProps) {
         description: entity.description || "",
 
 
-        createdDate: entity.createdDate ? new Date(entity.createdDate) : undefined,
-
-
         members: entity.members?.map(item => item.id),
 
       };
@@ -337,14 +330,11 @@ export function GroupForm({ id }: GroupFormProps) {
       description: data.description === "__none__" ? undefined : data.description,
 
 
-      createdDate: data.createdDate === "__none__" ? undefined : data.createdDate,
-
-
       members: data.members?.map(id => ({ id: id })),
 
       ...(entity && !isNew ? {
         ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['keycloakGroupId','name','path','description','createdDate','members',].includes(key);
+          const isFormField = ['keycloakGroupId','name','path','description','members',].includes(key);
           if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
             acc[key] = entity[key as keyof typeof entity];
           }
@@ -370,7 +360,7 @@ export function GroupForm({ id }: GroupFormProps) {
         fieldsToValidate = ['keycloakGroupId','name','path','description',];
         break;
       case 'dates':
-        fieldsToValidate = ['createdDate',];
+        fieldsToValidate = [];
         break;
       case 'settings':
         fieldsToValidate = [];
@@ -566,49 +556,6 @@ export function GroupForm({ id }: GroupFormProps) {
 
               {/* Step 2: Date & Time */}
               
-              {STEPS[currentStep].id === 'dates' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="createdDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-sm font-medium">Created Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? format(field.value, "PPP") : <span>Select date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                  </div>
-                </div>
-              )}
-              
 
               {/* Step 3: Settings & Files */}
               
@@ -696,12 +643,6 @@ export function GroupForm({ id }: GroupFormProps) {
                         <dt className="text-sm font-medium text-muted-foreground">Description</dt>
                         <dd className="text-sm">
                           {form.watch('description') || "—"}
-                        </dd>
-                      </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Created Date</dt>
-                        <dd className="text-sm">
-                          {form.watch('createdDate') ? format(form.watch('createdDate'), "PPP") : "—"}
                         </dd>
                       </div>
                     </div>

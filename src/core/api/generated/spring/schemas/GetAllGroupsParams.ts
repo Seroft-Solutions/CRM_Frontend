@@ -42,15 +42,6 @@ export type GetAllGroupsParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'createdDate.greaterThan'?: string;
-'createdDate.lessThan'?: string;
-'createdDate.greaterThanOrEqual'?: string;
-'createdDate.lessThanOrEqual'?: string;
-'createdDate.equals'?: string;
-'createdDate.notEquals'?: string;
-'createdDate.specified'?: boolean;
-'createdDate.in'?: string[];
-'createdDate.notIn'?: string[];
 'membersId.greaterThan'?: number;
 'membersId.lessThan'?: number;
 'membersId.greaterThanOrEqual'?: number;

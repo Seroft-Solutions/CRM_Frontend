@@ -65,12 +65,6 @@ export function CallTypeTableRow({
       
       <TableCell className="whitespace-nowrap px-3 py-2">
         
-        {callType.isActive ? "Yes" : "No"}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
         {callType.remark}
         
       </TableCell>

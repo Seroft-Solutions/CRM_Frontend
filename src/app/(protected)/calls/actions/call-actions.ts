@@ -14,10 +14,6 @@ const callSchema = z.object({
   
   
   
-  isActive: z.boolean(),
-  
-  
-  
   
   priorityId: z.number().optional(),
   
@@ -35,10 +31,6 @@ const callSchema = z.object({
   
   
   
-  areaId: z.number().optional(),
-  
-  
-  
   channelTypeId: z.number().optional(),
   
   
@@ -48,6 +40,22 @@ const callSchema = z.object({
   
   
   callStatusId: z.number().optional(),
+  
+  
+  
+  stateId: z.number().optional(),
+  
+  
+  
+  districtId: z.number().optional(),
+  
+  
+  
+  cityId: z.number().optional(),
+  
+  
+  
+  areaId: z.number().optional(),
   
   
   
@@ -90,10 +98,6 @@ export async function createCall(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       
       priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
       
@@ -111,10 +115,6 @@ export async function createCall(
       
       
       
-      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
-      
-      
-      
       channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
       
       
@@ -124,6 +124,22 @@ export async function createCall(
       
       
       callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
       
@@ -203,10 +219,6 @@ export async function updateCall(
       
       
       
-      isActive: formData.get('isActive') === 'true',
-      
-      
-      
       
       priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
       
@@ -224,10 +236,6 @@ export async function updateCall(
       
       
       
-      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
-      
-      
-      
       channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
       
       
@@ -237,6 +245,22 @@ export async function updateCall(
       
       
       callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
       
       
       
