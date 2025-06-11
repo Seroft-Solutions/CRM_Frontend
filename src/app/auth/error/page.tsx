@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, Copy, CheckCircle } from 'lucide-react';
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
 
 export default function AuthErrorPage() {
   const searchParams = useSearchParams();
@@ -16,19 +15,27 @@ export default function AuthErrorPage() {
   const errorCode = searchParams.get('code');
   const state = searchParams.get('state');
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Only access window after component mounts
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Log error details for debugging
   useEffect(() => {
-    console.error('[AUTH][ERROR_PAGE] Authentication error occurred', {
-      error,
-      errorDescription,
-      errorCode,
-      state,
-      fullUrl: window.location.href,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent
-    });
-  }, [error, errorDescription, errorCode, state]);
+    if (mounted) {
+      console.error('[AUTH][ERROR_PAGE] Authentication error occurred', {
+        error,
+        errorDescription,
+        errorCode,
+        state,
+        fullUrl: window.location.href,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+    }
+  }, [error, errorDescription, errorCode, state, mounted]);
 
   // Auto-redirect to login after 10 seconds for certain errors
   useEffect(() => {
@@ -44,6 +51,8 @@ export default function AuthErrorPage() {
 
   // Copy error details to clipboard
   const copyErrorDetails = async () => {
+    if (!mounted) return;
+
     const errorDetails = {
       error,
       errorDescription,
@@ -123,6 +132,22 @@ export default function AuthErrorPage() {
           autoRedirect: false,
           severity: 'warning',
         };
+      case 'CodeAlreadyUsed':
+        return {
+          title: 'Authentication Code Reused',
+          message: 'This authentication code has already been used. Please try signing in again.',
+          action: 'Try Again',
+          autoRedirect: false,
+          severity: 'warning',
+        };
+      case 'TooManyAttempts':
+        return {
+          title: 'Too Many Attempts',
+          message: 'Too many authentication attempts detected. Please wait a moment and try again.',
+          action: 'Try Again',
+          autoRedirect: false,
+          severity: 'warning',
+        };
       default:
         return {
           title: 'Authentication Error',
@@ -164,6 +189,46 @@ export default function AuthErrorPage() {
       default: return 'bg-red-100';
     }
   };
+
+  // Don't render URL and other window-dependent content until mounted
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <div className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${getSeverityBg(errorDetails.severity)}`}>
+              <AlertCircle className={`h-6 w-6 ${getSeverityColor(errorDetails.severity)}`} />
+            </div>
+            <CardTitle className={`text-2xl font-bold ${getSeverityColor(errorDetails.severity)}`}>
+              {errorDetails.title}
+            </CardTitle>
+            <CardDescription className="text-base">
+              {errorDetails.message}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div className="p-3 text-sm bg-blue-50 rounded-md border border-blue-200">
+              <p className="text-blue-700">Loading error details...</p>
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex gap-2">
+            <Button onClick={handleAction} className="flex-1">
+              {errorDetails.action}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/')}
+              className="flex-1"
+            >
+              Go Home
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
