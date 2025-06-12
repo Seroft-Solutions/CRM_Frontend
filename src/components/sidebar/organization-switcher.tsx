@@ -56,6 +56,7 @@ export function OrganizationSwitcher() {
   const handleOrganizationSwitch = (org: typeof organizations[0]) => {
     setActiveOrganization(org)
     localStorage.setItem('selectedOrganizationId', org.id)
+    localStorage.setItem('selectedOrganizationName', org.name)
     console.log('Switching to organization:', org)
   }
 

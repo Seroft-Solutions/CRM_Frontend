@@ -12,6 +12,17 @@ if (typeof window !== 'undefined') {
   }) as EventListener);
 }
 
+// Function to get tenant header from localStorage
+const getTenantHeader = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  
+  const selectedOrgName = localStorage.getItem('selectedOrganizationName');
+  if (!selectedOrgName) return undefined;
+  
+  // Convert to lowercase and replace special characters with underscores
+  return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+};
+
 export const springServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
   options?: AxiosRequestConfig
@@ -20,12 +31,19 @@ export const springServiceMutator = async <T>(
   
   const instance = axios.create(SPRING_SERVICE_CONFIG);
   
-  // Add auth interceptor with token caching
+  // Add auth and tenant interceptor
   instance.interceptors.request.use(async (config) => {
     const token = await tokenCache.getToken(fetchAccessToken);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add tenant header if available
+    const tenantHeader = getTenantHeader();
+    if (tenantHeader) {
+      config.headers['X-Tenant-Name'] = tenantHeader;
+    }
+
     return config;
   });
 

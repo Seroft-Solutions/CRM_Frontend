@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
-import { Loader2 } from 'lucide-react';
+import { Coffee } from 'lucide-react';
 import { persistentLog } from '@/lib/debug-logger';
 
 export default function OrganizationPage() {
@@ -31,6 +31,7 @@ export default function OrganizationPage() {
           orgName: organizations[0].name
         });
         localStorage.setItem('selectedOrganizationId', organizations[0].id);
+        localStorage.setItem('selectedOrganizationName', organizations[0].name);
         router.replace('/dashboard');
       } else {
         persistentLog('OrganizationPage: Multiple orgs → /organization/organization-select');
@@ -43,9 +44,10 @@ export default function OrganizationPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto" />
-        <p>Checking organization status...</p>
+      <div className="flex flex-col items-center">
+        <Coffee className="w-12 h-12 text-primary animate-bounce mb-4"/>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <p className="mt-4 text-muted-foreground">Brewing your organization...</p>
       </div>
     </div>
   );
