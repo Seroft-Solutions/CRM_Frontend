@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { usePermission } from "@/components/auth/permission-guard"
 
 import {
   Collapsible,
@@ -49,61 +50,89 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupLabel>CRM Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => {
-          const active = isActive(item);
-          
-          return item.children ? (
-            // Items with children - collapsible menu
-            // Now all items are expanded by default (defaultOpen={true})
-            <Collapsible
-              key={item.key}
-              asChild
-              defaultOpen={item.expandable ?? true}
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.label} data-active={active}>
-                    {item.icon && <item.icon />}
-                    <span>{item.label}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.children?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.key}>
-                        <SidebarMenuSubButton 
-                          asChild
-                          data-active={subItem.path && pathname === subItem.path}
-                        >
-                          <Link href={subItem.path || '#'}>
-                            <span>{subItem.label}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-          ) : (
-            // Items without children - direct link
-            <SidebarMenuItem key={item.key}>
-              <SidebarMenuButton 
-                asChild
-                tooltip={item.label}
-                data-active={active}
-              >
-                <Link href={item.path || '#'}>
-                  {item.icon && <item.icon />}
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
+        {items.map((item) => (
+          <NavItem key={item.key} item={item} pathname={pathname} isActive={isActive} />
+        ))}
       </SidebarMenu>
     </SidebarGroup>
   )
+}
+
+// Separate component to handle individual navigation items with permission checking
+function NavItem({ 
+  item, 
+  pathname, 
+  isActive 
+}: { 
+  item: SidebarItem; 
+  pathname: string; 
+  isActive: (item: SidebarItem) => boolean;
+}) {
+  const hasPermission = usePermission(item.requiredPermission || '');
+  
+  // If permission is required and user doesn't have it, don't render
+  if (item.requiredPermission && !hasPermission) {
+    return null;
+  }
+
+  const active = isActive(item);
+  
+  // Filter children based on permissions
+  const visibleChildren = item.children?.filter(child => {
+    const childHasPermission = usePermission(child.requiredPermission || '');
+    return !child.requiredPermission || childHasPermission;
+  });
+
+  return item.children ? (
+    // Items with children - collapsible menu
+    // Only render if there are visible children or no permission requirement
+    visibleChildren && visibleChildren.length > 0 ? (
+      <Collapsible
+        key={item.key}
+        asChild
+        defaultOpen={item.expandable ?? true}
+        className="group/collapsible"
+      >
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip={item.label} data-active={active}>
+              {item.icon && <item.icon />}
+              <span>{item.label}</span>
+              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {visibleChildren.map((subItem) => (
+                <SidebarMenuSubItem key={subItem.key}>
+                  <SidebarMenuSubButton 
+                    asChild
+                    data-active={subItem.path && pathname === subItem.path}
+                  >
+                    <Link href={subItem.path || '#'}>
+                      <span>{subItem.label}</span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    ) : null
+  ) : (
+    // Items without children - direct link
+    <SidebarMenuItem key={item.key}>
+      <SidebarMenuButton 
+        asChild
+        tooltip={item.label}
+        data-active={active}
+      >
+        <Link href={item.path || '#'}>
+          {item.icon && <item.icon />}
+          <span>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 }
