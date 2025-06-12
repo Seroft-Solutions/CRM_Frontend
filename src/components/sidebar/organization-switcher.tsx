@@ -24,16 +24,30 @@ export function OrganizationSwitcher() {
   const { isMobile } = useSidebar()
   const { data: organizations, isLoading } = useUserOrganizations()
   
-  const currentOrganization = organizations && organizations.length > 0 ? organizations[0] : null
-  const [activeOrganization, setActiveOrganization] = React.useState(currentOrganization)
+  // Get the selected organization from localStorage
+  const getSelectedOrganization = React.useCallback(() => {
+    if (!organizations?.length) return null
+    
+    const selectedOrgId = localStorage.getItem('selectedOrganizationId')
+    if (selectedOrgId) {
+      const selectedOrg = organizations.find(org => org.id === selectedOrgId)
+      if (selectedOrg) return selectedOrg
+    }
+    
+    // Fallback to first organization if no selection found
+    return organizations[0]
+  }, [organizations])
+
+  const [activeOrganization, setActiveOrganization] = React.useState(getSelectedOrganization)
 
   React.useEffect(() => {
-    if (currentOrganization && !activeOrganization) {
-      setActiveOrganization(currentOrganization)
+    const selectedOrg = getSelectedOrganization()
+    if (selectedOrg) {
+      setActiveOrganization(selectedOrg)
     }
-  }, [currentOrganization, activeOrganization])
+  }, [getSelectedOrganization])
 
-  const displayOrg = activeOrganization || currentOrganization
+  const displayOrg = activeOrganization
 
   if (isLoading || !organizations?.length || !displayOrg) {
     return null
@@ -41,6 +55,7 @@ export function OrganizationSwitcher() {
 
   const handleOrganizationSwitch = (org: typeof organizations[0]) => {
     setActiveOrganization(org)
+    localStorage.setItem('selectedOrganizationId', org.id)
     console.log('Switching to organization:', org)
   }
 
