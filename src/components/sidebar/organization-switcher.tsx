@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronsUpDown, Plus, Check, Building2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useUserOrganizations } from "@/hooks/useUserOrganizations"
 
 import {
@@ -22,6 +23,7 @@ import {
 
 export function OrganizationSwitcher() {
   const { isMobile } = useSidebar()
+  const router = useRouter()
   const { data: organizations, isLoading } = useUserOrganizations()
   
   // Get the selected organization from localStorage
@@ -58,6 +60,7 @@ export function OrganizationSwitcher() {
     localStorage.setItem('selectedOrganizationId', org.id)
     localStorage.setItem('selectedOrganizationName', org.name)
     console.log('Switching to organization:', org)
+    window.location.reload()
   }
 
   return (
