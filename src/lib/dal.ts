@@ -8,16 +8,12 @@
 import { cache } from 'react'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import { organizationApiService, type UserOrganization } from '@/services/organization/organization-api.service'
 
 // Cached auth() call to avoid repeated session lookups within a request
 const getAuthSession = cache(async () => {
   return auth()
 })
-
-interface Organization {
-  name: string;
-  id: string;
-}
 
 /**
  * Verify user session with caching
@@ -36,9 +32,7 @@ export const verifySession = cache(async () => {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    roles: session.user.roles || [],
-    organizations: session.user.organizations || [],
-    currentOrganization: session.user.currentOrganization
+    roles: session.user.roles || []
   }
 })
 
@@ -56,9 +50,7 @@ export const getSession = cache(async () => {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    roles: session.user.roles || [],
-    organizations: session.user.organizations || [],
-    currentOrganization: session.user.currentOrganization
+    roles: session.user.roles || []
   }
 })
 
@@ -89,61 +81,57 @@ export const getUserRoles = async (): Promise<string[]> => {
 }
 
 /**
- * Get current user's organizations
+ * Get current user's organizations (API-based)
  */
-export const getUserOrganizations = async (): Promise<Organization[]> => {
-  const session = await getSession()
-  return session?.organizations || []
+export const getUserOrganizations = async (): Promise<UserOrganization[]> => {
+  try {
+    return await organizationApiService.getUserOrganizations()
+  } catch (error) {
+    console.error('Error fetching user organizations:', error)
+    return []
+  }
 }
 
 /**
- * Get current user's active organization
+ * Get current user's active organization (first one)
  */
-export const getCurrentOrganization = async (): Promise<Organization | null> => {
-  const session = await getSession()
-  return session?.currentOrganization || null
+export const getCurrentOrganization = async (): Promise<UserOrganization | null> => {
+  const organizations = await getUserOrganizations()
+  return organizations[0] || null
 }
 
 /**
  * Check if user belongs to a specific organization
  */
 export const hasOrganization = async (organizationId: string): Promise<boolean> => {
-  const session = await getSession()
-  if (!session?.organizations) return false
-  
-  return session.organizations.some(org => org.id === organizationId)
+  const organizations = await getUserOrganizations()
+  return organizations.some(org => org.id === organizationId)
 }
 
 /**
  * Check if user belongs to any of the specified organizations
  */
 export const hasAnyOrganization = async (organizationIds: string[]): Promise<boolean> => {
-  const session = await getSession()
-  if (!session?.organizations) return false
-  
+  const organizations = await getUserOrganizations()
   return organizationIds.some(orgId => 
-    session.organizations.some(org => org.id === orgId)
+    organizations.some(org => org.id === orgId)
   )
 }
 
 /**
  * Get organization by name
  */
-export const getOrganizationByName = async (organizationName: string): Promise<Organization | null> => {
-  const session = await getSession()
-  if (!session?.organizations) return null
-  
-  return session.organizations.find(org => org.name === organizationName) || null
+export const getOrganizationByName = async (organizationName: string): Promise<UserOrganization | null> => {
+  const organizations = await getUserOrganizations()
+  return organizations.find(org => org.name === organizationName) || null
 }
 
 /**
  * Get organization by ID
  */
-export const getOrganizationById = async (organizationId: string): Promise<Organization | null> => {
-  const session = await getSession()
-  if (!session?.organizations) return null
-  
-  return session.organizations.find(org => org.id === organizationId) || null
+export const getOrganizationById = async (organizationId: string): Promise<UserOrganization | null> => {
+  const organizations = await getUserOrganizations()
+  return organizations.find(org => org.id === organizationId) || null
 }
 
 /**

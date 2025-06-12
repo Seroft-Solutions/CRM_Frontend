@@ -41,6 +41,7 @@ export class OrganizationSyncService {
 
   /**
    * Sync user's organization and profile data from Keycloak to Spring
+   * Note: This service will be deprecated as organizations are now fetched via API
    */
   async syncUserData(session: Session): Promise<SyncResult> {
     const result: SyncResult = {
@@ -49,14 +50,17 @@ export class OrganizationSyncService {
       errors: []
     };
 
-    if (!session.user?.organizations?.length) {
-      result.errors.push('No organizations found in session');
-      return result;
-    }
-
+    // This service needs to be refactored to work with API-based organization data
+    // For now, we'll attempt to get organizations from Keycloak directly
     try {
-      // Get primary organization from session
-      const sessionOrg = session.user.organizations[0];
+      const keycloakOrgs = await getAdminRealmsRealmOrganizations(this.realm);
+      if (!keycloakOrgs?.length) {
+        result.errors.push('No organizations found for user');
+        return result;
+      }
+
+      // Use first organization found
+      const sessionOrg = { id: keycloakOrgs[0].id!, name: keycloakOrgs[0].name! };
       
       // Sync organization
       const orgResult = await this.syncOrganization(sessionOrg);
@@ -183,30 +187,12 @@ export class OrganizationSyncService {
 
   /**
    * Check if sync is needed for a user session
+   * Note: This method is deprecated as organizations are now fetched via API
    */
   static async checkSyncNeeded(session: Session): Promise<boolean> {
-    if (!session.user?.organizations?.length) return false;
-
-    try {
-      const sessionOrg = session.user.organizations[0];
-      
-      // Quick check if organization exists in Spring
-      const existingOrgs = await getAllOrganizations({
-        'keycloakOrgId.equals': sessionOrg.id
-      });
-
-      if (!existingOrgs?.length) return true;
-
-      // Quick check if user profile exists
-      const existingUsers = await searchUserProfiles({
-        query: `keycloakId:${session.user.id}`
-      });
-
-      return !existingUsers?.length;
-
-    } catch (error) {
-      console.error('Sync check failed:', error);
-      return false;
-    }
+    // This method needs to be refactored to work with API-based organization data
+    // For now, return false as sync logic should be handled elsewhere
+    console.warn('OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking');
+    return false;
   }
 }

@@ -9,7 +9,6 @@ declare module "next-auth" {
       name?: string | null
       email?: string | null
       image?: string | null
-      organizations?: Array<{ name: string; id: string }>
       roles?: string[]
     }
     access_token?: string
@@ -22,40 +21,15 @@ declare module "next-auth" {
     refresh_token?: string
     expires_at?: number
     error?: string
-    organizations?: Array<{ name: string; id: string }>
     roles?: string[]
   }
 }
 
 interface KeycloakTokenPayload {
   sub: string
-  organizations?: Record<string, { id: string }>
   realm_access?: { roles?: string[] }
   resource_access?: Record<string, { roles?: string[] }>
   [key: string]: any
-}
-
-function parseOrganizations(accessToken: string): Array<{ name: string; id: string }> {
-  try {
-    
-    const [, payload] = accessToken.split('.')
-    if (!payload) return []
-    
-    const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
-    const organizations = decoded.organizations || {}
-    
-    
-    const parsedOrgs = Object.entries(organizations).map(([name, data]) => ({
-      name,
-      id: data?.id || name
-    }))
-    
-    
-    return parsedOrgs
-  } catch (error) {
-    console.error('Failed to parse organizations from token:', error)
-    return []
-  }
 }
 
 function parseRoles(accessToken: string): string[] {
@@ -64,7 +38,6 @@ function parseRoles(accessToken: string): string[] {
     if (!payload) return []
     
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
-    
     
     const roles: string[] = []
     
@@ -81,7 +54,6 @@ function parseRoles(accessToken: string): string[] {
         }
       })
     }
-    
     
     return [...new Set(roles)] // Remove duplicates
   } catch (error) {
@@ -119,7 +91,6 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       refresh_token: data.refresh_token ?? token.refresh_token,
       id_token: data.id_token ?? token.id_token,
       expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-      organizations: parseOrganizations(data.access_token),
       roles: parseRoles(data.access_token)
     }
   } catch (error) {
@@ -151,13 +122,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0)
 
         if (account.access_token && token.sub) {
-          token.organizations = parseOrganizations(account.access_token)
-          
           // Store roles in JWT token for client access
           const roles = parseRoles(account.access_token)
           token.roles = roles
           rolesManager.setUserRoles(token.sub, roles)
-          
         }
       }
 
@@ -172,10 +140,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       
       if (token.sub) {
         session.user.id = token.sub
-      }
-      
-      if (token.organizations) {
-        session.user.organizations = token.organizations
       }
       
       if (token.roles) {
@@ -213,17 +177,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                          nextUrl.pathname.startsWith('/channel-types') ||
                          nextUrl.pathname.startsWith('/organizations')
       
-      const isOrganizationSetup = nextUrl.pathname.startsWith('/organization-setup')
+      const isOrganizationFlow = nextUrl.pathname.startsWith('/organization')
       
       if (isProtected) {
         if (isLoggedIn) return true
         return false
-      } else if (isOrganizationSetup) {
-        // Allow access to organization setup if logged in
+      } else if (isOrganizationFlow) {
+        // Allow access to organization flow if logged in
         if (isLoggedIn) return true
         return false
       } else if (isLoggedIn && nextUrl.pathname === '/') {
-        return Response.redirect(new URL('/dashboard', nextUrl))
+        return Response.redirect(new URL('/organization', nextUrl))
       }
       
       return true

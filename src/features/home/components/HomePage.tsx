@@ -25,7 +25,7 @@ export default function HomePage() {
     const handleStartBrewing = () => {
         setIsLoading(true);
         setTimeout(() => {
-            signIn('keycloak', { redirectTo: '/dashboard' });
+            signIn('keycloak', { redirectTo: '/organization' });
         }, 800); // Match the loading animation time for consistency
     };
 
