@@ -15,6 +15,7 @@ export type SidebarItem = {
   path?: string;
   icon?: LucideIcon;
   isActive?: boolean;
+  expandable?: boolean; // Controls if section is expanded by default
   children?: SidebarItem[];
 };
 
@@ -25,6 +26,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'userManagement',
     label: 'User Management',
     icon: Users,
+    expandable: true,
     children: [
       { key: 'organizationUsers', label: 'Organization Users', path: '/user-management/organization-users' },
       { key: 'inviteUsers', label: 'Invite Users', path: '/user-management/invite-users' },
@@ -34,6 +36,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'businessPartners',
     label: 'Business Partners',
     icon: Briefcase,
+    expandable: true,
     children: [
       { key: 'invitePartner', label: 'Invite Partner', path: '/invite-partners' },
       { key: 'managePartner', label: 'Manage Partners', path: '/business-partners' },
@@ -43,6 +46,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'geography',
     label: 'Geography',
     icon: Map,
+    expandable: false,
     children: [
       { key: 'states', label: 'States Master', path: '/states' },
       { key: 'districts', label: 'Districts Master', path: '/districts' },
@@ -54,6 +58,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'masters',
     label: 'Masters',
     icon: Settings,
+    expandable: true,
     children: [
       { key: 'callType', label: 'Call Type Master', path: '/call-types' },
       { key: 'subCallType', label: 'Sub Call Type Master', path: '/sub-call-types' },
@@ -70,6 +75,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'calls',
     label: 'Calls Management',
     icon: PhoneCall,
+    expandable: true,
     children: [
       { key: 'callTracking', label: 'Call Tracking', path: '/calls' },
       { key: 'callRemarks', label: 'Call Remarks', path: '/call-remarks' },
