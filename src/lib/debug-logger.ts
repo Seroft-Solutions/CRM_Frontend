@@ -5,16 +5,22 @@ export function persistentLog(message: string, data?: any) {
   
   console.log(logEntry);
   
-  // Store in localStorage for debugging
-  const logs = JSON.parse(localStorage.getItem('debug_logs') || '[]');
-  logs.push(logEntry);
-  
-  // Keep only last 20 logs
-  if (logs.length > 20) {
-    logs.splice(0, logs.length - 20);
+  // Only use localStorage on client side
+  if (typeof window !== 'undefined') {
+    try {
+      const logs = JSON.parse(localStorage.getItem('debug_logs') || '[]');
+      logs.push(logEntry);
+      
+      // Keep only last 20 logs
+      if (logs.length > 20) {
+        logs.splice(0, logs.length - 20);
+      }
+      
+      localStorage.setItem('debug_logs', JSON.stringify(logs));
+    } catch (error) {
+      console.error('Failed to store debug log:', error);
+    }
   }
-  
-  localStorage.setItem('debug_logs', JSON.stringify(logs));
 }
 
 export function getDebugLogs() {
