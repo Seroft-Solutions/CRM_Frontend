@@ -4,6 +4,7 @@ import {
   Briefcase,
   Settings,
   PhoneCall,
+  Map,
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 
@@ -39,6 +40,17 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
+    key: 'geography',
+    label: 'Geography',
+    icon: Map,
+    children: [
+      { key: 'states', label: 'States Master', path: '/states' },
+      { key: 'districts', label: 'Districts Master', path: '/districts' },
+      { key: 'city', label: 'City Master', path: '/cities' },
+      { key: 'areas', label: 'Areas Master', path: '/areas' },
+    ],
+  },
+  {
     key: 'masters',
     label: 'Masters',
     icon: Settings,
@@ -49,10 +61,6 @@ export const sidebarItems: SidebarItem[] = [
       { key: 'callStatus', label: 'Call Status Master', path: '/call-statuses' },
       { key: 'priority', label: 'Priority Master', path: '/priorities' },
       { key: 'source', label: 'Source Master', path: '/sources' },
-      { key: 'states', label: 'States Master', path: '/states' },
-      { key: 'districts', label: 'Districts Master', path: '/districts' },
-      { key: 'city', label: 'City Master', path: '/cities' },
-      { key: 'areas', label: 'Areas Master', path: '/areas' },
       { key: 'channelType', label: 'Channel Type Master', path: '/channel-types' },
       { key: 'party', label: 'Party Master', path: '/parties' },
       { key: 'product', label: 'Product Master', path: '/products' },
