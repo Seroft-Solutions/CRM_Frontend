@@ -18,8 +18,10 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
 
   const handleContinue = () => {
     if (selectedOrgId) {
+      const selectedOrg = organizations.find(org => org.id === selectedOrgId);
       localStorage.setItem('selectedOrganizationId', selectedOrgId);
-      console.log('Selected organization:', selectedOrgId);
+      localStorage.setItem('selectedOrganizationName', selectedOrg?.name || '');
+      console.log('Selected organization:', selectedOrgId, selectedOrg?.name);
       router.push('/dashboard');
     }
   };
