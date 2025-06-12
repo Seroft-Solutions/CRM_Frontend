@@ -22,6 +22,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
+import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
+import { useUserProfilePersistence } from '@/features/user-profile-management/hooks/useUserProfilePersistence';
 
 interface PartnerInvitation {
   email: string;
@@ -37,16 +39,18 @@ interface PartnerInvitation {
 export default function InvitePartnersPage() {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
+  const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
   
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     invitationNote: '',
-    sendWelcomeEmail: false, // Change to false since we prefer password reset
-    sendPasswordReset: true // Default to password reset for partners
+    sendWelcomeEmail: false,
+    sendPasswordReset: true
   });
   
+  const [channelTypeId, setChannelTypeId] = useState<number | undefined>(undefined);
   const [isInviting, setIsInviting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,6 +84,17 @@ export default function InvitePartnersPage() {
 
       const result = await response.json();
       
+      // Create user profile with channel type if invitation was successful
+      if (result.userId) {
+        await createProfileForPartner(
+          result.userId,
+          formData.email,
+          formData.firstName,
+          formData.lastName,
+          channelTypeId
+        );
+      }
+      
       // Show appropriate success message based on email type
       const emailMessage = result.emailType === 'password_reset' 
         ? 'Partner invited successfully. Password setup email sent.'
@@ -100,6 +115,7 @@ export default function InvitePartnersPage() {
         sendWelcomeEmail: false,
         sendPasswordReset: true
       });
+      setChannelTypeId(undefined);
 
     } catch (error) {
       console.error('Failed to invite partner:', error);
@@ -118,6 +134,7 @@ export default function InvitePartnersPage() {
       sendWelcomeEmail: false,
       sendPasswordReset: true
     });
+    setChannelTypeId(undefined);
   };
 
   return (
@@ -135,20 +152,17 @@ export default function InvitePartnersPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Invitation Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Invite Business Partner
-              </CardTitle>
-              <CardDescription>
-                Send an invitation to a business partner to join your organization
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Invite Business Partner
+          </CardTitle>
+          <CardDescription>
+            Send an invitation to a business partner to join your organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,6 +201,16 @@ export default function InvitePartnersPage() {
                   />
                 </div>
 
+                {/* Channel Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="channelType">Channel Type</Label>
+                  <ChannelTypeSelector
+                    value={channelTypeId}
+                    onValueChange={setChannelTypeId}
+                    disabled={isInviting || isCreatingProfile}
+                  />
+                </div>
+
                 {/* Invitation Note */}
                 <div className="space-y-2">
                   <Label htmlFor="invitationNote">Invitation Note (Optional)</Label>
@@ -217,76 +241,17 @@ export default function InvitePartnersPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
-                  <Button type="submit" disabled={isInviting} className="gap-2">
+                  <Button type="submit" disabled={isInviting || isCreatingProfile} className="gap-2">
                     <Mail className="h-4 w-4" />
-                    {isInviting ? 'Sending Invitation...' : 'Send Invitation'}
+                    {isInviting || isCreatingProfile ? 'Processing...' : 'Send Invitation'}
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleClear}>
+                  <Button type="button" variant="outline" onClick={handleClear} disabled={isInviting || isCreatingProfile}>
                     Clear
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Info Panel */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Partner Privileges</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Business Partners</Badge>
-                <span className="text-sm text-muted-foreground">
-                  Automatic group assignment
-                </span>
-              </div>
-              
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>Partners will have access to:</p>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>Partner portal</li>
-                  <li>Business collaboration tools</li>
-                  <li>Shared documents and resources</li>
-                  <li>Organization communications</li>
-                </ul>
-                
-                <p className="pt-2 text-xs text-orange-600 font-medium">
-                  Note: Admin privileges are automatically removed to ensure proper access control
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">How it Works</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
-                  1
-                </div>
-                <p>Partner receives password setup email</p>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
-                  2
-                </div>
-                <p>Partner sets password and verifies account</p>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
-                  3
-                </div>
-                <p>Automatic access to Business Partners group and resources</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </div>
   );
 }

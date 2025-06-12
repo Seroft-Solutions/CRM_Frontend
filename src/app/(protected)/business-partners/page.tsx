@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 interface BusinessPartner {
   id: string;
@@ -70,6 +71,9 @@ export default function BusinessPartnersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [partnerToRemove, setPartnerToRemove] = useState<BusinessPartner | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Fetch user profiles to get channel type information
+  const { data: userProfiles } = useGetAllUserProfiles();
 
   // Fetch business partners
   const fetchPartners = async () => {
@@ -94,6 +98,11 @@ export default function BusinessPartnersPage() {
   useEffect(() => {
     fetchPartners();
   }, [organizationId]);
+
+  // Helper function to get profile for a partner
+  const getPartnerProfile = (partnerId: string) => {
+    return userProfiles?.find(profile => profile.keycloakId === partnerId);
+  };
 
   // Filter partners based on search
   const filteredPartners = partners.filter(partner =>
@@ -235,6 +244,35 @@ export default function BusinessPartnersPage() {
                           <Mail className="h-4 w-4 text-muted-foreground" />
                           {partner.email}
                         </div>
+                        {(() => {
+                          const profile = getPartnerProfile(partner.id);
+                          const channelType = profile?.channelType;
+                          return (
+                            <div className="mt-1 space-y-1">
+                              {channelType ? (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {channelType.name}
+                                  </Badge>
+                                  {channelType.commissionRate && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {channelType.commissionRate}%
+                                    </Badge>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-xs text-muted-foreground">
+                                  No channel type
+                                </div>
+                              )}
+                              {profile && (
+                                <div className="text-xs text-muted-foreground">
+                                  Profile ID: {profile.id}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
