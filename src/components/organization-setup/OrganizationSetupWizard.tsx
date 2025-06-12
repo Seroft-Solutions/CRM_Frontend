@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,18 +18,28 @@ import {
 import { OrganizationSetupForm } from './OrganizationSetupForm';
 import { OrganizationWelcomePage } from './OrganizationWelcomePage';
 import { OrganizationSetupProgress } from './OrganizationSetupProgress';
+import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { useOrganizationSetup } from '@/hooks/useOrganizationSetup';
 import { logoutAction } from '@/lib/auth-actions';
 
 export function OrganizationSetupWizard() {
+  const { data: organizations, isLoading } = useUserOrganizations();
   const { state, actions } = useOrganizationSetup();
   const [showForm, setShowForm] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (state.isSetupRequired && !state.isSetupInProgress && !state.isSetupCompleted) {
       setShowForm(true);
     }
   }, [state.isSetupRequired, state.isSetupInProgress, state.isSetupCompleted]);
+
+  // Redirect to organization-select if user has organizations
+  useEffect(() => {
+    if (!isLoading && organizations && organizations.length > 0) {
+      router.push('/organization-select');
+    }
+  }, [organizations, isLoading, router]);
 
   // Header with logout button
   const Header = () => (

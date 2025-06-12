@@ -11,7 +11,7 @@ import {
   type OrganizationSetupResult,
 } from '@/services/organization/organization-setup.service';
 import { OrganizationSyncService } from '@/services/organization/organization-sync.service';
-import { hasOrganization, getPrimaryOrganization as getPrimaryOrgFromSession } from '@/lib/organization-utils';
+import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 
 export interface OrganizationSetupState {
   isSetupRequired: boolean;
@@ -42,6 +42,7 @@ export interface UseOrganizationSetupResult {
  */
 export function useOrganizationSetup(): UseOrganizationSetupResult {
   const { data: session, status } = useSession();
+  const { data: organizations, isLoading: orgLoading, refetch: refetchOrganizations } = useUserOrganizations();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -76,6 +77,8 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
         error: null,
         organizationName: variables.organizationName, // Set organization name for progress tracking
       }));
+      // Refetch organizations after setup
+      refetchOrganizations();
     },
     onError: (error: Error) => {
       setState(prev => ({
@@ -111,6 +114,8 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           // organizationName should already be set from checkSetupStatus
         }));
         queryClient.invalidateQueries({ queryKey: ['session'] });
+        // Refetch organizations after sync
+        refetchOrganizations();
       }
     },
     onError: (error: Error) => {
@@ -122,12 +127,20 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     },
   });
 
-  // Check if setup is required based on session
+  // Check if setup is required based on API organizations
   const checkSetupStatus = useCallback(() => {
-    if (status === 'loading') return;
+    if (status === 'loading' || orgLoading) return;
 
-    const userHasOrganization = hasOrganization(session);
-    const primaryOrg = getPrimaryOrgFromSession(session);
+    const userHasOrganization = !!organizations?.length;
+    const primaryOrg = organizations?.[0] || null;
+
+    console.log('=== ORGANIZATION SETUP CHECK ===');
+    console.log('Session status:', status);
+    console.log('Organizations loading:', orgLoading);
+    console.log('Organizations data:', organizations);
+    console.log('User has organization:', userHasOrganization);
+    console.log('Primary organization:', primaryOrg);
+    console.log('=== END SETUP CHECK ===');
 
     setState(prev => ({
       ...prev,
@@ -135,7 +148,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       isSetupCompleted: userHasOrganization,
       organizationName: primaryOrg?.name || null,
     }));
-  }, [session, status]);
+  }, [status, orgLoading, organizations]);
 
   // Setup organization
   const setupOrganization = useCallback(
@@ -184,18 +197,4 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       setShowWelcome,
     },
   };
-}
-
-/**
- * Utility function to determine if organization setup is needed
- */
-export function isOrganizationSetupNeeded(session: any): boolean {
-  return !hasOrganization(session);
-}
-
-/**
- * Utility function to get primary organization
- */
-export function getPrimaryOrganization(session: any) {
-  return getPrimaryOrgFromSession(session);
 }

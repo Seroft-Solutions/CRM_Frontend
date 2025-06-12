@@ -9,7 +9,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { SessionManagerProvider } from "@/providers/session-manager"
-import { hasOrganization } from "@/lib/organization-utils"
+import {hasOrganization} from "@/lib/organization-utils";
 
 export default async function ProtectedLayout({
   children,
@@ -20,13 +20,6 @@ export default async function ProtectedLayout({
   
   if (!session) {
     redirect("/")
-  }
-
-  // Check if organization setup is needed
-  const userHasOrganization = hasOrganization(session)
-  
-  if (!userHasOrganization) {
-    redirect("/organization-setup")
   }
 
   return (

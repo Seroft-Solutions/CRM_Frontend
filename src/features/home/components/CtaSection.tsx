@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react'
 
 export default function CtaSection() {
   const handleStartBrewing = () => {
-    signIn('keycloak', { redirectTo: '/dashboard' })
+    signIn('keycloak', { redirectTo: '/organization' })
   }
 
   return (

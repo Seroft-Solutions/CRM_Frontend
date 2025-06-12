@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { userManagementService } from '../services/user-management.service';
 import type {
   OrganizationUser,
@@ -296,15 +297,16 @@ export function useGroupAssignment() {
   };
 }
 
-// Hook for organization context - Gets organization from NextAuth session
+// Hook for organization context - Gets organization from API
 export function useOrganizationContext() {
   const { data: session, status } = useSession();
+  const { data: organizations, isLoading: orgLoading } = useUserOrganizations();
   const [organizationId, setOrganizationId] = useState<string>('');
   const [organizationName, setOrganizationName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'loading') {
+    if (status === 'loading' || orgLoading) {
       setIsLoading(true);
       return;
     }
@@ -316,44 +318,44 @@ export function useOrganizationContext() {
       return;
     }
 
-    // Get organization from NextAuth session
-    if (session.user?.organizations && session.user.organizations.length > 0) {
-      const primaryOrg = session.user.organizations[0]; // Use first organization as primary
+    // Get organization from API data
+    if (organizations && organizations.length > 0) {
+      const primaryOrg = organizations[0]; // Use first organization as primary
       setOrganizationId(primaryOrg.id);
       setOrganizationName(primaryOrg.name);
       
       console.log('Organization context loaded:', {
         id: primaryOrg.id,
         name: primaryOrg.name,
-        totalOrgs: session.user.organizations.length
+        totalOrgs: organizations.length
       });
     } else {
-      // User has no organizations - this might be an admin user
-      console.warn('User has no organizations in session, using fallback');
+      // User has no organizations
+      console.warn('User has no organizations, using fallback');
       setOrganizationId('');
       setOrganizationName('No Organization');
     }
 
     setIsLoading(false);
-  }, [session, status]);
+  }, [session, status, organizations, orgLoading]);
 
   // Function to switch organization (if user has multiple)
   const switchOrganization = useCallback((orgId: string) => {
-    if (session?.user?.organizations) {
-      const org = session.user.organizations.find(o => o.id === orgId);
+    if (organizations) {
+      const org = organizations.find(o => o.id === orgId);
       if (org) {
         setOrganizationId(org.id);
         setOrganizationName(org.name);
       }
     }
-  }, [session]);
+  }, [organizations]);
 
   return {
     organizationId,
     organizationName,
     isLoading,
-    availableOrganizations: session?.user?.organizations || [],
-    hasMultipleOrganizations: (session?.user?.organizations?.length || 0) > 1,
+    availableOrganizations: organizations || [],
+    hasMultipleOrganizations: (organizations?.length || 0) > 1,
     switchOrganization,
     setOrganizationId, // Keep for backward compatibility
   };

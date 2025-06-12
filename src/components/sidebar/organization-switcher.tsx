@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronsUpDown, Plus, Check, Building2 } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { useUserOrganizations } from "@/hooks/useUserOrganizations"
 
 import {
   DropdownMenu,
@@ -22,15 +22,20 @@ import {
 
 export function OrganizationSwitcher() {
   const { isMobile } = useSidebar()
-  const { data: session } = useSession()
+  const { data: organizations, isLoading } = useUserOrganizations()
   
-  const organizations = session?.user?.organizations || []
-  const currentOrganization = organizations.length > 0 ? organizations[0] : null
+  const currentOrganization = organizations && organizations.length > 0 ? organizations[0] : null
   const [activeOrganization, setActiveOrganization] = React.useState(currentOrganization)
+
+  React.useEffect(() => {
+    if (currentOrganization && !activeOrganization) {
+      setActiveOrganization(currentOrganization)
+    }
+  }, [currentOrganization, activeOrganization])
 
   const displayOrg = activeOrganization || currentOrganization
 
-  if (!organizations.length || !displayOrg) {
+  if (isLoading || !organizations?.length || !displayOrg) {
     return null
   }
 

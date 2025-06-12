@@ -10,7 +10,7 @@ const MotionItem = dynamic(() => import('./motion-components').then(mod => mod.M
 
 export default function HeroSection() {
   const handleStartBrewing = () => {
-    signIn('keycloak', { redirectTo: '/dashboard' })
+    signIn('keycloak', { redirectTo: '/organization' })
   }
   
   return (
