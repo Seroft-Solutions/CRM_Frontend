@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { callToast, handleCallError } from "./call-toast";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -392,10 +393,11 @@ export function CallTable() {
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCall({
     mutation: {
       onSuccess: () => {
+        callToast.updated();
         refetch();
       },
       onError: (error) => {
-        console.error('Update failed:', error);
+        handleCallError(error);
         throw error;
       },
     },
@@ -405,11 +407,11 @@ export function CallTable() {
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCall({
     mutation: {
       onSuccess: () => {
-        toast.success("Call deleted successfully");
+        callToast.deleted();
         refetch();
       },
       onError: (error) => {
-        toast.error(`Failed to delete Call: ${error}`);
+        handleCallError(error);
       },
     },
   });
@@ -511,11 +513,11 @@ export function CallTable() {
 
     try {
       await Promise.all(deletePromises);
-      toast.success(`${selectedRows.size} calls deleted successfully`);
+      callToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
       refetch();
     } catch (error) {
-      toast.error('Some deletions failed');
+      callToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
@@ -536,10 +538,16 @@ export function CallTable() {
 
       updateEntity({ 
         id: entityId,
-        data: updateData 
+        data: updateData
       }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error)
+        onSuccess: () => {
+          callToast.relationshipUpdated(relationshipName);
+          resolve();
+        },
+        onError: (error) => {
+          handleCallError(error);
+          reject(error);
+        }
       });
     });
   };
@@ -667,7 +675,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "email",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {

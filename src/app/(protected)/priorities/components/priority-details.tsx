@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { priorityToast, handlePriorityError } from "./priority-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function PriorityDetails({ id }: PriorityDetailsProps) {
   const { mutate: deleteEntity } = useDeletePriority({
     mutation: {
       onSuccess: () => {
-        toast.success("Priority deleted successfully");
+        priorityToast.deleted();
         router.push("/priorities");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Priority: ${error}`);
+        handlePriorityError(error);
       },
     },
   });

@@ -27,6 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { callToast } from "./call-toast";
 
 
 
@@ -84,7 +85,7 @@ export function BulkRelationshipAssignment({
   // Handle bulk update
   const handleBulkUpdate = async () => {
     if (!selectedRelationship) {
-      toast.error("Please select a relationship field");
+      callToast.validationError(["relationship field"]);
       return;
     }
 
@@ -94,7 +95,8 @@ export function BulkRelationshipAssignment({
       await onBulkUpdate(selectedEntityIds, selectedRelationship, selectedValue);
       
       const action = selectedValue === null ? "cleared" : "updated";
-      toast.success(
+      callToast.custom.success(
+        `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
         `${selectedRelationship} ${action} for ${selectedEntityIds.length} item${
           selectedEntityIds.length > 1 ? 's' : ''
         }`
@@ -104,7 +106,10 @@ export function BulkRelationshipAssignment({
       onOpenChange(false);
     } catch (error) {
       console.error('Bulk update error:', error);
-      toast.error(`Failed to update ${selectedRelationship}`);
+      callToast.custom.error(
+        "❌ Bulk Update Failed",
+        `Failed to update ${selectedRelationship}`
+      );
     } finally {
       setIsUpdating(false);
     }

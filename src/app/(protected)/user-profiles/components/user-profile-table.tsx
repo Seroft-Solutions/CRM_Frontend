@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { userProfileToast, handleUserProfileError } from "./user-profile-toast";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,10 +185,11 @@ export function UserProfileTable() {
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateUserProfile({
     mutation: {
       onSuccess: () => {
+        userProfileToast.updated();
         refetch();
       },
       onError: (error) => {
-        console.error('Update failed:', error);
+        handleUserProfileError(error);
         throw error;
       },
     },
@@ -197,11 +199,11 @@ export function UserProfileTable() {
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteUserProfile({
     mutation: {
       onSuccess: () => {
-        toast.success("UserProfile deleted successfully");
+        userProfileToast.deleted();
         refetch();
       },
       onError: (error) => {
-        toast.error(`Failed to delete UserProfile: ${error}`);
+        handleUserProfileError(error);
       },
     },
   });
@@ -297,11 +299,11 @@ export function UserProfileTable() {
 
     try {
       await Promise.all(deletePromises);
-      toast.success(`${selectedRows.size} user profiles deleted successfully`);
+      userProfileToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
       refetch();
     } catch (error) {
-      toast.error('Some deletions failed');
+      userProfileToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
@@ -309,25 +311,58 @@ export function UserProfileTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      const updateData = {
-        id: entityId,
-        [relationshipName]: newValue ? { id: newValue } : null,
+      // For JHipster partial updates, need entity ID and relationship structure
+      const updateData: any = {
+        id: entityId
       };
+      
+      if (newValue) {
+        updateData[relationshipName] = { id: newValue };
+      } else {
+        updateData[relationshipName] = null;
+      }
 
       updateEntity({ 
         id: entityId,
-        requestBody: updateData 
+        data: updateData
       }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error)
+        onSuccess: () => {
+          userProfileToast.relationshipUpdated(relationshipName);
+          resolve();
+        },
+        onError: (error) => {
+          handleUserProfileError(error);
+          reject(error);
+        }
       });
     });
   };
 
   // Handle bulk relationship updates
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
-    const promises = entityIds.map(id => handleRelationshipUpdate(id, relationshipName, newValue));
-    return Promise.all(promises);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Process updates sequentially to avoid overwhelming the server
+    for (const id of entityIds) {
+      try {
+        await handleRelationshipUpdate(id, relationshipName, newValue);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to update entity ${id}:`, error);
+        errorCount++;
+      }
+    }
+    
+    // Refresh data after updates
+    refetch();
+    
+    // Throw error if all failed, otherwise consider it partially successful
+    if (errorCount === entityIds.length) {
+      throw new Error(`All ${errorCount} updates failed`);
+    } else if (errorCount > 0) {
+      console.warn(`${errorCount} out of ${entityIds.length} updates failed`);
+    }
   };
 
   // Prepare relationship configurations for components

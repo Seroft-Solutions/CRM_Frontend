@@ -108,6 +108,18 @@ export class NextJsGenerator {
     this.ensureDir(componentsDir);
     this.ensureDir(authDir);
     
+    // Generate ToasterProvider component for global toast notifications
+    const toasterTemplate = path.join(this.templateDir, 'components', 'toaster-provider.tsx.ejs');
+    const toasterOutput = path.join(componentsDir, 'toaster-provider.tsx');
+    
+    if (fs.existsSync(toasterTemplate)) {
+      const template = fs.readFileSync(toasterTemplate, 'utf8');
+      fs.writeFileSync(toasterOutput, template);
+      console.log(`Generated shared component: ${toasterOutput}`);
+    } else {
+      console.warn(`ToasterProvider template not found: ${toasterTemplate}`);
+    }
+    
     // Generate PermissionGuard component
     const permissionGuardTemplate = path.join(this.templateDir, 'components', 'auth', 'permission-guard.tsx');
     const permissionGuardOutput = path.join(authDir, 'permission-guard.tsx');
@@ -194,9 +206,14 @@ export class NextJsGenerator {
     console.log(`Generating component files...`);
     
     await this.generateFile('entity/page.tsx.ejs', path.join(entityDir, 'page.tsx'), vars);
+    await this.generateFile('entity/layout.tsx.ejs', path.join(entityDir, 'layout.tsx'), vars);
     await this.generateFile('entity/new/page.tsx.ejs', path.join(entityDir, 'new', 'page.tsx'), vars);
     await this.generateFile('entity/[id]/page.tsx.ejs', path.join(entityDir, '[id]', 'page.tsx'), vars);
     await this.generateFile('entity/[id]/edit/page.tsx.ejs', path.join(entityDir, '[id]', 'edit', 'page.tsx'), vars);
+    
+    // Generate toast utility
+    await this.generateFile('entity/components/entity-toast.ts.ejs', 
+      path.join(entityDir, 'components', `${vars.entityFileName}-toast.ts`), vars);
     
     // Generate main table component
     await this.generateFile('entity/components/entity-table.tsx.ejs', 

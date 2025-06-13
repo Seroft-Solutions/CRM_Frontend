@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { subCallTypeToast, handleSubCallTypeError } from "./sub-call-type-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -95,15 +96,15 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("SubCallType created successfully");
+          subCallTypeToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("SubCallType created successfully");
+          subCallTypeToast.created();
           router.push("/sub-call-types");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create SubCallType: ${error}`);
+        handleSubCallTypeError(error);
       },
     },
   });
@@ -114,11 +115,11 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('SubCallTypeFormState');
         
-        toast.success("SubCallType updated successfully");
+        subCallTypeToast.updated();
         router.push("/sub-call-types");
       },
       onError: (error) => {
-        toast.error(`Failed to update SubCallType: ${error}`);
+        handleSubCallTypeError(error);
       },
     },
   });
@@ -190,7 +191,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
           localStorage.removeItem('SubCallTypeFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          subCallTypeToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

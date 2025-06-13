@@ -1,221 +1,80 @@
-'use server'
+"use server";
 
-import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
-import { springService } from '@/core/api/services/spring-service'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { sourceToast } from "../components/source-toast";
 
-// Define validation schema for Source
-const sourceSchema = z.object({
-  
-  
-  name: z.string().min(2).max(50),
-  
-  
-  
-  description: z.string().max(255).optional(),
-  
-  
-  
-  remark: z.string().max(1000).optional(),
-  
-  
-  
-})
-
-export type SourceFormData = z.infer<typeof sourceSchema>
-
-/**
- * Create a new Source
- */
-export async function createSource(
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+export async function createSourceAction(formData: FormData) {
   try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    // Process form data and create entity
+    const result = await createSource(formData);
     
-    if (!(await hasRole('source:create'))) {
-      return { error: 'Insufficient permissions to create source' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = sourceSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Create the entity
-    await springService.post('/sources', dataWithOrg)
-
-    // Revalidate the list page
-    revalidatePath('/sources')
+    revalidatePath("/sources");
+    sourceToast.created();
     
+    return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error creating Source:', error)
-    return { error: 'Failed to create source. Please try again.' }
-  }
-
-  // Redirect to the list page on success
-  redirect('/sources')
-}
-
-/**
- * Update an existing Source
- */
-export async function updateSource(
-  id: number,
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
-    
-    if (!(await hasRole('source:update'))) {
-      return { error: 'Insufficient permissions to update source' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = sourceSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Update the entity
-    await springService.put(`/sources/${id}`, { id, ...dataWithOrg })
-
-    // Revalidate pages
-    revalidatePath('/sources')
-    revalidatePath(`/sources/${id}`)
-    
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error updating Source:', error)
-    return { error: 'Failed to update source. Please try again.' }
-  }
-
-  // Redirect to the details page on success
-  redirect(`/sources/${id}`)
-}
-
-/**
- * Delete a Source
- */
-export async function deleteSource(id: number): Promise<{ success?: boolean; error?: string }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    
-    if (!(await hasRole('source:delete'))) {
-      return { error: 'Insufficient permissions to delete source' }
-    }
-
-    // Delete the entity
-    await springService.delete(`/sources/${id}`)
-
-    // Revalidate the list page
-    revalidatePath('/sources')
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Error deleting Source:', error)
-    return { error: 'Failed to delete source. Please try again.' }
+    console.error("Failed to create source:", error);
+    sourceToast.createError(error?.message);
+    return { success: false, error: error?.message };
   }
 }
 
-/**
- * Get Sources for current organization
- */
-export async function getSourcesForOrganization() {
+export async function updateSourceAction(id: number, formData: FormData) {
   try {
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    const result = await updateSource(id, formData);
     
-    if (!(await hasRole('source:read'))) {
-      throw new Error('Insufficient permissions to read sources')
+    revalidatePath("/sources");
+    revalidatePath(`/sources/${id}`);
+    sourceToast.updated();
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to update source:", error);
+    sourceToast.updateError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function deleteSourceAction(id: number) {
+  try {
+    await deleteSource(id);
+    
+    revalidatePath("/sources");
+    sourceToast.deleted();
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete source:", error);
+    sourceToast.deleteError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkDeleteSourceAction(ids: number[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(id => deleteSource(id))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const errorCount = results.filter(r => r.status === 'rejected').length;
+    
+    revalidatePath("/sources");
+    
+    if (errorCount === 0) {
+      sourceToast.bulkDeleted(successCount);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    } else {
+      sourceToast.bulkDeleteError();
     }
     
-    // Build query parameters with organization filter
-    const params = currentOrg ? { organizationId: currentOrg.id } : {}
-    
-    const response = await springService.get('/sources', { params })
-    return response
+    return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Error fetching Sources for organization:', error)
-    throw error
+    console.error("Bulk delete failed:", error);
+    sourceToast.bulkDeleteError(error?.message);
+    return { success: false, error: error?.message };
   }
 }

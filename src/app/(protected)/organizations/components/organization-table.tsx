@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { organizationToast, handleOrganizationError } from "./organization-toast";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,10 +148,11 @@ export function OrganizationTable() {
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateOrganization({
     mutation: {
       onSuccess: () => {
+        organizationToast.updated();
         refetch();
       },
       onError: (error) => {
-        console.error('Update failed:', error);
+        handleOrganizationError(error);
         throw error;
       },
     },
@@ -160,11 +162,11 @@ export function OrganizationTable() {
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteOrganization({
     mutation: {
       onSuccess: () => {
-        toast.success("Organization deleted successfully");
+        organizationToast.deleted();
         refetch();
       },
       onError: (error) => {
-        toast.error(`Failed to delete Organization: ${error}`);
+        handleOrganizationError(error);
       },
     },
   });
@@ -260,11 +262,11 @@ export function OrganizationTable() {
 
     try {
       await Promise.all(deletePromises);
-      toast.success(`${selectedRows.size} organizations deleted successfully`);
+      organizationToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
       refetch();
     } catch (error) {
-      toast.error('Some deletions failed');
+      organizationToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
@@ -272,25 +274,58 @@ export function OrganizationTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      const updateData = {
-        id: entityId,
-        [relationshipName]: newValue ? { id: newValue } : null,
+      // For JHipster partial updates, need entity ID and relationship structure
+      const updateData: any = {
+        id: entityId
       };
+      
+      if (newValue) {
+        updateData[relationshipName] = { id: newValue };
+      } else {
+        updateData[relationshipName] = null;
+      }
 
       updateEntity({ 
         id: entityId,
-        requestBody: updateData 
+        data: updateData
       }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error)
+        onSuccess: () => {
+          organizationToast.relationshipUpdated(relationshipName);
+          resolve();
+        },
+        onError: (error) => {
+          handleOrganizationError(error);
+          reject(error);
+        }
       });
     });
   };
 
   // Handle bulk relationship updates
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
-    const promises = entityIds.map(id => handleRelationshipUpdate(id, relationshipName, newValue));
-    return Promise.all(promises);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Process updates sequentially to avoid overwhelming the server
+    for (const id of entityIds) {
+      try {
+        await handleRelationshipUpdate(id, relationshipName, newValue);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to update entity ${id}:`, error);
+        errorCount++;
+      }
+    }
+    
+    // Refresh data after updates
+    refetch();
+    
+    // Throw error if all failed, otherwise consider it partially successful
+    if (errorCount === entityIds.length) {
+      throw new Error(`All ${errorCount} updates failed`);
+    } else if (errorCount > 0) {
+      console.warn(`${errorCount} out of ${entityIds.length} updates failed`);
+    }
   };
 
   // Prepare relationship configurations for components

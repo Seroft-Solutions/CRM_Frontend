@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { callCategoryToast, handleCallCategoryError } from "./call-category-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,15 +90,15 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("CallCategory created successfully");
+          callCategoryToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("CallCategory created successfully");
+          callCategoryToast.created();
           router.push("/call-categories");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create CallCategory: ${error}`);
+        handleCallCategoryError(error);
       },
     },
   });
@@ -108,11 +109,11 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('CallCategoryFormState');
         
-        toast.success("CallCategory updated successfully");
+        callCategoryToast.updated();
         router.push("/call-categories");
       },
       onError: (error) => {
-        toast.error(`Failed to update CallCategory: ${error}`);
+        handleCallCategoryError(error);
       },
     },
   });
@@ -181,7 +182,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
           localStorage.removeItem('CallCategoryFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          callCategoryToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -19,6 +19,7 @@ const textFields = fields.filter(f => !f.fieldIsEnum && !f.fieldTypeBoolean && !
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { <%= entityInstance %>Toast, handle<%= entityClass %>Error } from "./<%= entityFileName %>-toast";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -315,10 +316,11 @@ export function <%= entityClass %>Table() {
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdate<%= entityClass %>({
     mutation: {
       onSuccess: () => {
+        <%= entityInstance %>Toast.updated();
         refetch();
       },
       onError: (error) => {
-        console.error('Update failed:', error);
+        handle<%= entityClass %>Error(error);
         throw error;
       },
     },
@@ -328,11 +330,11 @@ export function <%= entityClass %>Table() {
   const { mutate: deleteEntity, isPending: isDeleting } = useDelete<%= entityClass %>({
     mutation: {
       onSuccess: () => {
-        toast.success("<%= entityClass %> deleted successfully");
+        <%= entityInstance %>Toast.deleted();
         refetch();
       },
       onError: (error) => {
-        toast.error(`Failed to delete <%= entityClass %>: ${error}`);
+        handle<%= entityClass %>Error(error);
       },
     },
   });
@@ -434,11 +436,11 @@ export function <%= entityClass %>Table() {
 
     try {
       await Promise.all(deletePromises);
-      toast.success(`${selectedRows.size} <%= entityClassPluralHumanized.toLowerCase() %> deleted successfully`);
+      <%= entityInstance %>Toast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
       refetch();
     } catch (error) {
-      toast.error('Some deletions failed');
+      <%= entityInstance %>Toast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
@@ -461,8 +463,14 @@ export function <%= entityClass %>Table() {
         id: entityId,
         data: updateData
       }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error)
+        onSuccess: () => {
+          <%= entityInstance %>Toast.relationshipUpdated(relationshipName);
+          resolve();
+        },
+        onError: (error) => {
+          handle<%= entityClass %>Error(error);
+          reject(error);
+        }
       });
     });
   };

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { channelTypeToast, handleChannelTypeError } from "./channel-type-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,15 +90,15 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("ChannelType created successfully");
+          channelTypeToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("ChannelType created successfully");
+          channelTypeToast.created();
           router.push("/channel-types");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create ChannelType: ${error}`);
+        handleChannelTypeError(error);
       },
     },
   });
@@ -108,11 +109,11 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('ChannelTypeFormState');
         
-        toast.success("ChannelType updated successfully");
+        channelTypeToast.updated();
         router.push("/channel-types");
       },
       onError: (error) => {
-        toast.error(`Failed to update ChannelType: ${error}`);
+        handleChannelTypeError(error);
       },
     },
   });
@@ -181,7 +182,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
           localStorage.removeItem('ChannelTypeFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          channelTypeToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

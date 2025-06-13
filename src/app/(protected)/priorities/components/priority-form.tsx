@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { priorityToast, handlePriorityError } from "./priority-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,15 +90,15 @@ export function PriorityForm({ id }: PriorityFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Priority created successfully");
+          priorityToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Priority created successfully");
+          priorityToast.created();
           router.push("/priorities");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Priority: ${error}`);
+        handlePriorityError(error);
       },
     },
   });
@@ -108,11 +109,11 @@ export function PriorityForm({ id }: PriorityFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('PriorityFormState');
         
-        toast.success("Priority updated successfully");
+        priorityToast.updated();
         router.push("/priorities");
       },
       onError: (error) => {
-        toast.error(`Failed to update Priority: ${error}`);
+        handlePriorityError(error);
       },
     },
   });
@@ -181,7 +182,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
           localStorage.removeItem('PriorityFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          priorityToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

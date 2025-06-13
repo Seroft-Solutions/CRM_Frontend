@@ -1,221 +1,80 @@
-'use server'
+"use server";
 
-import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
-import { springService } from '@/core/api/services/spring-service'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { channelTypeToast } from "../components/channel-type-toast";
 
-// Define validation schema for ChannelType
-const channeltypeSchema = z.object({
-  
-  
-  name: z.string().min(2).max(50),
-  
-  
-  
-  description: z.string().max(255).optional(),
-  
-  
-  
-  commissionRate: z.any().optional(),
-  
-  
-  
-})
-
-export type ChannelTypeFormData = z.infer<typeof channeltypeSchema>
-
-/**
- * Create a new ChannelType
- */
-export async function createChannelType(
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+export async function createChannelTypeAction(formData: FormData) {
   try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    // Process form data and create entity
+    const result = await createChannelType(formData);
     
-    if (!(await hasRole('channelType:create'))) {
-      return { error: 'Insufficient permissions to create channel type' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      commissionRate: formData.get('commissionRate') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = channeltypeSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Create the entity
-    await springService.post('/channel-types', dataWithOrg)
-
-    // Revalidate the list page
-    revalidatePath('/channel-types')
+    revalidatePath("/channel-types");
+    channelTypeToast.created();
     
+    return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error creating ChannelType:', error)
-    return { error: 'Failed to create channel type. Please try again.' }
-  }
-
-  // Redirect to the list page on success
-  redirect('/channel-types')
-}
-
-/**
- * Update an existing ChannelType
- */
-export async function updateChannelType(
-  id: number,
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
-    
-    if (!(await hasRole('channelType:update'))) {
-      return { error: 'Insufficient permissions to update channel type' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      commissionRate: formData.get('commissionRate') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = channeltypeSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Update the entity
-    await springService.put(`/channel-types/${id}`, { id, ...dataWithOrg })
-
-    // Revalidate pages
-    revalidatePath('/channel-types')
-    revalidatePath(`/channel-types/${id}`)
-    
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error updating ChannelType:', error)
-    return { error: 'Failed to update channel type. Please try again.' }
-  }
-
-  // Redirect to the details page on success
-  redirect(`/channel-types/${id}`)
-}
-
-/**
- * Delete a ChannelType
- */
-export async function deleteChannelType(id: number): Promise<{ success?: boolean; error?: string }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    
-    if (!(await hasRole('channelType:delete'))) {
-      return { error: 'Insufficient permissions to delete channel type' }
-    }
-
-    // Delete the entity
-    await springService.delete(`/channel-types/${id}`)
-
-    // Revalidate the list page
-    revalidatePath('/channel-types')
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Error deleting ChannelType:', error)
-    return { error: 'Failed to delete channel type. Please try again.' }
+    console.error("Failed to create channeltype:", error);
+    channelTypeToast.createError(error?.message);
+    return { success: false, error: error?.message };
   }
 }
 
-/**
- * Get ChannelTypes for current organization
- */
-export async function getChannelTypesForOrganization() {
+export async function updateChannelTypeAction(id: number, formData: FormData) {
   try {
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    const result = await updateChannelType(id, formData);
     
-    if (!(await hasRole('channelType:read'))) {
-      throw new Error('Insufficient permissions to read channel types')
+    revalidatePath("/channel-types");
+    revalidatePath(`/channel-types/${id}`);
+    channelTypeToast.updated();
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to update channeltype:", error);
+    channelTypeToast.updateError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function deleteChannelTypeAction(id: number) {
+  try {
+    await deleteChannelType(id);
+    
+    revalidatePath("/channel-types");
+    channelTypeToast.deleted();
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete channeltype:", error);
+    channelTypeToast.deleteError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkDeleteChannelTypeAction(ids: number[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(id => deleteChannelType(id))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const errorCount = results.filter(r => r.status === 'rejected').length;
+    
+    revalidatePath("/channel-types");
+    
+    if (errorCount === 0) {
+      channelTypeToast.bulkDeleted(successCount);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    } else {
+      channelTypeToast.bulkDeleteError();
     }
     
-    // Build query parameters with organization filter
-    const params = currentOrg ? { organizationId: currentOrg.id } : {}
-    
-    const response = await springService.get('/channel-types', { params })
-    return response
+    return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Error fetching ChannelTypes for organization:', error)
-    throw error
+    console.error("Bulk delete failed:", error);
+    channelTypeToast.bulkDeleteError(error?.message);
+    return { success: false, error: error?.message };
   }
 }

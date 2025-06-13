@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { userProfileToast, handleUserProfileError } from "./user-profile-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -111,15 +112,15 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("UserProfile created successfully");
+          userProfileToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("UserProfile created successfully");
+          userProfileToast.created();
           router.push("/user-profiles");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create UserProfile: ${error}`);
+        handleUserProfileError(error);
       },
     },
   });
@@ -130,11 +131,11 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('UserProfileFormState');
         
-        toast.success("UserProfile updated successfully");
+        userProfileToast.updated();
         router.push("/user-profiles");
       },
       onError: (error) => {
-        toast.error(`Failed to update UserProfile: ${error}`);
+        handleUserProfileError(error);
       },
     },
   });
@@ -218,7 +219,7 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
           localStorage.removeItem('UserProfileFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          userProfileToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

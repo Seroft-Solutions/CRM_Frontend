@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { productToast, handleProductError } from "./product-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -94,15 +95,15 @@ export function ProductForm({ id }: ProductFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Product created successfully");
+          productToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Product created successfully");
+          productToast.created();
           router.push("/products");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Product: ${error}`);
+        handleProductError(error);
       },
     },
   });
@@ -113,11 +114,11 @@ export function ProductForm({ id }: ProductFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('ProductFormState');
         
-        toast.success("Product updated successfully");
+        productToast.updated();
         router.push("/products");
       },
       onError: (error) => {
-        toast.error(`Failed to update Product: ${error}`);
+        handleProductError(error);
       },
     },
   });
@@ -201,7 +202,7 @@ export function ProductForm({ id }: ProductFormProps) {
           localStorage.removeItem('ProductFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          productToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { organizationToast, handleOrganizationError } from "./organization-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
   const { mutate: deleteEntity } = useDeleteOrganization({
     mutation: {
       onSuccess: () => {
-        toast.success("Organization deleted successfully");
+        organizationToast.deleted();
         router.push("/organizations");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Organization: ${error}`);
+        handleOrganizationError(error);
       },
     },
   });

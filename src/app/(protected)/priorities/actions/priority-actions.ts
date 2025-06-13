@@ -1,221 +1,80 @@
-'use server'
+"use server";
 
-import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
-import { springService } from '@/core/api/services/spring-service'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { priorityToast } from "../components/priority-toast";
 
-// Define validation schema for Priority
-const prioritySchema = z.object({
-  
-  
-  name: z.string().min(2).max(50),
-  
-  
-  
-  description: z.string().max(255).optional(),
-  
-  
-  
-  remark: z.string().max(1000).optional(),
-  
-  
-  
-})
-
-export type PriorityFormData = z.infer<typeof prioritySchema>
-
-/**
- * Create a new Priority
- */
-export async function createPriority(
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+export async function createPriorityAction(formData: FormData) {
   try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    // Process form data and create entity
+    const result = await createPriority(formData);
     
-    if (!(await hasRole('priority:create'))) {
-      return { error: 'Insufficient permissions to create priority' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = prioritySchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Create the entity
-    await springService.post('/priorities', dataWithOrg)
-
-    // Revalidate the list page
-    revalidatePath('/priorities')
+    revalidatePath("/priorities");
+    priorityToast.created();
     
+    return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error creating Priority:', error)
-    return { error: 'Failed to create priority. Please try again.' }
-  }
-
-  // Redirect to the list page on success
-  redirect('/priorities')
-}
-
-/**
- * Update an existing Priority
- */
-export async function updatePriority(
-  id: number,
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
-    
-    if (!(await hasRole('priority:update'))) {
-      return { error: 'Insufficient permissions to update priority' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = prioritySchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Update the entity
-    await springService.put(`/priorities/${id}`, { id, ...dataWithOrg })
-
-    // Revalidate pages
-    revalidatePath('/priorities')
-    revalidatePath(`/priorities/${id}`)
-    
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error updating Priority:', error)
-    return { error: 'Failed to update priority. Please try again.' }
-  }
-
-  // Redirect to the details page on success
-  redirect(`/priorities/${id}`)
-}
-
-/**
- * Delete a Priority
- */
-export async function deletePriority(id: number): Promise<{ success?: boolean; error?: string }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    
-    if (!(await hasRole('priority:delete'))) {
-      return { error: 'Insufficient permissions to delete priority' }
-    }
-
-    // Delete the entity
-    await springService.delete(`/priorities/${id}`)
-
-    // Revalidate the list page
-    revalidatePath('/priorities')
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Error deleting Priority:', error)
-    return { error: 'Failed to delete priority. Please try again.' }
+    console.error("Failed to create priority:", error);
+    priorityToast.createError(error?.message);
+    return { success: false, error: error?.message };
   }
 }
 
-/**
- * Get Priorities for current organization
- */
-export async function getPrioritiesForOrganization() {
+export async function updatePriorityAction(id: number, formData: FormData) {
   try {
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    const result = await updatePriority(id, formData);
     
-    if (!(await hasRole('priority:read'))) {
-      throw new Error('Insufficient permissions to read priorities')
+    revalidatePath("/priorities");
+    revalidatePath(`/priorities/${id}`);
+    priorityToast.updated();
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to update priority:", error);
+    priorityToast.updateError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function deletePriorityAction(id: number) {
+  try {
+    await deletePriority(id);
+    
+    revalidatePath("/priorities");
+    priorityToast.deleted();
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete priority:", error);
+    priorityToast.deleteError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkDeletePriorityAction(ids: number[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(id => deletePriority(id))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const errorCount = results.filter(r => r.status === 'rejected').length;
+    
+    revalidatePath("/priorities");
+    
+    if (errorCount === 0) {
+      priorityToast.bulkDeleted(successCount);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    } else {
+      priorityToast.bulkDeleteError();
     }
     
-    // Build query parameters with organization filter
-    const params = currentOrg ? { organizationId: currentOrg.id } : {}
-    
-    const response = await springService.get('/priorities', { params })
-    return response
+    return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Error fetching Priorities for organization:', error)
-    throw error
+    console.error("Bulk delete failed:", error);
+    priorityToast.bulkDeleteError(error?.message);
+    return { success: false, error: error?.message };
   }
 }

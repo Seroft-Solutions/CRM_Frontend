@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { partyToast, handlePartyError } from "./party-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -116,15 +117,15 @@ export function PartyForm({ id }: PartyFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Party created successfully");
+          partyToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Party created successfully");
+          partyToast.created();
           router.push("/parties");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Party: ${error}`);
+        handlePartyError(error);
       },
     },
   });
@@ -135,11 +136,11 @@ export function PartyForm({ id }: PartyFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('PartyFormState');
         
-        toast.success("Party updated successfully");
+        partyToast.updated();
         router.push("/parties");
       },
       onError: (error) => {
-        toast.error(`Failed to update Party: ${error}`);
+        handlePartyError(error);
       },
     },
   });
@@ -238,7 +239,7 @@ export function PartyForm({ id }: PartyFormProps) {
           localStorage.removeItem('PartyFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          partyToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { cityToast, handleCityError } from "./city-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function CityDetails({ id }: CityDetailsProps) {
   const { mutate: deleteEntity } = useDeleteCity({
     mutation: {
       onSuccess: () => {
-        toast.success("City deleted successfully");
+        cityToast.deleted();
         router.push("/cities");
       },
       onError: (error) => {
-        toast.error(`Failed to delete City: ${error}`);
+        handleCityError(error);
       },
     },
   });

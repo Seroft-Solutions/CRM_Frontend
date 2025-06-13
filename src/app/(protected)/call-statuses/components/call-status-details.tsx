@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { callStatusToast, handleCallStatusError } from "./call-status-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
   const { mutate: deleteEntity } = useDeleteCallStatus({
     mutation: {
       onSuccess: () => {
-        toast.success("CallStatus deleted successfully");
+        callStatusToast.deleted();
         router.push("/call-statuses");
       },
       onError: (error) => {
-        toast.error(`Failed to delete CallStatus: ${error}`);
+        handleCallStatusError(error);
       },
     },
   });

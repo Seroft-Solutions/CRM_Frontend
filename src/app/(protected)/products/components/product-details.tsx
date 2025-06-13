@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { productToast, handleProductError } from "./product-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function ProductDetails({ id }: ProductDetailsProps) {
   const { mutate: deleteEntity } = useDeleteProduct({
     mutation: {
       onSuccess: () => {
-        toast.success("Product deleted successfully");
+        productToast.deleted();
         router.push("/products");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Product: ${error}`);
+        handleProductError(error);
       },
     },
   });
