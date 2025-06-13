@@ -122,8 +122,7 @@ export const sidebarItems: SidebarItem[] = [
         expandable: true,
         requiredPermission: 'call:read',
         children: [
-            {key: 'callTracking', label: 'Call Tracking', path: '/calls', requiredPermission: 'call:read'},
-            {key: 'callRemarks', label: 'Call Remarks', path: '/call-remarks', requiredPermission: 'callRemark:read'},
+            {key: 'callTracking', label: 'Call Tracking', path: '/calls', requiredPermission: 'call:read'}
         ],
     },
 ];
