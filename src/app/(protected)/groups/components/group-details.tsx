@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { groupToast, handleGroupError } from "./group-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function GroupDetails({ id }: GroupDetailsProps) {
   const { mutate: deleteEntity } = useDeleteGroup({
     mutation: {
       onSuccess: () => {
-        toast.success("Group deleted successfully");
+        groupToast.deleted();
         router.push("/groups");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Group: ${error}`);
+        handleGroupError(error);
       },
     },
   });

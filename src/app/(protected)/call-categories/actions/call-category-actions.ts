@@ -1,221 +1,80 @@
-'use server'
+"use server";
 
-import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
-import { springService } from '@/core/api/services/spring-service'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { callCategoryToast } from "../components/call-category-toast";
 
-// Define validation schema for CallCategory
-const callcategorySchema = z.object({
-  
-  
-  name: z.string().min(2).max(50),
-  
-  
-  
-  description: z.string().max(255).optional(),
-  
-  
-  
-  remark: z.string().max(1000).optional(),
-  
-  
-  
-})
-
-export type CallCategoryFormData = z.infer<typeof callcategorySchema>
-
-/**
- * Create a new CallCategory
- */
-export async function createCallCategory(
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+export async function createCallCategoryAction(formData: FormData) {
   try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    // Process form data and create entity
+    const result = await createCallCategory(formData);
     
-    if (!(await hasRole('callCategory:create'))) {
-      return { error: 'Insufficient permissions to create call category' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = callcategorySchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Create the entity
-    await springService.post('/call-categories', dataWithOrg)
-
-    // Revalidate the list page
-    revalidatePath('/call-categories')
+    revalidatePath("/call-categories");
+    callCategoryToast.created();
     
+    return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error creating CallCategory:', error)
-    return { error: 'Failed to create call category. Please try again.' }
-  }
-
-  // Redirect to the list page on success
-  redirect('/call-categories')
-}
-
-/**
- * Update an existing CallCategory
- */
-export async function updateCallCategory(
-  id: number,
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
-    
-    if (!(await hasRole('callCategory:update'))) {
-      return { error: 'Insufficient permissions to update call category' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      description: formData.get('description') || undefined,
-      
-      
-      
-      remark: formData.get('remark') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = callcategorySchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Update the entity
-    await springService.put(`/call-categories/${id}`, { id, ...dataWithOrg })
-
-    // Revalidate pages
-    revalidatePath('/call-categories')
-    revalidatePath(`/call-categories/${id}`)
-    
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error updating CallCategory:', error)
-    return { error: 'Failed to update call category. Please try again.' }
-  }
-
-  // Redirect to the details page on success
-  redirect(`/call-categories/${id}`)
-}
-
-/**
- * Delete a CallCategory
- */
-export async function deleteCallCategory(id: number): Promise<{ success?: boolean; error?: string }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    
-    if (!(await hasRole('callCategory:delete'))) {
-      return { error: 'Insufficient permissions to delete call category' }
-    }
-
-    // Delete the entity
-    await springService.delete(`/call-categories/${id}`)
-
-    // Revalidate the list page
-    revalidatePath('/call-categories')
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Error deleting CallCategory:', error)
-    return { error: 'Failed to delete call category. Please try again.' }
+    console.error("Failed to create callcategory:", error);
+    callCategoryToast.createError(error?.message);
+    return { success: false, error: error?.message };
   }
 }
 
-/**
- * Get CallCategories for current organization
- */
-export async function getCallCategoriesForOrganization() {
+export async function updateCallCategoryAction(id: number, formData: FormData) {
   try {
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    const result = await updateCallCategory(id, formData);
     
-    if (!(await hasRole('callCategory:read'))) {
-      throw new Error('Insufficient permissions to read call categories')
+    revalidatePath("/call-categories");
+    revalidatePath(`/call-categories/${id}`);
+    callCategoryToast.updated();
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to update callcategory:", error);
+    callCategoryToast.updateError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function deleteCallCategoryAction(id: number) {
+  try {
+    await deleteCallCategory(id);
+    
+    revalidatePath("/call-categories");
+    callCategoryToast.deleted();
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete callcategory:", error);
+    callCategoryToast.deleteError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkDeleteCallCategoryAction(ids: number[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(id => deleteCallCategory(id))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const errorCount = results.filter(r => r.status === 'rejected').length;
+    
+    revalidatePath("/call-categories");
+    
+    if (errorCount === 0) {
+      callCategoryToast.bulkDeleted(successCount);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    } else {
+      callCategoryToast.bulkDeleteError();
     }
     
-    // Build query parameters with organization filter
-    const params = currentOrg ? { organizationId: currentOrg.id } : {}
-    
-    const response = await springService.get('/call-categories', { params })
-    return response
+    return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Error fetching CallCategories for organization:', error)
-    throw error
+    console.error("Bulk delete failed:", error);
+    callCategoryToast.bulkDeleteError(error?.message);
+    return { success: false, error: error?.message };
   }
 }

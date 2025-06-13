@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { callRemarkToast, handleCallRemarkError } from "./call-remark-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
   const { mutate: deleteEntity } = useDeleteCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("CallRemark deleted successfully");
+        callRemarkToast.deleted();
         router.push("/call-remarks");
       },
       onError: (error) => {
-        toast.error(`Failed to delete CallRemark: ${error}`);
+        handleCallRemarkError(error);
       },
     },
   });

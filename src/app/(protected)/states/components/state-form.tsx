@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { stateToast, handleStateError } from "./state-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -88,15 +89,15 @@ export function StateForm({ id }: StateFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("State created successfully");
+          stateToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("State created successfully");
+          stateToast.created();
           router.push("/states");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create State: ${error}`);
+        handleStateError(error);
       },
     },
   });
@@ -107,11 +108,11 @@ export function StateForm({ id }: StateFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('StateFormState');
         
-        toast.success("State updated successfully");
+        stateToast.updated();
         router.push("/states");
       },
       onError: (error) => {
-        toast.error(`Failed to update State: ${error}`);
+        handleStateError(error);
       },
     },
   });
@@ -177,7 +178,7 @@ export function StateForm({ id }: StateFormProps) {
           localStorage.removeItem('StateFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          stateToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

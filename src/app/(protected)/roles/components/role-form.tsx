@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { roleToast, handleRoleError } from "./role-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -95,15 +96,15 @@ export function RoleForm({ id }: RoleFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Role created successfully");
+          roleToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Role created successfully");
+          roleToast.created();
           router.push("/roles");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Role: ${error}`);
+        handleRoleError(error);
       },
     },
   });
@@ -114,11 +115,11 @@ export function RoleForm({ id }: RoleFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('RoleFormState');
         
-        toast.success("Role updated successfully");
+        roleToast.updated();
         router.push("/roles");
       },
       onError: (error) => {
-        toast.error(`Failed to update Role: ${error}`);
+        handleRoleError(error);
       },
     },
   });
@@ -187,7 +188,7 @@ export function RoleForm({ id }: RoleFormProps) {
           localStorage.removeItem('RoleFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          roleToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

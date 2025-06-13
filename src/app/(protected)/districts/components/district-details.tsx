@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { districtToast, handleDistrictError } from "./district-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
   const { mutate: deleteEntity } = useDeleteDistrict({
     mutation: {
       onSuccess: () => {
-        toast.success("District deleted successfully");
+        districtToast.deleted();
         router.push("/districts");
       },
       onError: (error) => {
-        toast.error(`Failed to delete District: ${error}`);
+        handleDistrictError(error);
       },
     },
   });

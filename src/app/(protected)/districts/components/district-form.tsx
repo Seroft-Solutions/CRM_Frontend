@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { districtToast, handleDistrictError } from "./district-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -93,15 +94,15 @@ export function DistrictForm({ id }: DistrictFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("District created successfully");
+          districtToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("District created successfully");
+          districtToast.created();
           router.push("/districts");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create District: ${error}`);
+        handleDistrictError(error);
       },
     },
   });
@@ -112,11 +113,11 @@ export function DistrictForm({ id }: DistrictFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('DistrictFormState');
         
-        toast.success("District updated successfully");
+        districtToast.updated();
         router.push("/districts");
       },
       onError: (error) => {
-        toast.error(`Failed to update District: ${error}`);
+        handleDistrictError(error);
       },
     },
   });
@@ -182,7 +183,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
           localStorage.removeItem('DistrictFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          districtToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

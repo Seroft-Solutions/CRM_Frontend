@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { groupToast, handleGroupError } from "./group-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -97,15 +98,15 @@ export function GroupForm({ id }: GroupFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Group created successfully");
+          groupToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Group created successfully");
+          groupToast.created();
           router.push("/groups");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Group: ${error}`);
+        handleGroupError(error);
       },
     },
   });
@@ -116,11 +117,11 @@ export function GroupForm({ id }: GroupFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('GroupFormState');
         
-        toast.success("Group updated successfully");
+        groupToast.updated();
         router.push("/groups");
       },
       onError: (error) => {
-        toast.error(`Failed to update Group: ${error}`);
+        handleGroupError(error);
       },
     },
   });
@@ -195,7 +196,7 @@ export function GroupForm({ id }: GroupFormProps) {
           localStorage.removeItem('GroupFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          groupToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { channelTypeToast, handleChannelTypeError } from "./channel-type-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
   const { mutate: deleteEntity } = useDeleteChannelType({
     mutation: {
       onSuccess: () => {
-        toast.success("ChannelType deleted successfully");
+        channelTypeToast.deleted();
         router.push("/channel-types");
       },
       onError: (error) => {
-        toast.error(`Failed to delete ChannelType: ${error}`);
+        handleChannelTypeError(error);
       },
     },
   });

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { userProfileToast, handleUserProfileError } from "./user-profile-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
   const { mutate: deleteEntity } = useDeleteUserProfile({
     mutation: {
       onSuccess: () => {
-        toast.success("UserProfile deleted successfully");
+        userProfileToast.deleted();
         router.push("/user-profiles");
       },
       onError: (error) => {
-        toast.error(`Failed to delete UserProfile: ${error}`);
+        handleUserProfileError(error);
       },
     },
   });

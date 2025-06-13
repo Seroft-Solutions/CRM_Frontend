@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { callStatusToast, handleCallStatusError } from "./call-status-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,15 +90,15 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("CallStatus created successfully");
+          callStatusToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("CallStatus created successfully");
+          callStatusToast.created();
           router.push("/call-statuses");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create CallStatus: ${error}`);
+        handleCallStatusError(error);
       },
     },
   });
@@ -108,11 +109,11 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('CallStatusFormState');
         
-        toast.success("CallStatus updated successfully");
+        callStatusToast.updated();
         router.push("/call-statuses");
       },
       onError: (error) => {
-        toast.error(`Failed to update CallStatus: ${error}`);
+        handleCallStatusError(error);
       },
     },
   });
@@ -181,7 +182,7 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
           localStorage.removeItem('CallStatusFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          callStatusToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { callCategoryToast, handleCallCategoryError } from "./call-category-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function CallCategoryDetails({ id }: CallCategoryDetailsProps) {
   const { mutate: deleteEntity } = useDeleteCallCategory({
     mutation: {
       onSuccess: () => {
-        toast.success("CallCategory deleted successfully");
+        callCategoryToast.deleted();
         router.push("/call-categories");
       },
       onError: (error) => {
-        toast.error(`Failed to delete CallCategory: ${error}`);
+        handleCallCategoryError(error);
       },
     },
   });

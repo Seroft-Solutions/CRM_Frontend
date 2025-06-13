@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { cityToast, handleCityError } from "./city-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -93,15 +94,15 @@ export function CityForm({ id }: CityFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("City created successfully");
+          cityToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("City created successfully");
+          cityToast.created();
           router.push("/cities");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create City: ${error}`);
+        handleCityError(error);
       },
     },
   });
@@ -112,11 +113,11 @@ export function CityForm({ id }: CityFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('CityFormState');
         
-        toast.success("City updated successfully");
+        cityToast.updated();
         router.push("/cities");
       },
       onError: (error) => {
-        toast.error(`Failed to update City: ${error}`);
+        handleCityError(error);
       },
     },
   });
@@ -182,7 +183,7 @@ export function CityForm({ id }: CityFormProps) {
           localStorage.removeItem('CityFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          cityToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

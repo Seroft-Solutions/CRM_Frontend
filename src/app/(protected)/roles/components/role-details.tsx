@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { roleToast, handleRoleError } from "./role-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function RoleDetails({ id }: RoleDetailsProps) {
   const { mutate: deleteEntity } = useDeleteRole({
     mutation: {
       onSuccess: () => {
-        toast.success("Role deleted successfully");
+        roleToast.deleted();
         router.push("/roles");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Role: ${error}`);
+        handleRoleError(error);
       },
     },
   });

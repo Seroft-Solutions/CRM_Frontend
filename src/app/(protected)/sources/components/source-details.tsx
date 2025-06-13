@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { sourceToast, handleSourceError } from "./source-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function SourceDetails({ id }: SourceDetailsProps) {
   const { mutate: deleteEntity } = useDeleteSource({
     mutation: {
       onSuccess: () => {
-        toast.success("Source deleted successfully");
+        sourceToast.deleted();
         router.push("/sources");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Source: ${error}`);
+        handleSourceError(error);
       },
     },
   });

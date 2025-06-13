@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { stateToast, handleStateError } from "./state-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function StateDetails({ id }: StateDetailsProps) {
   const { mutate: deleteEntity } = useDeleteState({
     mutation: {
       onSuccess: () => {
-        toast.success("State deleted successfully");
+        stateToast.deleted();
         router.push("/states");
       },
       onError: (error) => {
-        toast.error(`Failed to delete State: ${error}`);
+        handleStateError(error);
       },
     },
   });

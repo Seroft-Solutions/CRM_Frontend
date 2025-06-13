@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { areaToast, handleAreaError } from "./area-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function AreaDetails({ id }: AreaDetailsProps) {
   const { mutate: deleteEntity } = useDeleteArea({
     mutation: {
       onSuccess: () => {
-        toast.success("Area deleted successfully");
+        areaToast.deleted();
         router.push("/areas");
       },
       onError: (error) => {
-        toast.error(`Failed to delete Area: ${error}`);
+        handleAreaError(error);
       },
     },
   });

@@ -1,233 +1,80 @@
-'use server'
+"use server";
 
-import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
-import { springService } from '@/core/api/services/spring-service'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { organizationToast } from "../components/organization-toast";
 
-// Define validation schema for Organization
-const organizationSchema = z.object({
-  
-  
-  keycloakOrgId: z.any(),
-  
-  
-  
-  name: z.string().min(2).max(100),
-  
-  
-  
-  displayName: z.string().max(150).optional(),
-  
-  
-  
-  domain: z.string().max(100).optional(),
-  
-  
-  
-})
-
-export type OrganizationFormData = z.infer<typeof organizationSchema>
-
-/**
- * Create a new Organization
- */
-export async function createOrganization(
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+export async function createOrganizationAction(formData: FormData) {
   try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    // Process form data and create entity
+    const result = await createOrganization(formData);
     
-    if (!(await hasRole('organization:create'))) {
-      return { error: 'Insufficient permissions to create organization' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      keycloakOrgId: formData.get('keycloakOrgId') || undefined,
-      
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      displayName: formData.get('displayName') || undefined,
-      
-      
-      
-      domain: formData.get('domain') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = organizationSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Create the entity
-    await springService.post('/organizations', dataWithOrg)
-
-    // Revalidate the list page
-    revalidatePath('/organizations')
+    revalidatePath("/organizations");
+    organizationToast.created();
     
+    return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error creating Organization:', error)
-    return { error: 'Failed to create organization. Please try again.' }
-  }
-
-  // Redirect to the list page on success
-  redirect('/organizations')
-}
-
-/**
- * Update an existing Organization
- */
-export async function updateOrganization(
-  id: number,
-  prevState: any,
-  formData: FormData
-): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
-    
-    if (!(await hasRole('organization:update'))) {
-      return { error: 'Insufficient permissions to update organization' }
-    }
-
-    // Parse and validate form data
-    const rawData = {
-      
-      
-      keycloakOrgId: formData.get('keycloakOrgId') || undefined,
-      
-      
-      
-      name: formData.get('name') || undefined,
-      
-      
-      
-      displayName: formData.get('displayName') || undefined,
-      
-      
-      
-      domain: formData.get('domain') || undefined,
-      
-      
-      
-    }
-
-    const validatedData = organizationSchema.parse(rawData)
-
-    // Add organization context if available
-    const dataWithOrg = currentOrg 
-      ? { ...validatedData, organizationId: currentOrg.id }
-      : validatedData
-
-    // Update the entity
-    await springService.put(`/organizations/${id}`, { id, ...dataWithOrg })
-
-    // Revalidate pages
-    revalidatePath('/organizations')
-    revalidatePath(`/organizations/${id}`)
-    
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors
-      const cleanedErrors: Record<string, string[]> = {}
-      
-      // Filter out undefined values to match the expected type
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          cleanedErrors[key] = value
-        }
-      })
-      
-      return {
-        errors: cleanedErrors
-      }
-    }
-    
-    console.error('Error updating Organization:', error)
-    return { error: 'Failed to update organization. Please try again.' }
-  }
-
-  // Redirect to the details page on success
-  redirect(`/organizations/${id}`)
-}
-
-/**
- * Delete a Organization
- */
-export async function deleteOrganization(id: number): Promise<{ success?: boolean; error?: string }> {
-  try {
-    // Verify session and check permissions
-    const session = await verifySession()
-    
-    if (!(await hasRole('organization:delete'))) {
-      return { error: 'Insufficient permissions to delete organization' }
-    }
-
-    // Delete the entity
-    await springService.delete(`/organizations/${id}`)
-
-    // Revalidate the list page
-    revalidatePath('/organizations')
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Error deleting Organization:', error)
-    return { error: 'Failed to delete organization. Please try again.' }
+    console.error("Failed to create organization:", error);
+    organizationToast.createError(error?.message);
+    return { success: false, error: error?.message };
   }
 }
 
-/**
- * Get Organizations for current organization
- */
-export async function getOrganizationsForOrganization() {
+export async function updateOrganizationAction(id: number, formData: FormData) {
   try {
-    const session = await verifySession()
-    const currentOrg = await getCurrentOrganization()
+    const result = await updateOrganization(id, formData);
     
-    if (!(await hasRole('organization:read'))) {
-      throw new Error('Insufficient permissions to read organizations')
+    revalidatePath("/organizations");
+    revalidatePath(`/organizations/${id}`);
+    organizationToast.updated();
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to update organization:", error);
+    organizationToast.updateError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function deleteOrganizationAction(id: number) {
+  try {
+    await deleteOrganization(id);
+    
+    revalidatePath("/organizations");
+    organizationToast.deleted();
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete organization:", error);
+    organizationToast.deleteError(error?.message);
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkDeleteOrganizationAction(ids: number[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(id => deleteOrganization(id))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const errorCount = results.filter(r => r.status === 'rejected').length;
+    
+    revalidatePath("/organizations");
+    
+    if (errorCount === 0) {
+      organizationToast.bulkDeleted(successCount);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    } else {
+      organizationToast.bulkDeleteError();
     }
     
-    // Build query parameters with organization filter
-    const params = currentOrg ? { organizationId: currentOrg.id } : {}
-    
-    const response = await springService.get('/organizations', { params })
-    return response
+    return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Error fetching Organizations for organization:', error)
-    throw error
+    console.error("Bulk delete failed:", error);
+    organizationToast.bulkDeleteError(error?.message);
+    return { success: false, error: error?.message };
   }
 }

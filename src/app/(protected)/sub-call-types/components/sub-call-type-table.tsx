@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { subCallTypeToast, handleSubCallTypeError } from "./sub-call-type-toast";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,10 +185,11 @@ export function SubCallTypeTable() {
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateSubCallType({
     mutation: {
       onSuccess: () => {
+        subCallTypeToast.updated();
         refetch();
       },
       onError: (error) => {
-        console.error('Update failed:', error);
+        handleSubCallTypeError(error);
         throw error;
       },
     },
@@ -197,11 +199,11 @@ export function SubCallTypeTable() {
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteSubCallType({
     mutation: {
       onSuccess: () => {
-        toast.success("SubCallType deleted successfully");
+        subCallTypeToast.deleted();
         refetch();
       },
       onError: (error) => {
-        toast.error(`Failed to delete SubCallType: ${error}`);
+        handleSubCallTypeError(error);
       },
     },
   });
@@ -297,11 +299,11 @@ export function SubCallTypeTable() {
 
     try {
       await Promise.all(deletePromises);
-      toast.success(`${selectedRows.size} sub call types deleted successfully`);
+      subCallTypeToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
       refetch();
     } catch (error) {
-      toast.error('Some deletions failed');
+      subCallTypeToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
@@ -309,25 +311,58 @@ export function SubCallTypeTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      const updateData = {
-        id: entityId,
-        [relationshipName]: newValue ? { id: newValue } : null,
+      // For JHipster partial updates, need entity ID and relationship structure
+      const updateData: any = {
+        id: entityId
       };
+      
+      if (newValue) {
+        updateData[relationshipName] = { id: newValue };
+      } else {
+        updateData[relationshipName] = null;
+      }
 
       updateEntity({ 
         id: entityId,
-        requestBody: updateData 
+        data: updateData
       }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error)
+        onSuccess: () => {
+          subCallTypeToast.relationshipUpdated(relationshipName);
+          resolve();
+        },
+        onError: (error) => {
+          handleSubCallTypeError(error);
+          reject(error);
+        }
       });
     });
   };
 
   // Handle bulk relationship updates
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
-    const promises = entityIds.map(id => handleRelationshipUpdate(id, relationshipName, newValue));
-    return Promise.all(promises);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Process updates sequentially to avoid overwhelming the server
+    for (const id of entityIds) {
+      try {
+        await handleRelationshipUpdate(id, relationshipName, newValue);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to update entity ${id}:`, error);
+        errorCount++;
+      }
+    }
+    
+    // Refresh data after updates
+    refetch();
+    
+    // Throw error if all failed, otherwise consider it partially successful
+    if (errorCount === entityIds.length) {
+      throw new Error(`All ${errorCount} updates failed`);
+    } else if (errorCount > 0) {
+      console.warn(`${errorCount} out of ${entityIds.length} updates failed`);
+    }
   };
 
   // Prepare relationship configurations for components

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { sourceToast, handleSourceError } from "./source-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,15 +90,15 @@ export function SourceForm({ id }: SourceFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Source created successfully");
+          sourceToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Source created successfully");
+          sourceToast.created();
           router.push("/sources");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Source: ${error}`);
+        handleSourceError(error);
       },
     },
   });
@@ -108,11 +109,11 @@ export function SourceForm({ id }: SourceFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('SourceFormState');
         
-        toast.success("Source updated successfully");
+        sourceToast.updated();
         router.push("/sources");
       },
       onError: (error) => {
-        toast.error(`Failed to update Source: ${error}`);
+        handleSourceError(error);
       },
     },
   });
@@ -181,7 +182,7 @@ export function SourceForm({ id }: SourceFormProps) {
           localStorage.removeItem('SourceFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          sourceToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { callTypeToast, handleCallTypeError } from "./call-type-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,11 +53,11 @@ export function CallTypeDetails({ id }: CallTypeDetailsProps) {
   const { mutate: deleteEntity } = useDeleteCallType({
     mutation: {
       onSuccess: () => {
-        toast.success("CallType deleted successfully");
+        callTypeToast.deleted();
         router.push("/call-types");
       },
       onError: (error) => {
-        toast.error(`Failed to delete CallType: ${error}`);
+        handleCallTypeError(error);
       },
     },
   });

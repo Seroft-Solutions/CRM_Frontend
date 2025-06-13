@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { <%= entityInstance %>Toast, handle<%= entityClass %>Error } from "./<%= entityFileName %>-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -69,11 +70,11 @@ export function <%= entityClass %>Details({ id }: <%= entityClass %>DetailsProps
   const { mutate: deleteEntity } = useDelete<%= entityClass %>({
     mutation: {
       onSuccess: () => {
-        toast.success("<%= entityClass %> deleted successfully");
+        <%= entityInstance %>Toast.deleted();
         router.push("/<%= entityRoute %>");
       },
       onError: (error) => {
-        toast.error(`Failed to delete <%= entityClass %>: ${error}`);
+        handle<%= entityClass %>Error(error);
       },
     },
   });

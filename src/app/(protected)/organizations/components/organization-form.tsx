@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { organizationToast, handleOrganizationError } from "./organization-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -90,15 +91,15 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
           if (entityId) {
             localStorage.setItem('newlyCreatedEntityId', entityId.toString());
           }
-          toast.success("Organization created successfully");
+          organizationToast.created();
           router.push(returnUrl);
         } else {
-          toast.success("Organization created successfully");
+          organizationToast.created();
           router.push("/organizations");
         }
       },
       onError: (error) => {
-        toast.error(`Failed to create Organization: ${error}`);
+        handleOrganizationError(error);
       },
     },
   });
@@ -109,11 +110,11 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
         // Clear saved form state on successful submission
         localStorage.removeItem('OrganizationFormState');
         
-        toast.success("Organization updated successfully");
+        organizationToast.updated();
         router.push("/organizations");
       },
       onError: (error) => {
-        toast.error(`Failed to update Organization: ${error}`);
+        handleOrganizationError(error);
       },
     },
   });
@@ -185,7 +186,7 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
           localStorage.removeItem('OrganizationFormState');
           
           setTimeout(() => setIsRestoring(false), 100);
-          toast.success('Form data restored');
+          organizationToast.formRestored();
           
           console.log('Form state restored:', savedState);
           return true;
