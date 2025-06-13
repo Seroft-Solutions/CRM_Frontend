@@ -28,19 +28,19 @@ export const sidebarItems: SidebarItem[] = [
         label: 'User Management',
         icon: Users,
         expandable: true,
-        requiredPermission: 'user:read',
+        requiredPermission: 'manage-users',
         children: [
             {
                 key: 'organizationUsers',
                 label: 'Organization Users',
                 path: '/user-management/organization-users',
-                requiredPermission: 'user:read'
+                requiredPermission: 'manage-users'
             },
             {
                 key: 'inviteUsers',
                 label: 'Invite Users',
                 path: '/user-management/invite-users',
-                requiredPermission: 'user:create'
+                requiredPermission: 'manage-users'
             },
         ],
     },
