@@ -100,13 +100,11 @@ export function BulkRelationshipAssignment({
         }`
       );
       
-      // Reset form
-      setSelectedRelationship("");
-      setSelectedValue(null);
+      // Close dialog and reset state
       onOpenChange(false);
     } catch (error) {
-      toast.error(`Failed to update ${selectedRelationship} in bulk`);
       console.error('Bulk update error:', error);
+      toast.error(`Failed to update ${selectedRelationship}`);
     } finally {
       setIsUpdating(false);
     }
@@ -117,6 +115,7 @@ export function BulkRelationshipAssignment({
     if (!open) {
       setSelectedRelationship("");
       setSelectedValue(null);
+      setIsUpdating(false); // Ensure updating state is reset
     }
   }, [open]);
 
