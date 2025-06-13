@@ -10,6 +10,7 @@ declare module "next-auth" {
       email?: string | null
       image?: string | null
       roles?: string[]
+      groups?: string[]
     }
     access_token?: string
     refresh_token?: string
@@ -22,6 +23,7 @@ declare module "next-auth" {
     expires_at?: number
     error?: string
     roles?: string[]
+    groups?: string[]
   }
 }
 
@@ -29,6 +31,7 @@ interface KeycloakTokenPayload {
   sub: string
   realm_access?: { roles?: string[] }
   resource_access?: Record<string, { roles?: string[] }>
+  groups?: string[]
   [key: string]: any
 }
 
@@ -62,6 +65,23 @@ function parseRoles(accessToken: string): string[] {
   }
 }
 
+function parseGroups(accessToken: string): string[] {
+  try {
+    const [, payload] = accessToken.split('.')
+    if (!payload) return []
+    
+    const decoded: KeycloakTokenPayload = JSON.parse(atob(payload))
+    
+    // Get groups from token
+    const groups = decoded.groups || []
+    
+    return [...new Set(groups)] // Remove duplicates
+  } catch (error) {
+    console.error('Failed to parse groups from token:', error)
+    return []
+  }
+}
+
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     if (!token.refresh_token) return token
@@ -91,7 +111,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       refresh_token: data.refresh_token ?? token.refresh_token,
       id_token: data.id_token ?? token.id_token,
       expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-      roles: parseRoles(data.access_token)
+      roles: parseRoles(data.access_token),
+      groups: parseGroups(data.access_token)
     }
   } catch (error) {
     console.error('Error refreshing access token:', error)
@@ -121,10 +142,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.refresh_token = account.refresh_token
         token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0)
 
+        console.log(account.access_token)
         if (account.access_token && token.sub) {
-          // Store roles in JWT token for client access
+          // Store roles and groups in JWT token for client access
           const roles = parseRoles(account.access_token)
+          const groups = parseGroups(account.access_token)
           token.roles = roles
+          token.groups = groups
           rolesManager.setUserRoles(token.sub, roles)
         }
       }
@@ -144,6 +168,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       
       if (token.roles) {
         session.user.roles = token.roles
+      }
+
+      if (token.groups) {
+        session.user.groups = token.groups
       }
       
       if (token.access_token) {

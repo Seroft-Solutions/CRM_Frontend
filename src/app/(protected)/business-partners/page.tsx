@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,7 +143,12 @@ export default function BusinessPartnersPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <PermissionGuard 
+      requiredPermission="partner:read"
+      unauthorizedTitle="Access Denied to Business Partners"
+      unauthorizedDescription="You don't have permission to view business partners."
+    >
+      <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
@@ -154,10 +160,12 @@ export default function BusinessPartnersPage() {
             Manage business partners in {organizationName} ({filteredPartners.length} partners)
           </p>
         </div>
-        <Button onClick={() => router.push('/invite-partners')} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Invite Partner
-        </Button>
+        <InlinePermissionGuard requiredPermission="partner:create">
+          <Button onClick={() => router.push('/invite-partners')} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Invite Partner
+          </Button>
+        </InlinePermissionGuard>
       </div>
 
       {/* Partners Management */}
@@ -341,5 +349,6 @@ export default function BusinessPartnersPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </PermissionGuard>
   );
 }

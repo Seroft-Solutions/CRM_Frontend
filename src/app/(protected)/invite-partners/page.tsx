@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
 import { useUserProfilePersistence } from '@/features/user-profile-management/hooks/useUserProfilePersistence';
+import { PermissionGuard } from '@/components/auth/permission-guard';
 
 interface PartnerInvitation {
   email: string;
@@ -138,7 +139,12 @@ export default function InvitePartnersPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <PermissionGuard 
+      requiredPermission="partner:create"
+      unauthorizedTitle="Access Denied to Invite Partners"
+      unauthorizedDescription="You don't have permission to invite business partners."
+    >
+      <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
@@ -253,5 +259,6 @@ export default function InvitePartnersPage() {
             </CardContent>
           </Card>
     </div>
+    </PermissionGuard>
   );
 }
