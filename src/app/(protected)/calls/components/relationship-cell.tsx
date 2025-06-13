@@ -25,7 +25,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { callToast } from "./call-toast";
 
 
 
@@ -88,9 +87,9 @@ export function RelationshipCell({
     
     try {
       await onUpdate(entityId, relationshipName, optionId);
-      callToast.relationshipUpdated(relationshipName);
+      toast.success(`${relationshipName} updated successfully`);
     } catch (error) {
-      callToast.custom.error("❌ Update Failed", `Failed to update ${relationshipName}`);
+      toast.error(`Failed to update ${relationshipName}`);
       console.error('Relationship update error:', error);
     } finally {
       setUpdating(false);

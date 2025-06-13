@@ -1,80 +1,365 @@
-"use server";
+'use server'
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { callToast } from "../components/call-toast";
+import { verifySession, hasRole, getCurrentOrganization } from '@/lib/dal'
+import { springService } from '@/core/api/services/spring-service'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
 
-export async function createCallAction(formData: FormData) {
+// Define validation schema for Call
+const callSchema = z.object({
+  
+  
+  callDateTime: z.string().datetime(),
+  
+  
+  
+  
+  priorityId: z.number().optional(),
+  
+  
+  
+  callTypeId: z.number().optional(),
+  
+  
+  
+  subCallTypeId: z.number().optional(),
+  
+  
+  
+  sourceId: z.number().optional(),
+  
+  
+  
+  channelTypeId: z.number().optional(),
+  
+  
+  
+  callCategoryId: z.number().optional(),
+  
+  
+  
+  callStatusId: z.number().optional(),
+  
+  
+  
+  stateId: z.number().optional(),
+  
+  
+  
+  districtId: z.number().optional(),
+  
+  
+  
+  cityId: z.number().optional(),
+  
+  
+  
+  areaId: z.number().optional(),
+  
+  
+  
+  assignedToId: z.number().optional(),
+  
+  
+  
+  channelPartyId: z.number().optional(),
+  
+  
+  
+  partyId: z.number().optional(),
+  
+  
+})
+
+export type CallFormData = z.infer<typeof callSchema>
+
+/**
+ * Create a new Call
+ */
+export async function createCall(
+  prevState: any,
+  formData: FormData
+): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
   try {
-    // Process form data and create entity
-    const result = await createCall(formData);
+    // Verify session and check permissions
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
     
-    revalidatePath("/calls");
-    callToast.created();
+    if (!(await hasRole('call:create'))) {
+      return { error: 'Insufficient permissions to create call' }
+    }
+
+    // Parse and validate form data
+    const rawData = {
+      
+      
+      callDateTime: formData.get('callDateTime') || undefined,
+      
+      
+      
+      
+      priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
+      
+      
+      
+      callTypeId: formData.get('callTypeId') ? Number(formData.get('callTypeId')) : undefined,
+      
+      
+      
+      subCallTypeId: formData.get('subCallTypeId') ? Number(formData.get('subCallTypeId')) : undefined,
+      
+      
+      
+      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
+      
+      
+      
+      channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
+      
+      
+      
+      callCategoryId: formData.get('callCategoryId') ? Number(formData.get('callCategoryId')) : undefined,
+      
+      
+      
+      callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
+      
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
+      
+      
+      
+      partyId: formData.get('partyId') ? Number(formData.get('partyId')) : undefined,
+      
+      
+    }
+
+    const validatedData = callSchema.parse(rawData)
+
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
+    // Create the entity
+    await springService.post('/calls', dataWithOrg)
+
+    // Revalidate the list page
+    revalidatePath('/calls')
     
-    return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to create call:", error);
-    callToast.createError(error?.message);
-    return { success: false, error: error?.message };
-  }
-}
-
-export async function updateCallAction(id: number, formData: FormData) {
-  try {
-    const result = await updateCall(id, formData);
-    
-    revalidatePath("/calls");
-    revalidatePath(`/calls/${id}`);
-    callToast.updated();
-    
-    return { success: true, data: result };
-  } catch (error) {
-    console.error("Failed to update call:", error);
-    callToast.updateError(error?.message);
-    return { success: false, error: error?.message };
-  }
-}
-
-export async function deleteCallAction(id: number) {
-  try {
-    await deleteCall(id);
-    
-    revalidatePath("/calls");
-    callToast.deleted();
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to delete call:", error);
-    callToast.deleteError(error?.message);
-    return { success: false, error: error?.message };
-  }
-}
-
-export async function bulkDeleteCallAction(ids: number[]) {
-  try {
-    const results = await Promise.allSettled(
-      ids.map(id => deleteCall(id))
-    );
-    
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
-    const errorCount = results.filter(r => r.status === 'rejected').length;
-    
-    revalidatePath("/calls");
-    
-    if (errorCount === 0) {
-      callToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
-    } else {
-      callToast.bulkDeleteError();
+    if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors
+      const cleanedErrors: Record<string, string[]> = {}
+      
+      // Filter out undefined values to match the expected type
+      Object.entries(fieldErrors).forEach(([key, value]) => {
+        if (value) {
+          cleanedErrors[key] = value
+        }
+      })
+      
+      return {
+        errors: cleanedErrors
+      }
     }
     
-    return { success: errorCount === 0, successCount, errorCount };
+    console.error('Error creating Call:', error)
+    return { error: 'Failed to create call. Please try again.' }
+  }
+
+  // Redirect to the list page on success
+  redirect('/calls')
+}
+
+/**
+ * Update an existing Call
+ */
+export async function updateCall(
+  id: number,
+  prevState: any,
+  formData: FormData
+): Promise<{ success?: boolean; error?: string; errors?: Record<string, string[]> }> {
+  try {
+    // Verify session and check permissions
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('call:update'))) {
+      return { error: 'Insufficient permissions to update call' }
+    }
+
+    // Parse and validate form data
+    const rawData = {
+      
+      
+      callDateTime: formData.get('callDateTime') || undefined,
+      
+      
+      
+      
+      priorityId: formData.get('priorityId') ? Number(formData.get('priorityId')) : undefined,
+      
+      
+      
+      callTypeId: formData.get('callTypeId') ? Number(formData.get('callTypeId')) : undefined,
+      
+      
+      
+      subCallTypeId: formData.get('subCallTypeId') ? Number(formData.get('subCallTypeId')) : undefined,
+      
+      
+      
+      sourceId: formData.get('sourceId') ? Number(formData.get('sourceId')) : undefined,
+      
+      
+      
+      channelTypeId: formData.get('channelTypeId') ? Number(formData.get('channelTypeId')) : undefined,
+      
+      
+      
+      callCategoryId: formData.get('callCategoryId') ? Number(formData.get('callCategoryId')) : undefined,
+      
+      
+      
+      callStatusId: formData.get('callStatusId') ? Number(formData.get('callStatusId')) : undefined,
+      
+      
+      
+      stateId: formData.get('stateId') ? Number(formData.get('stateId')) : undefined,
+      
+      
+      
+      districtId: formData.get('districtId') ? Number(formData.get('districtId')) : undefined,
+      
+      
+      
+      cityId: formData.get('cityId') ? Number(formData.get('cityId')) : undefined,
+      
+      
+      
+      areaId: formData.get('areaId') ? Number(formData.get('areaId')) : undefined,
+      
+      
+      
+      assignedToId: formData.get('assignedToId') ? Number(formData.get('assignedToId')) : undefined,
+      
+      
+      
+      channelPartyId: formData.get('channelPartyId') ? Number(formData.get('channelPartyId')) : undefined,
+      
+      
+      
+      partyId: formData.get('partyId') ? Number(formData.get('partyId')) : undefined,
+      
+      
+    }
+
+    const validatedData = callSchema.parse(rawData)
+
+    // Add organization context if available
+    const dataWithOrg = currentOrg 
+      ? { ...validatedData, organizationId: currentOrg.id }
+      : validatedData
+
+    // Update the entity
+    await springService.put(`/calls/${id}`, { id, ...dataWithOrg })
+
+    // Revalidate pages
+    revalidatePath('/calls')
+    revalidatePath(`/calls/${id}`)
+    
   } catch (error) {
-    console.error("Bulk delete failed:", error);
-    callToast.bulkDeleteError(error?.message);
-    return { success: false, error: error?.message };
+    if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors
+      const cleanedErrors: Record<string, string[]> = {}
+      
+      // Filter out undefined values to match the expected type
+      Object.entries(fieldErrors).forEach(([key, value]) => {
+        if (value) {
+          cleanedErrors[key] = value
+        }
+      })
+      
+      return {
+        errors: cleanedErrors
+      }
+    }
+    
+    console.error('Error updating Call:', error)
+    return { error: 'Failed to update call. Please try again.' }
+  }
+
+  // Redirect to the details page on success
+  redirect(`/calls/${id}`)
+}
+
+/**
+ * Delete a Call
+ */
+export async function deleteCall(id: number): Promise<{ success?: boolean; error?: string }> {
+  try {
+    // Verify session and check permissions
+    const session = await verifySession()
+    
+    if (!(await hasRole('call:delete'))) {
+      return { error: 'Insufficient permissions to delete call' }
+    }
+
+    // Delete the entity
+    await springService.delete(`/calls/${id}`)
+
+    // Revalidate the list page
+    revalidatePath('/calls')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting Call:', error)
+    return { error: 'Failed to delete call. Please try again.' }
+  }
+}
+
+/**
+ * Get Calls for current organization
+ */
+export async function getCallsForOrganization() {
+  try {
+    const session = await verifySession()
+    const currentOrg = await getCurrentOrganization()
+    
+    if (!(await hasRole('call:read'))) {
+      throw new Error('Insufficient permissions to read calls')
+    }
+    
+    // Build query parameters with organization filter
+    const params = currentOrg ? { organizationId: currentOrg.id } : {}
+    
+    const response = await springService.get('/calls', { params })
+    return response
+  } catch (error) {
+    console.error('Error fetching Calls for organization:', error)
+    throw error
   }
 }
