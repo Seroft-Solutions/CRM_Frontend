@@ -530,7 +530,7 @@ export function CallTable() {
 
       updateEntity({ 
         id: entityId,
-        requestBody: updateData 
+        data: updateData 
       }, {
         onSuccess: () => resolve(),
         onError: (error) => reject(error)
