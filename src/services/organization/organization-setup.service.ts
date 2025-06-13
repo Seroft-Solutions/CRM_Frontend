@@ -12,7 +12,6 @@ import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/sprin
 
 export interface OrganizationSetupRequest {
   organizationName: string;
-  displayName?: string;
   domain?: string;
 }
 
@@ -116,7 +115,7 @@ export class OrganizationSetupService {
   ): Promise<string> {
     const organizationData = {
       organizationName: request.organizationName,
-      displayName: request.displayName || request.organizationName,
+      displayName: request.organizationName, // Use organization name as display name
       description: `CRM organization for ${request.organizationName}`,
       domain: request.domain
     };
@@ -130,6 +129,12 @@ export class OrganizationSetupService {
 
     if (!createResponse.ok) {
       const error = await createResponse.json();
+      
+      // Handle 409 conflict error specifically
+      if (createResponse.status === 409) {
+        throw new Error('ORGANIZATION_EXISTS');
+      }
+      
       throw new Error(error.error || 'Failed to create organization');
     }
 
@@ -179,7 +184,6 @@ export class OrganizationSetupService {
     console.log('Creating Spring organization with:', {
       keycloakOrgId,
       name: request.organizationName,
-      displayName: request.displayName,
       domain: request.domain
     });
 
@@ -187,7 +191,6 @@ export class OrganizationSetupService {
       keycloakOrgId,
       name: request.organizationName,
       isActive: true,
-      ...(request.displayName && { displayName: request.displayName }),
       ...(request.domain && { domain: request.domain })
     };
 

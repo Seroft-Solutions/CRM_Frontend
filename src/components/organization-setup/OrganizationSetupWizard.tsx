@@ -34,12 +34,13 @@ export function OrganizationSetupWizard() {
     }
   }, [state.isSetupRequired, state.isSetupInProgress, state.isSetupCompleted]);
 
-  // Redirect to organization-select if user has organizations
+  // Redirect to organization-select if user has organizations (but not during setup)
   useEffect(() => {
-    if (!isLoading && organizations && organizations.length > 0) {
+    if (!isLoading && organizations && organizations.length > 0 && 
+        !state.isSetupInProgress && !state.isSyncInProgress && !state.showWelcome) {
       router.push('/organization-select');
     }
-  }, [organizations, isLoading, router]);
+  }, [organizations, isLoading, router, state.isSetupInProgress, state.isSyncInProgress, state.showWelcome]);
 
   // Header with logout button
   const Header = () => (
@@ -60,7 +61,7 @@ export function OrganizationSetupWizard() {
 
   // Show welcome page after successful setup
   if (state.showWelcome) {
-    return <OrganizationWelcomePage />;
+    return <OrganizationWelcomePage onFinish={actions.finishWelcome} />;
   }
 
   // Loading state
@@ -124,6 +125,7 @@ export function OrganizationSetupWizard() {
           <OrganizationSetupProgress
             organizationName={state.organizationName}
             onComplete={() => {
+              actions.completeSetup();
               actions.setShowWelcome(true);
             }}
             onError={(error) => {
