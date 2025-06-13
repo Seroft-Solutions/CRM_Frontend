@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { CallRemarksSection } from "./call-remarks-section";
 
 import {
   useGetCall,
@@ -297,6 +298,11 @@ export function CallDetails({ id }: CallDetailsProps) {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Call Remarks Section */}
+      <div className="mt-6">
+        <CallRemarksSection callId={id} />
       </div>
 
       {/* Action Buttons */}
