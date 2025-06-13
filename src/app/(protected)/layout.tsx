@@ -29,7 +29,7 @@ export default async function ProtectedLayout({
         <AppSidebar />
         <SidebarInset>
           <header className="flex flex-col shrink-0 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <div className="flex h-16 items-center gap-2">
+            <div className="flex h-16 items-center justify-between">
               <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />
                 <Separator
@@ -38,8 +38,11 @@ export default async function ProtectedLayout({
                 />
                 <DynamicBreadcrumbs />
               </div>
+              <div className="flex-1 flex justify-center px-4">
+                <TenantHeader />
+              </div>
+              <div className="w-48"></div>
             </div>
-            <TenantHeader />
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden">
             <div className="container mx-auto">
