@@ -31,13 +31,21 @@ export function OrganizationSetupForm({
   const { data: session } = useSession();
   const [formData, setFormData] = useState<OrganizationSetupRequest>({
     organizationName: '',
-    displayName: '',
     domain: '',
   });
+  const [validationError, setValidationError] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError('');
+    
     if (!formData.organizationName.trim()) return;
+    
+    // Validate organization name - no spaces allowed
+    if (formData.organizationName.includes(' ')) {
+      setValidationError('Organization name cannot contain spaces');
+      return;
+    }
     
     // Auto-generate domain from organization name
     const orgName = formData.organizationName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -45,7 +53,6 @@ export function OrganizationSetupForm({
     
     await onSubmit({
       organizationName: formData.organizationName.trim(),
-      displayName: formData.displayName.trim() || formData.organizationName.trim(),
       domain: domain,
     });
   };
@@ -53,6 +60,10 @@ export function OrganizationSetupForm({
   const handleChange = (field: keyof OrganizationSetupRequest) => 
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData(prev => ({ ...prev, [field]: e.target.value }));
+      // Clear validation error when user starts typing
+      if (validationError && field === 'organizationName') {
+        setValidationError('');
+      }
     };
 
   return (
@@ -74,6 +85,13 @@ export function OrganizationSetupForm({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {validationError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{validationError}</AlertDescription>
         </Alert>
       )}
 
@@ -127,20 +145,9 @@ export function OrganizationSetupForm({
                 required
                 disabled={isLoading}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-sm font-medium">
-                Display Name
-              </Label>
-              <Input
-                id="displayName"
-                type="text"
-                value={formData.displayName}
-                onChange={handleChange('displayName')}
-                placeholder="Friendly display name (optional)"
-                disabled={isLoading}
-              />
+              <p className="text-xs text-muted-foreground">
+                Organization name cannot contain spaces
+              </p>
             </div>
 
             <Button

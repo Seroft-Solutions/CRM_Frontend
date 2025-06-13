@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import {
   OrganizationSetupService,
@@ -30,6 +31,8 @@ export interface OrganizationSetupActions {
   setError: (error: string) => void;
   checkSetupStatus: () => void;
   setShowWelcome: (show: boolean) => void;
+  completeSetup: () => void;
+  finishWelcome: () => void;
 }
 
 export interface UseOrganizationSetupResult {
@@ -77,15 +80,26 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
         error: null,
         organizationName: variables.organizationName, // Set organization name for progress tracking
       }));
-      // Refetch organizations after setup
-      refetchOrganizations();
+      // Don't refetch organizations here - wait for progress to complete
     },
     onError: (error: Error) => {
-      setState(prev => ({
-        ...prev,
-        isSetupInProgress: false,
-        error: error.message,
-      }));
+      // Check if it's a 409 conflict error (organization already exists)
+      if (error.message === 'ORGANIZATION_EXISTS') {
+        toast.error('Organization already exists', {
+          description: 'An organization with this name already exists. Please choose a different name.',
+        });
+        setState(prev => ({
+          ...prev,
+          isSetupInProgress: false,
+          error: 'Organization already exists',
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          isSetupInProgress: false,
+          error: error.message,
+        }));
+      }
     },
   });
 
@@ -114,8 +128,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           // organizationName should already be set from checkSetupStatus
         }));
         queryClient.invalidateQueries({ queryKey: ['session'] });
-        // Refetch organizations after sync
-        refetchOrganizations();
+        // Don't refetch organizations here - wait for progress to complete
       }
     },
     onError: (error: Error) => {
@@ -130,6 +143,9 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
   // Check if setup is required based on API organizations
   const checkSetupStatus = useCallback(() => {
     if (status === 'loading' || orgLoading) return;
+    
+    // Don't update state if setup/sync is in progress
+    if (state.isSetupInProgress || state.isSyncInProgress) return;
 
     const userHasOrganization = !!organizations?.length;
     const primaryOrg = organizations?.[0] || null;
@@ -148,7 +164,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       isSetupCompleted: userHasOrganization,
       organizationName: primaryOrg?.name || null,
     }));
-  }, [status, orgLoading, organizations]);
+  }, [status, orgLoading, organizations, state.isSetupInProgress, state.isSyncInProgress]);
 
   // Setup organization
   const setupOrganization = useCallback(
@@ -181,6 +197,23 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     setState(prev => ({ ...prev, showWelcome: show }));
   }, []);
 
+  // Complete setup - mark as complete but don't refetch yet
+  const completeSetup = useCallback(() => {
+    setState(prev => ({ 
+      ...prev, 
+      isSetupInProgress: false, 
+      isSyncInProgress: false,
+      isSetupCompleted: true 
+    }));
+    // Don't refetch organizations here - wait for welcome page dismissal
+  }, []);
+
+  // Finish welcome and refetch organizations
+  const finishWelcome = useCallback(() => {
+    setState(prev => ({ ...prev, showWelcome: false }));
+    refetchOrganizations();
+  }, [refetchOrganizations]);
+
   // Auto-check setup status when session changes
   useEffect(() => {
     checkSetupStatus();
@@ -195,6 +228,8 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       setError,
       checkSetupStatus,
       setShowWelcome,
+      completeSetup,
+      finishWelcome,
     },
   };
 }
