@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
@@ -31,9 +30,6 @@ interface PartnerInvitation {
   firstName: string;
   lastName: string;
   organizationId: string;
-  sendWelcomeEmail: boolean;
-  sendPasswordReset?: boolean;
-  invitationNote?: string;
   redirectUri?: string;
 }
 
@@ -46,9 +42,6 @@ export default function InvitePartnersPage() {
     firstName: '',
     lastName: '',
     email: '',
-    invitationNote: '',
-    sendWelcomeEmail: false,
-    sendPasswordReset: true
   });
   
   const [channelTypeId, setChannelTypeId] = useState<number | undefined>(undefined);
@@ -131,9 +124,6 @@ export default function InvitePartnersPage() {
       firstName: '',
       lastName: '',
       email: '',
-      invitationNote: '',
-      sendWelcomeEmail: false,
-      sendPasswordReset: true
     });
     setChannelTypeId(undefined);
   };
@@ -216,34 +206,6 @@ export default function InvitePartnersPage() {
                     disabled={isInviting || isCreatingProfile}
                   />
                 </div>
-
-                {/* Invitation Note */}
-                <div className="space-y-2">
-                  <Label htmlFor="invitationNote">Invitation Note (Optional)</Label>
-                  <Input
-                    id="invitationNote"
-                    value={formData.invitationNote}
-                    onChange={(e) => setFormData({ ...formData, invitationNote: e.target.value })}
-                    placeholder="Add a personal note to the invitation"
-                  />
-                </div>
-
-                {/* Send Email Checkbox */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sendPasswordReset"
-                    checked={formData.sendPasswordReset}
-                    onCheckedChange={(checked) => 
-                      setFormData({ ...formData, sendPasswordReset: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="sendPasswordReset" className="text-sm">
-                    Send password setup email
-                  </Label>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  The partner will receive an email to set up their password and access their account
-                </p>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">

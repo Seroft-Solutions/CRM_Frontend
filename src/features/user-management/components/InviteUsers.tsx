@@ -10,9 +10,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups, usePendingInvitations } from '../hooks';
+import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups } from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PendingInvitations } from './PendingInvitations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +57,6 @@ const inviteUserSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  sendWelcomeEmail: z.boolean().default(true),
   selectedGroups: z.array(z.string()).default([]),
   invitationNote: z.string().optional(),
 });
@@ -67,7 +65,6 @@ const inviteUserWithGroupsSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  sendWelcomeEmail: z.boolean().default(true),
   selectedGroups: z.array(z.string()).default([]),
   invitationNote: z.string().optional(),
 });
@@ -87,10 +84,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
   const { inviteUser, isInviting } = useInviteUser();
   const { inviteUserWithGroups, isInviting: isInvitingWithGroups } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
-  const { invitations, totalCount: pendingCount, refetch: refetchInvitations } = usePendingInvitations(organizationId);
 
   // Local state
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'pending'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
   const [invitationStatus, setInvitationStatus] = useState<{
     sent: InviteUserFormDataWithGroups[];
     failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
@@ -109,7 +105,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
       email: '',
       firstName: '',
       lastName: '',
-      sendWelcomeEmail: true,
       selectedGroups: [],
       invitationNote: '',
     },
@@ -120,7 +115,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
     resolver: zodResolver(bulkInviteSchema),
     defaultValues: {
       manualInvitations: [
-        { email: '', firstName: '', lastName: '', sendWelcomeEmail: true, selectedGroups: [], invitationNote: '' }
+        { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' }
       ],
       defaultGroups: [],
     },
@@ -148,7 +143,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
           ...prev,
           sent: [...prev.sent, data],
         }));
-        refetchInvitations();
       }
     } catch (error) {
       console.error('Failed to send invitation:', error);
@@ -187,7 +181,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
     }
 
     setInvitationStatus({ sent, failed });
-    refetchInvitations();
 
     // Reset form if all succeeded
     if (failed.length === 0) {
@@ -202,7 +195,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
   // Add invitation row
   const addInvitationRow = () => {
-    append({ email: '', firstName: '', lastName: '', sendWelcomeEmail: true });
+    append({ email: '', firstName: '', lastName: '', selectedGroups: [] });
   };
 
   // Remove invitation row
@@ -233,16 +226,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'bulk' | 'pending')}>
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'bulk')}>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="single">Single Invitation</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Invitations</TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending Invitations
-              {pendingCount > 0 && (
-                <Badge variant="secondary" className="ml-2">{pendingCount}</Badge>
-              )}
-            </TabsTrigger>
           </TabsList>
 
           {/* Single User Invitation */}
@@ -303,27 +290,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
                       )}
                     />
 
-                    <FormField
-                      control={singleForm.control}
-                      name="sendWelcomeEmail"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Send welcome email</FormLabel>
-                            <FormDescription>
-                              The user will receive an email with instructions to set up their account
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-
                     <div className="flex gap-2">
                       <SendInviteButton 
                         type="submit" 
@@ -367,7 +333,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
                               <TableHead>First Name</TableHead>
                               <TableHead>Last Name</TableHead>
                               <TableHead>Email</TableHead>
-                              <TableHead>Welcome Email</TableHead>
                               <TableHead className="w-12"></TableHead>
                             </TableRow>
                           </TableHeader>
@@ -417,22 +382,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                   />
                                 </TableCell>
                                 <TableCell>
-                                  <FormField
-                                    control={bulkForm.control}
-                                    name={`manualInvitations.${index}.sendWelcomeEmail`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                          />
-                                        </FormControl>
-                                      </FormItem>
-                                    )}
-                                  />
-                                </TableCell>
-                                <TableCell>
                                   <Button
                                     type="button"
                                     variant="ghost"
@@ -460,7 +409,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                         variant="outline" 
                         onClick={() => bulkForm.reset({
                           manualInvitations: [
-                            { email: '', firstName: '', lastName: '', sendWelcomeEmail: true }
+                            { email: '', firstName: '', lastName: '', selectedGroups: [] }
                           ],
                         })}
                       >
@@ -471,11 +420,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 </Form>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Pending Invitations */}
-          <TabsContent value="pending">
-            <PendingInvitations />
           </TabsContent>
         </Tabs>
 
