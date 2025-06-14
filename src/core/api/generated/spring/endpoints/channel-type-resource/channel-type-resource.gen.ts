@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetChannelTypeQueryKey = (id: number,) => {
     }
 
     
-export const getGetChannelTypeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getChannelType>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetChannelTypeQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getChannelType>>> = ({ signal }) => getChannelType(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetChannelTypeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getChannelType>>>
-export type GetChannelTypeInfiniteQueryError = unknown
-
-
-export function useGetChannelTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getChannelType>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getChannelType>>,
-          TError,
-          Awaited<ReturnType<typeof getChannelType>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetChannelTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getChannelType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getChannelType>>,
-          TError,
-          Awaited<ReturnType<typeof getChannelType>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetChannelTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getChannelType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetChannelTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getChannelType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetChannelTypeInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetChannelTypeQueryOptions = <TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetChannelTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getChannelType>>>
@@ -377,69 +309,6 @@ export const getGetAllChannelTypesQueryKey = (params?: GetAllChannelTypesParams,
     }
 
     
-export const getGetAllChannelTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllChannelTypes>>, GetAllChannelTypesParams['nextId']>, TError = unknown>(params?: GetAllChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllChannelTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']> = ({ signal, pageParam }) => getAllChannelTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllChannelTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllChannelTypes>>>
-export type GetAllChannelTypesInfiniteQueryError = unknown
-
-
-export function useGetAllChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllChannelTypes>>, GetAllChannelTypesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllChannelTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllChannelTypes>>, GetAllChannelTypesParams['nextId']>, TError = unknown>(
- params?: GetAllChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllChannelTypes>>, GetAllChannelTypesParams['nextId']>, TError = unknown>(
- params?: GetAllChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllChannelTypes>>, GetAllChannelTypesParams['nextId']>, TError = unknown>(
- params?: GetAllChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData, Awaited<ReturnType<typeof getAllChannelTypes>>, QueryKey, GetAllChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllChannelTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllChannelTypes>>>
@@ -580,69 +449,6 @@ export const getCountChannelTypesQueryKey = (params?: CountChannelTypesParams,) 
     }
 
     
-export const getCountChannelTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countChannelTypes>>, CountChannelTypesParams['nextId']>, TError = unknown>(params?: CountChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountChannelTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']> = ({ signal, pageParam }) => countChannelTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountChannelTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countChannelTypes>>>
-export type CountChannelTypesInfiniteQueryError = unknown
-
-
-export function useCountChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countChannelTypes>>, CountChannelTypesParams['nextId']>, TError = unknown>(
- params: undefined |  CountChannelTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof countChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countChannelTypes>>, CountChannelTypesParams['nextId']>, TError = unknown>(
- params?: CountChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof countChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countChannelTypes>>, CountChannelTypesParams['nextId']>, TError = unknown>(
- params?: CountChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countChannelTypes>>, CountChannelTypesParams['nextId']>, TError = unknown>(
- params?: CountChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData, Awaited<ReturnType<typeof countChannelTypes>>, QueryKey, CountChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountChannelTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof countChannelTypes>>>
@@ -725,69 +531,6 @@ export const getSearchChannelTypesQueryKey = (params: SearchChannelTypesParams,)
     }
 
     
-export const getSearchChannelTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchChannelTypes>>, SearchChannelTypesParams['nextId']>, TError = unknown>(params: SearchChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchChannelTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']> = ({ signal, pageParam }) => searchChannelTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchChannelTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchChannelTypes>>>
-export type SearchChannelTypesInfiniteQueryError = unknown
-
-
-export function useSearchChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchChannelTypes>>, SearchChannelTypesParams['nextId']>, TError = unknown>(
- params: SearchChannelTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchChannelTypes>>, SearchChannelTypesParams['nextId']>, TError = unknown>(
- params: SearchChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchChannelTypes>>,
-          TError,
-          Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchChannelTypes>>, SearchChannelTypesParams['nextId']>, TError = unknown>(
- params: SearchChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchChannelTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchChannelTypes>>, SearchChannelTypesParams['nextId']>, TError = unknown>(
- params: SearchChannelTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData, Awaited<ReturnType<typeof searchChannelTypes>>, QueryKey, SearchChannelTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchChannelTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof searchChannelTypes>>>

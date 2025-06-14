@@ -54,20 +54,24 @@ import {
   useGetUserProfile,
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 import { 
-  useGetAllOrganizationsInfinite,
-  useSearchOrganizationsInfinite 
+  useGetAllOrganizations,
+  useSearchOrganizations,
+  useCountOrganizations
 } from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
 import { 
-  useGetAllGroupsInfinite,
-  useSearchGroupsInfinite 
+  useGetAllGroups,
+  useSearchGroups,
+  useCountGroups
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 import { 
-  useGetAllRolesInfinite,
-  useSearchRolesInfinite 
+  useGetAllRoles,
+  useSearchRoles,
+  useCountRoles
 } from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
 import { 
-  useGetAllChannelTypesInfinite,
-  useSearchChannelTypesInfinite 
+  useGetAllChannelTypes,
+  useSearchChannelTypes,
+  useCountChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 import type { UserProfileDTO } from "@/core/api/generated/spring/schemas/UserProfileDTO";
 
@@ -627,8 +631,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
                               displayField="name"
                               placeholder="Select channel type"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllChannelTypesInfinite}
-                              searchHook={useSearchChannelTypesInfinite}
+                              useGetAllHook={useGetAllChannelTypes}
+                              useSearchHook={useSearchChannelTypes}
+                              useCountHook={useCountChannelTypes}
                               entityName="ChannelTypes"
                               searchField="name"
                               canCreate={true}
@@ -674,8 +679,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
                               displayField="name"
                               placeholder="Select organization"
                               multiple={true}
-                              useInfiniteQueryHook={useGetAllOrganizationsInfinite}
-                              searchHook={useSearchOrganizationsInfinite}
+                              useGetAllHook={useGetAllOrganizations}
+                              useSearchHook={useSearchOrganizations}
+                              useCountHook={useCountOrganizations}
                               entityName="Organizations"
                               searchField="name"
                               canCreate={true}
@@ -703,8 +709,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
                               displayField="name"
                               placeholder="Select groups"
                               multiple={true}
-                              useInfiniteQueryHook={useGetAllGroupsInfinite}
-                              searchHook={useSearchGroupsInfinite}
+                              useGetAllHook={useGetAllGroups}
+                              useSearchHook={useSearchGroups}
+                              useCountHook={useCountGroups}
                               entityName="Groups"
                               searchField="name"
                               canCreate={true}
@@ -732,8 +739,9 @@ export function UserProfileForm({ id }: UserProfileFormProps) {
                               displayField="name"
                               placeholder="Select roles"
                               multiple={true}
-                              useInfiniteQueryHook={useGetAllRolesInfinite}
-                              searchHook={useSearchRolesInfinite}
+                              useGetAllHook={useGetAllRoles}
+                              useSearchHook={useSearchRoles}
+                              useCountHook={useCountRoles}
                               entityName="Roles"
                               searchField="name"
                               canCreate={true}

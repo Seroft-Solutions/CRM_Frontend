@@ -6,21 +6,16 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -54,69 +49,6 @@ export const getGetAuthInfoQueryKey = () => {
     }
 
     
-export const getGetAuthInfoInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAuthInfo>>>, TError = unknown>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAuthInfoQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthInfo>>> = ({ signal }) => getAuthInfo(requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAuthInfoInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthInfo>>>
-export type GetAuthInfoInfiniteQueryError = unknown
-
-
-export function useGetAuthInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthInfo>>>, TError = unknown>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAuthInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getAuthInfo>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthInfo>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAuthInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getAuthInfo>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthInfo>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAuthInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthInfo>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAuthInfoInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAuthInfoQueryOptions = <TData = Awaited<ReturnType<typeof getAuthInfo>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -132,7 +64,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAuthInfoQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthInfo>>>

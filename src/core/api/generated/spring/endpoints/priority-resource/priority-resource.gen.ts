@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetPriorityQueryKey = (id: number,) => {
     }
 
     
-export const getGetPriorityInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getPriority>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetPriorityQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPriority>>> = ({ signal }) => getPriority(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetPriorityInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPriority>>>
-export type GetPriorityInfiniteQueryError = unknown
-
-
-export function useGetPriorityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPriority>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPriority>>,
-          TError,
-          Awaited<ReturnType<typeof getPriority>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPriorityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPriority>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPriority>>,
-          TError,
-          Awaited<ReturnType<typeof getPriority>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPriorityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPriority>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetPriorityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPriority>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetPriorityInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetPriorityQueryOptions = <TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetPriorityQueryResult = NonNullable<Awaited<ReturnType<typeof getPriority>>>
@@ -377,69 +309,6 @@ export const getGetAllPrioritiesQueryKey = (params?: GetAllPrioritiesParams,) =>
     }
 
     
-export const getGetAllPrioritiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllPriorities>>, GetAllPrioritiesParams['nextId']>, TError = unknown>(params?: GetAllPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllPrioritiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']> = ({ signal, pageParam }) => getAllPriorities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllPrioritiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPriorities>>>
-export type GetAllPrioritiesInfiniteQueryError = unknown
-
-
-export function useGetAllPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPriorities>>, GetAllPrioritiesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllPrioritiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof getAllPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPriorities>>, GetAllPrioritiesParams['nextId']>, TError = unknown>(
- params?: GetAllPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof getAllPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPriorities>>, GetAllPrioritiesParams['nextId']>, TError = unknown>(
- params?: GetAllPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPriorities>>, GetAllPrioritiesParams['nextId']>, TError = unknown>(
- params?: GetAllPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData, Awaited<ReturnType<typeof getAllPriorities>>, QueryKey, GetAllPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllPrioritiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPriorities>>>
@@ -580,69 +449,6 @@ export const getCountPrioritiesQueryKey = (params?: CountPrioritiesParams,) => {
     }
 
     
-export const getCountPrioritiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countPriorities>>, CountPrioritiesParams['nextId']>, TError = unknown>(params?: CountPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountPrioritiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']> = ({ signal, pageParam }) => countPriorities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountPrioritiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countPriorities>>>
-export type CountPrioritiesInfiniteQueryError = unknown
-
-
-export function useCountPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countPriorities>>, CountPrioritiesParams['nextId']>, TError = unknown>(
- params: undefined |  CountPrioritiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof countPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countPriorities>>, CountPrioritiesParams['nextId']>, TError = unknown>(
- params?: CountPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof countPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countPriorities>>, CountPrioritiesParams['nextId']>, TError = unknown>(
- params?: CountPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countPriorities>>, CountPrioritiesParams['nextId']>, TError = unknown>(
- params?: CountPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData, Awaited<ReturnType<typeof countPriorities>>, QueryKey, CountPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountPrioritiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof countPriorities>>>
@@ -725,69 +531,6 @@ export const getSearchPrioritiesQueryKey = (params: SearchPrioritiesParams,) => 
     }
 
     
-export const getSearchPrioritiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchPriorities>>, SearchPrioritiesParams['nextId']>, TError = unknown>(params: SearchPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchPrioritiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']> = ({ signal, pageParam }) => searchPriorities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchPrioritiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchPriorities>>>
-export type SearchPrioritiesInfiniteQueryError = unknown
-
-
-export function useSearchPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchPriorities>>, SearchPrioritiesParams['nextId']>, TError = unknown>(
- params: SearchPrioritiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof searchPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchPriorities>>, SearchPrioritiesParams['nextId']>, TError = unknown>(
- params: SearchPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchPriorities>>,
-          TError,
-          Awaited<ReturnType<typeof searchPriorities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchPriorities>>, SearchPrioritiesParams['nextId']>, TError = unknown>(
- params: SearchPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchPrioritiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchPriorities>>, SearchPrioritiesParams['nextId']>, TError = unknown>(
- params: SearchPrioritiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData, Awaited<ReturnType<typeof searchPriorities>>, QueryKey, SearchPrioritiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchPrioritiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchPriorities>>>

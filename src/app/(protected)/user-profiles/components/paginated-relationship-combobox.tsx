@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, X, Loader2, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, X, Loader2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
 
 interface PaginatedRelationshipComboboxProps {
@@ -29,8 +29,9 @@ interface PaginatedRelationshipComboboxProps {
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
-  useInfiniteQueryHook: (params: any, options?: any) => any;
-  searchHook?: (params: any, options?: any) => any;
+  useGetAllHook: (params: any, options?: any) => any;
+  useSearchHook?: (params: any, options?: any) => any;
+  useCountHook?: (params: any, options?: any) => any;
   entityName: string;
   searchField?: string;
   canCreate?: boolean;
@@ -49,8 +50,9 @@ export function PaginatedRelationshipCombobox({
   multiple = false,
   disabled = false,
   className,
-  useInfiniteQueryHook,
-  searchHook,
+  useGetAllHook,
+  useSearchHook,
+  useCountHook,
   entityName,
   searchField = "name",
   canCreate = false,
@@ -63,100 +65,89 @@ export function PaginatedRelationshipCombobox({
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [deferredSearchQuery, setDeferredSearchQuery] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const pageSize = 20;
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
+      setCurrentPage(0); // Reset to first page on search
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   const buildQueryParams = (extraParams = {}) => {
-    const params = { size: 20, ...extraParams };
+    const params = { 
+      page: currentPage, 
+      size: pageSize, 
+      sort: [displayField + ",asc"],
+      ...extraParams 
+    };
     if (parentFilter && parentField) {
       params[`${parentField}Id.equals`] = parentFilter;
     }
     return params;
   };
 
-  const shouldUseSearch = searchHook && deferredSearchQuery.trim() !== "";
+  const shouldUseSearch = useSearchHook && deferredSearchQuery.trim() !== "";
 
   React.useEffect(() => {
     setSearchQuery("");
     setDeferredSearchQuery("");
+    setCurrentPage(0);
   }, [parentFilter]);
 
-  const infiniteQuery = useInfiniteQueryHook(
-    shouldUseSearch ? undefined : buildQueryParams(),
+  // Main data query
+  const dataQuery = shouldUseSearch 
+    ? useSearchHook(
+        buildQueryParams({ query: deferredSearchQuery }),
+        {
+          query: {
+            enabled: shouldUseSearch && (!parentField || !!parentFilter),
+            staleTime: 10000,
+          }
+        }
+      )
+    : useGetAllHook(
+        buildQueryParams(),
+        {
+          query: {
+            enabled: !shouldUseSearch && (!parentField || !!parentFilter),
+            staleTime: 30000,
+          }
+        }
+      );
+
+  // Count query for pagination
+  const countQuery = useCountHook && !shouldUseSearch ? useCountHook(
+    (() => {
+      const params = {};
+      if (parentFilter && parentField) {
+        params[`${parentField}Id.equals`] = parentFilter;
+      }
+      return params;
+    })(),
     {
       query: {
         enabled: !shouldUseSearch && (!parentField || !!parentFilter),
-        getNextPageParam: (lastPage: any, allPages: any[]) => {
-          let lastPageItems = [];
-          if (Array.isArray(lastPage)) {
-            lastPageItems = lastPage;
-          } else if (lastPage?.content && Array.isArray(lastPage.content)) {
-            lastPageItems = lastPage.content;
-          }
-          
-          const pageSize = 20;
-          if (lastPageItems.length < pageSize) {
-            return undefined;
-          }
-          
-          const currentPage = allPages.length - 1;
-          return currentPage + 1;
-        },
         staleTime: 30000,
-      }
-    }
-  );
-
-  const searchQuery_ = searchHook ? searchHook(
-    shouldUseSearch ? buildQueryParams({ 
-      query: deferredSearchQuery,
-      size: 50 
-    }) : undefined,
-    {
-      query: {
-        enabled: shouldUseSearch && deferredSearchQuery.trim() !== "" && (!parentField || !!parentFilter),
-        staleTime: 10000,
       }
     }
   ) : null;
 
-  const getAllOptions = () => {
-    let rawOptions: any[] = [];
-    
-    if (shouldUseSearch && searchQuery_?.data) {
-      const searchData = searchQuery_.data;
-      if (Array.isArray(searchData)) {
-        rawOptions = searchData;
-      } else if (searchData?.content && Array.isArray(searchData.content)) {
-        rawOptions = searchData.content;
-      }
-    } else if (infiniteQuery.data?.pages) {
-      rawOptions = infiniteQuery.data.pages.flatMap((page: any) => {
-        if (Array.isArray(page)) {
-          return page;
-        } else if (page?.content && Array.isArray(page.content)) {
-          return page.content;
-        }
-        return [];
-      });
-    }
-    
+  const allOptions = React.useMemo(() => {
+    const rawOptions = dataQuery?.data || [];
     const seenIds = new Set();
     return rawOptions
       .filter(option => option && option.id && !seenIds.has(option.id) && seenIds.add(option.id))
       .filter(Boolean);
-  };
+  }, [dataQuery?.data]);
 
-  const allOptions = getAllOptions();
-  const isLoading = shouldUseSearch ? searchQuery_?.isLoading : infiniteQuery.isLoading;
-  const isFetchingNextPage = infiniteQuery.isFetchingNextPage;
-  const hasNextPage = infiniteQuery.hasNextPage;
-  const fetchNextPage = infiniteQuery.fetchNextPage;
+  const totalCount = countQuery?.data || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const isLoading = dataQuery?.isLoading;
+  const canGoPrevious = currentPage > 0;
+  const canGoNext = currentPage < totalPages - 1;
 
   const handleSingleSelect = (optionId: number) => {
     const newValue = value === optionId ? undefined : optionId;
@@ -198,15 +189,6 @@ export function PaginatedRelationshipCombobox({
   const getSelectedOptions = () => {
     if (!multiple || !Array.isArray(value)) return [];
     return allOptions.filter((option: any) => value.includes(option.id));
-  };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const isNearBottom = scrollHeight - scrollTop <= clientHeight * 1.2;
-    
-    if (isNearBottom && hasNextPage && !isFetchingNextPage && !shouldUseSearch) {
-      fetchNextPage();
-    }
   };
 
   const handleCreateNew = () => {
@@ -305,7 +287,7 @@ export function PaginatedRelationshipCombobox({
                   value={searchQuery}
                   onValueChange={setSearchQuery}
                 />
-                <CommandList onScroll={handleScroll} className="max-h-60">
+                <CommandList className="max-h-60">
                   {isLoading && (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -355,16 +337,39 @@ export function PaginatedRelationshipCombobox({
                           </CommandItem>
                         );
                       })}
-                      
-                      {!shouldUseSearch && isFetchingNextPage && (
-                        <div className="flex items-center justify-center p-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="ml-2 text-sm text-muted-foreground">Loading more...</span>
-                        </div>
-                      )}
                     </CommandGroup>
                   )}
                 </CommandList>
+                
+                {/* Pagination Controls */}
+                {!shouldUseSearch && totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t p-2 text-xs text-muted-foreground">
+                    <span>{totalCount} total items</span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                        disabled={!canGoPrevious}
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </Button>
+                      <span className="text-xs">
+                        {currentPage + 1} / {totalPages}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                        disabled={!canGoNext}
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Command>
             </PopoverContent>
           </Popover>

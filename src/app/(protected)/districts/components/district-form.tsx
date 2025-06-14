@@ -54,8 +54,9 @@ import {
   useGetDistrict,
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
 import { 
-  useGetAllStatesInfinite,
-  useSearchStatesInfinite 
+  useGetAllStates,
+  useSearchStates,
+  useCountStates
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
 import type { DistrictDTO } from "@/core/api/generated/spring/schemas/DistrictDTO";
 
@@ -495,8 +496,9 @@ export function DistrictForm({ id }: DistrictFormProps) {
                               displayField="name"
                               placeholder="Select state"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllStatesInfinite}
-                              searchHook={useSearchStatesInfinite}
+                              useGetAllHook={useGetAllStates}
+                              useSearchHook={useSearchStates}
+                              useCountHook={useCountStates}
                               entityName="States"
                               searchField="name"
                               canCreate={true}

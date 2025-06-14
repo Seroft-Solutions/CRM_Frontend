@@ -54,8 +54,9 @@ import {
   useGetArea,
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import { 
-  useGetAllCitiesInfinite,
-  useSearchCitiesInfinite 
+  useGetAllCities,
+  useSearchCities,
+  useCountCities
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 import type { AreaDTO } from "@/core/api/generated/spring/schemas/AreaDTO";
 
@@ -526,8 +527,9 @@ export function AreaForm({ id }: AreaFormProps) {
                               displayField="name"
                               placeholder="Select city"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllCitiesInfinite}
-                              searchHook={useSearchCitiesInfinite}
+                              useGetAllHook={useGetAllCities}
+                              useSearchHook={useSearchCities}
+                              useCountHook={useCountCities}
                               entityName="Cities"
                               searchField="name"
                               canCreate={true}

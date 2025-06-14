@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetGroupQueryKey = (id: number,) => {
     }
 
     
-export const getGetGroupInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getGroup>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetGroupQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGroup>>> = ({ signal }) => getGroup(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetGroupInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getGroup>>>
-export type GetGroupInfiniteQueryError = unknown
-
-
-export function useGetGroupInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getGroup>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getGroup>>,
-          TError,
-          Awaited<ReturnType<typeof getGroup>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetGroupInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getGroup>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getGroup>>,
-          TError,
-          Awaited<ReturnType<typeof getGroup>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetGroupInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getGroup>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetGroupInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getGroup>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetGroupInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetGroupQueryOptions = <TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetGroupQueryResult = NonNullable<Awaited<ReturnType<typeof getGroup>>>
@@ -377,69 +309,6 @@ export const getGetAllGroupsQueryKey = (params?: GetAllGroupsParams,) => {
     }
 
     
-export const getGetAllGroupsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllGroups>>, GetAllGroupsParams['nextId']>, TError = unknown>(params?: GetAllGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllGroupsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']> = ({ signal, pageParam }) => getAllGroups({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllGroupsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllGroups>>>
-export type GetAllGroupsInfiniteQueryError = unknown
-
-
-export function useGetAllGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllGroups>>, GetAllGroupsParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllGroupsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAllGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllGroups>>, GetAllGroupsParams['nextId']>, TError = unknown>(
- params?: GetAllGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllGroups>>,
-          TError,
-          Awaited<ReturnType<typeof getAllGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllGroups>>, GetAllGroupsParams['nextId']>, TError = unknown>(
- params?: GetAllGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllGroups>>, GetAllGroupsParams['nextId']>, TError = unknown>(
- params?: GetAllGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData, Awaited<ReturnType<typeof getAllGroups>>, QueryKey, GetAllGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllGroupsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllGroups>>>
@@ -580,69 +449,6 @@ export const getCountGroupsQueryKey = (params?: CountGroupsParams,) => {
     }
 
     
-export const getCountGroupsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countGroups>>, CountGroupsParams['nextId']>, TError = unknown>(params?: CountGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountGroupsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']> = ({ signal, pageParam }) => countGroups({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountGroupsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countGroups>>>
-export type CountGroupsInfiniteQueryError = unknown
-
-
-export function useCountGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countGroups>>, CountGroupsParams['nextId']>, TError = unknown>(
- params: undefined |  CountGroupsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countGroups>>,
-          TError,
-          Awaited<ReturnType<typeof countGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countGroups>>, CountGroupsParams['nextId']>, TError = unknown>(
- params?: CountGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countGroups>>,
-          TError,
-          Awaited<ReturnType<typeof countGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countGroups>>, CountGroupsParams['nextId']>, TError = unknown>(
- params?: CountGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countGroups>>, CountGroupsParams['nextId']>, TError = unknown>(
- params?: CountGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData, Awaited<ReturnType<typeof countGroups>>, QueryKey, CountGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountGroupsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountGroupsQueryOptions = <TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof countGroups>>>
@@ -725,69 +531,6 @@ export const getSearchGroupsQueryKey = (params: SearchGroupsParams,) => {
     }
 
     
-export const getSearchGroupsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchGroups>>, SearchGroupsParams['nextId']>, TError = unknown>(params: SearchGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchGroupsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']> = ({ signal, pageParam }) => searchGroups({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchGroupsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchGroups>>>
-export type SearchGroupsInfiniteQueryError = unknown
-
-
-export function useSearchGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchGroups>>, SearchGroupsParams['nextId']>, TError = unknown>(
- params: SearchGroupsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchGroups>>,
-          TError,
-          Awaited<ReturnType<typeof searchGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchGroups>>, SearchGroupsParams['nextId']>, TError = unknown>(
- params: SearchGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchGroups>>,
-          TError,
-          Awaited<ReturnType<typeof searchGroups>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchGroups>>, SearchGroupsParams['nextId']>, TError = unknown>(
- params: SearchGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchGroupsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchGroups>>, SearchGroupsParams['nextId']>, TError = unknown>(
- params: SearchGroupsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData, Awaited<ReturnType<typeof searchGroups>>, QueryKey, SearchGroupsParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchGroupsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchGroupsQueryOptions = <TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof searchGroups>>>

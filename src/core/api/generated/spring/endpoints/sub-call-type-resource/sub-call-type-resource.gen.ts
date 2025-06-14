@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetSubCallTypeQueryKey = (id: number,) => {
     }
 
     
-export const getGetSubCallTypeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSubCallType>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSubCallTypeQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubCallType>>> = ({ signal }) => getSubCallType(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSubCallTypeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSubCallType>>>
-export type GetSubCallTypeInfiniteQueryError = unknown
-
-
-export function useGetSubCallTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSubCallType>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSubCallType>>,
-          TError,
-          Awaited<ReturnType<typeof getSubCallType>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSubCallTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSubCallType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSubCallType>>,
-          TError,
-          Awaited<ReturnType<typeof getSubCallType>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSubCallTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSubCallType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetSubCallTypeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSubCallType>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSubCallTypeInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetSubCallTypeQueryOptions = <TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetSubCallTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getSubCallType>>>
@@ -377,69 +309,6 @@ export const getGetAllSubCallTypesQueryKey = (params?: GetAllSubCallTypesParams,
     }
 
     
-export const getGetAllSubCallTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllSubCallTypes>>, GetAllSubCallTypesParams['nextId']>, TError = unknown>(params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllSubCallTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']> = ({ signal, pageParam }) => getAllSubCallTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllSubCallTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllSubCallTypes>>>
-export type GetAllSubCallTypesInfiniteQueryError = unknown
-
-
-export function useGetAllSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllSubCallTypes>>, GetAllSubCallTypesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllSubCallTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllSubCallTypes>>, GetAllSubCallTypesParams['nextId']>, TError = unknown>(
- params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllSubCallTypes>>, GetAllSubCallTypesParams['nextId']>, TError = unknown>(
- params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllSubCallTypes>>, GetAllSubCallTypesParams['nextId']>, TError = unknown>(
- params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof getAllSubCallTypes>>, QueryKey, GetAllSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllSubCallTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllSubCallTypes>>>
@@ -580,69 +449,6 @@ export const getCountSubCallTypesQueryKey = (params?: CountSubCallTypesParams,) 
     }
 
     
-export const getCountSubCallTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countSubCallTypes>>, CountSubCallTypesParams['nextId']>, TError = unknown>(params?: CountSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountSubCallTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']> = ({ signal, pageParam }) => countSubCallTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountSubCallTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countSubCallTypes>>>
-export type CountSubCallTypesInfiniteQueryError = unknown
-
-
-export function useCountSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countSubCallTypes>>, CountSubCallTypesParams['nextId']>, TError = unknown>(
- params: undefined |  CountSubCallTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countSubCallTypes>>, CountSubCallTypesParams['nextId']>, TError = unknown>(
- params?: CountSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countSubCallTypes>>, CountSubCallTypesParams['nextId']>, TError = unknown>(
- params?: CountSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countSubCallTypes>>, CountSubCallTypesParams['nextId']>, TError = unknown>(
- params?: CountSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof countSubCallTypes>>, QueryKey, CountSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountSubCallTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof countSubCallTypes>>>
@@ -725,69 +531,6 @@ export const getSearchSubCallTypesQueryKey = (params: SearchSubCallTypesParams,)
     }
 
     
-export const getSearchSubCallTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchSubCallTypes>>, SearchSubCallTypesParams['nextId']>, TError = unknown>(params: SearchSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchSubCallTypesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']> = ({ signal, pageParam }) => searchSubCallTypes({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchSubCallTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchSubCallTypes>>>
-export type SearchSubCallTypesInfiniteQueryError = unknown
-
-
-export function useSearchSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchSubCallTypes>>, SearchSubCallTypesParams['nextId']>, TError = unknown>(
- params: SearchSubCallTypesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchSubCallTypes>>, SearchSubCallTypesParams['nextId']>, TError = unknown>(
- params: SearchSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchSubCallTypes>>,
-          TError,
-          Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchSubCallTypes>>, SearchSubCallTypesParams['nextId']>, TError = unknown>(
- params: SearchSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchSubCallTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchSubCallTypes>>, SearchSubCallTypesParams['nextId']>, TError = unknown>(
- params: SearchSubCallTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData, Awaited<ReturnType<typeof searchSubCallTypes>>, QueryKey, SearchSubCallTypesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchSubCallTypesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof searchSubCallTypes>>>
