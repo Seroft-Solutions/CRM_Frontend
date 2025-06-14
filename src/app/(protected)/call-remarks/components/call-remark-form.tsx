@@ -54,8 +54,9 @@ import {
   useGetCallRemark,
 } from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
 import { 
-  useGetAllCallsInfinite,
-  useSearchCallsInfinite 
+  useGetAllCalls,
+  useSearchCalls,
+  useCountCalls
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
 
@@ -551,8 +552,9 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
                               displayField="name"
                               placeholder="Select call"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllCallsInfinite}
-                              searchHook={useSearchCallsInfinite}
+                              useGetAllHook={useGetAllCalls}
+                              useSearchHook={useSearchCalls}
+                              useCountHook={useCountCalls}
                               entityName="Calls"
                               searchField="name"
                               canCreate={true}

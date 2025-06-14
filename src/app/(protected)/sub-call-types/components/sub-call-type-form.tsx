@@ -54,8 +54,9 @@ import {
   useGetSubCallType,
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
 import { 
-  useGetAllCallTypesInfinite,
-  useSearchCallTypesInfinite 
+  useGetAllCallTypes,
+  useSearchCallTypes,
+  useCountCallTypes
 } from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
 import type { SubCallTypeDTO } from "@/core/api/generated/spring/schemas/SubCallTypeDTO";
 
@@ -554,8 +555,9 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
                               displayField="name"
                               placeholder="Select call type"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllCallTypesInfinite}
-                              searchHook={useSearchCallTypesInfinite}
+                              useGetAllHook={useGetAllCallTypes}
+                              useSearchHook={useSearchCallTypes}
+                              useCountHook={useCountCallTypes}
                               entityName="CallTypes"
                               searchField="name"
                               canCreate={true}

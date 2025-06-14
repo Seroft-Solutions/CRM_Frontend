@@ -23,14 +23,6 @@ module.exports = {
           path: '../../services/spring-service/service-mutator.ts',
           name: 'springServiceMutator',
         },
-        query: {
-          useQuery: true,
-          useInfinite: true,
-          useInfiniteQueryParam: 'nextId',
-          options: {
-            staleTime: 10000,
-          },
-        },
       },
     },
     input: {

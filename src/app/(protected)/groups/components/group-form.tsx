@@ -54,8 +54,9 @@ import {
   useGetGroup,
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 import { 
-  useGetAllUserProfilesInfinite,
-  useSearchUserProfilesInfinite 
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useCountUserProfiles
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 import type { GroupDTO } from "@/core/api/generated/spring/schemas/GroupDTO";
 import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
@@ -588,8 +589,9 @@ export function GroupForm({ id }: GroupFormProps) {
                               displayField="name"
                               placeholder="Select members"
                               multiple={true}
-                              useInfiniteQueryHook={useGetAllUserProfilesInfinite}
-                              searchHook={useSearchUserProfilesInfinite}
+                              useGetAllHook={useGetAllUserProfiles}
+                              useSearchHook={useSearchUserProfiles}
+                              useCountHook={useCountUserProfiles}
                               entityName="UserProfiles"
                               searchField="name"
                               canCreate={true}

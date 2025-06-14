@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetAreaQueryKey = (id: number,) => {
     }
 
     
-export const getGetAreaInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getArea>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAreaQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArea>>> = ({ signal }) => getArea(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAreaInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getArea>>>
-export type GetAreaInfiniteQueryError = unknown
-
-
-export function useGetAreaInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getArea>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getArea>>,
-          TError,
-          Awaited<ReturnType<typeof getArea>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAreaInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getArea>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getArea>>,
-          TError,
-          Awaited<ReturnType<typeof getArea>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAreaInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getArea>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAreaInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getArea>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAreaInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAreaQueryOptions = <TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAreaQueryResult = NonNullable<Awaited<ReturnType<typeof getArea>>>
@@ -377,69 +309,6 @@ export const getGetAllAreasQueryKey = (params?: GetAllAreasParams,) => {
     }
 
     
-export const getGetAllAreasInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllAreas>>, GetAllAreasParams['nextId']>, TError = unknown>(params?: GetAllAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllAreasQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']> = ({ signal, pageParam }) => getAllAreas({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllAreasInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAreas>>>
-export type GetAllAreasInfiniteQueryError = unknown
-
-
-export function useGetAllAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllAreas>>, GetAllAreasParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllAreasParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllAreas>>,
-          TError,
-          Awaited<ReturnType<typeof getAllAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllAreas>>, GetAllAreasParams['nextId']>, TError = unknown>(
- params?: GetAllAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllAreas>>,
-          TError,
-          Awaited<ReturnType<typeof getAllAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllAreas>>, GetAllAreasParams['nextId']>, TError = unknown>(
- params?: GetAllAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllAreas>>, GetAllAreasParams['nextId']>, TError = unknown>(
- params?: GetAllAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData, Awaited<ReturnType<typeof getAllAreas>>, QueryKey, GetAllAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllAreasInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllAreasQueryOptions = <TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllAreasQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAreas>>>
@@ -580,69 +449,6 @@ export const getCountAreasQueryKey = (params?: CountAreasParams,) => {
     }
 
     
-export const getCountAreasInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countAreas>>, CountAreasParams['nextId']>, TError = unknown>(params?: CountAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountAreasQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']> = ({ signal, pageParam }) => countAreas({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountAreasInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countAreas>>>
-export type CountAreasInfiniteQueryError = unknown
-
-
-export function useCountAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countAreas>>, CountAreasParams['nextId']>, TError = unknown>(
- params: undefined |  CountAreasParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countAreas>>,
-          TError,
-          Awaited<ReturnType<typeof countAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countAreas>>, CountAreasParams['nextId']>, TError = unknown>(
- params?: CountAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countAreas>>,
-          TError,
-          Awaited<ReturnType<typeof countAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countAreas>>, CountAreasParams['nextId']>, TError = unknown>(
- params?: CountAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countAreas>>, CountAreasParams['nextId']>, TError = unknown>(
- params?: CountAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData, Awaited<ReturnType<typeof countAreas>>, QueryKey, CountAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountAreasInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountAreasQueryOptions = <TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountAreasQueryResult = NonNullable<Awaited<ReturnType<typeof countAreas>>>
@@ -725,69 +531,6 @@ export const getSearchAreasQueryKey = (params: SearchAreasParams,) => {
     }
 
     
-export const getSearchAreasInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchAreas>>, SearchAreasParams['nextId']>, TError = unknown>(params: SearchAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchAreasQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']> = ({ signal, pageParam }) => searchAreas({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchAreasInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchAreas>>>
-export type SearchAreasInfiniteQueryError = unknown
-
-
-export function useSearchAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchAreas>>, SearchAreasParams['nextId']>, TError = unknown>(
- params: SearchAreasParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchAreas>>,
-          TError,
-          Awaited<ReturnType<typeof searchAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchAreas>>, SearchAreasParams['nextId']>, TError = unknown>(
- params: SearchAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchAreas>>,
-          TError,
-          Awaited<ReturnType<typeof searchAreas>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchAreas>>, SearchAreasParams['nextId']>, TError = unknown>(
- params: SearchAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchAreasInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchAreas>>, SearchAreasParams['nextId']>, TError = unknown>(
- params: SearchAreasParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData, Awaited<ReturnType<typeof searchAreas>>, QueryKey, SearchAreasParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchAreasInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchAreasQueryOptions = <TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchAreasQueryResult = NonNullable<Awaited<ReturnType<typeof searchAreas>>>

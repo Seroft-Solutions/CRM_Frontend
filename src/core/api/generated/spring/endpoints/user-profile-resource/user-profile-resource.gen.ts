@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetUserProfileQueryKey = (id: number,) => {
     }
 
     
-export const getGetUserProfileInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUserProfile>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUserProfileQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserProfile>>> = ({ signal }) => getUserProfile(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUserProfileInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUserProfile>>>
-export type GetUserProfileInfiniteQueryError = unknown
-
-
-export function useGetUserProfileInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUserProfile>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserProfile>>,
-          TError,
-          Awaited<ReturnType<typeof getUserProfile>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserProfileInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUserProfile>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserProfile>>,
-          TError,
-          Awaited<ReturnType<typeof getUserProfile>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserProfileInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUserProfile>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetUserProfileInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUserProfile>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUserProfileInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetUserProfileQueryOptions = <TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetUserProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getUserProfile>>>
@@ -377,69 +309,6 @@ export const getGetAllUserProfilesQueryKey = (params?: GetAllUserProfilesParams,
     }
 
     
-export const getGetAllUserProfilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllUserProfiles>>, GetAllUserProfilesParams['nextId']>, TError = unknown>(params?: GetAllUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllUserProfilesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']> = ({ signal, pageParam }) => getAllUserProfiles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllUserProfilesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllUserProfiles>>>
-export type GetAllUserProfilesInfiniteQueryError = unknown
-
-
-export function useGetAllUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllUserProfiles>>, GetAllUserProfilesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllUserProfilesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllUserProfiles>>, GetAllUserProfilesParams['nextId']>, TError = unknown>(
- params?: GetAllUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllUserProfiles>>, GetAllUserProfilesParams['nextId']>, TError = unknown>(
- params?: GetAllUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllUserProfiles>>, GetAllUserProfilesParams['nextId']>, TError = unknown>(
- params?: GetAllUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData, Awaited<ReturnType<typeof getAllUserProfiles>>, QueryKey, GetAllUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllUserProfilesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllUserProfilesQueryOptions = <TData = Awaited<ReturnType<typeof getAllUserProfiles>>, TError = unknown>(params?: GetAllUserProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllUserProfilesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllUserProfiles>>>
@@ -580,69 +449,6 @@ export const getCountUserProfilesQueryKey = (params?: CountUserProfilesParams,) 
     }
 
     
-export const getCountUserProfilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countUserProfiles>>, CountUserProfilesParams['nextId']>, TError = unknown>(params?: CountUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountUserProfilesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']> = ({ signal, pageParam }) => countUserProfiles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountUserProfilesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countUserProfiles>>>
-export type CountUserProfilesInfiniteQueryError = unknown
-
-
-export function useCountUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countUserProfiles>>, CountUserProfilesParams['nextId']>, TError = unknown>(
- params: undefined |  CountUserProfilesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof countUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countUserProfiles>>, CountUserProfilesParams['nextId']>, TError = unknown>(
- params?: CountUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof countUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countUserProfiles>>, CountUserProfilesParams['nextId']>, TError = unknown>(
- params?: CountUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countUserProfiles>>, CountUserProfilesParams['nextId']>, TError = unknown>(
- params?: CountUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData, Awaited<ReturnType<typeof countUserProfiles>>, QueryKey, CountUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountUserProfilesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountUserProfilesQueryOptions = <TData = Awaited<ReturnType<typeof countUserProfiles>>, TError = unknown>(params?: CountUserProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountUserProfilesQueryResult = NonNullable<Awaited<ReturnType<typeof countUserProfiles>>>
@@ -725,69 +531,6 @@ export const getSearchUserProfilesQueryKey = (params: SearchUserProfilesParams,)
     }
 
     
-export const getSearchUserProfilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchUserProfiles>>, SearchUserProfilesParams['nextId']>, TError = unknown>(params: SearchUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchUserProfilesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']> = ({ signal, pageParam }) => searchUserProfiles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchUserProfilesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchUserProfiles>>>
-export type SearchUserProfilesInfiniteQueryError = unknown
-
-
-export function useSearchUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchUserProfiles>>, SearchUserProfilesParams['nextId']>, TError = unknown>(
- params: SearchUserProfilesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchUserProfiles>>, SearchUserProfilesParams['nextId']>, TError = unknown>(
- params: SearchUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchUserProfiles>>,
-          TError,
-          Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchUserProfiles>>, SearchUserProfilesParams['nextId']>, TError = unknown>(
- params: SearchUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchUserProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchUserProfiles>>, SearchUserProfilesParams['nextId']>, TError = unknown>(
- params: SearchUserProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData, Awaited<ReturnType<typeof searchUserProfiles>>, QueryKey, SearchUserProfilesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchUserProfilesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchUserProfilesQueryOptions = <TData = Awaited<ReturnType<typeof searchUserProfiles>>, TError = unknown>(params: SearchUserProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchUserProfiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchUserProfilesQueryResult = NonNullable<Awaited<ReturnType<typeof searchUserProfiles>>>

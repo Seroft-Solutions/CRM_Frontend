@@ -54,8 +54,9 @@ import {
   useGetCity,
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 import { 
-  useGetAllDistrictsInfinite,
-  useSearchDistrictsInfinite 
+  useGetAllDistricts,
+  useSearchDistricts,
+  useCountDistricts
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
 import type { CityDTO } from "@/core/api/generated/spring/schemas/CityDTO";
 
@@ -495,8 +496,9 @@ export function CityForm({ id }: CityFormProps) {
                               displayField="name"
                               placeholder="Select district"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllDistrictsInfinite}
-                              searchHook={useSearchDistrictsInfinite}
+                              useGetAllHook={useGetAllDistricts}
+                              useSearchHook={useSearchDistricts}
+                              useCountHook={useCountDistricts}
                               entityName="Districts"
                               searchField="name"
                               canCreate={true}

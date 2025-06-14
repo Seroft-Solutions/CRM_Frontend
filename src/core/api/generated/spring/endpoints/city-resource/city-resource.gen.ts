@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetCityQueryKey = (id: number,) => {
     }
 
     
-export const getGetCityInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCity>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCityQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCity>>> = ({ signal }) => getCity(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCityInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCity>>>
-export type GetCityInfiniteQueryError = unknown
-
-
-export function useGetCityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCity>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCity>>,
-          TError,
-          Awaited<ReturnType<typeof getCity>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCity>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCity>>,
-          TError,
-          Awaited<ReturnType<typeof getCity>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCity>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetCityInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCity>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCityInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetCityQueryOptions = <TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetCityQueryResult = NonNullable<Awaited<ReturnType<typeof getCity>>>
@@ -377,69 +309,6 @@ export const getGetAllCitiesQueryKey = (params?: GetAllCitiesParams,) => {
     }
 
     
-export const getGetAllCitiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllCities>>, GetAllCitiesParams['nextId']>, TError = unknown>(params?: GetAllCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllCitiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']> = ({ signal, pageParam }) => getAllCities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllCitiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllCities>>>
-export type GetAllCitiesInfiniteQueryError = unknown
-
-
-export function useGetAllCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllCities>>, GetAllCitiesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllCitiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllCities>>,
-          TError,
-          Awaited<ReturnType<typeof getAllCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllCities>>, GetAllCitiesParams['nextId']>, TError = unknown>(
- params?: GetAllCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllCities>>,
-          TError,
-          Awaited<ReturnType<typeof getAllCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllCities>>, GetAllCitiesParams['nextId']>, TError = unknown>(
- params?: GetAllCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllCities>>, GetAllCitiesParams['nextId']>, TError = unknown>(
- params?: GetAllCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData, Awaited<ReturnType<typeof getAllCities>>, QueryKey, GetAllCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllCitiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllCitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllCities>>>
@@ -580,69 +449,6 @@ export const getCountCitiesQueryKey = (params?: CountCitiesParams,) => {
     }
 
     
-export const getCountCitiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countCities>>, CountCitiesParams['nextId']>, TError = unknown>(params?: CountCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountCitiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']> = ({ signal, pageParam }) => countCities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountCitiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countCities>>>
-export type CountCitiesInfiniteQueryError = unknown
-
-
-export function useCountCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countCities>>, CountCitiesParams['nextId']>, TError = unknown>(
- params: undefined |  CountCitiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countCities>>,
-          TError,
-          Awaited<ReturnType<typeof countCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countCities>>, CountCitiesParams['nextId']>, TError = unknown>(
- params?: CountCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countCities>>,
-          TError,
-          Awaited<ReturnType<typeof countCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countCities>>, CountCitiesParams['nextId']>, TError = unknown>(
- params?: CountCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countCities>>, CountCitiesParams['nextId']>, TError = unknown>(
- params?: CountCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData, Awaited<ReturnType<typeof countCities>>, QueryKey, CountCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountCitiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountCitiesQueryOptions = <TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof countCities>>>
@@ -725,69 +531,6 @@ export const getSearchCitiesQueryKey = (params: SearchCitiesParams,) => {
     }
 
     
-export const getSearchCitiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchCities>>, SearchCitiesParams['nextId']>, TError = unknown>(params: SearchCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchCitiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']> = ({ signal, pageParam }) => searchCities({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchCitiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchCities>>>
-export type SearchCitiesInfiniteQueryError = unknown
-
-
-export function useSearchCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchCities>>, SearchCitiesParams['nextId']>, TError = unknown>(
- params: SearchCitiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchCities>>,
-          TError,
-          Awaited<ReturnType<typeof searchCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchCities>>, SearchCitiesParams['nextId']>, TError = unknown>(
- params: SearchCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchCities>>,
-          TError,
-          Awaited<ReturnType<typeof searchCities>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchCities>>, SearchCitiesParams['nextId']>, TError = unknown>(
- params: SearchCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchCitiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchCities>>, SearchCitiesParams['nextId']>, TError = unknown>(
- params: SearchCitiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData, Awaited<ReturnType<typeof searchCities>>, QueryKey, SearchCitiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchCitiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchCitiesQueryOptions = <TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchCities>>>

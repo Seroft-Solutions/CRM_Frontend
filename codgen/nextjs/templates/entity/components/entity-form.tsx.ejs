@@ -248,14 +248,15 @@ const steps = [
 _%>
 <%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>
 import { 
-  useGetAll<%= otherEntity.entityClassPlural %>Infinite,
-  useSearch<%= otherEntity.entityClassPlural %>Infinite 
+  useGetAll<%= otherEntity.entityClassPlural %>,
+  useSearch<%= otherEntity.entityClassPlural %>,
+  useCount<%= otherEntity.entityClassPlural %>
 } from "@/core/api/generated/spring/endpoints/<%= otherEntity.entityFileName %>-resource/<%= otherEntity.entityFileName %>-resource.gen";
 <%_ } _%>
 <%_ if (otherEntitiesWithPersistableRelationship.some(e => e.builtInUser)) { _%>
 import { 
-  useGetAllPublicUsersInfinite,
-  useSearchInfinite as useSearchPublicUsersInfinite 
+  useGetAllPublicUsers,
+  useSearchPublicUsers
 } from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 <%_ } _%>
 import type { <%= entityClass %>DTO } from "@/core/api/generated/spring/schemas/<%= entityClass %>DTO";
@@ -949,8 +950,9 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                              useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                              useCountHook={useCount<%= otherEntity.entityClassPlural %>}
                               entityName="<%= otherEntity.entityClassPlural %>"
                               searchField="<%= displayField %>"
                               canCreate={true}
@@ -1026,8 +1028,9 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                              useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                              useCountHook={useCount<%= otherEntity.entityClassPlural %>}
                               entityName="<%= otherEntity.entityClassPlural %>"
                               searchField="<%= displayField %>"
                               canCreate={true}
@@ -1083,8 +1086,8 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAllPublicUsersInfinite}
-                              searchHook={useSearchPublicUsersInfinite}
+                              useGetAllHook={useGetAllPublicUsers}
+                              useSearchHook={useSearchPublicUsers}
                               entityName="PublicUsers"
                               searchField="<%= displayField %>"
                               canCreate={false}
@@ -1099,8 +1102,9 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                              useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                              useCountHook={useCount<%= otherEntity.entityClassPlural %>}
                               entityName="<%= otherEntity.entityClassPlural %>"
                               searchField="<%= displayField %>"
                               canCreate={true}
@@ -1151,8 +1155,9 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                              useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                              useCountHook={useCount<%= otherEntity.entityClassPlural %>}
                               entityName="<%= otherEntity.entityClassPlural %>"
                               searchField="<%= displayField %>"
                               canCreate={true}
@@ -1202,8 +1207,9 @@ _%>
                               displayField="<%= displayField %>"
                               placeholder="Select <%= relationshipLabel.toLowerCase() %>"
                               multiple={<%= rel.collection %>}
-                              useInfiniteQueryHook={useGetAll<%= otherEntity.entityClassPlural %>Infinite}
-                              searchHook={useSearch<%= otherEntity.entityClassPlural %>Infinite}
+                              useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                              useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                              useCountHook={useCount<%= otherEntity.entityClassPlural %>}
                               entityName="<%= otherEntity.entityClassPlural %>"
                               searchField="<%= displayField %>"
                               canCreate={true}

@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetPartyQueryKey = (id: number,) => {
     }
 
     
-export const getGetPartyInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getParty>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetPartyQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getParty>>> = ({ signal }) => getParty(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetPartyInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getParty>>>
-export type GetPartyInfiniteQueryError = unknown
-
-
-export function useGetPartyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getParty>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getParty>>,
-          TError,
-          Awaited<ReturnType<typeof getParty>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPartyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getParty>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getParty>>,
-          TError,
-          Awaited<ReturnType<typeof getParty>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPartyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getParty>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetPartyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getParty>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetPartyInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetPartyQueryOptions = <TData = Awaited<ReturnType<typeof getParty>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getParty>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetPartyQueryResult = NonNullable<Awaited<ReturnType<typeof getParty>>>
@@ -377,69 +309,6 @@ export const getGetAllPartiesQueryKey = (params?: GetAllPartiesParams,) => {
     }
 
     
-export const getGetAllPartiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllParties>>, GetAllPartiesParams['nextId']>, TError = unknown>(params?: GetAllPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllPartiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']> = ({ signal, pageParam }) => getAllParties({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllPartiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllParties>>>
-export type GetAllPartiesInfiniteQueryError = unknown
-
-
-export function useGetAllPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllParties>>, GetAllPartiesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllPartiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllParties>>,
-          TError,
-          Awaited<ReturnType<typeof getAllParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllParties>>, GetAllPartiesParams['nextId']>, TError = unknown>(
- params?: GetAllPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllParties>>,
-          TError,
-          Awaited<ReturnType<typeof getAllParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllParties>>, GetAllPartiesParams['nextId']>, TError = unknown>(
- params?: GetAllPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllParties>>, GetAllPartiesParams['nextId']>, TError = unknown>(
- params?: GetAllPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData, Awaited<ReturnType<typeof getAllParties>>, QueryKey, GetAllPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllPartiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllPartiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllParties>>, TError = unknown>(params?: GetAllPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllPartiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllParties>>>
@@ -580,69 +449,6 @@ export const getCountPartiesQueryKey = (params?: CountPartiesParams,) => {
     }
 
     
-export const getCountPartiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countParties>>, CountPartiesParams['nextId']>, TError = unknown>(params?: CountPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountPartiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']> = ({ signal, pageParam }) => countParties({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountPartiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countParties>>>
-export type CountPartiesInfiniteQueryError = unknown
-
-
-export function useCountPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countParties>>, CountPartiesParams['nextId']>, TError = unknown>(
- params: undefined |  CountPartiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countParties>>,
-          TError,
-          Awaited<ReturnType<typeof countParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countParties>>, CountPartiesParams['nextId']>, TError = unknown>(
- params?: CountPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countParties>>,
-          TError,
-          Awaited<ReturnType<typeof countParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countParties>>, CountPartiesParams['nextId']>, TError = unknown>(
- params?: CountPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countParties>>, CountPartiesParams['nextId']>, TError = unknown>(
- params?: CountPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData, Awaited<ReturnType<typeof countParties>>, QueryKey, CountPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountPartiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountPartiesQueryOptions = <TData = Awaited<ReturnType<typeof countParties>>, TError = unknown>(params?: CountPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountPartiesQueryResult = NonNullable<Awaited<ReturnType<typeof countParties>>>
@@ -725,69 +531,6 @@ export const getSearchPartiesQueryKey = (params: SearchPartiesParams,) => {
     }
 
     
-export const getSearchPartiesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchParties>>, SearchPartiesParams['nextId']>, TError = unknown>(params: SearchPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchPartiesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']> = ({ signal, pageParam }) => searchParties({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchPartiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchParties>>>
-export type SearchPartiesInfiniteQueryError = unknown
-
-
-export function useSearchPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchParties>>, SearchPartiesParams['nextId']>, TError = unknown>(
- params: SearchPartiesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchParties>>,
-          TError,
-          Awaited<ReturnType<typeof searchParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchParties>>, SearchPartiesParams['nextId']>, TError = unknown>(
- params: SearchPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchParties>>,
-          TError,
-          Awaited<ReturnType<typeof searchParties>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchParties>>, SearchPartiesParams['nextId']>, TError = unknown>(
- params: SearchPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchPartiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchParties>>, SearchPartiesParams['nextId']>, TError = unknown>(
- params: SearchPartiesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData, Awaited<ReturnType<typeof searchParties>>, QueryKey, SearchPartiesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchPartiesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchPartiesQueryOptions = <TData = Awaited<ReturnType<typeof searchParties>>, TError = unknown>(params: SearchPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchPartiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchParties>>>

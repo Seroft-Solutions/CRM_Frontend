@@ -6,23 +6,18 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -61,69 +56,6 @@ export const getGetRoleQueryKey = (id: number,) => {
     }
 
     
-export const getGetRoleInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRole>>>, TError = unknown>(id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetRoleQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRole>>> = ({ signal }) => getRole(id, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetRoleInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRole>>>
-export type GetRoleInfiniteQueryError = unknown
-
-
-export function useGetRoleInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRole>>>, TError = unknown>(
- id: number, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRole>>,
-          TError,
-          Awaited<ReturnType<typeof getRole>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRoleInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRole>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRole>>,
-          TError,
-          Awaited<ReturnType<typeof getRole>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRoleInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRole>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetRoleInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRole>>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetRoleInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetRoleQueryOptions = <TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -139,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetRoleQueryResult = NonNullable<Awaited<ReturnType<typeof getRole>>>
@@ -377,69 +309,6 @@ export const getGetAllRolesQueryKey = (params?: GetAllRolesParams,) => {
     }
 
     
-export const getGetAllRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllRoles>>, GetAllRolesParams['nextId']>, TError = unknown>(params?: GetAllRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllRolesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']> = ({ signal, pageParam }) => getAllRoles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllRoles>>>
-export type GetAllRolesInfiniteQueryError = unknown
-
-
-export function useGetAllRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllRoles>>, GetAllRolesParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAllRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllRoles>>, GetAllRolesParams['nextId']>, TError = unknown>(
- params?: GetAllRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getAllRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllRoles>>, GetAllRolesParams['nextId']>, TError = unknown>(
- params?: GetAllRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllRoles>>, GetAllRolesParams['nextId']>, TError = unknown>(
- params?: GetAllRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData, Awaited<ReturnType<typeof getAllRoles>>, QueryKey, GetAllRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllRolesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -455,7 +324,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllRoles>>>
@@ -580,69 +449,6 @@ export const getCountRolesQueryKey = (params?: CountRolesParams,) => {
     }
 
     
-export const getCountRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof countRoles>>, CountRolesParams['nextId']>, TError = unknown>(params?: CountRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCountRolesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']> = ({ signal, pageParam }) => countRoles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CountRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof countRoles>>>
-export type CountRolesInfiniteQueryError = unknown
-
-
-export function useCountRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countRoles>>, CountRolesParams['nextId']>, TError = unknown>(
- params: undefined |  CountRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countRoles>>,
-          TError,
-          Awaited<ReturnType<typeof countRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countRoles>>, CountRolesParams['nextId']>, TError = unknown>(
- params?: CountRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countRoles>>,
-          TError,
-          Awaited<ReturnType<typeof countRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countRoles>>, CountRolesParams['nextId']>, TError = unknown>(
- params?: CountRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useCountRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof countRoles>>, CountRolesParams['nextId']>, TError = unknown>(
- params?: CountRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData, Awaited<ReturnType<typeof countRoles>>, QueryKey, CountRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCountRolesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getCountRolesQueryOptions = <TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -658,7 +464,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type CountRolesQueryResult = NonNullable<Awaited<ReturnType<typeof countRoles>>>
@@ -725,69 +531,6 @@ export const getSearchRolesQueryKey = (params: SearchRolesParams,) => {
     }
 
     
-export const getSearchRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof searchRoles>>, SearchRolesParams['nextId']>, TError = unknown>(params: SearchRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchRolesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']> = ({ signal, pageParam }) => searchRoles({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof searchRoles>>>
-export type SearchRolesInfiniteQueryError = unknown
-
-
-export function useSearchRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchRoles>>, SearchRolesParams['nextId']>, TError = unknown>(
- params: SearchRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchRoles>>,
-          TError,
-          Awaited<ReturnType<typeof searchRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchRoles>>, SearchRolesParams['nextId']>, TError = unknown>(
- params: SearchRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchRoles>>,
-          TError,
-          Awaited<ReturnType<typeof searchRoles>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchRoles>>, SearchRolesParams['nextId']>, TError = unknown>(
- params: SearchRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof searchRoles>>, SearchRolesParams['nextId']>, TError = unknown>(
- params: SearchRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData, Awaited<ReturnType<typeof searchRoles>>, QueryKey, SearchRolesParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchRolesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getSearchRolesQueryOptions = <TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -803,7 +546,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchRolesQueryResult = NonNullable<Awaited<ReturnType<typeof searchRoles>>>

@@ -6,21 +6,16 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useInfiniteQuery,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
-  DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
-  InfiniteData,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -56,69 +51,6 @@ export const getGetAllPublicUsersQueryKey = (params?: GetAllPublicUsersParams,) 
     }
 
     
-export const getGetAllPublicUsersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAllPublicUsers>>, GetAllPublicUsersParams['nextId']>, TError = unknown>(params?: GetAllPublicUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAllPublicUsersQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']> = ({ signal, pageParam }) => getAllPublicUsers({...params, nextId: pageParam || params?.['nextId']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAllPublicUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPublicUsers>>>
-export type GetAllPublicUsersInfiniteQueryError = unknown
-
-
-export function useGetAllPublicUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPublicUsers>>, GetAllPublicUsersParams['nextId']>, TError = unknown>(
- params: undefined |  GetAllPublicUsersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllPublicUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPublicUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPublicUsers>>, GetAllPublicUsersParams['nextId']>, TError = unknown>(
- params?: GetAllPublicUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAllPublicUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPublicUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPublicUsers>>, GetAllPublicUsersParams['nextId']>, TError = unknown>(
- params?: GetAllPublicUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useGetAllPublicUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAllPublicUsers>>, GetAllPublicUsersParams['nextId']>, TError = unknown>(
- params?: GetAllPublicUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData, Awaited<ReturnType<typeof getAllPublicUsers>>, QueryKey, GetAllPublicUsersParams['nextId']>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAllPublicUsersInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetAllPublicUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -134,7 +66,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAllPublicUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPublicUsers>>>
@@ -200,69 +132,6 @@ export const getSearchQueryKey = (query: string,) => {
     }
 
     
-export const getSearchInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof search>>>, TError = unknown>(query: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSearchQueryKey(query);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof search>>> = ({ signal }) => search(query, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(query),  staleTime: 10000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SearchInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof search>>>
-export type SearchInfiniteQueryError = unknown
-
-
-export function useSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof search>>>, TError = unknown>(
- query: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof search>>,
-          TError,
-          Awaited<ReturnType<typeof search>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof search>>>, TError = unknown>(
- query: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof search>>,
-          TError,
-          Awaited<ReturnType<typeof search>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof search>>>, TError = unknown>(
- query: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof search>>>, TError = unknown>(
- query: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSearchInfiniteQueryOptions(query,options)
-
-  const _query = useInfiniteQuery(queryOptions , queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  _query.queryKey = queryOptions.queryKey ;
-
-  return _query;
-}
-
-
-
 export const getSearchQueryOptions = <TData = Awaited<ReturnType<typeof search>>, TError = unknown>(query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
@@ -278,7 +147,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(query),  staleTime: 10000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(query), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchQueryResult = NonNullable<Awaited<ReturnType<typeof search>>>

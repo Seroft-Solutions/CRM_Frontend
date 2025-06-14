@@ -54,20 +54,24 @@ import {
   useGetParty,
 } from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 import { 
-  useGetAllStatesInfinite,
-  useSearchStatesInfinite 
+  useGetAllStates,
+  useSearchStates,
+  useCountStates
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
 import { 
-  useGetAllDistrictsInfinite,
-  useSearchDistrictsInfinite 
+  useGetAllDistricts,
+  useSearchDistricts,
+  useCountDistricts
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
 import { 
-  useGetAllCitiesInfinite,
-  useSearchCitiesInfinite 
+  useGetAllCities,
+  useSearchCities,
+  useCountCities
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
 import { 
-  useGetAllAreasInfinite,
-  useSearchAreasInfinite 
+  useGetAllAreas,
+  useSearchAreas,
+  useCountAreas
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
 import type { PartyDTO } from "@/core/api/generated/spring/schemas/PartyDTO";
 
@@ -788,8 +792,9 @@ export function PartyForm({ id }: PartyFormProps) {
                               displayField="name"
                               placeholder="Select state"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllStatesInfinite}
-                              searchHook={useSearchStatesInfinite}
+                              useGetAllHook={useGetAllStates}
+                              useSearchHook={useSearchStates}
+                              useCountHook={useCountStates}
                               entityName="States"
                               searchField="name"
                               canCreate={true}
@@ -822,8 +827,9 @@ export function PartyForm({ id }: PartyFormProps) {
                               displayField="name"
                               placeholder="Select district"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllDistrictsInfinite}
-                              searchHook={useSearchDistrictsInfinite}
+                              useGetAllHook={useGetAllDistricts}
+                              useSearchHook={useSearchDistricts}
+                              useCountHook={useCountDistricts}
                               entityName="Districts"
                               searchField="name"
                               canCreate={true}
@@ -858,8 +864,9 @@ export function PartyForm({ id }: PartyFormProps) {
                               displayField="name"
                               placeholder="Select city"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllCitiesInfinite}
-                              searchHook={useSearchCitiesInfinite}
+                              useGetAllHook={useGetAllCities}
+                              useSearchHook={useSearchCities}
+                              useCountHook={useCountCities}
                               entityName="Cities"
                               searchField="name"
                               canCreate={true}
@@ -893,8 +900,9 @@ export function PartyForm({ id }: PartyFormProps) {
                               displayField="name"
                               placeholder="Select area"
                               multiple={false}
-                              useInfiniteQueryHook={useGetAllAreasInfinite}
-                              searchHook={useSearchAreasInfinite}
+                              useGetAllHook={useGetAllAreas}
+                              useSearchHook={useSearchAreas}
+                              useCountHook={useCountAreas}
                               entityName="Areas"
                               searchField="name"
                               canCreate={true}

@@ -54,8 +54,9 @@ import {
   useGetRole,
 } from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
 import { 
-  useGetAllUserProfilesInfinite,
-  useSearchUserProfilesInfinite 
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useCountUserProfiles
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 import type { RoleDTO } from "@/core/api/generated/spring/schemas/RoleDTO";
 import type { UserDTO } from "@/core/api/generated/spring/schemas/UserDTO";
@@ -526,8 +527,9 @@ export function RoleForm({ id }: RoleFormProps) {
                               displayField="name"
                               placeholder="Select users"
                               multiple={true}
-                              useInfiniteQueryHook={useGetAllUserProfilesInfinite}
-                              searchHook={useSearchUserProfilesInfinite}
+                              useGetAllHook={useGetAllUserProfiles}
+                              useSearchHook={useSearchUserProfiles}
+                              useCountHook={useCountUserProfiles}
                               entityName="UserProfiles"
                               searchField="name"
                               canCreate={true}
