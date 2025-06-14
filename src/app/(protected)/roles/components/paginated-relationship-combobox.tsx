@@ -90,77 +90,71 @@ export function PaginatedRelationshipCombobox({
     setHasMorePages(true);
   }, [parentFilter]);
 
-  const buildQueryParams = (pageParam = 0, extraParams = {}) => {
+  const shouldUseSearch = false; // Disable search due to Elasticsearch issues, use filtering instead
+
+  // Build filter parameters for queries
+  const buildFilterParams = (pageParam = 0) => {
     const params = { 
       page: pageParam, 
       size: pageSize, 
-      sort: [displayField + ",asc"],
-      ...extraParams 
+      sort: `${displayField},asc`
     };
+    
     if (parentFilter && parentField) {
       params[`${parentField}Id.equals`] = parentFilter;
     }
+    
+    // Only add search filter if there's actually a search query
+    if (deferredSearchQuery && deferredSearchQuery.trim() !== '') {
+      params[`${searchField}.contains`] = deferredSearchQuery;
+    }
+    
     return params;
   };
 
-  const shouldUseSearch = useSearchHook && deferredSearchQuery.trim() !== "";
-
-  // Single query that changes based on current page and search
-  const isQueryEnabled = !parentField || !!parentFilter;
-  
-  const currentQuery = shouldUseSearch 
-    ? useSearchHook(
-        {
-          query: deferredSearchQuery,
-          page: currentPage,
-          size: pageSize,
-          sort: [displayField + ",asc"]
-        },
-        {
-          query: {
-            enabled: isQueryEnabled,
-            staleTime: 10000,
-          }
-        }
-      )
-    : useGetAllHook(
-        buildQueryParams(currentPage, deferredSearchQuery ? { [`${searchField}.contains`]: deferredSearchQuery } : {}),
-        {
-          query: {
-            enabled: isQueryEnabled,
-            staleTime: 30000,
-          }
-        }
-      );
+  // Single query using getAll with filtering (search disabled due to Elasticsearch issues)
+  const { data: currentData, isLoading, isError } = useGetAllHook(
+    buildFilterParams(currentPage),
+    {
+      query: {
+        enabled: !parentField || !!parentFilter,
+      }
+    }
+  );
 
   // Accumulate data when new page loads
   React.useEffect(() => {
-    if (currentQuery?.data && !currentQuery.isLoading) {
-      const newData = currentQuery.data;
-      
+    if (currentData && !isLoading) {
       if (currentPage === 0) {
         // First page - replace all data
-        setAllLoadedData(newData);
+        setAllLoadedData(currentData);
       } else {
         // Additional page - append unique items
         setAllLoadedData(prev => {
           const existingIds = new Set(prev.map(item => item.id));
-          const newItems = newData.filter((item: any) => !existingIds.has(item.id));
+          const newItems = currentData.filter((item: any) => !existingIds.has(item.id));
           return [...prev, ...newItems];
         });
       }
       
       // Check if there are more pages
-      setHasMorePages(newData.length === pageSize);
+      setHasMorePages(currentData.length === pageSize);
     }
-  }, [currentQuery?.data, currentQuery?.isLoading, currentPage, pageSize]);
+  }, [currentData, isLoading, currentPage, pageSize, shouldUseSearch]);
+
+  // Reset data when switching between search and non-search modes
+  React.useEffect(() => {
+    setAllLoadedData([]);
+    setCurrentPage(0);
+    setHasMorePages(true);
+  }, [shouldUseSearch]);
 
   // Load next page
   const loadNextPage = React.useCallback(() => {
-    if (hasMorePages && !currentQuery?.isLoading) {
+    if (hasMorePages && !isLoading) {
       setCurrentPage(prev => prev + 1);
     }
-  }, [hasMorePages, currentQuery?.isLoading]);
+  }, [hasMorePages, isLoading]);
 
   // Scroll handler for infinite loading
   const handleScroll = React.useCallback((e: React.UIEvent) => {
@@ -168,10 +162,10 @@ export function PaginatedRelationshipCombobox({
     const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
     
     // Load more when 80% scrolled and has more data
-    if (scrollPercentage > 0.8 && hasMorePages && !currentQuery?.isLoading) {
+    if (scrollPercentage > 0.8 && hasMorePages && !isLoading) {
       loadNextPage();
     }
-  }, [hasMorePages, currentQuery?.isLoading, loadNextPage]);
+  }, [hasMorePages, isLoading, loadNextPage]);
 
   const handleSingleSelect = (optionId: number) => {
     const newValue = value === optionId ? undefined : optionId;
@@ -312,20 +306,20 @@ export function PaginatedRelationshipCombobox({
                   className="max-h-60 overflow-y-auto"
                   onScroll={handleScroll}
                 >
-                  {currentQuery?.isLoading && allLoadedData.length === 0 && (
+                  {isLoading && allLoadedData.length === 0 && (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="ml-2">Loading...</span>
                     </div>
                   )}
                   
-                  {!currentQuery?.isLoading && allLoadedData.length === 0 && !currentQuery?.isError && (
+                  {!isLoading && allLoadedData.length === 0 && !isError && (
                     <CommandEmpty>
                       {deferredSearchQuery ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".` : `No ${entityName.toLowerCase()} found.`}
                     </CommandEmpty>
                   )}
 
-                  {currentQuery?.isError && (
+                  {isError && (
                     <div className="flex items-center justify-center p-4 text-destructive">
                       <span className="text-sm">Error loading data. Please try again.</span>
                     </div>
@@ -369,7 +363,7 @@ export function PaginatedRelationshipCombobox({
                       })}
                       
                       {/* Loading indicator for infinite scroll */}
-                      {currentQuery?.isLoading && allLoadedData.length > 0 && (
+                      {isLoading && allLoadedData.length > 0 && (
                         <div className="flex items-center justify-center p-2">
                           <Loader2 className="h-3 w-3 animate-spin" />
                           <span className="ml-2 text-xs text-muted-foreground">Loading more...</span>
