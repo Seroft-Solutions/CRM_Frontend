@@ -321,13 +321,25 @@ export function CallTable() {
         }
         
         
-        // Handle other direct filters
+        
+        
+        // Handle callDateTime date filter
+        else if (key === 'callDateTime') {
+          if (value instanceof Date) {
+            params['callDateTime.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['callDateTime.equals'] = value;
+          }
+        }
+        
+        
+        // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });

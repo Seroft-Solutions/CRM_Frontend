@@ -225,18 +225,42 @@ export function <%= entityClass %>Table() {
         }
         <% } %>
         <% booleanFields.forEach(field => { %>
-        // Handle <%= field.fieldName %> filter
+        // Handle <%= field.fieldName %> boolean filter
         <% if (displayableRelationships.length > 0) { %>else <% } %>if (key === '<%= field.fieldName %>') {
           params['<%= field.fieldName %>.equals'] = value === 'true';
         }
         <% }); %>
-        // Handle other direct filters
-        <% if (displayableRelationships.length > 0 || booleanFields.length > 0) { %>else <% } %>if (Array.isArray(value) && value.length > 0) {
+        <% enumFields.forEach(field => { %>
+        // Handle <%= field.fieldName %> enum filter
+        <% if (displayableRelationships.length > 0 || booleanFields.length > 0) { %>else <% } %>if (key === '<%= field.fieldName %>') {
+          params['<%= field.fieldName %>.equals'] = value;
+        }
+        <% }); %>
+        <% dateFields.forEach(field => { %>
+        // Handle <%= field.fieldName %> date filter
+        <% if (displayableRelationships.length > 0 || booleanFields.length > 0 || enumFields.length > 0) { %>else <% } %>if (key === '<%= field.fieldName %>') {
+          if (value instanceof Date) {
+            params['<%= field.fieldName %>.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['<%= field.fieldName %>.equals'] = value;
+          }
+        }
+        <% }); %>
+        <% textFields.forEach(field => { %>
+        // Handle <%= field.fieldName %> text filter with contains
+        <% if (displayableRelationships.length > 0 || booleanFields.length > 0 || enumFields.length > 0 || dateFields.length > 0) { %>else <% } %>if (key === '<%= field.fieldName %>') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['<%= field.fieldName %>.contains'] = value;
+          }
+        }
+        <% }); %>
+        // Handle other filters
+        <% if (displayableRelationships.length > 0 || booleanFields.length > 0 || enumFields.length > 0 || dateFields.length > 0 || textFields.length > 0) { %>else <% } %>if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });

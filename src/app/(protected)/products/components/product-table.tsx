@@ -98,13 +98,72 @@ export function ProductTable() {
       if (value !== undefined && value !== "" && value !== null) {
         
         
-        // Handle other direct filters
-        if (Array.isArray(value) && value.length > 0) {
+        
+        
+        
+        // Handle name text filter with contains
+        if (key === 'name') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['name.contains'] = value;
+          }
+        }
+        
+        // Handle code text filter with contains
+        if (key === 'code') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['code.contains'] = value;
+          }
+        }
+        
+        // Handle description text filter with contains
+        if (key === 'description') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['description.contains'] = value;
+          }
+        }
+        
+        // Handle category text filter with contains
+        if (key === 'category') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['category.contains'] = value;
+          }
+        }
+        
+        // Handle basePrice text filter with contains
+        if (key === 'basePrice') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['basePrice.contains'] = value;
+          }
+        }
+        
+        // Handle minPrice text filter with contains
+        if (key === 'minPrice') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['minPrice.contains'] = value;
+          }
+        }
+        
+        // Handle maxPrice text filter with contains
+        if (key === 'maxPrice') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['maxPrice.contains'] = value;
+          }
+        }
+        
+        // Handle remark text filter with contains
+        if (key === 'remark') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['remark.contains'] = value;
+          }
+        }
+        
+        // Handle other filters
+        else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });
