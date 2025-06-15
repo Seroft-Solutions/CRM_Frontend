@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250607212208"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Represents a user synced from Keycloak.",
   "dto": "mapstruct",
   "fields": [

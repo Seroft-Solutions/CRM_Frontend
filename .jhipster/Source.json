@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183922"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Source master entity for lead sources",
   "dto": "mapstruct",
   "fields": [
