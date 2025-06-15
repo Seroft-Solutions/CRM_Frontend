@@ -341,6 +341,9 @@ export class UserManagementService {
   // Group Management
   async assignGroups(assignment: GroupAssignment): Promise<void> {
     try {
+      // Extract group IDs from GroupRepresentation objects
+      const groupIds = assignment.groups.map(group => group.id).filter(Boolean) as string[];
+      
       const response = await fetch(
         `${this.baseUrl}/users/${assignment.userId}/groups`,
         {
@@ -349,8 +352,8 @@ export class UserManagementService {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            groups: assignment.groups,
             action: assignment.action,
+            groupIds: groupIds,
           }),
         }
       );
