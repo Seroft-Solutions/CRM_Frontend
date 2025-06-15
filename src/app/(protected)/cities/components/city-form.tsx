@@ -79,13 +79,25 @@ export function CityForm({ id }: CityFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  const [formSessionId] = useState(() => {
+    // Generate unique session ID for this form instance
+    const existingSession = sessionStorage.getItem('City_FormSession');
+    if (existingSession && isNew) {
+      return existingSession;
+    }
+    const newSessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (isNew) {
+      sessionStorage.setItem('City_FormSession', newSessionId);
+    }
+    return newSessionId;
+  });
 
   // Create or update mutation
   const { mutate: createEntity, isPending: isCreating } = useCreateCity({
     mutation: {
       onSuccess: (data) => {
-        // Clear saved form state on successful submission
-        localStorage.removeItem('CityFormState');
+        // Clean up form state completely
+        cleanupFormState();
         
         const returnUrl = localStorage.getItem('returnUrl');
         const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
@@ -111,8 +123,8 @@ export function CityForm({ id }: CityFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCity({
     mutation: {
       onSuccess: () => {
-        // Clear saved form state on successful submission
-        localStorage.removeItem('CityFormState');
+        // Clean up form state completely
+        cleanupFormState();
         
         cityToast.updated();
         router.push("/cities");
@@ -147,26 +159,57 @@ export function CityForm({ id }: CityFormProps) {
 
   // Form state persistence functions
   const saveFormState = React.useCallback(() => {
+    if (!isNew) return; // Don't save state for edit forms
+    
     const formData = form.getValues();
     const formState = {
       data: formData,
       currentStep,
       timestamp: Date.now(),
-      entity: 'City'
+      entity: 'City',
+      sessionId: formSessionId
     };
     
-    localStorage.setItem('CityFormState', JSON.stringify(formState));
-    console.log('Form state saved:', formState);
-  }, [form, currentStep]);
+    const storageKey = `CityFormState_${formSessionId}`;
+    localStorage.setItem(storageKey, JSON.stringify(formState));
+    console.log('Form state saved with session:', { storageKey, sessionId: formSessionId });
+  }, [form, currentStep, isNew, formSessionId]);
 
   const restoreFormState = React.useCallback(() => {
-    const savedStateStr = localStorage.getItem('CityFormState');
+    if (!isNew) return false; // Don't restore for edit forms
+    
+    // Check if this is a cross-entity creation (coming from another form)
+    const entityCreationContext = localStorage.getItem('entityCreationContext');
+    if (entityCreationContext) {
+      try {
+        const context = JSON.parse(entityCreationContext);
+        // If we're creating this entity from another entity's form, don't restore
+        if (context.sourceEntity && context.sourceEntity !== 'City') {
+          console.log('Cross-entity creation detected, skipping restoration');
+          return false;
+        }
+      } catch (error) {
+        console.error('Error parsing entity creation context:', error);
+      }
+    }
+    
+    const currentSessionId = sessionStorage.getItem('City_FormSession');
+    if (!currentSessionId || currentSessionId !== formSessionId) {
+      console.log('Session mismatch, skipping restoration');
+      return false;
+    }
+    
+    const storageKey = `CityFormState_${formSessionId}`;
+    const savedStateStr = localStorage.getItem(storageKey);
+    
     if (savedStateStr) {
       try {
         const savedState = JSON.parse(savedStateStr);
         const isRecent = Date.now() - savedState.timestamp < 30 * 60 * 1000; // 30 minutes
+        const isSameSession = savedState.sessionId === formSessionId;
+        const isSameEntity = savedState.entity === 'City';
         
-        if (isRecent && savedState.entity === 'City') {
+        if (isRecent && isSameSession && isSameEntity) {
           setIsRestoring(true);
           
           // Restore form values
@@ -180,24 +223,36 @@ export function CityForm({ id }: CityFormProps) {
           // Restore current step
           setCurrentStep(savedState.currentStep || 0);
           
-          // Clear saved state after restoration
-          localStorage.removeItem('CityFormState');
-          
+          // Don't clear saved state immediately, let it be cleared on submission
           setTimeout(() => setIsRestoring(false), 100);
           cityToast.formRestored();
           
-          console.log('Form state restored:', savedState);
+          console.log('Form state restored for session:', formSessionId);
           return true;
         } else {
-          localStorage.removeItem('CityFormState');
+          console.log('Restoration conditions not met:', { isRecent, isSameSession, isSameEntity });
+          localStorage.removeItem(storageKey);
         }
       } catch (error) {
         console.error('Failed to restore form state:', error);
-        localStorage.removeItem('CityFormState');
+        localStorage.removeItem(storageKey);
       }
     }
     return false;
-  }, [form]);
+  }, [form, isNew, formSessionId]);
+
+  // Clear old form states for this entity type
+  const clearOldFormStates = React.useCallback(() => {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('CityFormState_') && !key.endsWith(formSessionId)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log('Cleared old form states:', keysToRemove);
+  }, [formSessionId]);
 
   // Handle newly created relationship entities
   const handleEntityCreated = React.useCallback((entityId: number, relationshipName: string) => {
@@ -217,6 +272,9 @@ export function CityForm({ id }: CityFormProps) {
   useEffect(() => {
     if (!restorationAttempted && isNew) {
       setRestorationAttempted(true);
+      
+      // Clear old form states first
+      clearOldFormStates();
       
       // Check for newly created entity first
       const newEntityId = localStorage.getItem('newlyCreatedEntityId');
@@ -252,8 +310,10 @@ export function CityForm({ id }: CityFormProps) {
 
     // Listen for save form state events
     const handleSaveFormState = () => {
-      console.log('Save form state event received');
-      saveFormState();
+      if (isNew) {
+        console.log('Save form state event received');
+        saveFormState();
+      }
     };
 
     window.addEventListener('saveFormState', handleSaveFormState);
@@ -261,7 +321,7 @@ export function CityForm({ id }: CityFormProps) {
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
     };
-  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated]);
+  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated, clearOldFormStates]);
 
   // Update form values when entity data is loaded
   useEffect(() => {
@@ -280,14 +340,14 @@ export function CityForm({ id }: CityFormProps) {
 
   // Auto-save form state on field changes (debounced)
   useEffect(() => {
+    if (!isNew || isRestoring) return;
+    
     const subscription = form.watch(() => {
-      if (!isRestoring && isNew) {
-        const timeoutId = setTimeout(() => {
-          saveFormState();
-        }, 2000); // Auto-save every 2 seconds after changes
-        
-        return () => clearTimeout(timeoutId);
-      }
+      const timeoutId = setTimeout(() => {
+        saveFormState();
+      }, 2000); // Auto-save every 2 seconds after changes
+      
+      return () => clearTimeout(timeoutId);
     });
     
     return () => subscription.unsubscribe();
@@ -321,7 +381,45 @@ export function CityForm({ id }: CityFormProps) {
     }
   };
 
+  // Form cleanup function
+  const cleanupFormState = React.useCallback(() => {
+    const storageKey = `CityFormState_${formSessionId}`;
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem('City_FormSession');
+    
+    // Clear all old form states for this entity type
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('CityFormState_')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Reset form to default values
+    form.reset();
+    setCurrentStep(0);
+    setConfirmSubmission(false);
+    
+    console.log('Form state cleaned up completely');
+  }, [formSessionId, form]);
+
   // Navigation functions
+  const handleCancel = () => {
+    cleanupFormState();
+    
+    const returnUrl = localStorage.getItem('returnUrl');
+    const backRoute = returnUrl || "/cities";
+    
+    // Clean up navigation localStorage
+    localStorage.removeItem('entityCreationContext');
+    localStorage.removeItem('referrerInfo');
+    localStorage.removeItem('returnUrl');
+    
+    router.push(backRoute);
+  };
+
   const validateStep = async () => {
     const currentStepId = STEPS[currentStep].id;
     let fieldsToValidate: string[] = [];
@@ -566,7 +664,7 @@ export function CityForm({ id }: CityFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={currentStep === 0 ? () => router.push("/cities") : prevStep}
+              onClick={currentStep === 0 ? handleCancel : prevStep}
               className="flex items-center gap-2 justify-center"
             >
               <ArrowLeft className="h-4 w-4" />
