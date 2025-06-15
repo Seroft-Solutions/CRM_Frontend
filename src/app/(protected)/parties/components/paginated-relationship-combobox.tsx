@@ -63,66 +63,44 @@ export function PaginatedRelationshipCombobox({
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [deferredSearchQuery, setDeferredSearchQuery] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(0);
   const [allLoadedData, setAllLoadedData] = React.useState<any[]>([]);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const pageSize = 20;
 
-  // Debounce search query
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDeferredSearchQuery(searchQuery);
-      // Reset on search change
-      setCurrentPage(0);
-      setAllLoadedData([]);
-      setHasMorePages(true);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Clear search when parent filter changes
-  React.useEffect(() => {
-    setSearchQuery("");
-    setDeferredSearchQuery("");
-    setCurrentPage(0);
-    setAllLoadedData([]);
-    setHasMorePages(true);
-  }, [parentFilter]);
-
-  const shouldUseSearch = false; // Disable search due to Elasticsearch issues, use filtering instead
-
   // Build filter parameters for queries
-  const buildFilterParams = (pageParam = 0) => {
+  const buildFilterParams = React.useCallback((pageParam: number, searchTerm: string) => {
     const params = { 
       page: pageParam, 
       size: pageSize, 
       sort: `${displayField},asc`
     };
     
+    // Apply parent filter if both parentField and parentFilter are provided
     if (parentFilter && parentField) {
       params[`${parentField}Id.equals`] = parentFilter;
     }
     
-    // Only add search filter if there's actually a search query
-    if (deferredSearchQuery && deferredSearchQuery.trim() !== '') {
-      params[`${searchField}.contains`] = deferredSearchQuery;
+    // Add search filter if there's a search query
+    if (searchTerm && searchTerm.trim() !== '') {
+      params[`${searchField}.contains`] = searchTerm;
     }
     
     return params;
-  };
+  }, [displayField, parentFilter, parentField, searchField, pageSize]);
 
-  // Single query using getAll with filtering (search disabled due to Elasticsearch issues)
+  // Single query using getAll with filtering
   const { data: currentData, isLoading, isError } = useGetAllHook(
-    buildFilterParams(currentPage),
+    buildFilterParams(currentPage, searchQuery),
     {
       query: {
-        enabled: !parentField || !!parentFilter,
+        enabled: true,
+        keepPreviousData: false,
       }
     }
   );
 
-  // Accumulate data when new page loads
+  // Handle data loading and pagination
   React.useEffect(() => {
     if (currentData && !isLoading) {
       if (currentPage === 0) {
@@ -140,14 +118,14 @@ export function PaginatedRelationshipCombobox({
       // Check if there are more pages
       setHasMorePages(currentData.length === pageSize);
     }
-  }, [currentData, isLoading, currentPage, pageSize, shouldUseSearch]);
+  }, [currentData, isLoading, currentPage]);
 
-  // Reset data when switching between search and non-search modes
+  // Reset data when search or parent filter changes
   React.useEffect(() => {
-    setAllLoadedData([]);
     setCurrentPage(0);
+    setAllLoadedData([]);
     setHasMorePages(true);
-  }, [shouldUseSearch]);
+  }, [searchQuery, parentFilter]);
 
   // Load next page
   const loadNextPage = React.useCallback(() => {
@@ -217,21 +195,27 @@ export function PaginatedRelationshipCombobox({
       // Extract origin context dynamically
       const pathParts = currentPath.split('/').filter(Boolean);
       let originEntityName = 'Previous Page';
+      let sourceEntityType = '';
       
       if (pathParts.length > 0) {
         const lastPart = pathParts[pathParts.length - 1];
         if (lastPart === 'new') {
           const originPart = pathParts[pathParts.length - 3];
           if (originPart) {
+            sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           }
         } else {
           const originPart = pathParts[pathParts.length - 2];
           if (originPart) {
+            sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           }
         }
       }
+      
+      // Convert sourceEntityType to proper entity class name (e.g., 'calls' -> 'Call')
+      const sourceEntityClass = sourceEntityType.replace(/s$/, '').replace(/\b\w/g, l => l.toUpperCase());
       
       localStorage.setItem('returnUrl', currentUrl);
       localStorage.setItem('relationshipFieldInfo', JSON.stringify({
@@ -245,6 +229,7 @@ export function PaginatedRelationshipCombobox({
         originRoute: currentPath,
         originEntityName,
         targetEntityName: entityName.replace(/s$/, ''),
+        sourceEntity: sourceEntityClass, // Add source entity for cross-entity detection
         createdFrom: 'relationship'
       }));
       
@@ -315,7 +300,7 @@ export function PaginatedRelationshipCombobox({
                   
                   {!isLoading && allLoadedData.length === 0 && !isError && (
                     <CommandEmpty>
-                      {deferredSearchQuery ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".` : `No ${entityName.toLowerCase()} found.`}
+                      {searchQuery ? `No ${entityName.toLowerCase()} found for "${searchQuery}".` : `No ${entityName.toLowerCase()} found.`}
                     </CommandEmpty>
                   )}
 
