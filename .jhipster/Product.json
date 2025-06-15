@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183926"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Product master entity",
   "dto": "mapstruct",
   "fields": [
@@ -16,7 +16,7 @@
     {
       "fieldName": "code",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern", "unique"],
       "fieldValidateRulesMaxlength": "20",
       "fieldValidateRulesMinlength": "2",
       "fieldValidateRulesPattern": "^[A-Za-z0-9_-]+$"

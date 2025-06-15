@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183933"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Area master entity with pincode",
   "dto": "mapstruct",
   "fields": [
