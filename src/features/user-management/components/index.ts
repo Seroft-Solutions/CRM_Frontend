@@ -8,6 +8,8 @@ export { UserAvatar } from './UserAvatar';
 export { UserStatusBadge } from './UserStatusBadge';
 export { GroupsBadgesList } from './GroupsBadgesList';
 export { RolesBadgesList } from './RolesBadgesList';
+export { ClickableGroupsBadge } from './ClickableGroupsBadge';
+export { ClickableRolesBadge } from './ClickableRolesBadge';
 export { 
   LoadingButton,
   SendInviteButton,

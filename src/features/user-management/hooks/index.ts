@@ -25,6 +25,10 @@ import type {
 import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 import { toast } from 'sonner';
 
+// Export additional hooks
+export { useUserRoleGroupCounts, useBatchUserRoleGroupCounts } from './useUserRoleGroupCounts';
+export { useUserManagementRefresh } from './useUserManagementRefresh';
+
 // Query Keys
 export const USER_MANAGEMENT_QUERY_KEYS = {
   organizationUsers: (orgId: string, filters?: UserFilters) => 
@@ -49,7 +53,11 @@ export function useOrganizationUsers(organizationId: string, filters?: UserFilte
     queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(organizationId, filters),
     queryFn: () => userManagementService.getOrganizationUsers(organizationId, filters),
     enabled: !!organizationId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider data stale so it refetches readily
+    cacheTime: 30 * 1000, // Keep cache for 30 seconds
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnMount: true, // Always refetch on mount
+    refetchInterval: false, // Don't auto-refresh continuously
   });
 
   return {
@@ -157,16 +165,50 @@ export function useInviteUserWithGroups() {
       userManagementService.inviteUserWithGroups(invitation),
     onSuccess: (result, variables) => {
       if (result.success) {
-        toast.success(result.message);
-        // Invalidate both users and invitations
-        queryClient.invalidateQueries({
-          queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: USER_MANAGEMENT_QUERY_KEYS.pendingInvitations(variables.organizationId),
-        });
+        toast.success(result.message || 'User invited successfully');
+        
+        // Multiple-step aggressive refresh strategy
+        const performRefresh = async () => {
+          // Step 1: Immediate invalidation
+          await queryClient.invalidateQueries({
+            queryKey: ['organizationUsers', variables.organizationId],
+            exact: false,
+          });
+          
+          await queryClient.invalidateQueries({
+            queryKey: ['pendingInvitations', variables.organizationId],
+            exact: false,
+          });
+
+          // Step 2: Small delay then force refetch
+          setTimeout(async () => {
+            await queryClient.refetchQueries({
+              queryKey: ['organizationUsers', variables.organizationId],
+              exact: false,
+            });
+          }, 200);
+
+          // Step 3: Another refetch after a longer delay to catch backend processing
+          setTimeout(async () => {
+            await queryClient.refetchQueries({
+              queryKey: ['organizationUsers', variables.organizationId],
+              exact: false,
+            });
+          }, 1000);
+
+          // Step 4: Final refetch after 2 seconds
+          setTimeout(async () => {
+            await queryClient.refetchQueries({
+              queryKey: ['organizationUsers', variables.organizationId],
+              exact: false,
+            });
+          }, 2000);
+        };
+
+        performRefresh();
+        
       } else {
-        toast.error(result.message);
+        toast.error(result.message || 'Failed to invite user');
       }
     },
     onError: (error: Error) => {
@@ -176,8 +218,11 @@ export function useInviteUserWithGroups() {
 
   return {
     inviteUserWithGroups: mutation.mutate,
+    inviteUserWithGroupsAsync: mutation.mutateAsync,
     isInviting: mutation.isPending,
     error: mutation.error,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
   };
 }
 

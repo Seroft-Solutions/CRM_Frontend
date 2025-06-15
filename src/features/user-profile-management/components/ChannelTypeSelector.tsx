@@ -1,14 +1,14 @@
 /**
- * Enhanced Channel Type Selector with Channel Party cascading
+ * Channel Type Selector with Channel Party cascading
  */
 import { PaginatedRelationshipCombobox } from '@/app/(protected)/calls/components/paginated-relationship-combobox';
 import { 
-  useGetAllChannelTypesInfinite,
-  useSearchChannelTypes 
+  useGetAllChannelTypes,
+  useCountChannelTypes 
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { 
-  useGetAllUserProfilesInfinite,
-  useSearchUserProfilesInfinite 
+  useGetAllUserProfiles,
+  useCountUserProfiles 
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 
@@ -48,8 +48,8 @@ export function ChannelTypeSelector({
       placeholder="Select channel type..."
       disabled={disabled}
       className={className}
-      useInfiniteQueryHook={useGetAllChannelTypesInfinite}
-      searchHook={useSearchChannelTypes}
+      useGetAllHook={useGetAllChannelTypes}
+      useCountHook={useCountChannelTypes}
       entityName="ChannelTypes"
       searchField="name"
       canCreate={true}
@@ -74,8 +74,8 @@ export function ChannelPartySelector({
       placeholder="Select channel party..."
       disabled={disabled || !channelTypeId}
       className={className}
-      useInfiniteQueryHook={useGetAllUserProfilesInfinite}
-      searchHook={useSearchUserProfilesInfinite}
+      useGetAllHook={useGetAllUserProfiles}
+      useCountHook={useCountUserProfiles}
       entityName="UserProfiles"
       searchField="email"
       canCreate={true}
@@ -117,8 +117,8 @@ export function CascadingChannelSelectors({
                 displayField="name"
                 placeholder="Select channel type"
                 disabled={disabled}
-                useInfiniteQueryHook={useGetAllChannelTypesInfinite}
-                searchHook={useSearchChannelTypes}
+                useGetAllHook={useGetAllChannelTypes}
+                useCountHook={useCountChannelTypes}
                 entityName="ChannelTypes"
                 searchField="name"
                 canCreate={true}
@@ -145,8 +145,8 @@ export function CascadingChannelSelectors({
                 displayField="email"
                 placeholder="Select channel party"
                 disabled={disabled || !form.watch(channelTypeFieldName)}
-                useInfiniteQueryHook={useGetAllUserProfilesInfinite}
-                searchHook={useSearchUserProfilesInfinite}
+                useGetAllHook={useGetAllUserProfiles}
+                useCountHook={useCountUserProfiles}
                 entityName="UserProfiles"
                 searchField="email"
                 canCreate={true}

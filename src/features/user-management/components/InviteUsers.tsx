@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups } from '../hooks';
+import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups, useUserManagementRefresh } from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
   UserPlus, 
@@ -46,9 +59,10 @@ import {
   FileText,
   ArrowLeft,
   Send,
-  Users
+  Users,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
-import { SendInviteButton, BulkInviteButton, AddRowButton } from './LoadingButton';
 import type { InviteUserFormData, BulkInviteFormData, InviteUserFormDataWithGroups, BulkInviteFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 
@@ -81,9 +95,9 @@ interface InviteUsersProps {
 export function InviteUsers({ className }: InviteUsersProps) {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
-  const { inviteUser, isInviting } = useInviteUser();
-  const { inviteUserWithGroups, isInviting: isInvitingWithGroups } = useInviteUserWithGroups();
+  const { inviteUserWithGroups, inviteUserWithGroupsAsync, isInviting: isInvitingWithGroups, isSuccess } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
+  const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
 
   // Local state
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
@@ -91,6 +105,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
     sent: InviteUserFormDataWithGroups[];
     failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
   }>({ sent: [], failed: [] });
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   // Group options for MultiSelect
   const groupOptions = groups.map(group => ({
@@ -128,24 +143,41 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
   // Handle single user invitation with groups
   const handleSingleInvite = async (data: InviteUserFormDataWithGroups) => {
+    const selectedGroups = groups.filter(g => data.selectedGroups.includes(g.id!));
+    
     try {
-      const selectedGroups = groups.filter(g => data.selectedGroups.includes(g.id!));
-      
-      const result = await inviteUserWithGroups({
+      await inviteUserWithGroupsAsync({
         ...data,
         organizationId,
         selectedGroups,
       });
-      
-      if (result.success) {
-        singleForm.reset();
-        setInvitationStatus(prev => ({
-          ...prev,
-          sent: [...prev.sent, data],
-        }));
-      }
+
+      // Reset form on success
+      singleForm.reset();
+      setInvitationStatus(prev => ({
+        ...prev,
+        sent: [...prev.sent, data],
+      }));
+
+      // Force refresh of organization users data
+      await refreshAllUserData(organizationId);
+
+      // Show success dialog and auto-navigate after delay
+      setShowSuccessDialog(true);
+      setTimeout(() => {
+        setShowSuccessDialog(false);
+        router.push('/user-management/organization-users');
+      }, 2000);
+
     } catch (error) {
-      console.error('Failed to send invitation:', error);
+      // Error handling is done by the hook, just update local status
+      setInvitationStatus(prev => ({
+        ...prev,
+        failed: [...prev.failed, { 
+          invitation: data, 
+          error: error instanceof Error ? error.message : 'Failed to send invitation' 
+        }],
+      }));
     }
   };
 
@@ -154,28 +186,22 @@ export function InviteUsers({ className }: InviteUsersProps) {
     const sent: InviteUserFormDataWithGroups[] = [];
     const failed: { invitation: InviteUserFormDataWithGroups; error: string }[] = [];
 
+    // Process invitations sequentially for better error handling
     for (const invitation of data.manualInvitations) {
+      const selectedGroups = groups.filter(g => invitation.selectedGroups.includes(g.id!));
+      
       try {
-        const selectedGroups = groups.filter(g => invitation.selectedGroups.includes(g.id!));
-        
-        const result = await inviteUserWithGroups({
+        await inviteUserWithGroupsAsync({
           ...invitation,
           organizationId,
           selectedGroups,
         });
         
-        if (result.success) {
-          sent.push(invitation);
-        } else {
-          failed.push({
-            invitation,
-            error: result.message
-          });
-        }
+        sent.push(invitation);
       } catch (error) {
         failed.push({
           invitation,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Failed to send invitation'
         });
       }
     }
@@ -186,10 +212,21 @@ export function InviteUsers({ className }: InviteUsersProps) {
     if (failed.length === 0) {
       bulkForm.reset({
         manualInvitations: [
-          { email: '', firstName: '', lastName: '', sendWelcomeEmail: true, selectedGroups: [], invitationNote: '' }
+          { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' }
         ],
         defaultGroups: [],
       });
+
+      // Force refresh of organization users data
+      await refreshAllUserData(organizationId);
+
+      // Show success message and navigate back
+      setTimeout(() => {
+        router.push('/user-management/organization-users');
+      }, 1500);
+    } else {
+      // Even if some failed, refresh to show successful additions
+      await refreshAllUserData(organizationId);
     }
   };
 
@@ -255,7 +292,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           <FormItem>
                             <FormLabel>First Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} />
+                              <Input 
+                                placeholder="John" 
+                                disabled={isInvitingWithGroups}
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -268,7 +309,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           <FormItem>
                             <FormLabel>Last Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Doe" {...field} />
+                              <Input 
+                                placeholder="Doe" 
+                                disabled={isInvitingWithGroups}
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -283,7 +328,12 @@ export function InviteUsers({ className }: InviteUsersProps) {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="john.doe@example.com" {...field} />
+                            <Input 
+                              type="email" 
+                              placeholder="john.doe@example.com" 
+                              disabled={isInvitingWithGroups}
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -291,11 +341,29 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     />
 
                     <div className="flex gap-2">
-                      <SendInviteButton 
+                      <Button 
                         type="submit" 
-                        isLoading={isInvitingWithGroups}
-                      />
-                      <Button type="button" variant="outline" onClick={() => singleForm.reset()}>
+                        disabled={isInvitingWithGroups}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {isInvitingWithGroups ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                            Sending Invitation...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Invitation
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => singleForm.reset()}
+                        disabled={isInvitingWithGroups}
+                      >
                         Clear
                       </Button>
                     </div>
@@ -323,7 +391,17 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label className="text-base font-medium">User Invitations</Label>
-                        <AddRowButton onClick={addInvitationRow} />
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          size="sm"
+                          onClick={addInvitationRow}
+                          disabled={isInvitingWithGroups}
+                          className="gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Row
+                        </Button>
                       </div>
 
                       <div className="border rounded-lg">
@@ -346,7 +424,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input placeholder="First name" {...field} />
+                                          <Input 
+                                            placeholder="First name" 
+                                            disabled={isInvitingWithGroups}
+                                            {...field} 
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -360,7 +442,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input placeholder="Last name" {...field} />
+                                          <Input 
+                                            placeholder="Last name" 
+                                            disabled={isInvitingWithGroups}
+                                            {...field} 
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -374,7 +460,12 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input type="email" placeholder="email@example.com" {...field} />
+                                          <Input 
+                                            type="email" 
+                                            placeholder="email@example.com" 
+                                            disabled={isInvitingWithGroups}
+                                            {...field} 
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -387,7 +478,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => removeInvitationRow(index)}
-                                    disabled={fields.length === 1}
+                                    disabled={fields.length === 1 || isInvitingWithGroups}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -400,10 +491,23 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     </div>
 
                     <div className="flex gap-2">
-                      <BulkInviteButton 
+                      <Button 
                         type="submit" 
-                        isLoading={isInvitingWithGroups}
-                      />
+                        disabled={isInvitingWithGroups}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {isInvitingWithGroups ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                            Sending Invitations...
+                          </>
+                        ) : (
+                          <>
+                            <Users className="h-4 w-4 mr-2" />
+                            Send All Invitations
+                          </>
+                        )}
+                      </Button>
                       <Button 
                         type="button" 
                         variant="outline" 
@@ -412,6 +516,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                             { email: '', firstName: '', lastName: '', selectedGroups: [] }
                           ],
                         })}
+                        disabled={isInvitingWithGroups}
                       >
                         Clear All
                       </Button>
@@ -434,46 +539,85 @@ export function InviteUsers({ className }: InviteUsersProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               {invitationStatus.sent.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-green-700 mb-2">
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertTitle className="text-green-800">
                     Successfully Sent ({invitationStatus.sent.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {invitationStatus.sent.map((invitation, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded-md">
-                        <span className="text-sm">
-                          {invitation.firstName} {invitation.lastName} ({invitation.email})
-                        </span>
-                        <Badge variant="default" className="bg-green-600">Sent</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </AlertTitle>
+                  <AlertDescription className="text-green-700">
+                    <div className="space-y-2 mt-2">
+                      {invitationStatus.sent.map((invitation, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-green-100 rounded-md">
+                          <span className="text-sm font-medium">
+                            {invitation.firstName} {invitation.lastName} ({invitation.email})
+                          </span>
+                          <Badge className="bg-green-600 hover:bg-green-700">Sent</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </AlertDescription>
+                </Alert>
               )}
 
               {invitationStatus.failed.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-red-700 mb-2">
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800">
                     Failed ({invitationStatus.failed.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {invitationStatus.failed.map((failure, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-red-50 rounded-md">
-                        <div>
-                          <span className="text-sm">
-                            {failure.invitation.firstName} {failure.invitation.lastName} ({failure.invitation.email})
-                          </span>
-                          <p className="text-xs text-red-600">{failure.error}</p>
+                  </AlertTitle>
+                  <AlertDescription className="text-red-700">
+                    <div className="space-y-2 mt-2">
+                      {invitationStatus.failed.map((failure, index) => (
+                        <div key={index} className="p-2 bg-red-100 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">
+                              {failure.invitation.firstName} {failure.invitation.lastName} ({failure.invitation.email})
+                            </span>
+                            <Badge variant="destructive">Failed</Badge>
+                          </div>
+                          <p className="text-xs text-red-600 mt-1">{failure.error}</p>
                         </div>
-                        <Badge variant="destructive">Failed</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                      ))}
+                    </div>
+                  </AlertDescription>
+                </Alert>
               )}
             </CardContent>
           </Card>
         )}
+
+        {/* Success Dialog */}
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-green-700">
+                <CheckCircle className="h-5 w-5" />
+                Invitation Sent Successfully!
+              </DialogTitle>
+              <DialogDescription>
+                The user invitation has been sent successfully. Data is being refreshed automatically. You will be redirected to the organization users page.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
+                Refreshing user data...
+              </div>
+              <Button 
+                onClick={async () => {
+                  setShowSuccessDialog(false);
+                  // Force one more refresh before navigation
+                  await refreshAllUserData(organizationId);
+                  router.push('/user-management/organization-users');
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Go to Users Page
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PermissionGuard>
   );
