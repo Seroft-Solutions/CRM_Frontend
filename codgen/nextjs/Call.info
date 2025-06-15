@@ -1,0 +1,41 @@
+## Current Call Form Steps
+
+**Step 1: Call Classification**
+- Priority
+- Call Type
+- Sub Call Type
+- Call Category
+
+**Step 2: Source & Party**
+- Source
+- Party
+
+**Step 3: Location**
+- State → District → City → Area (hierarchical)
+
+**Step 4: Channel Details**
+- Channel Type
+- Channel Party
+
+**Step 5: Assignment & Date**
+- Assigned To
+- Call Date Time
+- Call Status
+
+**Step 6: Review**
+- Summary of all selections
+
+## Details View Cards
+Same 5 themed sections with icons:
+- 🏷️ Call Classification
+- 🏢 Source & Party
+- 📍 Location
+- 📡 Channel Details
+- 👤 Assignment & Date
+- 📝 Call Remarks (additional section)
+
+## Additional Features
+- Custom toast system (call-toast.ts)
+- Form state persistence
+- Hierarchical location cascading
+- ToasterProvider layout
