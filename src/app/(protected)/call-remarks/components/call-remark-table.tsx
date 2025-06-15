@@ -135,13 +135,32 @@ export function CallRemarkTable() {
         }
         
         
-        // Handle other direct filters
+        
+        
+        // Handle dateTime date filter
+        else if (key === 'dateTime') {
+          if (value instanceof Date) {
+            params['dateTime.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['dateTime.equals'] = value;
+          }
+        }
+        
+        
+        // Handle remark text filter with contains
+        else if (key === 'remark') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['remark.contains'] = value;
+          }
+        }
+        
+        // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });

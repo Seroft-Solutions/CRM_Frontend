@@ -135,13 +135,37 @@ export function SubCallTypeTable() {
         }
         
         
-        // Handle other direct filters
+        
+        
+        
+        // Handle name text filter with contains
+        else if (key === 'name') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['name.contains'] = value;
+          }
+        }
+        
+        // Handle description text filter with contains
+        else if (key === 'description') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['description.contains'] = value;
+          }
+        }
+        
+        // Handle remark text filter with contains
+        else if (key === 'remark') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['remark.contains'] = value;
+          }
+        }
+        
+        // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });

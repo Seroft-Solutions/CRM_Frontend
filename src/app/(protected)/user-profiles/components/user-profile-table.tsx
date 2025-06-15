@@ -135,13 +135,44 @@ export function UserProfileTable() {
         }
         
         
-        // Handle other direct filters
+        
+        
+        
+        // Handle keycloakId text filter with contains
+        else if (key === 'keycloakId') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['keycloakId.contains'] = value;
+          }
+        }
+        
+        // Handle email text filter with contains
+        else if (key === 'email') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['email.contains'] = value;
+          }
+        }
+        
+        // Handle firstName text filter with contains
+        else if (key === 'firstName') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['firstName.contains'] = value;
+          }
+        }
+        
+        // Handle lastName text filter with contains
+        else if (key === 'lastName') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['lastName.contains'] = value;
+          }
+        }
+        
+        // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });

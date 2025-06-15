@@ -180,13 +180,79 @@ export function PartyTable() {
         }
         
         
-        // Handle other direct filters
+        
+        
+        
+        // Handle name text filter with contains
+        else if (key === 'name') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['name.contains'] = value;
+          }
+        }
+        
+        // Handle mobile text filter with contains
+        else if (key === 'mobile') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['mobile.contains'] = value;
+          }
+        }
+        
+        // Handle email text filter with contains
+        else if (key === 'email') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['email.contains'] = value;
+          }
+        }
+        
+        // Handle whatsApp text filter with contains
+        else if (key === 'whatsApp') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['whatsApp.contains'] = value;
+          }
+        }
+        
+        // Handle contactPerson text filter with contains
+        else if (key === 'contactPerson') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['contactPerson.contains'] = value;
+          }
+        }
+        
+        // Handle address1 text filter with contains
+        else if (key === 'address1') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['address1.contains'] = value;
+          }
+        }
+        
+        // Handle address2 text filter with contains
+        else if (key === 'address2') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['address2.contains'] = value;
+          }
+        }
+        
+        // Handle address3 text filter with contains
+        else if (key === 'address3') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['address3.contains'] = value;
+          }
+        }
+        
+        // Handle remark text filter with contains
+        else if (key === 'remark') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['remark.contains'] = value;
+          }
+        }
+        
+        // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
+          // Handle array values (for multi-select filters)
           params[key] = value;
-        } else if (value instanceof Date) {
-          params[key] = value.toISOString().split('T')[0];
         } else if (typeof value === 'string' && value.trim() !== '') {
-          params[key] = value;
+          // Fallback for unknown string fields - use contains
+          params[`${key}.contains`] = value;
         }
       }
     });
