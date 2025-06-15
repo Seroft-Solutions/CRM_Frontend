@@ -26,13 +26,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { CallRemarksSection } from "./call-remarks-section";
 
 import {
   useGetCall,
   useDeleteCall,
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-
-
 
 interface CallDetailsProps {
   id: number;
@@ -86,232 +85,223 @@ export function CallDetails({ id }: CallDetailsProps) {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* Basic Information */}
-        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Date Time</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.callDateTime ? format(new Date(entity.callDateTime), "PPP") : "—"}
-                    </span>
-                    
-                  </dd>
-                </div>
-                
+        {/* Step 1: Call Classification */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+              🏷️ Call Classification
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Priority</dt>
+                <dd className="text-sm font-medium">
+                  {entity.priority ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.priority as any).name || entity.priority.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Type</dt>
+                <dd className="text-sm font-medium">
+                  {entity.callType ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.callType as any).name || entity.callType.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sub Call Type</dt>
+                <dd className="text-sm font-medium">
+                  {entity.subCallType ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.subCallType as any).name || entity.subCallType.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Category</dt>
+                <dd className="text-sm font-medium">
+                  {entity.callCategory ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.callCategory as any).name || entity.callCategory.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        
-        {/* Relationships */}
-        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Related Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Priority</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.priority ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.priority as any).name || entity.priority.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callType as any).name || entity.callType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sub Call Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.subCallType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.subCallType as any).name || entity.subCallType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.source ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.source as any).name || entity.source.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.channelType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelType as any).name || entity.channelType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Category</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callCategory ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callCategory as any).name || entity.callCategory.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Status</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callStatus ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callStatus as any).name || entity.callStatus.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.state ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.state as any).name || entity.state.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.district ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.district as any).name || entity.district.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.city ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.city as any).name || entity.city.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.area ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.area as any).name || entity.area.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned To</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.assignedTo ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedTo as any).email || entity.assignedTo.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Party</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.channelParty ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelParty as any).email || entity.channelParty.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Party</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.party ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.party as any).name || entity.party.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
+        {/* Step 2: Source & Party */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+              🏢 Source & Party
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source</dt>
+                <dd className="text-sm font-medium">
+                  {entity.source ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.source as any).name || entity.source.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Party</dt>
+                <dd className="text-sm font-medium">
+                  {entity.party ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.party as any).name || entity.party.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step 3: Location */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+              📍 Location
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
+                <dd className="text-sm font-medium">
+                  {entity.state ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.state as any).name || entity.state.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
+                <dd className="text-sm font-medium">
+                  {entity.district ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.district as any).name || entity.district.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
+                <dd className="text-sm font-medium">
+                  {entity.city ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.city as any).name || entity.city.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
+                <dd className="text-sm font-medium">
+                  {entity.area ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.area as any).name || entity.area.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step 4: Channel Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+              📡 Channel Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
+                <dd className="text-sm font-medium">
+                  {entity.channelType ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.channelType as any).name || entity.channelType.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Party</dt>
+                <dd className="text-sm font-medium">
+                  {entity.channelParty ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.channelParty as any).email || entity.channelParty.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step 5: Assignment & Date */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+              👤 Assignment & Date
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned To</dt>
+                <dd className="text-sm font-medium">
+                  {entity.assignedTo ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.assignedTo as any).email || entity.assignedTo.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Date Time</dt>
+                <dd className="text-sm font-medium">
+                  <span className="text-foreground">
+                    {entity.callDateTime ? format(new Date(entity.callDateTime), "PPP") : "—"}
+                  </span>
+                </dd>
+              </div>
+              <div className="space-y-2">
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Status</dt>
+                <dd className="text-sm font-medium">
+                  {entity.callStatus ? (
+                    <Badge variant="outline" className="text-sm font-medium">
+                      {(entity.callStatus as any).name || entity.callStatus.id}
+                    </Badge>
+                  ) : "—"}
+                </dd>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Call Remarks Section */}
+      <div className="mt-6">
+        <CallRemarksSection callId={id} />
       </div>
 
       {/* Action Buttons */}
