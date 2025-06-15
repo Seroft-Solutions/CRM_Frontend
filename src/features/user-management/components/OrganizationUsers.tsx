@@ -5,13 +5,14 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   useOrganizationUsers, 
   useRemoveUser, 
   useOrganizationContext,
-  useBulkUserOperations 
+  useBulkUserOperations,
+  useUserManagementRefresh
 } from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +34,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,13 +79,19 @@ import {
   UserCheck,
   Filter,
   AlertCircle,
-  Building2
+  Building2,
+  RefreshCw,
+  X,
+  CheckCircle,
+  XCircle,
+  Clock,
+  SlidersHorizontal
 } from 'lucide-react';
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from './UserAvatar';
 import { UserStatusBadge } from './UserStatusBadge';
-import { RolesBadgesList } from './RolesBadgesList';
-import { GroupsBadgesList } from './GroupsBadgesList';
+import { ClickableRolesBadge } from './ClickableRolesBadge';
+import { ClickableGroupsBadge } from './ClickableGroupsBadge';
 import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
@@ -80,6 +108,7 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
 }) {
   const router = useRouter();
   const { removeUser, isRemoving } = useRemoveUser();
+  const { refreshOrganizationUsers } = useUserManagementRefresh();
   const {
     selectedUsers,
     toggleUserSelection,
@@ -95,7 +124,22 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
     page: 1,
     size: 20,
   });
+  const [searchTerm, setSearchTerm] = useState('');
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Debounced search effect
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setFilters(prev => ({
+        ...prev,
+        search: searchTerm,
+        page: 1, // Reset to first page when searching
+      }));
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
 
   // Fetch organization users - now safe inside permission guard
   const { users, totalCount, isLoading, error, refetch } = useOrganizationUsers(
@@ -103,14 +147,37 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
     filters
   );
 
-  // Handle search
-  const handleSearch = (searchTerm: string) => {
+  // Handle search input change
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((key: keyof UserFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
-      search: searchTerm,
-      page: 1, // Reset to first page when searching
+      [key]: value,
+      page: 1, // Reset to first page when filtering
     }));
+  }, []);
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      page: 1,
+      size: 20,
+    });
+    setSearchTerm('');
   };
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.search || filters.enabled !== undefined || filters.emailVerified !== undefined;
 
   // Handle user selection
   const handleSelectAll = (checked: boolean) => {
@@ -150,6 +217,11 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
     router.push('/user-management/invite-users');
   };
 
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    await refreshOrganizationUsers(organizationId);
+  };
+
   // Format date
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'N/A';
@@ -180,9 +252,46 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organization Users</h1>
-          <p className="text-muted-foreground">
-            Manage users in {organizationName} ({totalCount} users)
-          </p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span>
+              Manage users in {organizationName} 
+              {hasActiveFilters ? (
+                <span className="ml-1">
+                  (Showing {users.length} of {totalCount} users)
+                </span>
+              ) : (
+                <span className="ml-1">({totalCount} users)</span>
+              )}
+            </span>
+            {isLoading && searchTerm && (
+              <div className="flex items-center gap-1 text-xs">
+                <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                Searching...
+              </div>
+            )}
+          </div>
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="text-xs">
+                Filters Active
+              </Badge>
+              {searchTerm && (
+                <Badge variant="outline" className="text-xs">
+                  Search: "{searchTerm}"
+                </Badge>
+              )}
+              {filters.enabled !== undefined && (
+                <Badge variant="outline" className="text-xs">
+                  Status: {filters.enabled ? 'Active' : 'Disabled'}
+                </Badge>
+              )}
+              {filters.emailVerified !== undefined && (
+                <Badge variant="outline" className="text-xs">
+                  Email: {filters.emailVerified ? 'Verified' : 'Unverified'}
+                </Badge>
+              )}
+            </div>
+          )}
           {hasMultipleOrganizations && (
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm text-muted-foreground">Switch organization:</span>
@@ -199,10 +308,21 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
             </div>
           )}
         </div>
-        <Button onClick={handleInviteUsers} className="gap-2" disabled={!organizationId}>
-          <Plus className="h-4 w-4" />
-          Invite Users
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            className="gap-2"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button onClick={handleInviteUsers} className="gap-2" disabled={!organizationId}>
+            <Plus className="h-4 w-4" />
+            Invite Users
+          </Button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -223,15 +343,119 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search users by name, email, or username..."
-                value={filters.search || ''}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10 pr-10"
               />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearSearch}
+                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
+            
+            <Dialog open={showFilters} onOpenChange={setShowFilters}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filters
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                      !
+                    </Badge>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Filter Users</DialogTitle>
+                  <DialogDescription>
+                    Filter the user list by status and verification
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>User Status</Label>
+                    <Select
+                      value={filters.enabled === undefined ? 'all' : filters.enabled ? 'active' : 'disabled'}
+                      onValueChange={(value) => 
+                        handleFilterChange('enabled', value === 'all' ? undefined : value === 'active')
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        <SelectItem value="active">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            Active Users
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="disabled">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            Disabled Users
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Email Verification</Label>
+                    <Select
+                      value={filters.emailVerified === undefined ? 'all' : filters.emailVerified ? 'verified' : 'unverified'}
+                      onValueChange={(value) => 
+                        handleFilterChange('emailVerified', value === 'all' ? undefined : value === 'verified')
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select verification status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        <SelectItem value="verified">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            Email Verified
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="unverified">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-orange-600" />
+                            Email Unverified
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={handleClearFilters}>
+                    Clear All
+                  </Button>
+                  <Button onClick={() => setShowFilters(false)}>
+                    Apply Filters
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={handleClearFilters} className="gap-2">
+                <X className="h-4 w-4" />
+                Clear
+              </Button>
+            )}
           </div>
 
           {/* Bulk Actions */}
@@ -290,9 +514,16 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
                       <div className="flex flex-col items-center gap-2">
                         <Users className="h-8 w-8 text-muted-foreground" />
                         <p className="text-muted-foreground">
-                          {filters.search ? 'No users found matching your search' : 'No users in this organization'}
+                          {hasActiveFilters 
+                            ? 'No users found matching your search or filters' 
+                            : 'No users in this organization'
+                          }
                         </p>
-                        {!filters.search && (
+                        {hasActiveFilters ? (
+                          <Button variant="outline" onClick={handleClearFilters}>
+                            Clear Search & Filters
+                          </Button>
+                        ) : (
                           <Button variant="outline" onClick={handleInviteUsers}>
                             Invite First User
                           </Button>
@@ -335,10 +566,20 @@ function OrganizationUsersContent({ className, organizationId, organizationName,
                         {formatDate(user.createdTimestamp)}
                       </TableCell>
                       <TableCell>
-                        <RolesBadgesList roles={user.assignedRoles || []} />
+                        <ClickableRolesBadge 
+                          userId={user.id!} 
+                          organizationId={organizationId}
+                          roles={user.assignedRoles || []} 
+                          enableProgressiveLoading={true}
+                        />
                       </TableCell>
                       <TableCell>
-                        <GroupsBadgesList groups={user.assignedGroups || []} />
+                        <ClickableGroupsBadge 
+                          userId={user.id!} 
+                          organizationId={organizationId}
+                          groups={user.assignedGroups || []} 
+                          enableProgressiveLoading={true}
+                        />
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

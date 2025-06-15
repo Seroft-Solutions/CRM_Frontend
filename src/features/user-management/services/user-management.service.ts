@@ -50,6 +50,10 @@ export class UserManagementService {
       if (filters?.search) params.append('search', filters.search);
       if (filters?.page) params.append('first', String((filters.page - 1) * (filters.size || 20)));
       if (filters?.size) params.append('max', String(filters.size));
+      
+      // Add status filters
+      if (filters?.enabled !== undefined) params.append('enabled', String(filters.enabled));
+      if (filters?.emailVerified !== undefined) params.append('emailVerified', String(filters.emailVerified));
 
       const response = await fetch(
         `${this.baseUrl}/organizations/${organizationId}/members?${params.toString()}`
@@ -63,7 +67,7 @@ export class UserManagementService {
       const members: MemberRepresentation[] = await response.json();
 
       // Transform MemberRepresentation to OrganizationUser
-      const users: OrganizationUser[] = members.map((member) => ({
+      let users: OrganizationUser[] = members.map((member) => ({
         id: member.id,
         username: member.username,
         email: member.email,
@@ -84,11 +88,41 @@ export class UserManagementService {
         clientRoles: member.clientRoles,
       }));
 
+      // Apply client-side filtering if backend doesn't support it
+      if (filters?.search) {
+        const searchTerm = filters.search.toLowerCase();
+        users = users.filter(user => 
+          user.firstName?.toLowerCase().includes(searchTerm) ||
+          user.lastName?.toLowerCase().includes(searchTerm) ||
+          user.email?.toLowerCase().includes(searchTerm) ||
+          user.username?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      if (filters?.enabled !== undefined) {
+        users = users.filter(user => user.enabled === filters.enabled);
+      }
+
+      if (filters?.emailVerified !== undefined) {
+        users = users.filter(user => user.emailVerified === filters.emailVerified);
+      }
+
+      // Calculate pagination
+      const totalCount = users.length;
+      const pageSize = filters?.size || 20;
+      const currentPage = filters?.page || 1;
+      const totalPages = Math.ceil(totalCount / pageSize);
+      
+      // Apply pagination
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedUsers = users.slice(startIndex, endIndex);
+
       return {
-        users,
-        totalCount: users.length,
-        currentPage: filters?.page || 1,
-        totalPages: Math.ceil(users.length / (filters?.size || 20)),
+        users: paginatedUsers,
+        totalCount,
+        currentPage,
+        totalPages,
       };
     } catch (error) {
       console.error('Failed to fetch organization users:', error);

@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   useUserDetails, 
   useRoleAssignment, 
@@ -71,6 +71,7 @@ interface UserDetailsProps {
 
 export function UserDetails({ userId, className }: UserDetailsProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { organizationId, organizationName } = useOrganizationContext();
   const { assignRoles, isAssigning: isAssigningRoles } = useRoleAssignment();
   const { assignGroups, isAssigning: isAssigningGroups } = useGroupAssignment();
@@ -80,8 +81,17 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
   const { roles: availableRoles } = useAvailableRoles();
   const { groups: availableGroups } = useAvailableGroups();
 
+  // Initialize activeTab from URL query parameter
+  const getInitialTab = (): 'overview' | 'roles' | 'groups' => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'roles' || tabParam === 'groups' || tabParam === 'overview') {
+      return tabParam;
+    }
+    return 'overview';
+  };
+
   // Local state
-  const [activeTab, setActiveTab] = useState<'overview' | 'roles' | 'groups'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'roles' | 'groups'>(getInitialTab);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<RoleRepresentation[]>([]);
@@ -92,6 +102,14 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     type: 'role' | 'group';
     item: RoleRepresentation | GroupRepresentation;
   } | null>(null);
+
+  // Effect to handle URL parameter changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'roles' || tabParam === 'groups' || tabParam === 'overview') {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   if (isLoading) {
     return (
