@@ -47,6 +47,8 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
+import { MeetingScheduler } from "./meeting-scheduler";
+import { calendarService } from "@/services/calendar-service";
 
 import { 
   useCreateCall,
@@ -144,7 +146,7 @@ const formSchema = z.object({
   party: z.number().optional(),
 });
 
-const STEPS = [{"id":"classification","title":"Call Classification","description":"Set priority, type, and status"},{"id":"source-party","title":"Source & Party","description":"Select source and party details"},{"id":"location","title":"Location","description":"Set geographic information"},{"id":"channel","title":"Channel Details","description":"Configure channel type and party"},{"id":"assignment-date","title":"Assignment & Date","description":"Assign user and set date"},{"id":"review","title":"Review","description":"Confirm your details"}];
+const STEPS = [{"id":"classification","title":"Call Classification","description":"Set priority, type, and status"},{"id":"source-party","title":"Source & Party","description":"Select source and party details"},{"id":"location","title":"Location","description":"Set geographic information"},{"id":"channel","title":"Channel Details","description":"Configure channel type and party"},{"id":"assignment-date","title":"Assignment & Date","description":"Assign user and set date"},{"id":"meeting","title":"Schedule Meeting","description":"Schedule follow-up meeting"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function CallForm({ id }: CallFormProps) {
   const router = useRouter();
@@ -153,6 +155,7 @@ export function CallForm({ id }: CallFormProps) {
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  const [meetingData, setMeetingData] = useState<any>(null);
   const [formSessionId] = useState(() => {
     const existingSession = sessionStorage.getItem('Call_FormSession');
     if (existingSession && isNew) {
@@ -448,6 +451,11 @@ export function CallForm({ id }: CallFormProps) {
         }, {} as any)
       } : {})
     } as CallDTO;
+
+    // Include meeting data if present
+    if (meetingData) {
+      entityToSave.meeting = meetingData;
+    }
 
     if (isNew) {
       createEntity({ data: entityToSave });
@@ -1113,6 +1121,36 @@ export function CallForm({ id }: CallFormProps) {
                 </div>
               )}
 
+              {/* Step 6: Meeting Scheduler */}
+              {STEPS[currentStep].id === 'meeting' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium">Schedule Meeting</h3>
+                    <p className="text-muted-foreground">Schedule a follow-up meeting with the party</p>
+                  </div>
+                  <MeetingScheduler
+                    partyId={form.watch('party')}
+                    partyName={form.watch('party') ? 'Selected Party' : undefined}
+                    partyEmail="party@example.com"
+                    assignedUserId={form.watch('assignedTo')}
+                    onMeetingScheduled={(meeting) => {
+                      setMeetingData(meeting);
+                      setCurrentStep(currentStep + 1);
+                    }}
+                    disabled={!form.watch('party') || !form.watch('assignedTo')}
+                  />
+                  
+                  {meetingData && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                      <h4 className="font-medium text-green-800 mb-2">✅ Meeting Scheduled Successfully</h4>
+                      <p className="text-sm text-green-700">
+                        Meeting scheduled for {format(new Date(meetingData.meetingDateTime), "PPP 'at' p")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Review Step */}
               {STEPS[currentStep].id === 'review' && (
                 <div className="space-y-6">
@@ -1273,6 +1311,35 @@ export function CallForm({ id }: CallFormProps) {
                       </div>
                     </div>
                   </div>
+
+                  {/* Step 6: Meeting */}
+                  {meetingData && (
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg border-b pb-2">📅 Scheduled Meeting</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                          <dt className="text-sm font-medium text-muted-foreground">Meeting Date & Time</dt>
+                          <dd className="text-sm">
+                            {format(new Date(meetingData.meetingDateTime), "PPP 'at' p")}
+                          </dd>
+                        </div>
+                        <div className="space-y-1">
+                          <dt className="text-sm font-medium text-muted-foreground">Duration</dt>
+                          <dd className="text-sm">{meetingData.duration} minutes</dd>
+                        </div>
+                        <div className="space-y-1">
+                          <dt className="text-sm font-medium text-muted-foreground">Meeting Type</dt>
+                          <dd className="text-sm">
+                            <Badge variant="outline">{meetingData.meetingType.replace('_', ' ')}</Badge>
+                          </dd>
+                        </div>
+                        <div className="space-y-1">
+                          <dt className="text-sm font-medium text-muted-foreground">Title</dt>
+                          <dd className="text-sm">{meetingData.title}</dd>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

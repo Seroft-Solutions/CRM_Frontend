@@ -1,0 +1,64 @@
+{
+  "annotations": {
+    "changelogDate": "20250617064014"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "User availability for scheduling",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "dayOfWeek",
+      "fieldType": "DayOfWeek",
+      "fieldTypeDocumentation": "Day of week enum",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY"
+    },
+    {
+      "fieldName": "startTime",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "pattern"],
+      "fieldValidateRulesPattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    {
+      "fieldName": "endTime",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "pattern"],
+      "fieldValidateRulesPattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    {
+      "fieldName": "isAvailable",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "effectiveFrom",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "effectiveTo",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "timeZone",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "UserAvailability",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "email",
+      "otherEntityName": "userProfile",
+      "otherEntityRelationshipName": "availabilitySlots",
+      "relationshipName": "user",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "elasticsearch",
+  "service": "serviceImpl"
+}

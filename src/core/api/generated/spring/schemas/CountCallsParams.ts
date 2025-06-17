@@ -34,6 +34,15 @@ export type CountCallsParams = {
 'remarksId.specified'?: boolean;
 'remarksId.in'?: number[];
 'remarksId.notIn'?: number[];
+'meetingId.greaterThan'?: number;
+'meetingId.lessThan'?: number;
+'meetingId.greaterThanOrEqual'?: number;
+'meetingId.lessThanOrEqual'?: number;
+'meetingId.equals'?: number;
+'meetingId.notEquals'?: number;
+'meetingId.specified'?: boolean;
+'meetingId.in'?: number[];
+'meetingId.notIn'?: number[];
 'priorityId.greaterThan'?: number;
 'priorityId.lessThan'?: number;
 'priorityId.greaterThanOrEqual'?: number;
