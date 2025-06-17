@@ -159,7 +159,7 @@ export function MeetingScheduler({
 
   // Get available time slots
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
-    assignedUserId ? { 'user.id': assignedUserId, isBooked: false } : undefined,
+    assignedUserId ? { 'userId.equals': assignedUserId, 'isBooked.equals': false } : undefined,
     {
       query: { enabled: !!assignedUserId }
     }
@@ -167,7 +167,7 @@ export function MeetingScheduler({
 
   // Get user availability
   const { data: userAvailabilities } = useGetAllUserAvailabilities(
-    assignedUserId ? { 'user.id': assignedUserId } : undefined,
+    assignedUserId ? { 'userId.equals': assignedUserId } : undefined,
     {
       query: { enabled: !!assignedUserId }
     }
@@ -175,7 +175,7 @@ export function MeetingScheduler({
 
   // Get existing meetings to determine booked slots
   const { data: existingMeetings } = useGetAllMeetings(
-    assignedUserId ? { 'organizer.id': assignedUserId } : undefined,
+    assignedUserId ? { 'organizerId.equals': assignedUserId } : undefined,
     {
       query: { enabled: !!assignedUserId }
     }
