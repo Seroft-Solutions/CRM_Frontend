@@ -133,11 +133,7 @@ export function MeetingScheduler({
               createMeetingReminder({
                 data: {
                   reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
-                  reminderDateTime: new Date(
-                    new Date(meetingData.meetingDateTime).getTime() - 
-                    (reminder.minutesBefore * 60 * 1000)
-                  ).toISOString(),
-                  isSent: false,
+                  reminderMinutesBefore: reminder.minutesBefore,
                   meeting: meetingData
                 }
               })
