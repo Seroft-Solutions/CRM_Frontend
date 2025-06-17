@@ -63,10 +63,26 @@ export function PaginatedRelationshipCombobox({
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [deferredSearchQuery, setDeferredSearchQuery] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(0);
   const [allLoadedData, setAllLoadedData] = React.useState<any[]>([]);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const pageSize = 20;
+
+  // Debounced search query (300ms delay)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDeferredSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Determine if query should be enabled
+  const isQueryEnabled = React.useMemo(() => {
+    if (disabled) return false;
+    if (parentField && !parentFilter) return false;
+    return true;
+  }, [disabled, parentField, parentFilter]);
 
   // Build filter parameters for queries
   const buildFilterParams = React.useCallback((pageParam: number, searchTerm: string) => {
@@ -81,7 +97,7 @@ export function PaginatedRelationshipCombobox({
       params[`${parentField}Id.equals`] = parentFilter;
     }
     
-    // Add search filter if there's a search query
+    // Add search filter using field contains
     if (searchTerm && searchTerm.trim() !== '') {
       params[`${searchField}.contains`] = searchTerm;
     }
@@ -89,50 +105,58 @@ export function PaginatedRelationshipCombobox({
     return params;
   }, [displayField, parentFilter, parentField, searchField, pageSize]);
 
-  // Single query using getAll with filtering
+  // Get current query parameters
+  const currentParams = buildFilterParams(currentPage, deferredSearchQuery);
+
+  // Always use getAll hook with field filters
   const { data: currentData, isLoading, isError } = useGetAllHook(
-    buildFilterParams(currentPage, searchQuery),
+    currentParams,
     {
       query: {
-        enabled: true,
+        enabled: isQueryEnabled,
         keepPreviousData: false,
       }
     }
   );
-
-  // Handle data loading and pagination
-  React.useEffect(() => {
-    if (currentData && !isLoading) {
-      if (currentPage === 0) {
-        // First page - replace all data
-        setAllLoadedData(currentData);
-      } else {
-        // Additional page - append unique items
-        setAllLoadedData(prev => {
-          const existingIds = new Set(prev.map(item => item.id));
-          const newItems = currentData.filter((item: any) => !existingIds.has(item.id));
-          return [...prev, ...newItems];
-        });
-      }
-      
-      // Check if there are more pages
-      setHasMorePages(currentData.length === pageSize);
-    }
-  }, [currentData, isLoading, currentPage]);
 
   // Reset data when search or parent filter changes
   React.useEffect(() => {
     setCurrentPage(0);
     setAllLoadedData([]);
     setHasMorePages(true);
-  }, [searchQuery, parentFilter]);
+  }, [deferredSearchQuery, parentFilter]);
+
+  // Handle data loading and pagination
+  React.useEffect(() => {
+    if (currentData && !isLoading && isQueryEnabled) {
+      // Extract data array from response (handle both direct array and paginated response)
+      const dataArray = Array.isArray(currentData) ? currentData : 
+                       currentData.content ? currentData.content : 
+                       currentData.data ? currentData.data : [];
+
+      if (currentPage === 0) {
+        // First page - replace all data
+        setAllLoadedData(dataArray);
+      } else {
+        // Additional page - append unique items
+        setAllLoadedData(prev => {
+          const existingIds = new Set(prev.map(item => item.id));
+          const newItems = dataArray.filter((item: any) => !existingIds.has(item.id));
+          return [...prev, ...newItems];
+        });
+      }
+      
+      // Check if there are more pages
+      setHasMorePages(dataArray.length === pageSize);
+    }
+  }, [currentData, isLoading, currentPage, isQueryEnabled]);
 
   // Load next page
   const loadNextPage = React.useCallback(() => {
-    if (hasMorePages && !isLoading) {
+    if (hasMorePages && !isLoading && isQueryEnabled) {
       setCurrentPage(prev => prev + 1);
     }
-  }, [hasMorePages, isLoading]);
+  }, [hasMorePages, isLoading, isQueryEnabled]);
 
   // Scroll handler for infinite loading
   const handleScroll = React.useCallback((e: React.UIEvent) => {
@@ -229,7 +253,7 @@ export function PaginatedRelationshipCombobox({
         originRoute: currentPath,
         originEntityName,
         targetEntityName: entityName.replace(/s$/, ''),
-        sourceEntity: sourceEntityClass, // Add source entity for cross-entity detection
+        sourceEntity: sourceEntityClass,
         createdFrom: 'relationship'
       }));
       
@@ -245,6 +269,9 @@ export function PaginatedRelationshipCombobox({
   };
 
   React.useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     const newEntityId = sessionStorage.getItem('newlyCreatedEntityId');
     const relationshipInfo = sessionStorage.getItem('relationshipFieldInfo');
     
@@ -263,6 +290,14 @@ export function PaginatedRelationshipCombobox({
     }
   }, [entityName, onEntityCreated]);
 
+  // Show disabled state message when parent filter is required but missing
+  const getDisabledMessage = () => {
+    if (parentField && !parentFilter) {
+      return `Select ${parentField} first`;
+    }
+    return placeholder;
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <div className="flex gap-2">
@@ -274,9 +309,11 @@ export function PaginatedRelationshipCombobox({
                 role="combobox"
                 aria-expanded={open}
                 className="w-full justify-between"
-                disabled={disabled}
+                disabled={disabled || !isQueryEnabled}
               >
-                <span className="truncate">{getDisplayText()}</span>
+                <span className="truncate">
+                  {disabled || !isQueryEnabled ? getDisabledMessage() : getDisplayText()}
+                </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -286,21 +323,30 @@ export function PaginatedRelationshipCombobox({
                   placeholder={`Search ${entityName.toLowerCase()}...`}
                   value={searchQuery}
                   onValueChange={setSearchQuery}
+                  disabled={!isQueryEnabled}
                 />
                 <CommandList 
                   className="max-h-60 overflow-y-auto"
                   onScroll={handleScroll}
                 >
-                  {isLoading && allLoadedData.length === 0 && (
+                  {!isQueryEnabled && (
+                    <div className="flex items-center justify-center p-4 text-muted-foreground">
+                      <span className="text-sm">
+                        {parentField && !parentFilter ? `Please select ${parentField} first` : 'Search disabled'}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {isQueryEnabled && isLoading && allLoadedData.length === 0 && (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="ml-2">Loading...</span>
                     </div>
                   )}
                   
-                  {!isLoading && allLoadedData.length === 0 && !isError && (
+                  {isQueryEnabled && !isLoading && allLoadedData.length === 0 && !isError && (
                     <CommandEmpty>
-                      {searchQuery ? `No ${entityName.toLowerCase()} found for "${searchQuery}".` : `No ${entityName.toLowerCase()} found.`}
+                      {deferredSearchQuery ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".` : `No ${entityName.toLowerCase()} found.`}
                     </CommandEmpty>
                   )}
 
@@ -310,7 +356,7 @@ export function PaginatedRelationshipCombobox({
                     </div>
                   )}
                   
-                  {allLoadedData.length > 0 && (
+                  {isQueryEnabled && allLoadedData.length > 0 && (
                     <CommandGroup>
                       {allLoadedData.map((option: any, index: number) => {
                         if (!option || !option.id || !option[displayField]) {
@@ -379,6 +425,7 @@ export function PaginatedRelationshipCombobox({
               size="icon"
               onClick={handleCreateNew}
               className="shrink-0"
+              disabled={disabled}
               title={`Create new ${entityName.toLowerCase().slice(0, -1)}`}
             >
               <Plus className="h-4 w-4" />
