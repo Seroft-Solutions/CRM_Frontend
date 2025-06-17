@@ -25,3 +25,8 @@ export * from './endpoints/role-resource/role-resource.gen';
 export * from './endpoints/organization-resource/organization-resource.gen';
 export * from './endpoints/group-resource/group-resource.gen';
 export * from './endpoints/schema-test-controller/schema-test-controller.gen';
+export * from './endpoints/user-availability-resource/user-availability-resource.gen';
+export * from './endpoints/meeting-resource/meeting-resource.gen';
+export * from './endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
+export * from './endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+export * from './endpoints/available-time-slot-resource/available-time-slot-resource.gen';

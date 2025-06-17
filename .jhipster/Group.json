@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250607212209"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Keycloak Group representation.",
   "dto": "mapstruct",
   "entityTableName": "jhi_group",

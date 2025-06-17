@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250607212208"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Represents a user synced from Keycloak.",
   "dto": "mapstruct",
   "fields": [
@@ -35,6 +35,20 @@
   "name": "UserProfile",
   "pagination": "pagination",
   "relationships": [
+    {
+      "otherEntityName": "userAvailability",
+      "otherEntityRelationshipName": "user",
+      "relationshipName": "availabilitySlots",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "availableTimeSlot",
+      "otherEntityRelationshipName": "user",
+      "relationshipName": "availableTimeSlots",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
     {
       "otherEntityField": "name",
       "otherEntityName": "organization",

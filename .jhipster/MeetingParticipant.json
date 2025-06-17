@@ -1,0 +1,53 @@
+{
+  "annotations": {
+    "changelogDate": "20250617064016"
+  },
+  "applications": ["crmBackend"],
+  "documentation": "Meeting participant entity",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "email",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "pattern", "maxlength"],
+      "fieldValidateRulesMaxlength": "254",
+      "fieldValidateRulesPattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+    },
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "isRequired",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "hasAccepted",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "hasDeclined",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "responseDateTime",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "MeetingParticipant",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "meeting",
+      "otherEntityRelationshipName": "participants",
+      "relationshipName": "meeting",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}

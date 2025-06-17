@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250603183928"
   },
-  "applications": "*",
+  "applications": ["crmBackend"],
   "documentation": "Call entity - core CRM activity",
   "dto": "mapstruct",
   "fields": [
@@ -20,6 +20,13 @@
       "otherEntityName": "callRemark",
       "otherEntityRelationshipName": "call",
       "relationshipName": "remarks",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "meeting",
+      "otherEntityRelationshipName": "call",
+      "relationshipName": "meeting",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     },
