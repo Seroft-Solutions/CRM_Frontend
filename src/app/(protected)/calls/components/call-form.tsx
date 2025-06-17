@@ -157,6 +157,10 @@ export function CallForm({ id }: CallFormProps) {
   const [restorationAttempted, setRestorationAttempted] = useState(false);
   const [meetingData, setMeetingData] = useState<any>(null);
   const [formSessionId] = useState(() => {
+    if (typeof window === 'undefined') {
+      return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
     const existingSession = sessionStorage.getItem('Call_FormSession');
     if (existingSession && isNew) {
       return existingSession;
@@ -1130,8 +1134,6 @@ export function CallForm({ id }: CallFormProps) {
                   </div>
                   <MeetingScheduler
                     partyId={form.watch('party')}
-                    partyName={form.watch('party') ? 'Selected Party' : undefined}
-                    partyEmail="party@example.com"
                     assignedUserId={form.watch('assignedTo')}
                     onMeetingScheduled={(meeting) => {
                       setMeetingData(meeting);
