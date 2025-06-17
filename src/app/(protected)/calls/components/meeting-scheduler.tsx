@@ -28,6 +28,9 @@ import {
   useGetAllAvailableTimeSlots 
 } from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
 import { useGetAllUserAvailabilities } from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
+import { 
+  useGetParty 
+} from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
 
 import { 
   MeetingDTOMeetingType, 
@@ -63,8 +66,6 @@ interface ReminderDetails {
 
 interface MeetingSchedulerProps {
   partyId?: number;
-  partyName?: string;
-  partyEmail?: string;
   assignedUserId?: number;
   onMeetingScheduled: (meetingData: any) => void;
   disabled?: boolean;
@@ -72,8 +73,6 @@ interface MeetingSchedulerProps {
 
 export function MeetingScheduler({
   partyId,
-  partyName,
-  partyEmail,
   assignedUserId,
   onMeetingScheduled,
   disabled = false
@@ -94,13 +93,18 @@ export function MeetingScheduler({
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
+  // Fetch party details
+  const { data: partyData } = useGetParty(partyId || 0, {
+    query: { enabled: !!partyId }
+  });
+
   const titleSuggestions = [
-    `Catchup Meeting with ${partyName || 'Party'}`,
-    `Follow-up Discussion with ${partyName || 'Party'}`,
-    `Strategy Meeting with ${partyName || 'Party'}`,
-    `Project Review with ${partyName || 'Party'}`,
-    `Business Discussion with ${partyName || 'Party'}`,
-    `Consultation with ${partyName || 'Party'}`,
+    `Catchup Meeting with ${partyData?.name || 'Party'}`,
+    `Follow-up Discussion with ${partyData?.name || 'Party'}`,
+    `Strategy Meeting with ${partyData?.name || 'Party'}`,
+    `Project Review with ${partyData?.name || 'Party'}`,
+    `Business Discussion with ${partyData?.name || 'Party'}`,
+    `Consultation with ${partyData?.name || 'Party'}`,
   ];
 
   // Backend hooks
@@ -177,16 +181,16 @@ export function MeetingScheduler({
     }
   );
 
-  // Initialize default participant if party email is available
+  // Initialize default participant if party data is available
   useEffect(() => {
-    if (partyEmail && participants.length === 0) {
+    if (partyData && participants.length === 0) {
       setParticipants([{
-        email: partyEmail,
-        name: partyName || '',
+        email: partyData.email || '',
+        name: partyData.name || '',
         isRequired: true
       }]);
     }
-  }, [partyEmail, partyName, participants.length]);
+  }, [partyData, participants.length]);
 
   // Process available time slots and user availability
   useEffect(() => {
@@ -280,9 +284,9 @@ export function MeetingScheduler({
       meetingUrl: '',
       location: ''
     });
-    setParticipants(partyEmail ? [{
-      email: partyEmail,
-      name: partyName || '',
+    setParticipants(partyData ? [{
+      email: partyData.email || '',
+      name: partyData.name || '',
       isRequired: true
     }] : []);
     setReminders([{ enabled: true, type: 'EMAIL', minutesBefore: 15 }]);
@@ -343,11 +347,11 @@ export function MeetingScheduler({
           <p>Schedule a follow-up meeting with</p>
           <div className="flex items-center justify-center gap-2">
             <Badge variant="outline" className="font-medium">
-              {partyName || 'Selected Party'}
+              {partyData?.name || 'Selected Party'}
             </Badge>
-            {partyEmail && (
+            {partyData?.email && (
               <Badge variant="secondary" className="text-xs">
-                {partyEmail}
+                {partyData.email}
               </Badge>
             )}
           </div>
@@ -530,7 +534,7 @@ export function MeetingScheduler({
                       variant="outline"
                       size="sm"
                       onClick={() => removeParticipant(index)}
-                      disabled={index === 0 && partyEmail === participant.email}
+                      disabled={index === 0 && partyData?.email === participant.email}
                     >
                       ×
                     </Button>
