@@ -1,0 +1,118 @@
+"use client";
+
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+
+interface OrganizationStepBasicProps {
+  form: UseFormReturn<any>;
+}
+
+export function OrganizationStepBasic({ form }: OrganizationStepBasicProps) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        
+        <FormField
+          control={form.control}
+          name="keycloakOrgId"
+          render={({ field }) => (
+            
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Keycloak Org Id *</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter keycloak org id"
+                  className="transition-colors"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Name *</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter name"
+                  className="transition-colors"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="displayName"
+          render={({ field }) => (
+            
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Display Name</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter display name"
+                  className="transition-colors"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="domain"
+          render={({ field }) => (
+            
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Domain</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  
+                  placeholder="Enter domain"
+                  className="transition-colors"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            
+          )}
+        />
+        
+      </div>
+    </div>
+  );
+}

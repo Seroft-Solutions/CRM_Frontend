@@ -25,6 +25,7 @@ export class FileGenerator {
     try {
       const output = ejs.render(template, variables, {
         escape: (str: string) => str, // Don't escape output
+        filename: fullTemplatePath, // Enable includes
       });
       
       // Ensure output directory exists

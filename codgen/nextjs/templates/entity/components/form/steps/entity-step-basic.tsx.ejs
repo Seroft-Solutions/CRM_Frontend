@@ -1,0 +1,114 @@
+<%#
+ Copyright 2013-2025 the original author or authors from the JHipster project.
+-%>
+"use client";
+
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+<%_
+// Helper function to convert camelCase to Title Case
+function camelToTitleCase(str) {
+  return str
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
+
+// Organize fields by category
+const basicFields = fields.filter(field => !field.id && !field.fieldTypeBinary);
+const textFields = basicFields.filter(field => 
+  !field.fieldTypeBoolean && !field.fieldTypeTimed && !field.fieldTypeLocalDate && 
+  !field.fieldIsEnum && !field.fieldTypeNumeric
+);
+const numberFields = basicFields.filter(field => field.fieldTypeNumeric);
+const enumFields = basicFields.filter(field => field.fieldIsEnum);
+_%>
+
+interface <%= entityClass %>StepBasicProps {
+  form: UseFormReturn<any>;
+}
+
+export function <%= entityClass %>StepBasic({ form }: <%= entityClass %>StepBasicProps) {
+  <%_ if (basicFields.length === 0) { _%>
+  return (
+    <div className="space-y-6">
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No basic fields to configure.</p>
+        <p className="text-sm text-muted-foreground mt-2">You can proceed to the next step.</p>
+      </div>
+    </div>
+  );
+  <%_ } else { _%>
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        <% for (field of [...textFields, ...numberFields, ...enumFields]) { 
+          const fieldName = field.fieldName;
+          const fieldLabel = camelToTitleCase(fieldName);
+          const fieldValidateRules = field.fieldValidateRules || [];
+          const isRequired = fieldValidateRules.includes('required');
+        %>
+        <FormField
+          control={form.control}
+          name="<%= fieldName %>"
+          render={({ field }) => (
+            <% if (field.fieldIsEnum) { %>
+            <FormItem>
+              <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select <%= fieldLabel.toLowerCase() %>" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <% if (!isRequired) { %>
+                  <SelectItem value="__none__">None</SelectItem>
+                  <% } %>
+                  <% for (const enumValue of field.enumValues || []) { %>
+                  <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>">
+                    <%= enumValue.name || enumValue.value || 'Empty' %>
+                  </SelectItem>
+                  <% } %>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+            <% } else { %>
+            <FormItem>
+              <FormLabel className="text-sm font-medium"><%= fieldLabel %><% if (isRequired) { %> *<% } %></FormLabel>
+              <FormControl>
+                <Input 
+                  {...field}
+                  <% if (field.fieldTypeNumeric) { %>type="number"<% } %>
+                  placeholder="Enter <%= fieldLabel.toLowerCase() %>"
+                  className="transition-colors"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+            <% } %>
+          )}
+        />
+        <% } %>
+      </div>
+    </div>
+  );
+  <%_ } _%>
+}

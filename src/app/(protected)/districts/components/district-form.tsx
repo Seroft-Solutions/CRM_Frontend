@@ -1,75 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import * as React from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CalendarIcon, Save, ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
-import { districtToast, handleDistrictError } from "./district-toast";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Card, CardContent } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 
 import { 
   useCreateDistrict,
   useUpdateDistrict,
   useGetDistrict,
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
-import { 
-  useGetAllStates,
-  useSearchStates,
-  useCountStates
-} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+
+import { districtToast, handleDistrictError } from "./district-toast";
 import type { DistrictDTO } from "@/core/api/generated/spring/schemas/DistrictDTO";
 
+
+// Import step components
+import { DistrictStepBasic } from "./steps/district-step-basic";
+import { DistrictStepGeographic } from "./steps/district-step-geographic";
+import { DistrictStepReview } from "./steps/district-step-review";
+
+// Props interface
 interface DistrictFormProps {
-  id?: number;
+  id?: string;
 }
 
-// Create Zod schema for form validation
-const formSchema = z.object({
-  name: z.string().min(2).max(100),
+// Form schema
+const districtSchema = z.object({
+  name: z.string().optional(),
+  cities: z.number().optional(),
   state: z.number().optional(),
 });
 
+// Step definitions
 const STEPS = [{"id":"basic","title":"Basic Information","description":"Enter essential details"},{"id":"geographic","title":"Location Details","description":"Select geographic information"},{"id":"review","title":"Review","description":"Confirm your details"}];
 
 export function DistrictForm({ id }: DistrictFormProps) {
@@ -77,387 +48,70 @@ export function DistrictForm({ id }: DistrictFormProps) {
   const isNew = !id;
   const [currentStep, setCurrentStep] = useState(0);
   const [confirmSubmission, setConfirmSubmission] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [restorationAttempted, setRestorationAttempted] = useState(false);
-  const [formSessionId] = useState(() => {
-    // Generate unique session ID for this form instance
-    const existingSession = sessionStorage.getItem('District_FormSession');
-    if (existingSession && isNew) {
-      return existingSession;
-    }
-    const newSessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    if (isNew) {
-      sessionStorage.setItem('District_FormSession', newSessionId);
-    }
-    return newSessionId;
+
+  // Form setup
+  const form = useForm<z.infer<typeof districtSchema>>({
+    resolver: zodResolver(districtSchema),
+    defaultValues: {
+      name: "",
+      cities: undefined,
+      state: undefined,
+    },
   });
 
-  // Create or update mutation
-  const { mutate: createEntity, isPending: isCreating } = useCreateDistrict({
+  // API hooks
+  const { data: existingDistrict } = useGetDistrict(
+    { id: id || "" },
+    { query: { enabled: !isNew && !!id } }
+  );
+
+  const createDistrictMutation = useCreateDistrict({
     mutation: {
       onSuccess: (data) => {
-        // Clean up form state completely
-        cleanupFormState();
-        
-        const returnUrl = localStorage.getItem('returnUrl');
-        const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
-        
-        if (returnUrl && relationshipInfo) {
-          const entityId = data?.id || data?.id;
-          if (entityId) {
-            localStorage.setItem('newlyCreatedEntityId', entityId.toString());
-          }
-          districtToast.created();
-          router.push(returnUrl);
-        } else {
-          districtToast.created();
-          router.push("/districts");
-        }
-      },
-      onError: (error) => {
-        handleDistrictError(error);
-      },
-    },
-  });
-
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateDistrict({
-    mutation: {
-      onSuccess: () => {
-        // Clean up form state completely
-        cleanupFormState();
-        
-        districtToast.updated();
+        districtToast.created(data.data);
         router.push("/districts");
       },
-      onError: (error) => {
-        handleDistrictError(error);
+      onError: handleDistrictError,
+    },
+  });
+
+  const updateDistrictMutation = useUpdateDistrict({
+    mutation: {
+      onSuccess: (data) => {
+        districtToast.updated(data.data);
+        router.push("/districts");
       },
+      onError: handleDistrictError,
     },
   });
 
-  // Fetch entity for editing
-  const { data: entity, isLoading: isLoadingEntity } = useGetDistrict(id || 0, {
-    query: {
-      enabled: !!id,
-      queryKey: ["get-district", id]
-    },
-  });
-
-  // Form initialization
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    mode: "onChange",
-    defaultValues: {
-
-      name: "",
-
-
-      state: undefined,
-
-    },
-  });
-
-  // Form state persistence functions
-  const saveFormState = React.useCallback(() => {
-    if (!isNew) return; // Don't save state for edit forms
-    
-    const formData = form.getValues();
-    const formState = {
-      data: formData,
-      currentStep,
-      timestamp: Date.now(),
-      entity: 'District',
-      sessionId: formSessionId
-    };
-    
-    const storageKey = `DistrictFormState_${formSessionId}`;
-    localStorage.setItem(storageKey, JSON.stringify(formState));
-    console.log('Form state saved with session:', { storageKey, sessionId: formSessionId });
-  }, [form, currentStep, isNew, formSessionId]);
-
-  const restoreFormState = React.useCallback(() => {
-    if (!isNew) return false; // Don't restore for edit forms
-    
-    // Check if this is a cross-entity creation (coming from another form)
-    const entityCreationContext = localStorage.getItem('entityCreationContext');
-    if (entityCreationContext) {
-      try {
-        const context = JSON.parse(entityCreationContext);
-        // If we're creating this entity from another entity's form, don't restore
-        if (context.sourceEntity && context.sourceEntity !== 'District') {
-          console.log('Cross-entity creation detected, skipping restoration');
-          return false;
-        }
-      } catch (error) {
-        console.error('Error parsing entity creation context:', error);
+  // Load existing data
+  if (existingDistrict && !form.formState.isDirty) {
+    const data = existingDistrict.data;
+    if (data) {
+      const formData: any = {};
+      if (data.name !== undefined) {
+        formData.name = data.name;
       }
-    }
-    
-    const currentSessionId = sessionStorage.getItem('District_FormSession');
-    if (!currentSessionId || currentSessionId !== formSessionId) {
-      console.log('Session mismatch, skipping restoration');
-      return false;
-    }
-    
-    const storageKey = `DistrictFormState_${formSessionId}`;
-    const savedStateStr = localStorage.getItem(storageKey);
-    
-    if (savedStateStr) {
-      try {
-        const savedState = JSON.parse(savedStateStr);
-        const isRecent = Date.now() - savedState.timestamp < 30 * 60 * 1000; // 30 minutes
-        const isSameSession = savedState.sessionId === formSessionId;
-        const isSameEntity = savedState.entity === 'District';
-        
-        if (isRecent && isSameSession && isSameEntity) {
-          setIsRestoring(true);
-          
-          // Restore form values
-          Object.keys(savedState.data).forEach(key => {
-            const value = savedState.data[key];
-            if (value !== undefined && value !== null) {
-              form.setValue(key as any, value);
-            }
-          });
-          
-          // Restore current step
-          setCurrentStep(savedState.currentStep || 0);
-          
-          // Don't clear saved state immediately, let it be cleared on submission
-          setTimeout(() => setIsRestoring(false), 100);
-          districtToast.formRestored();
-          
-          console.log('Form state restored for session:', formSessionId);
-          return true;
-        } else {
-          console.log('Restoration conditions not met:', { isRecent, isSameSession, isSameEntity });
-          localStorage.removeItem(storageKey);
-        }
-      } catch (error) {
-        console.error('Failed to restore form state:', error);
-        localStorage.removeItem(storageKey);
+      if (data.cities) {
+        formData.cities = data.cities.id;
       }
-    }
-    return false;
-  }, [form, isNew, formSessionId]);
-
-  // Clear old form states for this entity type
-  const clearOldFormStates = React.useCallback(() => {
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('DistrictFormState_') && !key.endsWith(formSessionId)) {
-        keysToRemove.push(key);
+      if (data.state) {
+        formData.state = data.state.id;
       }
+      form.reset(formData);
     }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log('Cleared old form states:', keysToRemove);
-  }, [formSessionId]);
+  }
 
-  // Handle newly created relationship entities
-  const handleEntityCreated = React.useCallback((entityId: number, relationshipName: string) => {
-    const currentValue = form.getValues(relationshipName as any);
-    
-    if (Array.isArray(currentValue)) {
-      const newValue = [...currentValue, entityId];
-      form.setValue(relationshipName as any, newValue);
-    } else {
-      form.setValue(relationshipName as any, entityId);
-    }
-    
-    form.trigger(relationshipName as any);
-  }, [form]);
-
-  // Form restoration and event listeners
-  useEffect(() => {
-    if (!restorationAttempted && isNew) {
-      setRestorationAttempted(true);
-      
-      // Clear old form states first
-      clearOldFormStates();
-      
-      // Check for newly created entity first
-      const newEntityId = localStorage.getItem('newlyCreatedEntityId');
-      const relationshipInfo = localStorage.getItem('relationshipFieldInfo');
-      
-      if (newEntityId && relationshipInfo) {
-        try {
-          const info = JSON.parse(relationshipInfo);
-          console.log('Found newly created entity:', { newEntityId, info });
-          
-          // Restore form state first, then add the new entity
-          const restored = restoreFormState();
-          
-          setTimeout(() => {
-            handleEntityCreated(parseInt(newEntityId), Object.keys(info)[0] || 'id');
-            
-            // Clean up
-            localStorage.removeItem('newlyCreatedEntityId');
-            localStorage.removeItem('relationshipFieldInfo');
-            localStorage.removeItem('returnUrl');
-            localStorage.removeItem('entityCreationContext');
-          }, restored ? 500 : 100);
-          
-        } catch (error) {
-          console.error('Error processing newly created entity:', error);
-          restoreFormState();
-        }
-      } else {
-        // Just restore form state
-        restoreFormState();
-      }
-    }
-
-    // Listen for save form state events
-    const handleSaveFormState = () => {
-      if (isNew) {
-        console.log('Save form state event received');
-        saveFormState();
-      }
-    };
-
-    window.addEventListener('saveFormState', handleSaveFormState);
-    
-    return () => {
-      window.removeEventListener('saveFormState', handleSaveFormState);
-    };
-  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated, clearOldFormStates]);
-
-  // Update form values when entity data is loaded
-  useEffect(() => {
-    if (entity && !isRestoring) {
-      const formValues = {
-
-        name: entity.name || "",
-
-
-        state: entity.state?.id,
-
-      };
-      form.reset(formValues);
-    }
-  }, [entity, form, isRestoring]);
-
-  // Auto-save form state on field changes (debounced)
-  useEffect(() => {
-    if (!isNew || isRestoring) return;
-    
-    const subscription = form.watch(() => {
-      const timeoutId = setTimeout(() => {
-        saveFormState();
-      }, 2000); // Auto-save every 2 seconds after changes
-      
-      return () => clearTimeout(timeoutId);
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form, isRestoring, isNew, saveFormState]);
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (currentStep !== STEPS.length - 1) return;
-
-    const entityToSave = {
-      ...(!isNew && entity ? { id: entity.id } : {}),
-
-      name: data.name === "__none__" ? undefined : data.name,
-
-
-      state: data.state ? { id: data.state } : null,
-
-      ...(entity && !isNew ? {
-        ...Object.keys(entity).reduce((acc, key) => {
-          const isFormField = ['name','state',].includes(key);
-          if (!isFormField && entity[key as keyof typeof entity] !== undefined) {
-            acc[key] = entity[key as keyof typeof entity];
-          }
-          return acc;
-        }, {} as any)
-      } : {})
-    } as DistrictDTO;
-
-    if (isNew) {
-      createEntity({ data: entityToSave });
-    } else if (id) {
-      updateEntity({ id, data: entityToSave });
-    }
+  // Entity creation handler for relationships
+  const handleEntityCreated = (entityType: string, entityData: any) => {
+    // Handle newly created entities in relationships
+    toast.success(`${entityType} created successfully`);
   };
 
-  // Form cleanup function
-  const cleanupFormState = React.useCallback(() => {
-    const storageKey = `DistrictFormState_${formSessionId}`;
-    localStorage.removeItem(storageKey);
-    sessionStorage.removeItem('District_FormSession');
-    
-    // Clear all old form states for this entity type
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('DistrictFormState_')) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    
-    // Reset form to default values
-    form.reset();
-    setCurrentStep(0);
-    setConfirmSubmission(false);
-    
-    console.log('Form state cleaned up completely');
-  }, [formSessionId, form]);
-
-  // Navigation functions
-  const handleCancel = () => {
-    cleanupFormState();
-    
-    const returnUrl = localStorage.getItem('returnUrl');
-    const backRoute = returnUrl || "/districts";
-    
-    // Clean up navigation localStorage
-    localStorage.removeItem('entityCreationContext');
-    localStorage.removeItem('referrerInfo');
-    localStorage.removeItem('returnUrl');
-    
-    router.push(backRoute);
-  };
-
-  const validateStep = async () => {
-    const currentStepId = STEPS[currentStep].id;
-    let fieldsToValidate: string[] = [];
-
-    switch (currentStepId) {
-      case 'basic':
-        fieldsToValidate = ['name',];
-        break;
-      case 'dates':
-        fieldsToValidate = [];
-        break;
-      case 'settings':
-        fieldsToValidate = [];
-        break;
-      case 'geographic':
-        fieldsToValidate = ['state',];
-        break;
-      case 'users':
-        fieldsToValidate = [];
-        break;
-      case 'classification':
-        fieldsToValidate = [];
-        break;
-      case 'business':
-        fieldsToValidate = [];
-        break;
-      case 'other':
-        fieldsToValidate = [];
-        break;
-    }
-
-    const result = await form.trigger(fieldsToValidate);
-    return result;
-  };
-
-  const nextStep = async () => {
-    const isValid = await validateStep();
-    if (isValid && currentStep < STEPS.length - 1) {
+  // Navigation
+  const nextStep = () => {
+    if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -465,61 +119,75 @@ export function DistrictForm({ id }: DistrictFormProps) {
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      if (currentStep === STEPS.length - 1) {
-        setConfirmSubmission(false);
-      }
     }
   };
 
+  const goToStep = (step: number) => {
+    setCurrentStep(step);
+  };
+
+  // Form submission
+  const onSubmit = (values: z.infer<typeof districtSchema>) => {
+    // If not on review step, go to review
+    if (STEPS[currentStep].id !== 'review') {
+      setCurrentStep(STEPS.length - 1); // Go to review step
+      return;
+    }
+
+    // If on review step but not confirmed, show confirmation
+    if (!confirmSubmission) {
+      setConfirmSubmission(true);
+      return;
+    }
+
+    // Proceed with actual submission
+    const districtData: DistrictDTO = {
+      name: values.name,
+      cities: values.cities ? { id: values.cities } : undefined,
+      state: values.state ? { id: values.state } : undefined,
+    };
+
+    if (isNew) {
+      createDistrictMutation.mutate({ data: districtData });
+    } else {
+      updateDistrictMutation.mutate({
+        id: id!,
+        data: { ...existingDistrict?.data, ...districtData },
+      });
+    }
+  };
+
+  const isLoading = createDistrictMutation.isPending || updateDistrictMutation.isPending;
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
-  if (id && isLoadingEntity) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full space-y-6">
-      {/* Progress Bar */}
-      <div className="space-y-4">
-        <div className="flex justify-between text-sm font-medium">
+    <div className="space-y-6">
+      {/* Progress Indicator */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm text-muted-foreground">
           <span>Step {currentStep + 1} of {STEPS.length}</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="w-full" />
       </div>
 
-      {/* Step Indicators */}
-      <div className="flex justify-center">
-        <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
-          {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className={cn(
-                "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0",
-                index < currentStep 
-                  ? "bg-primary border-primary text-primary-foreground" 
-                  : index === currentStep 
-                  ? "border-primary text-primary bg-primary/10" 
-                  : "border-muted-foreground/30 text-muted-foreground"
-              )}>
-                {index < currentStep ? (
-                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-                ) : (
-                  <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
-                )}
-              </div>
-              {index < STEPS.length - 1 && (
-                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground mx-1 sm:mx-2 flex-shrink-0" />
-              )}
-            </div>
-          ))}
-        </div>
+      {/* Step Navigation */}
+      <div className="flex flex-wrap gap-2 justify-center">
+        {STEPS.map((step, index) => (
+          <Button
+            key={step.id}
+            variant={index === currentStep ? "default" : index < currentStep ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => goToStep(index)}
+            className="text-xs"
+          >
+            {index < currentStep && <Check className="h-3 w-3 mr-1" />}
+            {step.title}
+          </Button>
+        ))}
       </div>
 
-      {/* Current Step Info */}
+      {/* Step Header */}
       <div className="text-center space-y-1">
         <h2 className="text-lg sm:text-xl font-semibold">{STEPS[currentStep].title}</h2>
         <p className="text-sm text-muted-foreground">{STEPS[currentStep].description}</p>
@@ -530,132 +198,19 @@ export function DistrictForm({ id }: DistrictFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardContent className="p-4 sm:p-6">
-              {/* Step 1: Basic Information */}
+              {/* Step Content */}
               {STEPS[currentStep].id === 'basic' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">Name *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field}
-                              
-                              placeholder="Enter name"
-                              className="transition-colors"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                        
-                      )}
-                    />
-                    
-                  </div>
-                </div>
+                <DistrictStepBasic form={form} />
               )}
 
-              {/* Step 2: Date & Time */}
-              
-
-              {/* Step 3: Settings & Files */}
-              
-
-              {/* Classification Step with Intelligent Cascading */}
-
-              {/* Geographic Step with Cascading */}
               {STEPS[currentStep].id === 'geographic' && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-medium">Location Information</h3>
-                    <p className="text-muted-foreground">Select location details in hierarchical order</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            State
-                          </FormLabel>
-                          <FormControl>
-                            <PaginatedRelationshipCombobox
-                              value={field.value}
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                // Clear dependent geographic selections
-                              }}
-                              displayField="name"
-                              placeholder="Select state"
-                              multiple={false}
-                              useGetAllHook={useGetAllStates}
-                              useSearchHook={useSearchStates}
-                              useCountHook={useCountStates}
-                              entityName="States"
-                              searchField="name"
-                              canCreate={true}
-                              createEntityPath="/states/new"
-                              createPermission="state:create"
-                              onEntityCreated={(entityId) => handleEntityCreated(entityId, 'state')}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                <DistrictStepGeographic form={form} handleEntityCreated={handleEntityCreated} />
               )}
 
-              {/* User Assignment Step */}
-
-              {/* Business Relations Step */}
-
-              {/* Other Relations Step */}
-
-              {/* Review Step */}
               {STEPS[currentStep].id === 'review' && (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium mb-2">Review Your Information</h3>
-                    <p className="text-muted-foreground">Please review all the information before submitting</p>
-                  </div>
-                  
-                  {/* Basic Fields Review */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-lg border-b pb-2">Basic Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                        <dd className="text-sm">
-                          {form.watch('name') || "—"}
-                        </dd>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Relationship Reviews */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-lg border-b pb-2">📍 Location Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <dt className="text-sm font-medium text-muted-foreground">State</dt>
-                        <dd className="text-sm">
-                          <Badge variant="outline">
-                            {form.watch('state') ? 'Selected' : 'Not selected'}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <DistrictStepReview form={form} />
               )}
+
             </CardContent>
           </Card>
 
@@ -664,33 +219,31 @@ export function DistrictForm({ id }: DistrictFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={currentStep === 0 ? handleCancel : prevStep}
+              onClick={prevStep}
+              disabled={currentStep === 0}
               className="flex items-center gap-2 justify-center"
             >
               <ArrowLeft className="h-4 w-4" />
-              {currentStep === 0 ? "Cancel" : "Previous"}
+              Previous
             </Button>
 
-            {currentStep === STEPS.length - 1 ? (
-              !confirmSubmission ? (
-                <Button 
-                  type="button"
-                  onClick={() => setConfirmSubmission(true)}
-                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 justify-center"
-                >
-                  <Check className="h-4 w-4" />
-                  Confirm {isNew ? "Create" : "Update"}
-                </Button>
-              ) : (
-                <Button 
-                  type="submit" 
-                  disabled={isCreating || isUpdating}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
-                >
-                  <Save className="h-4 w-4" />
-                  {isCreating || isUpdating ? "Submitting..." : `${isNew ? "Create" : "Update"} District`}
-                </Button>
-              )
+            {STEPS[currentStep].id === 'review' && confirmSubmission ? (
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex items-center gap-2 justify-center"
+              >
+                <Check className="h-4 w-4" />
+                {isLoading ? "Saving..." : `${isNew ? "Create" : "Update"} District`}
+              </Button>
+            ) : STEPS[currentStep].id === 'review' ? (
+              <Button
+                type="submit"
+                className="flex items-center gap-2 justify-center"
+              >
+                <Check className="h-4 w-4" />
+                Confirm & {isNew ? "Create" : "Update"}
+              </Button>
             ) : (
               <Button
                 type="button"
@@ -707,3 +260,5 @@ export function DistrictForm({ id }: DistrictFormProps) {
     </div>
   );
 }
+
+export default DistrictForm;

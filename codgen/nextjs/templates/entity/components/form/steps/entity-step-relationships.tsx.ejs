@@ -1,0 +1,102 @@
+<%#
+ Copyright 2013-2025 the original author or authors from the JHipster project.
+-%>
+"use client";
+
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { PaginatedRelationshipCombobox } from "../paginated-relationship-combobox";
+
+<%_
+// Import statements for all business relationships
+const businessRelationships = persistableRelationships.filter(rel => {
+  const businessKeywords = ['party', 'customer', 'supplier', 'vendor', 'product', 'source', 'channel'];
+  const name = rel.relationshipName.toLowerCase();
+  const otherEntity = rel.otherEntityName.toLowerCase();
+  return businessKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw));
+});
+
+const uniqueBusinessEntities = [...new Set(businessRelationships.map(rel => rel.otherEntity.entityFileName))];
+_%>
+
+<%_ for (const entityFileName of uniqueBusinessEntities) { 
+  const relEntity = businessRelationships.find(rel => rel.otherEntity.entityFileName === entityFileName)?.otherEntity;
+_%>
+import { 
+  useGetAll<%= relEntity.entityClassPlural %>,
+  useSearch<%= relEntity.entityClassPlural %>,
+  useCount<%= relEntity.entityClassPlural %>
+} from "@/core/api/generated/spring/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
+<%_ } _%>
+
+<%_
+// Helper function to convert camelCase to Title Case
+function camelToTitleCase(str) {
+  return str
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
+_%>
+
+interface <%= entityClass %>StepRelationshipsProps {
+  form: UseFormReturn<any>;
+  handleEntityCreated: (entityId: number, relationshipName: string) => void;
+}
+
+<%_ if (businessRelationships.length > 0) { _%>
+export function <%= entityClass %>StepRelationships({ form, handleEntityCreated }: <%= entityClass %>StepRelationshipsProps) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <%_ for (const rel of businessRelationships) { 
+          const relationshipFieldName = rel.relationshipFieldName;
+          const relationshipLabel = camelToTitleCase(rel.relationshipName);
+          const relationshipRequired = rel.relationshipRequired;
+          const otherEntity = rel.otherEntity;
+          const displayField = rel.otherEntityField;
+        _%>
+        <FormField
+          control={form.control}
+          name="<%= relationshipFieldName %>"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">
+                <%= relationshipLabel %><% if (relationshipRequired) { %> *<% } %>
+              </FormLabel>
+              <FormControl>
+                <PaginatedRelationshipCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  displayField="<%= displayField %>"
+                  placeholder="Select <%= relationshipLabel.toLowerCase() %>"
+                  multiple={<%= rel.collection %>}
+                  useGetAllHook={useGetAll<%= otherEntity.entityClassPlural %>}
+                  useSearchHook={useSearch<%= otherEntity.entityClassPlural %>}
+                  useCountHook={useCount<%= otherEntity.entityClassPlural %>}
+                  entityName="<%= otherEntity.entityClassPlural %>"
+                  searchField="<%= displayField %>"
+                  canCreate={true}
+                  createEntityPath="/<%= otherEntity.routePath %>/new"
+                  createPermission="<%= otherEntity.entityInstance || otherEntity.entityName.toLowerCase() %>:create"
+                  onEntityCreated={(entityId) => handleEntityCreated(entityId, '<%= relationshipFieldName %>')}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <%_ } _%>      </div>
+    </div>
+  );
+}
+<%_ } else { _%>
+export function <%= entityClass %>StepRelationships() { return null; }
+<%_ } _%>
