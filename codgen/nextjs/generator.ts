@@ -1,162 +1,33 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ejs from 'ejs';
-import pluralize from 'pluralize';
-
-interface TemplateVariables {
-  entityName: string;
-  entityFileName: string;
-  entityClass: string;
-  entityClassPlural: string;
-  entityClassHumanized: string;
-  entityClassPluralHumanized: string;
-  entityInstance: string;
-  entityRoute: string;
-  routePath: string;
-  primaryKey: { name: string; type: string };
-  fields: Field[];
-  relationships: ProcessedRelationship[];
-  persistableRelationships: ProcessedRelationship[];
-  otherEntitiesWithPersistableRelationship: ProcessedRelationship['otherEntity'][];
-  searchEngineAny?: boolean;
-  anyFieldIsDateDerived: boolean;
-  anyFieldIsBlobDerived: boolean;
-  readOnly: boolean;
-  pagination: string;
-  service: string;
-  dto: string;
-}
-
-interface Field {
-  fieldName: string;
-  fieldType: string;
-  fieldTypeBinary?: boolean;
-  fieldTypeTimed?: boolean;
-  fieldTypeLocalDate?: boolean;
-  fieldTypeZonedDateTime?: boolean;
-  fieldTypeInstant?: boolean;
-  fieldTypeBoolean?: boolean;
-  fieldTypeNumeric?: boolean;
-  fieldIsEnum?: boolean;
-  enumValues?: Array<{ name: string }>;
-  fieldValidateRules?: string[];
-  fieldValidateRulesMin?: number;
-  fieldValidateRulesMax?: number;
-  fieldValidateRulesMinlength?: number;
-  fieldValidateRulesMaxlength?: number;
-  fieldValidateRulesPattern?: string;
-}
-
-interface EntityDefinition {
-  fields: Field[];
-  relationships?: Relationship[];
-  searchEngine?: boolean;
-  readOnly?: boolean;
-  pagination?: string;
-  service?: string;
-  dto?: string;
-}
-
-interface Relationship {
-  otherEntityName: string;
-  relationshipName: string;
-  relationshipType: string;
-  otherEntityField?: string;
-  relationshipRequired?: boolean;
-  relationshipWithBuiltInEntity?: boolean;
-}
-
-interface ProcessedRelationship extends Relationship {
-  relationshipFieldName: string;
-  relationshipFieldNamePlural: string;
-  relationshipNameHumanized: string;
-  collection: boolean;
-  otherEntity: {
-    entityName: string;
-    entityClass: string;
-    entityClassPlural: string;
-    entityInstance: string;
-    entityInstancePlural: string;
-    entityFileName: string;
-    entityNamePlural: string;
-    primaryKey: { name: string };
-    builtInUser: boolean;
-  };
-}
+import { TemplateVariablePreparer, EntityDefinition, TemplateVariables } from './lib/template-variable-preparer';
+import { FileGenerator } from './lib/file-generator';
+import { SharedComponentGenerator } from './lib/shared-component-generator';
+import { EntityComponentGenerator } from './lib/entity-component-generator';
 
 /**
  * Generator for Next.js components based on JHipster entity definitions
  */
 export class NextJsGenerator {
+  private readonly fileGenerator: FileGenerator;
+  private readonly sharedGenerator: SharedComponentGenerator;
+  private readonly entityGenerator: EntityComponentGenerator;
   constructor(
     private readonly projectRoot: string,
     private readonly jhipsterDir: string,
     private readonly templateDir: string,
     private readonly outputDir: string
-  ) {}
+  ) {
+    this.fileGenerator = new FileGenerator(templateDir, outputDir);
+    this.sharedGenerator = new SharedComponentGenerator(templateDir, outputDir);
+    this.entityGenerator = new EntityComponentGenerator(this.fileGenerator, outputDir);
+  }
 
   /**
    * Generate shared components that are used across all entities
    */
   public async generateSharedComponents(): Promise<void> {
-    console.log('Generating shared components...');
-    
-    // Create components directory structure
-    const componentsDir = path.join(this.outputDir, 'components');
-    const authDir = path.join(componentsDir, 'auth');
-    
-    this.ensureDir(componentsDir);
-    this.ensureDir(authDir);
-    
-    // Generate ToasterProvider component for global toast notifications
-    const toasterTemplate = path.join(this.templateDir, 'components', 'toaster-provider.tsx.ejs');
-    const toasterOutput = path.join(componentsDir, 'toaster-provider.tsx');
-    
-    if (fs.existsSync(toasterTemplate)) {
-      const template = fs.readFileSync(toasterTemplate, 'utf8');
-      fs.writeFileSync(toasterOutput, template);
-      console.log(`Generated shared component: ${toasterOutput}`);
-    } else {
-      console.warn(`ToasterProvider template not found: ${toasterTemplate}`);
-    }
-    
-    // Generate PermissionGuard component
-    const permissionGuardTemplate = path.join(this.templateDir, 'components', 'auth', 'permission-guard.tsx');
-    const permissionGuardOutput = path.join(authDir, 'permission-guard.tsx');
-    
-    if (fs.existsSync(permissionGuardTemplate)) {
-      const template = fs.readFileSync(permissionGuardTemplate, 'utf8');
-      fs.writeFileSync(permissionGuardOutput, template);
-      console.log(`Generated shared component: ${permissionGuardOutput}`);
-    } else {
-      console.warn(`Permission guard template not found: ${permissionGuardTemplate}`);
-    }
-    
-    // Generate UnauthorizedPage component
-    const unauthorizedPageTemplate = path.join(this.templateDir, 'components', 'auth', 'unauthorized-page.tsx');
-    const unauthorizedPageOutput = path.join(authDir, 'unauthorized-page.tsx');
-    
-    if (fs.existsSync(unauthorizedPageTemplate)) {
-      const template = fs.readFileSync(unauthorizedPageTemplate, 'utf8');
-      fs.writeFileSync(unauthorizedPageOutput, template);
-      console.log(`Generated shared component: ${unauthorizedPageOutput}`);
-    } else {
-      console.warn(`Unauthorized page template not found: ${unauthorizedPageTemplate}`);
-    }
-    
-    // Generate ContextAwareBackButton component
-    const contextBackButtonTemplate = path.join(this.templateDir, 'components', 'context-aware-back-button.tsx');
-    const contextBackButtonOutput = path.join(componentsDir, 'context-aware-back-button.tsx');
-    
-    if (fs.existsSync(contextBackButtonTemplate)) {
-      const template = fs.readFileSync(contextBackButtonTemplate, 'utf8');
-      fs.writeFileSync(contextBackButtonOutput, template);
-      console.log(`Generated shared component: ${contextBackButtonOutput}`);
-    } else {
-      console.warn(`Context aware back button template not found: ${contextBackButtonTemplate}`);
-    }
-    
-    console.log('Shared components generated successfully');
+    await this.sharedGenerator.generateSharedComponents();
   }
 
   /**
@@ -186,322 +57,17 @@ export class NextJsGenerator {
     const entityDefinitionPath = path.join(this.jhipsterDir, `${entityName}.json`);
     console.log(`Reading entity definition from: ${entityDefinitionPath}`);
     
-    const entityDefinition = JSON.parse(fs.readFileSync(entityDefinitionPath, 'utf8'));
+    const entityDefinition: EntityDefinition = JSON.parse(fs.readFileSync(entityDefinitionPath, 'utf8'));
     
     // Prepare variables for templates
-    const vars = this.prepareTemplateVariables(entityName, entityDefinition);
+    const vars = TemplateVariablePreparer.prepareTemplateVariables(entityName, entityDefinition);
     
-    // Generate directory structure for entity
-    const entityDir = path.join(this.outputDir, 'app', '(protected)', vars.routePath);
-    console.log(`Creating directories at: ${entityDir}`);
-    
-    this.ensureDir(entityDir);
-    this.ensureDir(path.join(entityDir, 'new'));
-    this.ensureDir(path.join(entityDir, '[id]'));
-    this.ensureDir(path.join(entityDir, '[id]', 'edit'));
-    this.ensureDir(path.join(entityDir, 'components'));
-    this.ensureDir(path.join(entityDir, 'actions'));
-    
-    // Generate files from templates
-    console.log(`Generating component files...`);
-    
-    await this.generateFile('entity/page.tsx.ejs', path.join(entityDir, 'page.tsx'), vars);
-    await this.generateFile('entity/layout.tsx.ejs', path.join(entityDir, 'layout.tsx'), vars);
-    await this.generateFile('entity/new/page.tsx.ejs', path.join(entityDir, 'new', 'page.tsx'), vars);
-    await this.generateFile('entity/[id]/page.tsx.ejs', path.join(entityDir, '[id]', 'page.tsx'), vars);
-    await this.generateFile('entity/[id]/edit/page.tsx.ejs', path.join(entityDir, '[id]', 'edit', 'page.tsx'), vars);
-    
-    // Generate toast utility
-    await this.generateFile('entity/components/entity-toast.ts.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-toast.ts`), vars);
-    
-    // Generate main table component
-    await this.generateFile('entity/components/entity-table.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-table.tsx`), vars);
-    
-    // Generate split table components
-    await this.generateFile('entity/components/table/entity-search-filters.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-search-filters.tsx`), vars);
-    await this.generateFile('entity/components/table/entity-table-header.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-table-header.tsx`), vars);
-    await this.generateFile('entity/components/table/entity-table-row.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-table-row.tsx`), vars);
-    
-    // Generate other components
-    await this.generateFile('entity/components/entity-form.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-form.tsx`), vars);
-    await this.generateFile('entity/components/entity-details.tsx.ejs', 
-      path.join(entityDir, 'components', `${vars.entityFileName}-details.tsx`), vars);
-    
-    // Generate relationship management components
-    await this.generateFile('entity/components/bulk-relationship-assignment.tsx.ejs', 
-      path.join(entityDir, 'components', 'bulk-relationship-assignment.tsx'), vars);
-    await this.generateFile('entity/components/relationship-cell.tsx.ejs', 
-      path.join(entityDir, 'components', 'relationship-cell.tsx'), vars);
-    
-    // Generate paginated relationship combobox if there are relationships
-    if (vars.persistableRelationships.length > 0) {
-      await this.generateFile('entity/components/paginated-relationship-combobox.tsx.ejs', 
-        path.join(entityDir, 'components', 'paginated-relationship-combobox.tsx'), vars);
-    }
-    
-    // Generate server actions
-    await this.generateFile('entity/actions/entity-actions.ts.ejs', 
-      path.join(entityDir, 'actions', `${vars.entityFileName}-actions.ts`), vars);
+    // Generate entity components
+    await this.entityGenerator.generateEntityComponents(entityName, vars);
     
     console.log(`Successfully generated components for ${entityName}`);
   }
 
-  /**
-   * Prepare variables for EJS templates
-   */
-  private prepareTemplateVariables(entityName: string, entityDefinition: EntityDefinition): TemplateVariables {
-    const entityFileName = this.camelToKebab(entityName);
-    const entityClass = entityName;
-    const entityClassPlural = pluralize(entityName);
-    const entityInstance = this.lowerFirstCamelCase(entityName);
-    const pluralizedRoute = pluralize(entityFileName);
-
-    // Filter out tenantId fields from code generation
-    const filteredFields = this.filterFields(entityDefinition.fields);
-
-    // Process relationships to add computed properties
-    const processedRelationships = this.processRelationships(entityDefinition.relationships || []);
-    const persistableRelationships = processedRelationships.filter((r) => r.relationshipType !== 'one-to-many');
-    
-    // Get unique other entities for API imports
-    const otherEntitiesWithPersistableRelationship = this.getUniqueOtherEntities(persistableRelationships);
-
-    return {
-      entityName,
-      entityFileName,
-      entityClass,
-      entityClassPlural,
-      entityClassHumanized: this.humanize(entityClass),
-      entityClassPluralHumanized: this.humanize(entityClassPlural),
-      entityInstance: this.lowerFirstCamelCase(entityInstance),
-      entityRoute: pluralizedRoute,
-      routePath: pluralizedRoute,
-      primaryKey: { name: 'id', type: 'number' },
-      fields: filteredFields,
-      relationships: processedRelationships,
-      persistableRelationships,
-      otherEntitiesWithPersistableRelationship,
-      searchEngineAny: entityDefinition.searchEngine,
-      anyFieldIsDateDerived: filteredFields.some((f) => 
-        f.fieldTypeTimed || f.fieldTypeLocalDate || f.fieldTypeZonedDateTime || f.fieldTypeInstant),
-      anyFieldIsBlobDerived: filteredFields.some((f) => f.fieldTypeBinary),
-      readOnly: entityDefinition.readOnly || false,
-      pagination: entityDefinition.pagination || 'no',
-      service: entityDefinition.service || 'no',
-      dto: entityDefinition.dto || 'no',
-    };
-  }
-
-  /**
-   * Generate a file from a template
-   */
-  private async generateFile(templatePath: string, outputPath: string, variables: TemplateVariables): Promise<void> {
-    const fullTemplatePath = path.join(this.templateDir, templatePath);
-    
-    if (!fs.existsSync(fullTemplatePath)) {
-      console.error(`Template file not found: ${fullTemplatePath}`);
-      return;
-    }
-    
-    const template = fs.readFileSync(fullTemplatePath, 'utf8');
-    
-    try {
-      const output = ejs.render(template, variables, {
-        escape: (str: string) => str, // Don't escape output
-      });
-      
-      fs.writeFileSync(outputPath, output);
-      console.log(`Generated: ${outputPath}`);
-    } catch (error) {
-      console.error(`Error generating file ${outputPath}:`, error);
-    }
-  }
-
-  /**
-   * Create directory if it doesn't exist
-   */
-  private ensureDir(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
-  }
-
-  /**
-   * Process relationships to add computed properties
-   */
-  private processRelationships(relationships: Relationship[]): ProcessedRelationship[] {
-    return relationships.map(rel => {
-      const otherEntityName = rel.otherEntityName;
-      const otherEntityClass = this.upperFirstCamelCase(otherEntityName);
-      const otherEntityClassPlural = pluralize(otherEntityClass);
-      const otherEntityInstance = this.lowerFirstCamelCase(otherEntityName);
-      const otherEntityInstancePlural = pluralize(otherEntityInstance);
-      const otherEntityFileName = this.camelToKebab(otherEntityName);
-      
-      // Determine relationship field names
-      const relationshipName = rel.relationshipName;
-      const relationshipFieldName = relationshipName;
-      const relationshipFieldNamePlural = pluralize(relationshipName);
-      
-      // Determine if this is a collection relationship
-      const isCollection = rel.relationshipType === 'one-to-many' || rel.relationshipType === 'many-to-many';
-      
-      // Determine display field - use 'login' for built-in user entity, otherwise default to 'name'
-      const otherEntityField = rel.otherEntityField || (rel.relationshipWithBuiltInEntity ? 'login' : 'name');
-      
-      // Determine if relationship is required
-      const relationshipRequired = rel.relationshipRequired || false;
-      
-      // Determine if this is a built-in user entity
-      const isBuiltInUser = rel.relationshipWithBuiltInEntity && otherEntityName === 'user';
-      
-      return {
-        ...rel,
-        // Original relationship properties
-        otherEntityName,
-        relationshipName,
-        relationshipFieldName,
-        relationshipFieldNamePlural,
-        relationshipNameHumanized: this.humanize(relationshipName),
-        relationshipRequired,
-        collection: isCollection,
-        otherEntityField,
-        
-        // Computed other entity properties
-        otherEntity: {
-          entityName: otherEntityName,
-          entityClass: otherEntityClass,
-          entityClassPlural: otherEntityClassPlural,
-          entityInstance: otherEntityInstance,
-          entityInstancePlural: otherEntityInstancePlural,
-          entityFileName: otherEntityFileName,
-          entityNamePlural: otherEntityInstancePlural,
-          routePath: pluralize(otherEntityFileName), // Add pluralized route path
-          primaryKey: { name: 'id' }, // Default primary key
-          builtInUser: Boolean(isBuiltInUser),
-        }
-      };
-    });
-  }
-
-  /**
-   * Get unique other entities for API imports
-   */
-  private getUniqueOtherEntities(relationships: ProcessedRelationship[]): ProcessedRelationship['otherEntity'][] {
-    const entityMap = new Map();
-    
-    relationships.forEach(rel => {
-      const otherEntity = rel.otherEntity;
-      if (!entityMap.has(otherEntity.entityName)) {
-        entityMap.set(otherEntity.entityName, otherEntity);
-      }
-    });
-    
-    return Array.from(entityMap.values());
-  }
-
-  /**
-   * Filter out system fields and process field types
-   */
-  private filterFields(fields: Field[]): Field[] {
-    const excludedFields = ['tenantId'];
-    
-    return fields.filter(field => {
-      const shouldExclude = excludedFields.includes(field.fieldName);
-      if (shouldExclude) {
-        console.log(`Excluding system field from code generation: ${field.fieldName}`);
-      }
-      return !shouldExclude;
-    }).map(field => this.processFieldType(field));
-  }
-
-  /**
-   * Process field type to set boolean flags for template usage
-   */
-  private processFieldType(field: Field): Field {
-    const processedField = { ...field };
-    
-    // Set type-specific boolean flags based on fieldType
-    switch (field.fieldType) {
-      case 'Integer':
-      case 'Long':
-      case 'Float':
-      case 'Double':
-      case 'BigDecimal':
-        processedField.fieldTypeNumeric = true;
-        break;
-      
-      case 'Boolean':
-        processedField.fieldTypeBoolean = true;
-        break;
-      
-      case 'LocalDate':
-        processedField.fieldTypeLocalDate = true;
-        processedField.fieldTypeTimed = true;
-        break;
-      
-      case 'ZonedDateTime':
-        processedField.fieldTypeZonedDateTime = true;
-        processedField.fieldTypeTimed = true;
-        break;
-      
-      case 'Instant':
-        processedField.fieldTypeInstant = true;
-        processedField.fieldTypeTimed = true;
-        break;
-      
-      case 'TextBlob':
-      case 'ImageBlob':
-      case 'AnyBlob':
-        processedField.fieldTypeBinary = true;
-        break;
-    }
-    
-    // Check if field is an enum (has enumValues)
-    if (field.enumValues && field.enumValues.length > 0) {
-      processedField.fieldIsEnum = true;
-    }
-    
-    return processedField;
-  }
-
-  /**
-   * Convert camelCase to kebab-case
-   */
-  private camelToKebab(str: string): string {
-    return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-  }
-
-  /**
-   * Convert first letter to uppercase
-   */
-  private upperFirstCamelCase(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  /**
-   * Convert first letter to lowercase
-   */
-  private lowerFirstCamelCase(str: string): string {
-    return str.charAt(0).toLowerCase() + str.slice(1);
-  }
-
-  /**
-   * Convert camelCase or PascalCase to Human Case
-   */
-  private humanize(str: string): string {
-    return str
-      // Split camelCase
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      // uppercase first letter
-      .replace(/^./, s => s.toUpperCase());
-  }
 }
 
 // CLI script to generate components
