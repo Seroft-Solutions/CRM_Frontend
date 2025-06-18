@@ -1,20 +1,15 @@
 import * as path from 'path';
 import { FileGenerator } from './file-generator';
-import { EntityStepGenerator } from './entity-step-generator';
 import { TemplateVariables } from './template-variable-preparer';
 
 /**
  * Generates CRUD components for individual entities
  */
 export class EntityComponentGenerator {
-  private readonly stepGenerator: EntityStepGenerator;
-
   constructor(
     private readonly fileGenerator: FileGenerator,
     private readonly outputDir: string
-  ) {
-    this.stepGenerator = new EntityStepGenerator(fileGenerator);
-  }
+  ) {}
 
   /**
    * Generate CRUD components for a specific entity
@@ -29,9 +24,6 @@ export class EntityComponentGenerator {
     // Generate all entity files
     const templates = this.buildTemplateList(entityDir, vars);
     await this.fileGenerator.generateFiles(templates);
-    
-    // Generate entity-specific form steps
-    await this.stepGenerator.generateEntitySteps(entityName, vars, entityDir);
     
     console.log(`Successfully generated components for ${entityName}`);
   }
