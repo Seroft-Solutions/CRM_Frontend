@@ -17,7 +17,6 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
       isInitialized.current = true;
       
       // Don't restore form state when editing existing entity
-      console.log('Entity loaded for editing, skipping state restoration');
     }
   }, [entity, state.isLoading]);
 
@@ -66,7 +65,6 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
   useEffect(() => {
     const handleSaveFormState = () => {
       if (!entity && config.behavior.persistence.enabled) {
-        console.log('Save form state event received');
         actions.saveFormState();
       }
     };
@@ -124,7 +122,6 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
       
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
-        console.log('Cleaned up expired form state:', key);
       });
     }, 5 * 60 * 1000); // Clean up every 5 minutes
 
@@ -141,7 +138,6 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
     if (newEntityId && relationshipInfo) {
       try {
         const info = JSON.parse(relationshipInfo);
-        console.log('Processing newly created entity:', { newEntityId, info });
         
         // Wait a bit for form to be fully initialized
         const timeoutId = setTimeout(() => {
@@ -159,7 +155,6 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
         
         return () => clearTimeout(timeoutId);
       } catch (error) {
-        console.error('Error processing newly created entity:', error);
         // Clean up on error
         localStorage.removeItem(config.behavior.crossEntity.newEntityIdKey);
         localStorage.removeItem(config.behavior.crossEntity.relationshipInfoKey);

@@ -51,8 +51,6 @@ export function FormNavigation({
   };
 
   const handleFinalSubmit = async () => {
-    console.log('🟠 FORM NAVIGATION - handleFinalSubmit called');
-    
     // Use the form provider's submitForm method which includes transformation
     await actions.submitForm();
   };
