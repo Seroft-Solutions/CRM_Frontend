@@ -687,7 +687,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "email",
-      isEditable: true,
+      isEditable: false, // Disabled by default
     },
     
     {

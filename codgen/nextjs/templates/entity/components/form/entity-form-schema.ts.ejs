@@ -1,0 +1,220 @@
+<%#
+ Copyright 2013-2025 the original author or authors from the JHipster project.
+-%>
+<%_ 
+// Define field categories (same logic as in form-config.ts.ejs)
+const basicFields = fields.filter(field => !field.id && !field.fieldTypeBinary);
+const textFields = basicFields.filter(field => 
+  !field.fieldTypeBoolean && !field.fieldTypeTimed && !field.fieldTypeLocalDate && 
+  !field.fieldIsEnum && !field.fieldTypeNumeric
+);
+const numberFields = basicFields.filter(field => field.fieldTypeNumeric);
+const dateFields = basicFields.filter(field => field.fieldTypeTimed || field.fieldTypeLocalDate);
+const enumFields = basicFields.filter(field => field.fieldIsEnum);
+const booleanFields = basicFields.filter(field => field.fieldTypeBoolean);
+const binaryFields = fields.filter(field => field.fieldTypeBinary);
+
+// Categorize relationships
+const geographicKeywords = ['state', 'district', 'city', 'area', 'country', 'region', 'location'];
+const userKeywords = ['user', 'assignedTo', 'createdBy', 'updatedBy', 'channelParty', 'owner'];
+const classificationKeywords = ['priority', 'status', 'type', 'category', 'level', 'grade'];
+const businessKeywords = ['party', 'customer', 'supplier', 'vendor', 'product', 'source', 'channel'];
+
+function categorizeRelationship(rel) {
+  const name = rel.relationshipName.toLowerCase();
+  const otherEntity = rel.otherEntityName.toLowerCase();
+  
+  if (geographicKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'geographic';
+  }
+  if (userKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw)) || rel.otherEntity.builtInUser) {
+    return 'user';
+  }
+  if (classificationKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'classification';
+  }
+  if (businessKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'business';
+  }
+  return 'other';
+}
+
+// Group relationships by category  
+const relationshipGroups = {
+  geographic: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'geographic'),
+  user: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'user'),
+  classification: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'classification'),
+  business: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'business'),
+  other: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'other')
+};
+_%>
+import { z } from "zod";
+
+/**
+ * Zod validation schema for <%= entityClass %> form
+ * This file is auto-generated. To modify validation rules, update the generator templates.
+ */
+export const <%= entityInstance %>FormSchema = z.object({
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+    const fieldValidateRules = field.fieldValidateRules || [];
+    const isRequired = fieldValidateRules.includes('required');
+_%>
+  <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.string()<% if (fieldValidateRules.includes('min')) { %>.refine(val => !val || Number(val) >= <%= field.fieldValidateRulesMin %>, { message: "Must be at least <%= field.fieldValidateRulesMin %>" })<% } %><% if (fieldValidateRules.includes('max')) { %>.refine(val => !val || Number(val) <= <%= field.fieldValidateRulesMax %>, { message: "Must be at most <%= field.fieldValidateRulesMax %>" })<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  })<% } else if (field.fieldIsEnum) { %>z.string()<% if (!isRequired) { %>.transform(val => val === "__none__" ? undefined : val)<% } %><% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipRequired = rel.relationshipRequired;
+    const relationshipType = rel.otherEntity.builtInUser ? 'string' : 'number';
+    const relCategory = categorizeRelationship(rel);
+    
+    // For geographic relationships, make them conditionally required based on hierarchy
+    if (relCategory === 'geographic') {
+      const geoHierarchy = ['state', 'district', 'city', 'area'];
+      const currentGeoIndex = geoHierarchy.findIndex(geo => relationshipFieldName.toLowerCase().includes(geo));
+      const isConditionallyRequired = currentGeoIndex > 0 && relationshipRequired;
+_%>
+  <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.<%= relationshipType %>())<% } else { %><%= relationshipType %>()<% } %><% if (!relationshipRequired || isConditionallyRequired) { %>.optional()<% } %>,
+<%_ } else { _%>
+  <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.<%= relationshipType %>())<% } else { %><%= relationshipType %>()<% } %><% if (!relationshipRequired) { %>.optional()<% } %>,
+<%_ } _%>
+<%_ } _%>
+});
+
+export type <%= entityClass %>FormValues = z.infer<typeof <%= entityInstance %>FormSchema>;
+
+// Individual field schemas for granular validation
+export const <%= entityInstance %>FieldSchemas = {
+<%_ for (field of fields.filter(field => !field.id)) { 
+    const fieldName = field.fieldName;
+    const fieldValidateRules = field.fieldValidateRules || [];
+    const isRequired = fieldValidateRules.includes('required');
+_%>
+  <%= fieldName %>: <% if (field.fieldTypeBoolean) { %>z.boolean()<% } else if (field.fieldTypeNumeric) { %>z.string()<% if (fieldValidateRules.includes('min')) { %>.refine(val => !val || Number(val) >= <%= field.fieldValidateRulesMin %>, { message: "Must be at least <%= field.fieldValidateRulesMin %>" })<% } %><% if (fieldValidateRules.includes('max')) { %>.refine(val => !val || Number(val) <= <%= field.fieldValidateRulesMax %>, { message: "Must be at most <%= field.fieldValidateRulesMax %>" })<% } %><% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  })<% } else if (field.fieldIsEnum) { %>z.string()<% if (!isRequired) { %>.transform(val => val === "__none__" ? undefined : val)<% } %><% } else { %>z.string()<% if (fieldValidateRules.includes('minlength')) { %>.min(<%= field.fieldValidateRulesMinlength %>)<% } %><% if (fieldValidateRules.includes('maxlength')) { %>.max(<%= field.fieldValidateRulesMaxlength %>)<% } %><% if (fieldValidateRules.includes('pattern')) { %>.regex(/<%= field.fieldValidateRulesPattern %>/)<% } %><% } %><% if (!isRequired) { %>.optional()<% } %>,
+<%_ } _%>
+<%_ for (const rel of persistableRelationships) { 
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipRequired = rel.relationshipRequired;
+    const relationshipType = rel.otherEntity.builtInUser ? 'string' : 'number';
+    const relCategory = categorizeRelationship(rel);
+    
+    // For geographic relationships, make them conditionally required based on hierarchy
+    if (relCategory === 'geographic') {
+      const geoHierarchy = ['state', 'district', 'city', 'area'];
+      const currentGeoIndex = geoHierarchy.findIndex(geo => relationshipFieldName.toLowerCase().includes(geo));
+      const isConditionallyRequired = currentGeoIndex > 0 && relationshipRequired;
+_%>
+  <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.<%= relationshipType %>())<% } else { %><%= relationshipType %>()<% } %><% if (!relationshipRequired || isConditionallyRequired) { %>.optional()<% } %>,
+<%_ } else { _%>
+  <%= relationshipFieldName %>: z.<% if (rel.collection) { %>array(z.<%= relationshipType %>())<% } else { %><%= relationshipType %>()<% } %><% if (!relationshipRequired) { %>.optional()<% } %>,
+<%_ } _%>
+<%_ } _%>
+};
+
+// Step-specific validation schemas
+export const <%= entityInstance %>StepSchemas = {
+  <%_ if (textFields.length > 0 || numberFields.length > 0 || enumFields.length > 0) { _%>
+  basic: z.object({
+    <%_ const basicFieldNames = [...textFields, ...numberFields, ...enumFields].map(f => f.fieldName); _%>
+    <%_ for (const fieldName of basicFieldNames) { _%>
+    <%= fieldName %>: <%= entityInstance %>FieldSchemas.<%= fieldName %>,
+    <%_ } _%>
+  }),
+  <%_ } _%>
+  
+  <%_ if (dateFields.length > 0) { _%>
+  dates: z.object({
+    <%_ for (const field of dateFields) { _%>
+    <%= field.fieldName %>: <%= entityInstance %>FieldSchemas.<%= field.fieldName %>,
+    <%_ } _%>
+  }),
+  <%_ } _%>
+  
+  <%_ if (booleanFields.length > 0 || binaryFields.length > 0) { _%>
+  settings: z.object({
+    <%_ for (const field of [...booleanFields, ...binaryFields]) { _%>
+    <%= field.fieldName %>: <%= entityInstance %>FieldSchemas.<%= field.fieldName %>,
+    <%_ } _%>
+  }),
+  <%_ } _%>
+  
+  <%_ for (const [groupName, groupRels] of Object.entries(relationshipGroups)) { 
+    if (groupRels.length > 0) { _%>
+  <%= groupName %>: z.object({
+    <%_ for (const rel of groupRels) { _%>
+    <%= rel.relationshipFieldName %>: <%= entityInstance %>FieldSchemas.<%= rel.relationshipFieldName %>,
+    <%_ } _%>
+  }),
+  <%_ }
+  } _%>
+  
+  review: <%= entityInstance %>FormSchema
+};
+
+// Validation helper functions
+export const <%= entityInstance %>ValidationHelpers = {
+  validateStep: (stepId: string, data: Partial<<%= entityClass %>FormValues>) => {
+    const stepSchema = <%= entityInstance %>StepSchemas[stepId as keyof typeof <%= entityInstance %>StepSchemas];
+    if (!stepSchema) return { success: true, data, error: null };
+    
+    try {
+      const validatedData = stepSchema.parse(data);
+      return { success: true, data: validatedData, error: null };
+    } catch (error) {
+      return { success: false, data: null, error };
+    }
+  },
+  
+  validateField: (fieldName: string, value: any) => {
+    const fieldSchema = <%= entityInstance %>FieldSchemas[fieldName as keyof typeof <%= entityInstance %>FieldSchemas];
+    if (!fieldSchema) return { success: true, data: value, error: null };
+    
+    try {
+      const validatedValue = fieldSchema.parse(value);
+      return { success: true, data: validatedValue, error: null };
+    } catch (error) {
+      return { success: false, data: null, error };
+    }
+  },
+  
+  getFieldValidationRules: (fieldName: string) => {
+    <%_ for (field of fields.filter(field => !field.id)) { 
+      const fieldValidateRules = field.fieldValidateRules || [];
+    _%>
+    <%_ if (fieldValidateRules.length > 0) { _%>
+    if (fieldName === '<%= field.fieldName %>') {
+      return {
+        required: <%= fieldValidateRules.includes('required') %>,
+        <%_ if (fieldValidateRules.includes('minlength')) { _%>
+        minLength: <%= field.fieldValidateRulesMinlength %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('maxlength')) { _%>
+        maxLength: <%= field.fieldValidateRulesMaxlength %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('min')) { _%>
+        min: <%= field.fieldValidateRulesMin %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('max')) { _%>
+        max: <%= field.fieldValidateRulesMax %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('pattern')) { _%>
+        pattern: /<%= field.fieldValidateRulesPattern %>/,
+        <%_ } _%>
+      };
+    }
+    <%_ } _%>
+    <%_ } _%>
+    
+    return {};
+  }
+};

@@ -1,0 +1,414 @@
+<%#
+ Copyright 2013-2025 the original author or authors from the JHipster project.
+-%>
+<%_ 
+// Helper function to convert camelCase to Title Case
+function camelToTitleCase(str) {
+  return str
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+    .trim();
+}
+
+// Organize fields by category (same logic as original template)
+const basicFields = fields.filter(field => !field.id && !field.fieldTypeBinary);
+const textFields = basicFields.filter(field => 
+  !field.fieldTypeBoolean && !field.fieldTypeTimed && !field.fieldTypeLocalDate && 
+  !field.fieldIsEnum && !field.fieldTypeNumeric
+);
+const numberFields = basicFields.filter(field => field.fieldTypeNumeric);
+const dateFields = basicFields.filter(field => field.fieldTypeTimed || field.fieldTypeLocalDate);
+const enumFields = basicFields.filter(field => field.fieldIsEnum);
+const booleanFields = basicFields.filter(field => field.fieldTypeBoolean);
+const binaryFields = fields.filter(field => field.fieldTypeBinary);
+
+// Enhanced relationship dependency detection (same logic as original)
+function buildRelationshipDependencyMap(relationships) {
+  const dependencyMap = new Map();
+  const reverseMap = new Map();
+  
+  relationships.forEach(rel => {
+    const relName = rel.relationshipName;
+    const otherEntityName = rel.otherEntityName.toLowerCase();
+    
+    relationships.forEach(otherRel => {
+      const otherRelName = otherRel.relationshipName;
+      const otherRelEntityName = otherRel.otherEntityName.toLowerCase();
+      
+      // Case 1: Direct parent-child relationship via otherEntityRelationshipName
+      if (rel.otherEntityRelationshipName && 
+          otherRel.relationshipName === rel.otherEntityRelationshipName &&
+          rel.relationshipType === 'many-to-one' &&
+          otherRel.relationshipType === 'one-to-many') {
+        reverseMap.set(relName, otherRelName);
+      }
+      
+      // Case 2: Geographic hierarchy patterns
+      const geoHierarchy = [
+        { child: 'district', parent: 'state' },
+        { child: 'city', parent: 'district' },
+        { child: 'area', parent: 'city' }
+      ];
+      
+      geoHierarchy.forEach(({ child, parent }) => {
+        if (relName.toLowerCase().includes(child) && otherRelName.toLowerCase().includes(parent)) {
+          reverseMap.set(relName, otherRelName);
+        }
+      });
+      
+      // Case 3: Type hierarchy (callType -> subCallType)
+      if (relName.toLowerCase().includes('sub') && 
+          relName.toLowerCase().includes('type') &&
+          otherRelName.toLowerCase().includes('type') &&
+          !otherRelName.toLowerCase().includes('sub') &&
+          otherRelEntityName.includes(otherEntityName.replace('sub', ''))) {
+        reverseMap.set(relName, otherRelName);
+      }
+    });
+  });
+  
+  return reverseMap;
+}
+
+// Intelligent relationship grouping with dependency detection (same logic as original)
+const geographicKeywords = ['state', 'district', 'city', 'area', 'country', 'region', 'location'];
+const userKeywords = ['user', 'assignedTo', 'createdBy', 'updatedBy', 'channelParty', 'owner'];
+const classificationKeywords = ['priority', 'status', 'type', 'category', 'level', 'grade'];
+const businessKeywords = ['party', 'customer', 'supplier', 'vendor', 'product', 'source', 'channel'];
+
+function categorizeRelationship(rel) {
+  const name = rel.relationshipName.toLowerCase();
+  const otherEntity = rel.otherEntityName.toLowerCase();
+  
+  if (geographicKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'geographic';
+  }
+  if (userKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw)) || rel.otherEntity.builtInUser) {
+    return 'user';
+  }
+  if (classificationKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'classification';
+  }
+  if (businessKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'business';
+  }
+  return 'other';
+}
+
+// Enhanced function to sort relationships by dependencies
+function sortRelationshipsByDependency(relationships) {
+  const dependencyMap = buildRelationshipDependencyMap(relationships);
+  const sorted = [];
+  const processed = new Set();
+  const visiting = new Set();
+  
+  function addRelationship(rel) {
+    const relName = rel.relationshipName;
+    
+    if (processed.has(relName)) return;
+    
+    if (visiting.has(relName)) {
+      console.warn(`Circular dependency detected for ${relName}, breaking cycle`);
+      return;
+    }
+    
+    visiting.add(relName);
+    
+    const parentRelName = dependencyMap.get(relName);
+    if (parentRelName) {
+      const parentRel = relationships.find(r => r.relationshipName === parentRelName);
+      if (parentRel && !processed.has(parentRelName)) {
+        addRelationship(parentRel);
+      }
+    }
+    
+    visiting.delete(relName);
+    
+    if (!processed.has(relName)) {
+      sorted.push(rel);
+      processed.add(relName);
+    }
+  }
+  
+  relationships.forEach(addRelationship);
+  return sorted;
+}
+
+// Group relationships by category
+const relationshipGroups = {
+  geographic: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'geographic'),
+  user: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'user'),
+  classification: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'classification'),
+  business: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'business'),
+  other: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'other')
+};
+
+// Sort each group by dependencies
+Object.keys(relationshipGroups).forEach(key => {
+  relationshipGroups[key] = sortRelationshipsByDependency(relationshipGroups[key]);
+});
+
+// Build cascading filters for intelligent form behavior
+const dependencyMap = buildRelationshipDependencyMap(persistableRelationships);
+const cascadingFilters = new Map();
+dependencyMap.forEach((parentRel, childRel) => {
+  cascadingFilters.set(childRel, {
+    parentField: parentRel,
+    filterField: 'callType' // This would be determined by the actual entity relationship
+  });
+});
+
+// Define wizard steps dynamically based on available fields (same logic as original)
+const steps = [
+  ...(textFields.length > 0 || numberFields.length > 0 || enumFields.length > 0 ? [{ id: 'basic', title: 'Basic Information', description: 'Enter essential details' }] : []),
+  ...(dateFields.length > 0 ? [{ id: 'dates', title: 'Date & Time', description: 'Set relevant dates' }] : []),
+  ...(booleanFields.length > 0 || binaryFields.length > 0 ? [{ id: 'settings', title: 'Settings & Files', description: 'Configure options' }] : []),
+  ...(relationshipGroups.geographic.length > 0 ? [{ id: 'geographic', title: 'Location Details', description: 'Select geographic information' }] : []),
+  ...(relationshipGroups.user.length > 0 ? [{ id: 'users', title: 'People & Assignment', description: 'Assign users and responsibilities' }] : []),
+  ...(relationshipGroups.classification.length > 0 ? [{ id: 'classification', title: 'Classification', description: 'Set priority, status, and categories' }] : []),
+  ...(relationshipGroups.business.length > 0 ? [{ id: 'business', title: 'Business Relations', description: 'Connect with customers and products' }] : []),
+  ...(relationshipGroups.other.length > 0 ? [{ id: 'other', title: 'Additional Relations', description: 'Other connections and references' }] : []),
+  { id: 'review', title: 'Review', description: 'Confirm your details' }
+];
+_%>
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+
+/**
+ * Configuration for <%= entityClass %> form
+ * This file is auto-generated. To modify the form structure, update the generator templates.
+ */
+export const <%= entityInstance %>FormConfig: FormConfig = {
+  entity: '<%= entityClass %>',
+  
+  // Form steps configuration
+  steps: [
+    <%_ for (const step of steps) { _%>
+    {
+      id: '<%= step.id %>',
+      title: '<%= step.title %>',
+      description: '<%= step.description %>',
+      fields: [
+        <%_ if (step.id === 'basic') { _%>
+        <%_ for (const field of [...textFields, ...numberFields, ...enumFields]) { _%>
+        '<%= field.fieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'dates') { _%>
+        <%_ for (const field of dateFields) { _%>
+        '<%= field.fieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'settings') { _%>
+        <%_ for (const field of [...booleanFields, ...binaryFields]) { _%>
+        '<%= field.fieldName %>',
+        <%_ } _%>
+        <%_ } _%>
+      ],
+      relationships: [
+        <%_ if (step.id === 'geographic' && relationshipGroups.geographic) { _%>
+        <%_ for (const rel of relationshipGroups.geographic) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'users' && relationshipGroups.user) { _%>
+        <%_ for (const rel of relationshipGroups.user) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'classification' && relationshipGroups.classification) { _%>
+        <%_ for (const rel of relationshipGroups.classification) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'business' && relationshipGroups.business) { _%>
+        <%_ for (const rel of relationshipGroups.business) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'other' && relationshipGroups.other) { _%>
+        <%_ for (const rel of relationshipGroups.other) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } _%>
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    <%_ } _%>
+  ],
+
+  // Field definitions
+  fields: [
+    <%_ for (const field of fields.filter(field => !field.id)) { 
+      const fieldValidateRules = field.fieldValidateRules || [];
+      const isRequired = fieldValidateRules.includes('required');
+    _%>
+    {
+      name: '<%= field.fieldName %>',
+      type: '<% if (field.fieldTypeBoolean) { %>boolean<% } else if (field.fieldTypeNumeric) { %>number<% } else if (field.fieldTypeTimed || field.fieldTypeLocalDate) { %>date<% } else if (field.fieldIsEnum) { %>enum<% } else if (field.fieldTypeBinary && (field.blobContentTypeText || field.fieldType === 'TextBlob')) { %>textarea<% } else if (field.fieldTypeBinary) { %>file<% } else { %>text<% } %>',
+      label: '<%= camelToTitleCase(field.fieldName) %>',
+      placeholder: 'Enter <%= camelToTitleCase(field.fieldName).toLowerCase() %>',
+      required: <%= isRequired %>,
+      <%_ if (field.fieldIsEnum && field.enumValues) { _%>
+      options: [
+        <%_ if (!isRequired) { _%>
+        { value: "__none__", label: "None" },
+        <%_ } _%>
+        <%_ for (const enumValue of field.enumValues) { _%>
+        { value: '<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>', label: '<%= enumValue.name || enumValue.value || 'Empty' %>' },
+        <%_ } _%>
+      ],
+      <%_ } _%>
+      <%_ if (field.fieldTypeBinary && field.blobContentTypeImage) { _%>
+      accept: 'image/*',
+      <%_ } _%>
+      validation: {
+        required: <%= isRequired %>,
+        <%_ if (fieldValidateRules.includes('minlength')) { _%>
+        minLength: <%= field.fieldValidateRulesMinlength %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('maxlength')) { _%>
+        maxLength: <%= field.fieldValidateRulesMaxlength %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('min')) { _%>
+        min: <%= field.fieldValidateRulesMin %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('max')) { _%>
+        max: <%= field.fieldValidateRulesMax %>,
+        <%_ } _%>
+        <%_ if (fieldValidateRules.includes('pattern')) { _%>
+        pattern: /<%= field.fieldValidateRulesPattern %>/,
+        <%_ } _%>
+      },
+      ui: {
+        <%_ if (field.fieldTypeBinary && (field.blobContentTypeText || field.fieldType === 'TextBlob')) { _%>
+        rows: 4,
+        <%_ } _%>
+        <%_ if (field.fieldTypeNumeric) { _%>
+        inputType: 'number',
+        <%_ } _%>
+      }
+    },
+    <%_ } _%>
+  ],
+
+  // Relationship definitions
+  relationships: [
+    <%_ for (const rel of persistableRelationships) { 
+      const otherEntityPkName = rel.otherEntity.builtInUser ? 'id' : (rel.otherEntity.primaryKey?.name || 'id');
+      const category = categorizeRelationship(rel);
+      const parentField = dependencyMap.get(rel.relationshipName);
+    _%>
+    {
+      name: '<%= rel.relationshipFieldName %>',
+      type: '<%= rel.relationshipType %>',
+      targetEntity: '<%= rel.otherEntityName %>',
+      displayField: '<%= rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField %>',
+      primaryKey: '<%= otherEntityPkName %>',
+      required: <%= rel.relationshipRequired || false %>,
+      multiple: <%= rel.collection || false %>,
+      category: '<%= category %>',
+      <%_ if (parentField) { _%>
+      cascadingFilter: {
+        parentField: '<%= parentField %>',
+        <%_ if (rel.relationshipName.toLowerCase().includes('subcalltype')) { _%>
+        filterField: 'callType',
+        <%_ } else { _%>
+        filterField: '<%= parentField %>',
+        <%_ } _%>
+      },
+      <%_ } _%>
+      api: {
+        <%_ if (rel.otherEntity.builtInUser) { _%>
+        useGetAllHook: 'useGetAllPublicUsers',
+        useSearchHook: 'useSearchPublicUsers',
+        entityName: 'PublicUsers',
+        <%_ } else { _%>
+        useGetAllHook: 'useGetAll<%= rel.otherEntity.entityClassPlural %>',
+        useSearchHook: 'useSearch<%= rel.otherEntity.entityClassPlural %>',
+        useCountHook: 'useCount<%= rel.otherEntity.entityClassPlural %>',
+        entityName: '<%= rel.otherEntity.entityClassPlural %>',
+        <%_ } _%>
+      },
+      creation: {
+        <%_ if (!rel.otherEntity.builtInUser) { _%>
+        canCreate: true,
+        createPath: '/<%= rel.otherEntity.routePath %>/new',
+        createPermission: '<%= rel.otherEntity.entityInstance || rel.otherEntity.entityName.toLowerCase() %>:create',
+        <%_ } else { _%>
+        canCreate: false,
+        <%_ } _%>
+      },
+      ui: {
+        label: '<%= camelToTitleCase(rel.relationshipName) %>',
+        placeholder: 'Select <%= camelToTitleCase(rel.relationshipName).toLowerCase() %>',
+        <%_ if (category === 'geographic') { _%>
+        icon: '📍',
+        <%_ } else if (category === 'user') { _%>
+        icon: '👥',
+        <%_ } else if (category === 'classification') { _%>
+        icon: '🏷️',
+        <%_ } else if (category === 'business') { _%>
+        icon: '🏢',
+        <%_ } else { _%>
+        icon: '🔗',
+        <%_ } _%>
+      }
+    },
+    <%_ } _%>
+  ],
+
+  // Global form configuration
+  validation: {
+    mode: 'onBlur',
+    revalidateMode: 'onBlur',
+    submitTimeout: 30000,
+  },
+
+  ui: {
+    responsive: {
+      mobile: 'grid-cols-1',
+      tablet: 'md:grid-cols-2',
+      desktop: 'xl:grid-cols-3',
+    },
+    animations: {
+      stepTransition: 'transition-all duration-300',
+      fieldFocus: 'transition-colors',
+    },
+    spacing: {
+      stepGap: 'space-y-6',
+      fieldGap: 'gap-4 sm:gap-6',
+      sectionGap: 'space-y-4',
+    }
+  },
+
+  behavior: {
+    autoSave: {
+      enabled: false,
+      debounceMs: 2000,
+    },
+    persistence: {
+      enabled: true,
+      sessionTimeoutMinutes: 30,
+      storagePrefix: '<%= entityClass %>FormState_',
+    },
+    navigation: {
+      confirmOnCancel: false,
+      allowStepSkipping: false,
+      validateOnNext: true,
+    },
+    crossEntity: {
+      enabled: true,
+      returnUrlKey: 'returnUrl',
+      relationshipInfoKey: 'relationshipFieldInfo',
+      newEntityIdKey: 'newlyCreatedEntityId',
+    }
+  }
+};
+
+// Export utility functions for external use
+export const <%= entityInstance %>FormHelpers = {
+  getStepById: (stepId: string) => <%= entityInstance %>FormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => <%= entityInstance %>FormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => <%= entityInstance %>FormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepFields: (stepId: string) => {
+    const step = <%= entityInstance %>FormConfig.steps.find(s => s.id === stepId);
+    return step ? [...step.fields, ...step.relationships] : [];
+  }
+};

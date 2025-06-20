@@ -42,7 +42,16 @@ export class FileGenerator {
    * Generate multiple files from templates
    */
   async generateFiles(templates: Array<{ templatePath: string; outputPath: string; variables: TemplateVariables }>): Promise<void> {
+    console.log(`Processing ${templates.length} templates...`);
+    
     for (const template of templates) {
+      const fullTemplatePath = path.join(this.templateDir, template.templatePath);
+      
+      if (!fs.existsSync(fullTemplatePath)) {
+        console.log(`⚠️  Template not found: ${template.templatePath} (skipping)`);
+        continue;
+      }
+      
       await this.generateFile(template.templatePath, template.outputPath, template.variables);
     }
   }

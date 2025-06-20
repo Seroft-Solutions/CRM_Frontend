@@ -28,6 +28,7 @@ interface Relationship {
   otherEntityField?: string;
   relationshipRequired?: boolean;
   relationshipWithBuiltInEntity?: boolean;
+  relationshipValidateRules?: string[];
 }
 
 interface ProcessedRelationship extends Relationship {
@@ -156,7 +157,9 @@ export class TemplateVariablePreparer {
       const otherEntityField = rel.otherEntityField || (rel.relationshipWithBuiltInEntity ? 'login' : 'name');
       
       // Determine if relationship is required
-      const relationshipRequired = rel.relationshipRequired || false;
+      const relationshipRequired = rel.relationshipRequired || 
+        (rel.relationshipValidateRules && rel.relationshipValidateRules.includes('required')) || 
+        false;
       
       // Determine if this is a built-in user entity
       const isBuiltInUser = rel.relationshipWithBuiltInEntity && otherEntityName === 'user';

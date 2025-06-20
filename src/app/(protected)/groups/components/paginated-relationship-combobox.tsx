@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface PaginatedRelationshipComboboxProps {
   value?: number | number[];
@@ -39,6 +40,10 @@ interface PaginatedRelationshipComboboxProps {
   onEntityCreated?: (entityId: number) => void;
   parentFilter?: number;
   parentField?: string;
+  // Cross-form navigation props
+  referrerForm?: string;
+  referrerSessionId?: string;
+  referrerField?: string;
 }
 
 export function PaginatedRelationshipCombobox({
@@ -60,6 +65,9 @@ export function PaginatedRelationshipCombobox({
   onEntityCreated,
   parentFilter,
   parentField,
+  referrerForm,
+  referrerSessionId,
+  referrerField,
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -68,6 +76,9 @@ export function PaginatedRelationshipCombobox({
   const [allLoadedData, setAllLoadedData] = React.useState<any[]>([]);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const pageSize = 20;
+  
+  // Cross-form navigation hook
+  const { navigateToCreateEntity } = useCrossFormNavigation();
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -144,9 +155,7 @@ export function PaginatedRelationshipCombobox({
           const newItems = dataArray.filter((item: any) => !existingIds.has(item.id));
           return [...prev, ...newItems];
         });
-      }
-      
-      // Check if there are more pages
+      }      // Check if there are more pages
       setHasMorePages(dataArray.length === pageSize);
     }
   }, [currentData, isLoading, currentPage, isQueryEnabled]);
@@ -210,9 +219,20 @@ export function PaginatedRelationshipCombobox({
     if (!multiple || !Array.isArray(value)) return [];
     return allLoadedData.filter((option: any) => value.includes(option.id));
   };
-
   const handleCreateNew = () => {
-    if (createEntityPath) {
+    if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
+      // Use the new cross-form navigation system
+      navigateToCreateEntity({
+        entityPath: createEntityPath,
+        referrerForm,
+        referrerSessionId,
+        referrerField,
+        referrerUrl: window.location.href,
+      });
+    } else {
+      // Fallback to old behavior if navigation props are not provided
+      console.warn('Cross-form navigation props not provided, falling back to old navigation');
+      
       const currentUrl = window.location.href;
       const currentPath = window.location.pathname;
       

@@ -1,0 +1,295 @@
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+
+/**
+ * Configuration for UserProfile form
+ * This file is auto-generated. To modify the form structure, update the generator templates.
+ */
+export const userProfileFormConfig: FormConfig = {
+  entity: 'UserProfile',
+  
+  // Form steps configuration
+  steps: [
+    {
+      id: 'basic',
+      title: 'Basic Information',
+      description: 'Enter essential details',
+      fields: [
+        'keycloakId',
+        'email',
+        'firstName',
+        'lastName',
+      ],
+      relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'classification',
+      title: 'Classification',
+      description: 'Set priority, status, and categories',
+      fields: [
+      ],
+      relationships: [
+        'channelType',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'other',
+      title: 'Additional Relations',
+      description: 'Other connections and references',
+      fields: [
+      ],
+      relationships: [
+        'organization',
+        'groups',
+        'roles',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'review',
+      title: 'Review',
+      description: 'Confirm your details',
+      fields: [
+      ],
+      relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+  ],
+
+  // Field definitions
+  fields: [
+    {
+      name: 'keycloakId',
+      type: 'text',
+      label: 'Keycloak Id',
+      placeholder: 'Enter keycloak id',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'email',
+      type: 'text',
+      label: 'Email',
+      placeholder: 'Enter email',
+      required: true,
+      validation: {
+        required: true,
+        minLength: 5,
+        maxLength: 100,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'firstName',
+      type: 'text',
+      label: 'First Name',
+      placeholder: 'Enter first name',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 50,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'lastName',
+      type: 'text',
+      label: 'Last Name',
+      placeholder: 'Enter last name',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 50,
+      },
+      ui: {
+      }
+    },
+  ],
+
+  // Relationship definitions
+  relationships: [
+    {
+      name: 'organization',
+      type: 'many-to-many',
+      targetEntity: 'organization',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: true,
+      category: 'other',
+      api: {
+        useGetAllHook: 'useGetAllOrganizations',
+        useSearchHook: 'useSearchOrganizations',
+        useCountHook: 'useCountOrganizations',
+        entityName: 'Organizations',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/organizations/new',
+        createPermission: 'organization:create',
+      },
+      ui: {
+        label: 'Organization',
+        placeholder: 'Select organization',
+        icon: '🔗',
+      }
+    },
+    {
+      name: 'groups',
+      type: 'many-to-many',
+      targetEntity: 'group',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: true,
+      category: 'other',
+      api: {
+        useGetAllHook: 'useGetAllGroups',
+        useSearchHook: 'useSearchGroups',
+        useCountHook: 'useCountGroups',
+        entityName: 'Groups',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/groups/new',
+        createPermission: 'group:create',
+      },
+      ui: {
+        label: 'Groups',
+        placeholder: 'Select groups',
+        icon: '🔗',
+      }
+    },
+    {
+      name: 'roles',
+      type: 'many-to-many',
+      targetEntity: 'role',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: true,
+      category: 'other',
+      api: {
+        useGetAllHook: 'useGetAllRoles',
+        useSearchHook: 'useSearchRoles',
+        useCountHook: 'useCountRoles',
+        entityName: 'Roles',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/roles/new',
+        createPermission: 'role:create',
+      },
+      ui: {
+        label: 'Roles',
+        placeholder: 'Select roles',
+        icon: '🔗',
+      }
+    },
+    {
+      name: 'channelType',
+      type: 'many-to-one',
+      targetEntity: 'channelType',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'classification',
+      api: {
+        useGetAllHook: 'useGetAllChannelTypes',
+        useSearchHook: 'useSearchChannelTypes',
+        useCountHook: 'useCountChannelTypes',
+        entityName: 'ChannelTypes',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/channel-types/new',
+        createPermission: 'channelType:create',
+      },
+      ui: {
+        label: 'Channel Type',
+        placeholder: 'Select channel type',
+        icon: '🏷️',
+      }
+    },
+  ],
+
+  // Global form configuration
+  validation: {
+    mode: 'onBlur',
+    revalidateMode: 'onBlur',
+    submitTimeout: 30000,
+  },
+
+  ui: {
+    responsive: {
+      mobile: 'grid-cols-1',
+      tablet: 'md:grid-cols-2',
+      desktop: 'xl:grid-cols-3',
+    },
+    animations: {
+      stepTransition: 'transition-all duration-300',
+      fieldFocus: 'transition-colors',
+    },
+    spacing: {
+      stepGap: 'space-y-6',
+      fieldGap: 'gap-4 sm:gap-6',
+      sectionGap: 'space-y-4',
+    }
+  },
+
+  behavior: {
+    autoSave: {
+      enabled: false,
+      debounceMs: 2000,
+    },
+    persistence: {
+      enabled: true,
+      sessionTimeoutMinutes: 30,
+      storagePrefix: 'UserProfileFormState_',
+    },
+    navigation: {
+      confirmOnCancel: false,
+      allowStepSkipping: false,
+      validateOnNext: true,
+    },
+    crossEntity: {
+      enabled: true,
+      returnUrlKey: 'returnUrl',
+      relationshipInfoKey: 'relationshipFieldInfo',
+      newEntityIdKey: 'newlyCreatedEntityId',
+    }
+  }
+};
+
+// Export utility functions for external use
+export const userProfileFormHelpers = {
+  getStepById: (stepId: string) => userProfileFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => userProfileFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => userProfileFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepFields: (stepId: string) => {
+    const step = userProfileFormConfig.steps.find(s => s.id === stepId);
+    return step ? [...step.fields, ...step.relationships] : [];
+  }
+};
