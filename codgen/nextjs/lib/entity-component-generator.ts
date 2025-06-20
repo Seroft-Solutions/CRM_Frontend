@@ -198,23 +198,6 @@ export class EntityComponentGenerator {
         variables: vars
       },
 
-      // Table sub-components
-      {
-        templatePath: 'entity/components/table/entity-search-filters.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-search-filters.tsx`),
-        variables: vars
-      },
-      {
-        templatePath: 'entity/components/table/entity-table-header.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-table-header.tsx`),
-        variables: vars
-      },
-      {
-        templatePath: 'entity/components/table/entity-table-row.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-table-row.tsx`),
-        variables: vars
-      },
-
       // Relationship components
       {
         templatePath: 'entity/components/bulk-relationship-assignment.tsx.ejs',
