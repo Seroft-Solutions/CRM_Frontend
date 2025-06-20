@@ -120,22 +120,18 @@ export function ProductForm({ id }: ProductFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        console.log('🟢 Product created successfully with ID:', entityId);
         
         if (hasReferrer() && entityId) {
-          console.log('🟢 Has referrer, navigating back with entity ID:', entityId);
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Product');
         } else {
-          console.log('🟢 No referrer, going to products list');
           setIsRedirecting(true);
           productToast.created();
           router.push("/products");
         }
       },
       onError: (error) => {
-        console.error('🔴 Product creation failed:', error);
         handleProductError(error);
       },
     },
@@ -171,20 +167,15 @@ export function ProductForm({ id }: ProductFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        console.log('🔵 FORM PROVIDER onSuccess called with transformed data:', transformedData);
-        console.log('🔵 MAKING API CALL with data:', JSON.stringify(transformedData, null, 2));
         
         // Make the actual API call with the transformed data
         if (isNew) {
-          console.log('🔵 CALLING createEntity with transformed data');
           createEntity({ data: transformedData as any });
         } else if (id) {
-          console.log('🔵 CALLING updateEntity with transformed data');
           updateEntity({ id, data: transformedData as any });
         }
       }}
       onError={(error) => {
-        console.error('🔵 FORM PROVIDER onError:', error);
         handleProductError(error);
       }}
     >
