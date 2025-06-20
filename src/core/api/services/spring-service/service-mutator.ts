@@ -29,6 +29,26 @@ export const springServiceMutator = async <T>(
 ): Promise<T> => {
   const { url, method = 'GET', data, params } = requestConfig;
   
+  // Log API calls to debug data transformation
+  if (method === 'POST' && url?.includes('sub-call-types')) {
+    console.log('🚀 API MUTATOR - About to send POST request:');
+    console.log('🚀 URL:', url);
+    console.log('🚀 Method:', method);
+    console.log('🚀 Data received by mutator:', data);
+    console.log('🚀 Data type:', typeof data);
+    console.log('🚀 Data constructor:', data?.constructor?.name);
+    console.log('🚀 Stringified Data:', JSON.stringify(data, null, 2));
+    
+    if (data && typeof data === 'object') {
+      console.log('🚀 Data keys:', Object.keys(data));
+      if (data.callType) {
+        console.log('🚀 callType value:', data.callType);
+        console.log('🚀 callType type:', typeof data.callType);
+        console.log('🚀 callType stringified:', JSON.stringify(data.callType, null, 2));
+      }
+    }
+  }
+  
   const instance = axios.create(SPRING_SERVICE_CONFIG);
   
   // Add auth and tenant interceptor

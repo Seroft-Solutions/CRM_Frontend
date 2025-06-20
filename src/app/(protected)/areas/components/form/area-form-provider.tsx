@@ -1,0 +1,649 @@
+"use client";
+
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import type { 
+  FormConfig, 
+  FormState, 
+  FormActions, 
+  FormContextValue 
+} from "./form-types";
+import { areaFormConfig } from "./area-form-config";
+import { areaFormSchema } from "./area-form-schema";
+import { areaToast, handleAreaError } from "../area-toast";
+import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
+
+const FormContext = createContext<FormContextValue | null>(null);
+
+interface AreaFormProviderProps {
+  children: React.ReactNode;
+  id?: number;
+  onSuccess?: (data: any) => void;
+  onError?: (error: any) => void;
+}
+
+export function AreaFormProvider({ 
+  children, 
+  id, 
+  onSuccess, 
+  onError 
+}: AreaFormProviderProps) {
+  const router = useRouter();
+  const isNew = !id;
+  const config = areaFormConfig;
+  
+  // Cross-form navigation hooks
+  const { navigationState, hasReferrer } = useCrossFormNavigation();
+  const urlParams = useNavigationFromUrl();
+  
+  // Form state management
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmSubmission, setConfirmSubmission] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [isAutoPopulating, setIsAutoPopulating] = useState(false);
+  const [restorationAttempted, setRestorationAttempted] = useState(false);
+
+  // Generate unique session ID for this form instance
+  const [formSessionId] = useState(() => {
+    const existingSession = sessionStorage.getItem(`${config.entity}_FormSession`);
+    if (existingSession && isNew) {
+      return existingSession;
+    }
+    const newSessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (isNew) {
+      sessionStorage.setItem(`${config.entity}_FormSession`, newSessionId);
+    }
+    return newSessionId;
+  });
+
+  // Initialize React Hook Form
+  const form = useForm({
+    resolver: zodResolver(areaFormSchema),
+    mode: config.validation.mode,
+    revalidateMode: config.validation.revalidateMode,
+    defaultValues: getDefaultValues()
+  });
+
+  function getDefaultValues() {
+    const defaults: Record<string, any> = {};
+    
+    config.fields.forEach(field => {
+      switch (field.type) {
+        case 'boolean':
+          defaults[field.name] = false;
+          break;
+        case 'number':
+          defaults[field.name] = "";
+          break;
+        case 'date':
+          defaults[field.name] = undefined;
+          break;
+        case 'enum':
+          defaults[field.name] = field.required ? field.options?.[0]?.value : undefined;
+          break;
+        default:
+          defaults[field.name] = "";
+      }
+    });
+
+    config.relationships.forEach(rel => {
+      defaults[rel.name] = rel.multiple ? [] : undefined;
+    });
+
+    return defaults;
+  }
+
+  // Form state persistence functions - only for cross-form navigation
+  const saveFormState = useCallback((forCrossNavigation = false) => {
+    // Only save form state for cross-form navigation scenarios
+    if (!isNew || !config.behavior.persistence.enabled || !forCrossNavigation) return;
+    
+    const formData = form.getValues();
+    const formState = {
+      data: formData,
+      currentStep,
+      timestamp: Date.now(),
+      entity: config.entity,
+      sessionId: formSessionId,
+      crossFormNavigation: true // Mark this as cross-form navigation state
+    };
+    
+    const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
+    localStorage.setItem(storageKey, JSON.stringify(formState));
+    console.log('Form state saved for cross-form navigation with session:', { storageKey, sessionId: formSessionId });
+  }, [form, currentStep, isNew, formSessionId, config]);
+
+  const restoreFormState = useCallback((): boolean => {
+    if (!isNew || !config.behavior.persistence.enabled) return false;
+    
+    const currentSessionId = sessionStorage.getItem(`${config.entity}_FormSession`);
+    if (!currentSessionId || currentSessionId !== formSessionId) {
+      console.log('Session mismatch, skipping restoration');
+      return false;
+    }
+    
+    const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
+    const savedStateStr = localStorage.getItem(storageKey);
+    
+    if (savedStateStr) {
+      try {
+        const savedState = JSON.parse(savedStateStr);
+        const timeoutMs = config.behavior.persistence.sessionTimeoutMinutes * 60 * 1000;
+        const isRecent = Date.now() - savedState.timestamp < timeoutMs;
+        const isSameSession = savedState.sessionId === formSessionId;
+        const isSameEntity = savedState.entity === config.entity;
+        const isCrossFormState = savedState.crossFormNavigation === true;
+        
+        // Only restore states that were saved for cross-form navigation
+        if (isRecent && isSameSession && isSameEntity && isCrossFormState) {
+          setIsRestoring(true);
+          
+          Object.keys(savedState.data).forEach(key => {
+            const value = savedState.data[key];
+            if (value !== undefined && value !== null) {
+              form.setValue(key as any, value);
+            }
+          });
+          
+          setCurrentStep(savedState.currentStep || 0);
+          
+          setTimeout(() => setIsRestoring(false), 100);
+          areaToast.formRestored();
+          
+          console.log('Form state restored from cross-form navigation for session:', formSessionId);
+          return true;
+        } else {
+          console.log('Restoration conditions not met:', { isRecent, isSameSession, isSameEntity, isCrossFormState });
+          localStorage.removeItem(storageKey);
+        }
+      } catch (error) {
+        console.error('Failed to restore form state:', error);
+        localStorage.removeItem(storageKey);
+      }
+    }
+    return false;
+  }, [form, isNew, formSessionId, config]);
+
+  // Clear old form states
+  const clearOldFormStates = useCallback(() => {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(config.behavior.persistence.storagePrefix) && !key.endsWith(formSessionId)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log('Cleared old form states:', keysToRemove);
+  }, [formSessionId, config]);
+
+  // Handle newly created relationship entities
+  const handleEntityCreated = useCallback((entityId: number, relationshipName: string, skipValidation = false) => {
+    const relationshipConfig = config.relationships.find(rel => rel.name === relationshipName);
+    if (!relationshipConfig) return;
+
+    const currentValue = form.getValues(relationshipName as any);
+    
+    if (relationshipConfig.multiple) {
+      const newValue = Array.isArray(currentValue) ? [...currentValue, entityId] : [entityId];
+      form.setValue(relationshipName as any, newValue, { shouldValidate: !skipValidation });
+    } else {
+      form.setValue(relationshipName as any, entityId, { shouldValidate: !skipValidation });
+    }
+    
+    // Only trigger validation if not skipping it (e.g., during auto-population)
+    if (!skipValidation && !isAutoPopulating) {
+      form.trigger(relationshipName as any);
+    }
+  }, [form, config, isAutoPopulating]);
+
+  // Validation for current step
+  const validateStep = useCallback(async (stepIndex?: number): Promise<boolean> => {
+    // Skip validation during auto-population to prevent interference
+    if (isAutoPopulating) {
+      console.log('🟡 SKIPPING VALIDATION - auto-populating in progress');
+      return true;
+    }
+    
+    const targetStep = stepIndex ?? currentStep;
+    const stepConfig = config.steps[targetStep];
+    if (!stepConfig) return true;
+
+    const fieldsToValidate = [...stepConfig.fields, ...stepConfig.relationships];
+    console.log('🟡 VALIDATING STEP', targetStep, 'fields:', fieldsToValidate);
+    const result = await form.trigger(fieldsToValidate);
+    console.log('🟡 STEP VALIDATION RESULT:', result);
+    if (!result) {
+      console.log('🟡 STEP VALIDATION ERRORS:', form.formState.errors);
+    }
+    return result;
+  }, [form, currentStep, config, isAutoPopulating]);
+
+  // Navigation actions
+  const nextStep = useCallback(async (): Promise<boolean> => {
+    if (!config.behavior.navigation.validateOnNext) {
+      if (currentStep < config.steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+        return true;
+      }
+      return false;
+    }
+
+    const isValid = await validateStep();
+    if (isValid && currentStep < config.steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      return true;
+    }
+    return false;
+  }, [currentStep, config, validateStep]);
+
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      if (currentStep === config.steps.length - 1) {
+        setConfirmSubmission(false);
+      }
+    }
+  }, [currentStep, config]);
+
+  const goToStep = useCallback(async (stepIndex: number): Promise<boolean> => {
+    if (stepIndex < 0 || stepIndex >= config.steps.length) return false;
+    
+    if (config.behavior.navigation.allowStepSkipping) {
+      setCurrentStep(stepIndex);
+      return true;
+    }
+    
+    // Validate all steps up to target step
+    for (let i = 0; i < stepIndex; i++) {
+      const isValid = await validateStep(i);
+      if (!isValid) return false;
+    }
+    
+    setCurrentStep(stepIndex);
+    return true;
+  }, [config, validateStep]);
+
+  // Form submission
+  const submitForm = useCallback(async () => {
+    console.log('🔴 SUBMIT FORM called - currentStep:', currentStep, 'totalSteps:', config.steps.length - 1);
+    console.log('🔴 SUBMIT FORM - isAutoPopulating:', isAutoPopulating);
+    
+    // Don't allow submission during auto-population
+    if (isAutoPopulating) {
+      console.log('🔴 SUBMIT BLOCKED - auto-populating in progress');
+      return;
+    }
+    
+    if (currentStep !== config.steps.length - 1) {
+      console.log('🔴 NOT ON LAST STEP, aborting submission');
+      return;
+    }
+
+    console.log('🔴 ON LAST STEP, proceeding with validation');
+    
+    const isValid = await form.trigger();
+    console.log('🔴 FORM VALIDATION RESULT:', isValid);
+    
+    if (!isValid) {
+      console.log('🔴 FORM VALIDATION FAILED, errors:', form.formState.errors);
+      return;
+    }
+
+    console.log('🔴 FORM VALIDATION PASSED, proceeding with submission');
+    setIsSubmitting(true);
+    
+    try {
+      const formData = form.getValues();
+      console.log('🔴 RAW FORM DATA from form.getValues():', formData);
+      
+      // Transform data for submission
+      const entityToSave = transformFormDataForSubmission(formData);
+      console.log('🟢 TRANSFORMED DATA after transformation:', entityToSave);
+      
+      if (onSuccess) {
+        console.log('🔵 CALLING onSuccess with transformed data:', entityToSave);
+        await onSuccess(entityToSave);
+      } else {
+        console.log('🔴 NO onSuccess callback provided!');
+      }
+      
+      // Clean up form state
+      cleanupFormState();
+      
+    } catch (error) {
+      console.error('🔴 SUBMIT FORM ERROR:', error);
+      if (onError) {
+        onError(error);
+      } else {
+        handleAreaError(error);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [currentStep, config, form, onSuccess, onError, isAutoPopulating]);
+
+  function transformFormDataForSubmission(data: Record<string, any>) {
+    console.log('🔶 ENTERING transformFormDataForSubmission with data:', data);
+    const entityToSave: Record<string, any> = {};
+
+    console.log('Raw form data before transformation:', data);
+
+    // Handle regular fields
+    config.fields.forEach(fieldConfig => {
+      const value = data[fieldConfig.name];
+      
+      if (fieldConfig.type === 'number') {
+        if (value !== '' && value != null && !isNaN(Number(value))) {
+          entityToSave[fieldConfig.name] = Number(value);
+        } else if (fieldConfig.required) {
+          entityToSave[fieldConfig.name] = null;
+        }
+      } else if (fieldConfig.type === 'enum') {
+        if (value === "__none__" || value === '' || value == null) {
+          if (fieldConfig.required) {
+            entityToSave[fieldConfig.name] = null;
+          }
+        } else {
+          entityToSave[fieldConfig.name] = value;
+        }
+      } else if (fieldConfig.type === 'date') {
+        if (value && value instanceof Date) {
+          entityToSave[fieldConfig.name] = value.toISOString();
+        } else if (value && typeof value === 'string') {
+          entityToSave[fieldConfig.name] = new Date(value).toISOString();
+        } else if (fieldConfig.required) {
+          entityToSave[fieldConfig.name] = null;
+        }
+      } else if (fieldConfig.type === 'boolean') {
+        entityToSave[fieldConfig.name] = Boolean(value);
+      } else {
+        // String fields
+        if (value !== '' && value != null) {
+          entityToSave[fieldConfig.name] = String(value);
+        } else if (fieldConfig.required) {
+          entityToSave[fieldConfig.name] = null;
+        }
+      }
+    });
+
+    console.log('🔶 AFTER PROCESSING FIELDS:', entityToSave);
+    console.log('🔶 RELATIONSHIPS TO PROCESS:', config.relationships);
+
+    // Handle relationships - use reference object pattern { entityName: { id: value } }
+    config.relationships.forEach(relConfig => {
+      const value = data[relConfig.name];
+      
+      console.log(`🔶 Processing relationship ${relConfig.name}:`, { 
+        value, 
+        required: relConfig.required, 
+        multiple: relConfig.multiple,
+        primaryKey: relConfig.primaryKey,
+        relConfig 
+      });
+      
+      if (relConfig.multiple) {
+        // For many-to-many or one-to-many relationships  
+        if (value && Array.isArray(value) && value.length > 0) {
+          entityToSave[relConfig.name] = value.map(id => ({ [relConfig.primaryKey]: id }));
+          console.log(`🔶 Transformed multiple relationship ${relConfig.name}:`, entityToSave[relConfig.name]);
+        } else {
+          entityToSave[relConfig.name] = value || [];
+        }
+      } else {
+        // For many-to-one relationships - use reference object pattern
+        if (value) {
+          entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
+          console.log(`🔶 Transformed single relationship ${relConfig.name}:`, entityToSave[relConfig.name]);
+        } else {
+          entityToSave[relConfig.name] = null;
+        }
+      }
+    });
+
+    // Remove undefined values to avoid sending them to the backend
+    Object.keys(entityToSave).forEach(key => {
+      if (entityToSave[key] === undefined) {
+        delete entityToSave[key];
+      }
+    });
+
+    console.log('🔶 FINAL TRANSFORMED ENTITY:', entityToSave);
+    return entityToSave;
+  }
+
+  // Form cleanup
+  const cleanupFormState = useCallback(() => {
+    const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(`${config.entity}_FormSession`);
+    
+    // Clear all old form states for this entity type
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(config.behavior.persistence.storagePrefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    form.reset();
+    setCurrentStep(0);
+    setConfirmSubmission(false);
+    
+    console.log('Form state cleaned up completely');
+  }, [formSessionId, config, form]);
+
+  const resetForm = useCallback(() => {
+    form.reset(getDefaultValues());
+    setCurrentStep(0);
+    setConfirmSubmission(false);
+  }, [form]);
+
+  // Auto-save functionality disabled - only save during cross-form navigation
+  // useEffect(() => {
+  //   if (!isNew || isRestoring || !config.behavior.autoSave.enabled) return;
+  //   
+  //   const subscription = form.watch(() => {
+  //     const timeoutId = setTimeout(() => {
+  //       saveFormState();
+  //     }, config.behavior.autoSave.debounceMs);
+  //     
+  //     return () => clearTimeout(timeoutId);
+  //   });
+  //   
+  //   return () => subscription.unsubscribe();
+  // }, [form, isRestoring, isNew, saveFormState, config]);
+
+  // Form restoration on mount and auto-population
+  useEffect(() => {
+    if (!restorationAttempted && isNew) {
+      setRestorationAttempted(true);
+      clearOldFormStates();
+      
+      // Check for auto-population from cross-form navigation
+      const createdEntityInfo = localStorage.getItem('createdEntityInfo');
+      if (createdEntityInfo) {
+        try {
+          const info = JSON.parse(createdEntityInfo);
+          console.log('Found created entity for auto-population:', info);
+          console.log('Current form session ID:', formSessionId);
+          console.log('Target session ID:', info.targetSessionId);
+          
+          // Check if this form should receive the created entity
+          if (info.targetSessionId === formSessionId) {
+            console.log('Session IDs match, auto-populating...');
+            setIsAutoPopulating(true);
+            
+            const restored = restoreFormState();
+            
+            // Auto-populate with proper timing and validation control
+            setTimeout(() => {
+              // Set the value without triggering validation during auto-population
+              handleEntityCreated(info.entityId, info.targetField, true);
+              
+              // Clear the created entity info
+              localStorage.removeItem('createdEntityInfo');
+              
+              // Show success message
+              toast.success(`${info.entityType} has been created and selected`);
+              
+              // Re-enable auto-populating state after a short delay
+              setTimeout(() => {
+                setIsAutoPopulating(false);
+              }, 300);
+              
+            }, restored ? 600 : 200);
+            
+            return;
+          } else {
+            console.log('Session IDs do not match, checking if we should still auto-populate...');
+            // Sometimes session IDs might not match if the page was reloaded
+            // Let's check if the timestamp is recent (within last 5 minutes)
+            const isRecent = Date.now() - info.timestamp < 5 * 60 * 1000;
+            if (isRecent) {
+              console.log('Recent creation detected, auto-populating anyway...');
+              setIsAutoPopulating(true);
+              
+              const restored = restoreFormState();
+              
+              setTimeout(() => {
+                handleEntityCreated(info.entityId, info.targetField, true);
+                localStorage.removeItem('createdEntityInfo');
+                toast.success(`${info.entityType} has been created and selected`);
+                
+                setTimeout(() => {
+                  setIsAutoPopulating(false);
+                }, 300);
+                
+              }, restored ? 600 : 200);
+              
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error processing created entity info:', error);
+        }
+      }
+      
+      // Fallback to legacy auto-population logic
+      const newEntityId = localStorage.getItem(config.behavior.crossEntity.newEntityIdKey);
+      const relationshipInfo = localStorage.getItem(config.behavior.crossEntity.relationshipInfoKey);
+      
+      if (newEntityId && relationshipInfo) {
+        try {
+          const info = JSON.parse(relationshipInfo);
+          console.log('Found newly created entity (legacy):', { newEntityId, info });
+          
+          const restored = restoreFormState();
+          
+          setTimeout(() => {
+            handleEntityCreated(parseInt(newEntityId), Object.keys(info)[0] || 'id');
+            
+            // Clean up
+            localStorage.removeItem(config.behavior.crossEntity.newEntityIdKey);
+            localStorage.removeItem(config.behavior.crossEntity.relationshipInfoKey);
+            localStorage.removeItem(config.behavior.crossEntity.returnUrlKey);
+            localStorage.removeItem('entityCreationContext');
+          }, restored ? 500 : 100);
+          
+        } catch (error) {
+          console.error('Error processing newly created entity:', error);
+          restoreFormState();
+        }
+      } else {
+        restoreFormState();
+      }
+    }
+
+    const handleSaveFormState = () => {
+      if (isNew) {
+        console.log('Save form state event received for cross-form navigation');
+        saveFormState(true); // Save with cross-form navigation flag
+      }
+    };
+
+    window.addEventListener('saveFormState', handleSaveFormState);
+    
+    return () => {
+      window.removeEventListener('saveFormState', handleSaveFormState);
+    };
+  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated, clearOldFormStates, config]);
+
+  // Helper function to get navigation props for relationship components
+  const getNavigationProps = useCallback((fieldName: string) => ({
+    referrerForm: config.entity,
+    referrerSessionId: formSessionId,
+    referrerField: fieldName,
+  }), [config.entity, formSessionId]);
+
+  // Create context value
+  const contextValue: FormContextValue = {
+    config,
+    state: {
+      currentStep,
+      isLoading: isLoading || isAutoPopulating,
+      isSubmitting,
+      isDirty: form.formState.isDirty,
+      errors: form.formState.errors,
+      values: form.getValues(),
+      touchedFields: form.formState.touchedFields as Record<string, boolean>,
+      isAutoPopulating
+    },
+    actions: {
+      nextStep,
+      prevStep,
+      goToStep,
+      validateStep,
+      submitForm,
+      resetForm,
+      saveFormState,
+      restoreFormState,
+      handleEntityCreated,
+      getNavigationProps
+    },
+    form,
+    navigation: {
+      hasReferrer: hasReferrer(),
+      urlParams,
+      navigationState
+    }
+  };
+
+  return (
+    <FormContext.Provider value={contextValue}>
+      {children}
+    </FormContext.Provider>
+  );
+}
+
+// Custom hook to use form context
+export function useEntityForm(): FormContextValue {
+  const context = useContext(FormContext);
+  if (!context) {
+    throw new Error('useEntityForm must be used within a AreaFormProvider');
+  }
+  return context;
+}
+
+// Additional hooks for specific functionality
+export function useFormConfig() {
+  const { config } = useEntityForm();
+  return config;
+}
+
+export function useFormState() {
+  const { state } = useEntityForm();
+  return state;
+}
+
+export function useFormActions() {
+  const { actions } = useEntityForm();
+  return actions;
+}

@@ -18,8 +18,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface PaginatedRelationshipComboboxProps {
   value?: number | number[];
@@ -29,8 +29,9 @@ interface PaginatedRelationshipComboboxProps {
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
-  useInfiniteQueryHook: (params: any, options?: any) => any;
-  searchHook?: (params: any, options?: any) => any;
+  useGetAllHook: (params: any, options?: any) => any;
+  useSearchHook?: (params: any, options?: any) => any;
+  useCountHook?: (params: any, options?: any) => any;
   entityName: string;
   searchField?: string;
   canCreate?: boolean;
@@ -39,6 +40,10 @@ interface PaginatedRelationshipComboboxProps {
   onEntityCreated?: (entityId: number) => void;
   parentFilter?: number;
   parentField?: string;
+  // Cross-form navigation props
+  referrerForm?: string;
+  referrerSessionId?: string;
+  referrerField?: string;
 }
 
 export function PaginatedRelationshipCombobox({
@@ -49,8 +54,9 @@ export function PaginatedRelationshipCombobox({
   multiple = false,
   disabled = false,
   className,
-  useInfiniteQueryHook,
-  searchHook,
+  useGetAllHook,
+  useSearchHook,
+  useCountHook,
   entityName,
   searchField = "name",
   canCreate = false,
@@ -59,11 +65,22 @@ export function PaginatedRelationshipCombobox({
   onEntityCreated,
   parentFilter,
   parentField,
+  referrerForm,
+  referrerSessionId,
+  referrerField,
 }: PaginatedRelationshipComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [deferredSearchQuery, setDeferredSearchQuery] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [allLoadedData, setAllLoadedData] = React.useState<any[]>([]);
+  const [hasMorePages, setHasMorePages] = React.useState(true);
+  const pageSize = 20;
+  
+  // Cross-form navigation hook
+  const { navigateToCreateEntity } = useCrossFormNavigation();
 
+  // Debounced search query (300ms delay)
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
@@ -71,92 +88,95 @@ export function PaginatedRelationshipCombobox({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const buildQueryParams = (extraParams = {}) => {
-    const params = { size: 20, ...extraParams };
+  // Determine if query should be enabled
+  const isQueryEnabled = React.useMemo(() => {
+    if (disabled) return false;
+    if (parentField && !parentFilter) return false;
+    return true;
+  }, [disabled, parentField, parentFilter]);
+
+  // Build filter parameters for queries
+  const buildFilterParams = React.useCallback((pageParam: number, searchTerm: string) => {
+    const params = { 
+      page: pageParam, 
+      size: pageSize, 
+      sort: `${displayField},asc`
+    };
+    
+    // Apply parent filter if both parentField and parentFilter are provided
     if (parentFilter && parentField) {
       params[`${parentField}Id.equals`] = parentFilter;
     }
+    
+    // Add search filter using field contains
+    if (searchTerm && searchTerm.trim() !== '') {
+      params[`${searchField}.contains`] = searchTerm;
+    }
+    
     return params;
-  };
+  }, [displayField, parentFilter, parentField, searchField, pageSize]);
 
-  const shouldUseSearch = searchHook && deferredSearchQuery.trim() !== "";
+  // Get current query parameters
+  const currentParams = buildFilterParams(currentPage, deferredSearchQuery);
 
-  React.useEffect(() => {
-    setSearchQuery("");
-    setDeferredSearchQuery("");
-  }, [parentFilter]);
-
-  const infiniteQuery = useInfiniteQueryHook(
-    shouldUseSearch ? undefined : buildQueryParams(),
+  // Always use getAll hook with field filters
+  const { data: currentData, isLoading, isError } = useGetAllHook(
+    currentParams,
     {
       query: {
-        enabled: !shouldUseSearch && (!parentField || !!parentFilter),
-        getNextPageParam: (lastPage: any, allPages: any[]) => {
-          let lastPageItems = [];
-          if (Array.isArray(lastPage)) {
-            lastPageItems = lastPage;
-          } else if (lastPage?.content && Array.isArray(lastPage.content)) {
-            lastPageItems = lastPage.content;
-          }
-          
-          const pageSize = 20;
-          if (lastPageItems.length < pageSize) {
-            return undefined;
-          }
-          
-          const currentPage = allPages.length - 1;
-          return currentPage + 1;
-        },
-        staleTime: 30000,
+        enabled: isQueryEnabled,
+        keepPreviousData: false,
       }
     }
   );
 
-  const searchQuery_ = searchHook ? searchHook(
-    shouldUseSearch ? buildQueryParams({ 
-      query: deferredSearchQuery,
-      size: 50 
-    }) : undefined,
-    {
-      query: {
-        enabled: shouldUseSearch && deferredSearchQuery.trim() !== "" && (!parentField || !!parentFilter),
-        staleTime: 10000,
-      }
-    }
-  ) : null;
+  // Reset data when search or parent filter changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+    setAllLoadedData([]);
+    setHasMorePages(true);
+  }, [deferredSearchQuery, parentFilter]);
 
-  const getAllOptions = () => {
-    let rawOptions: any[] = [];
-    
-    if (shouldUseSearch && searchQuery_?.data) {
-      const searchData = searchQuery_.data;
-      if (Array.isArray(searchData)) {
-        rawOptions = searchData;
-      } else if (searchData?.content && Array.isArray(searchData.content)) {
-        rawOptions = searchData.content;
-      }
-    } else if (infiniteQuery.data?.pages) {
-      rawOptions = infiniteQuery.data.pages.flatMap((page: any) => {
-        if (Array.isArray(page)) {
-          return page;
-        } else if (page?.content && Array.isArray(page.content)) {
-          return page.content;
-        }
-        return [];
-      });
-    }
-    
-    const seenIds = new Set();
-    return rawOptions
-      .filter(option => option && option.id && !seenIds.has(option.id) && seenIds.add(option.id))
-      .filter(Boolean);
-  };
+  // Handle data loading and pagination
+  React.useEffect(() => {
+    if (currentData && !isLoading && isQueryEnabled) {
+      // Extract data array from response (handle both direct array and paginated response)
+      const dataArray = Array.isArray(currentData) ? currentData : 
+                       currentData.content ? currentData.content : 
+                       currentData.data ? currentData.data : [];
 
-  const allOptions = getAllOptions();
-  const isLoading = shouldUseSearch ? searchQuery_?.isLoading : infiniteQuery.isLoading;
-  const isFetchingNextPage = infiniteQuery.isFetchingNextPage;
-  const hasNextPage = infiniteQuery.hasNextPage;
-  const fetchNextPage = infiniteQuery.fetchNextPage;
+      if (currentPage === 0) {
+        // First page - replace all data
+        setAllLoadedData(dataArray);
+      } else {
+        // Additional page - append unique items
+        setAllLoadedData(prev => {
+          const existingIds = new Set(prev.map(item => item.id));
+          const newItems = dataArray.filter((item: any) => !existingIds.has(item.id));
+          return [...prev, ...newItems];
+        });
+      }      // Check if there are more pages
+      setHasMorePages(dataArray.length === pageSize);
+    }
+  }, [currentData, isLoading, currentPage, isQueryEnabled]);
+
+  // Load next page
+  const loadNextPage = React.useCallback(() => {
+    if (hasMorePages && !isLoading && isQueryEnabled) {
+      setCurrentPage(prev => prev + 1);
+    }
+  }, [hasMorePages, isLoading, isQueryEnabled]);
+
+  // Scroll handler for infinite loading
+  const handleScroll = React.useCallback((e: React.UIEvent) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+    
+    // Load more when 80% scrolled and has more data
+    if (scrollPercentage > 0.8 && hasMorePages && !isLoading) {
+      loadNextPage();
+    }
+  }, [hasMorePages, isLoading, loadNextPage]);
 
   const handleSingleSelect = (optionId: number) => {
     const newValue = value === optionId ? undefined : optionId;
@@ -190,52 +210,57 @@ export function PaginatedRelationshipCombobox({
       if (typeof value !== 'number') {
         return placeholder;
       }
-      const selectedOption = allOptions.find((option: any) => option.id === value);
+      const selectedOption = allLoadedData.find((option: any) => option.id === value);
       return selectedOption ? selectedOption[displayField] : placeholder;
     }
   };
 
   const getSelectedOptions = () => {
     if (!multiple || !Array.isArray(value)) return [];
-    return allOptions.filter((option: any) => value.includes(option.id));
+    return allLoadedData.filter((option: any) => value.includes(option.id));
   };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const isNearBottom = scrollHeight - scrollTop <= clientHeight * 1.2;
-    
-    if (isNearBottom && hasNextPage && !isFetchingNextPage && !shouldUseSearch) {
-      fetchNextPage();
-    }
-  };
-
   const handleCreateNew = () => {
-    if (createEntityPath) {
+    if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
+      // Use the new cross-form navigation system
+      navigateToCreateEntity({
+        entityPath: createEntityPath,
+        referrerForm,
+        referrerSessionId,
+        referrerField,
+        referrerUrl: window.location.href,
+      });
+    } else {
+      // Fallback to old behavior if navigation props are not provided
+      console.warn('Cross-form navigation props not provided, falling back to old navigation');
+      
       const currentUrl = window.location.href;
       const currentPath = window.location.pathname;
       
       // Extract origin context dynamically
       const pathParts = currentPath.split('/').filter(Boolean);
       let originEntityName = 'Previous Page';
+      let sourceEntityType = '';
       
       if (pathParts.length > 0) {
         const lastPart = pathParts[pathParts.length - 1];
         if (lastPart === 'new') {
-          // We're on a creation page, origin is 2 parts back
           const originPart = pathParts[pathParts.length - 3];
           if (originPart) {
+            sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           }
         } else {
-          // We're on edit/view page, origin is 1 part back  
           const originPart = pathParts[pathParts.length - 2];
           if (originPart) {
+            sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           }
         }
       }
       
-      // Store context for navigation
+      // Convert sourceEntityType to proper entity class name (e.g., 'calls' -> 'Call')
+      const sourceEntityClass = sourceEntityType.replace(/s$/, '').replace(/\b\w/g, l => l.toUpperCase());
+      
       localStorage.setItem('returnUrl', currentUrl);
       localStorage.setItem('relationshipFieldInfo', JSON.stringify({
         entityName,
@@ -248,6 +273,7 @@ export function PaginatedRelationshipCombobox({
         originRoute: currentPath,
         originEntityName,
         targetEntityName: entityName.replace(/s$/, ''),
+        sourceEntity: sourceEntityClass,
         createdFrom: 'relationship'
       }));
       
@@ -263,6 +289,9 @@ export function PaginatedRelationshipCombobox({
   };
 
   React.useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     const newEntityId = sessionStorage.getItem('newlyCreatedEntityId');
     const relationshipInfo = sessionStorage.getItem('relationshipFieldInfo');
     
@@ -281,6 +310,14 @@ export function PaginatedRelationshipCombobox({
     }
   }, [entityName, onEntityCreated]);
 
+  // Show disabled state message when parent filter is required but missing
+  const getDisabledMessage = () => {
+    if (parentField && !parentFilter) {
+      return `Select ${parentField} first`;
+    }
+    return placeholder;
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <div className="flex gap-2">
@@ -292,9 +329,11 @@ export function PaginatedRelationshipCombobox({
                 role="combobox"
                 aria-expanded={open}
                 className="w-full justify-between"
-                disabled={disabled}
+                disabled={disabled || !isQueryEnabled}
               >
-                <span className="truncate">{getDisplayText()}</span>
+                <span className="truncate">
+                  {disabled || !isQueryEnabled ? getDisabledMessage() : getDisplayText()}
+                </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -304,24 +343,42 @@ export function PaginatedRelationshipCombobox({
                   placeholder={`Search ${entityName.toLowerCase()}...`}
                   value={searchQuery}
                   onValueChange={setSearchQuery}
+                  disabled={!isQueryEnabled}
                 />
-                <CommandList onScroll={handleScroll} className="max-h-60">
-                  {isLoading && (
+                <CommandList 
+                  className="max-h-60 overflow-y-auto"
+                  onScroll={handleScroll}
+                >
+                  {!isQueryEnabled && (
+                    <div className="flex items-center justify-center p-4 text-muted-foreground">
+                      <span className="text-sm">
+                        {parentField && !parentFilter ? `Please select ${parentField} first` : 'Search disabled'}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {isQueryEnabled && isLoading && allLoadedData.length === 0 && (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="ml-2">Loading...</span>
                     </div>
                   )}
                   
-                  {!isLoading && allOptions.length === 0 && (
+                  {isQueryEnabled && !isLoading && allLoadedData.length === 0 && !isError && (
                     <CommandEmpty>
                       {deferredSearchQuery ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".` : `No ${entityName.toLowerCase()} found.`}
                     </CommandEmpty>
                   )}
+
+                  {isError && (
+                    <div className="flex items-center justify-center p-4 text-destructive">
+                      <span className="text-sm">Error loading data. Please try again.</span>
+                    </div>
+                  )}
                   
-                  {!isLoading && allOptions.length > 0 && (
+                  {isQueryEnabled && allLoadedData.length > 0 && (
                     <CommandGroup>
-                      {allOptions.map((option: any, index: number) => {
+                      {allLoadedData.map((option: any, index: number) => {
                         if (!option || !option.id || !option[displayField]) {
                           return null;
                         }
@@ -356,10 +413,20 @@ export function PaginatedRelationshipCombobox({
                         );
                       })}
                       
-                      {!shouldUseSearch && isFetchingNextPage && (
+                      {/* Loading indicator for infinite scroll */}
+                      {isLoading && allLoadedData.length > 0 && (
                         <div className="flex items-center justify-center p-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="ml-2 text-sm text-muted-foreground">Loading more...</span>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span className="ml-2 text-xs text-muted-foreground">Loading more...</span>
+                        </div>
+                      )}
+                      
+                      {/* End of results indicator */}
+                      {!hasMorePages && allLoadedData.length > pageSize && (
+                        <div className="flex items-center justify-center p-2">
+                          <span className="text-xs text-muted-foreground">
+                            All {allLoadedData.length} results loaded
+                          </span>
                         </div>
                       )}
                     </CommandGroup>
@@ -378,6 +445,7 @@ export function PaginatedRelationshipCombobox({
               size="icon"
               onClick={handleCreateNew}
               className="shrink-0"
+              disabled={disabled}
               title={`Create new ${entityName.toLowerCase().slice(0, -1)}`}
             >
               <Plus className="h-4 w-4" />

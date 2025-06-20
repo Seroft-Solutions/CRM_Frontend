@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryClientProvider } from "@/core";
 import { AppSessionProvider } from "@/providers/session-provider";
+import { CrossFormNavigationProvider } from "@/context/cross-form-navigation";
 import { auth } from "@/auth";
 
 const geistSans = Geist({
@@ -32,10 +33,11 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <AppSessionProvider session={session}>
+      >        <AppSessionProvider session={session}>
           <QueryClientProvider>
-            {children}
+            <CrossFormNavigationProvider>
+              {children}
+            </CrossFormNavigationProvider>
           </QueryClientProvider>
         </AppSessionProvider>
       </body>
