@@ -146,10 +146,10 @@ export const getAdminRealmsRealmClientsClientUuidRolesRoleNameCompositesClientsC
     realm: string,
     clientUuid: string,
     roleName: string,
-    clientUuid: string,
+    clientUuidt: string,
  options?: SecondParameter<typeof keycloakServiceMutator>,) => {
       return keycloakServiceMutator<RoleRepresentation[]>(
-      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/clients/${clientUuid}`, method: 'GET'
+      {url: `/admin/realms/${realm}/clients/${clientUuid}/roles/${roleName}/composites/clients/${clientUuidt}`, method: 'GET'
     },
       options);
     }
