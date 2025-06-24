@@ -33,7 +33,7 @@ export const meetingFormSchema = z.object({
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Invalid date format"
   }).optional(),
-  organizer: z.number(),
+  organizer: z.string(),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
 });
@@ -70,7 +70,7 @@ export const meetingFieldSchemas = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Invalid date format"
   }).optional(),
-  organizer: z.number(),
+  organizer: z.string(),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
 };

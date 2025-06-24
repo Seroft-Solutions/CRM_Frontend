@@ -85,6 +85,10 @@ function GroupFormContent({ id }: GroupFormProps) {
           'name': '',
           'path': '',
           'description': '',
+          'isActive': '',
+          'createdAt': '',
+          'updatedAt': '',
+          'organization': 'Organization',
           'members': 'Members',
         }}
       />

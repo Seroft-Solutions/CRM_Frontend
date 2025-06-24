@@ -6,6 +6,11 @@ import { PaginatedRelationshipCombobox } from "../../paginated-relationship-comb
 import type { StepComponentProps } from "../form-types";
 import { useEntityForm } from "../group-form-provider";
 import { 
+  useGetAllOrganizations,
+  useSearchOrganizations,
+  useCountOrganizations
+} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
+import { 
   useGetAllUserProfiles,
   useSearchUserProfiles,
   useCountUserProfiles
@@ -15,6 +20,9 @@ import {
 const hookMapping = {
   // Public Users (built-in user entity)
   // Other entities
+  'useGetAllOrganizations': useGetAllOrganizations,
+  'useSearchOrganizations': useSearchOrganizations,
+  'useCountOrganizations': useCountOrganizations,
   'useGetAllUserProfiles': useGetAllUserProfiles,
   'useSearchUserProfiles': useSearchUserProfiles,
   'useCountUserProfiles': useCountUserProfiles,

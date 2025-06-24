@@ -3,13 +3,11 @@
     "changelogDate": "20250624105859"
   },
   "applications": ["crmBackend"],
-  "documentation": "Meeting reminder configuration",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "reminderType",
       "fieldType": "ReminderType",
-      "fieldTypeDocumentation": "Reminder type enum",
       "fieldValidateRules": ["required"],
       "fieldValues": "EMAIL,SMS,PUSH_NOTIFICATION"
     },
@@ -48,5 +46,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

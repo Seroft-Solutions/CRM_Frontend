@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Call category master entity
- */
 export interface CallCategoryDTO {
   id?: number;
   /**

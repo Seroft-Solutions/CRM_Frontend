@@ -27,6 +27,35 @@ export const groupFormConfig: FormConfig = {
       }
     },
     {
+      id: 'dates',
+      title: 'Date & Time',
+      description: 'Set relevant dates',
+      fields: [
+        'createdAt',
+        'updatedAt',
+      ],
+      relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'settings',
+      title: 'Settings & Files',
+      description: 'Configure options',
+      fields: [
+        'isActive',
+      ],
+      relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
       id: 'users',
       title: 'People & Assignment',
       description: 'Assign users and responsibilities',
@@ -34,6 +63,20 @@ export const groupFormConfig: FormConfig = {
       ],
       relationships: [
         'members',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'other',
+      title: 'Additional Relations',
+      description: 'Other connections and references',
+      fields: [
+      ],
+      relationships: [
+        'organization',
       ],
       validation: {
         mode: 'onBlur',
@@ -65,6 +108,7 @@ export const groupFormConfig: FormConfig = {
       required: true,
       validation: {
         required: true,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
       ui: {
       }
@@ -91,6 +135,7 @@ export const groupFormConfig: FormConfig = {
       required: true,
       validation: {
         required: true,
+        maxLength: 500,
       },
       ui: {
       }
@@ -108,15 +153,77 @@ export const groupFormConfig: FormConfig = {
       ui: {
       }
     },
+    {
+      name: 'isActive',
+      type: 'boolean',
+      label: 'Is Active',
+      placeholder: 'Enter is active',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'createdAt',
+      type: 'date',
+      label: 'Created At',
+      placeholder: 'Enter created at',
+      required: false,
+      validation: {
+        required: false,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'updatedAt',
+      type: 'date',
+      label: 'Updated At',
+      placeholder: 'Enter updated at',
+      required: false,
+      validation: {
+        required: false,
+      },
+      ui: {
+      }
+    },
   ],
 
   // Relationship definitions
   relationships: [
     {
+      name: 'organization',
+      type: 'many-to-one',
+      targetEntity: 'organization',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: true,
+      multiple: false,
+      category: 'other',
+      api: {
+        useGetAllHook: 'useGetAllOrganizations',
+        useSearchHook: 'useSearchOrganizations',
+        useCountHook: 'useCountOrganizations',
+        entityName: 'Organizations',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/organizations/new',
+        createPermission: 'organization:create',
+      },
+      ui: {
+        label: 'Organization',
+        placeholder: 'Select organization',
+        icon: '🔗',
+      }
+    },
+    {
       name: 'members',
       type: 'many-to-many',
       targetEntity: 'userProfile',
-      displayField: 'name',
+      displayField: 'displayName',
       primaryKey: 'id',
       required: false,
       multiple: true,

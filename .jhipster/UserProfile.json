@@ -3,38 +3,49 @@
     "changelogDate": "20250624105903"
   },
   "applications": ["crmBackend"],
-  "documentation": "Represents a user synced from Keycloak.",
+  "documentation": "Extended user profile for CRM-specific data",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "keycloakId",
-      "fieldType": "UUID",
-      "fieldValidateRules": ["required", "unique"]
-    },
-    {
-      "fieldName": "email",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength", "maxlength", "unique"],
-      "fieldValidateRulesMaxlength": "100",
-      "fieldValidateRulesMinlength": "5"
+      "fieldValidateRules": ["pattern"],
+      "fieldValidateRulesPattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     },
     {
-      "fieldName": "firstName",
+      "fieldName": "phone",
       "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "50"
+      "fieldValidateRules": ["maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "20",
+      "fieldValidateRulesPattern": "^[+]?[0-9\\s\\-\\(\\)]{10,20}$"
     },
     {
-      "fieldName": "lastName",
+      "fieldName": "displayName",
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "50"
+      "fieldValidateRulesMaxlength": "200"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "UserProfile",
   "pagination": "pagination",
   "relationships": [
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
     {
       "otherEntityName": "userAvailability",
       "otherEntityRelationshipName": "user",
@@ -52,7 +63,8 @@
     {
       "otherEntityField": "name",
       "otherEntityName": "organization",
-      "relationshipName": "organization",
+      "otherEntityRelationshipName": "members",
+      "relationshipName": "organizations",
       "relationshipSide": "left",
       "relationshipType": "many-to-many"
     },
@@ -66,14 +78,6 @@
     },
     {
       "otherEntityField": "name",
-      "otherEntityName": "role",
-      "otherEntityRelationshipName": "users",
-      "relationshipName": "roles",
-      "relationshipSide": "left",
-      "relationshipType": "many-to-many"
-    },
-    {
-      "otherEntityField": "name",
       "otherEntityName": "channelType",
       "otherEntityRelationshipName": "channelParties",
       "relationshipName": "channelType",
@@ -81,5 +85,6 @@
       "relationshipType": "many-to-one"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

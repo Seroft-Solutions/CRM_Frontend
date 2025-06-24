@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Product master entity
- */
 export interface ProductDTO {
   id?: number;
   /**

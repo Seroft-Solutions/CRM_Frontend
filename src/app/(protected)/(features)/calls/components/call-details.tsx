@@ -222,7 +222,7 @@ export function CallDetails({ id }: CallDetailsProps) {
                     
                     {entity.channelCustomer ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelCustomer as any).email || entity.channelCustomer.id}
+                        {(entity.channelCustomer as any).login || entity.channelCustomer.id}
                       </Badge>
                     ) : "—"}
                     
@@ -235,7 +235,7 @@ export function CallDetails({ id }: CallDetailsProps) {
                     
                     {entity.assignedTo ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedTo as any).email || entity.assignedTo.id}
+                        {(entity.assignedTo as any).login || entity.assignedTo.id}
                       </Badge>
                     ) : "—"}
                     

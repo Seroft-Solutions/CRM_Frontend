@@ -3,7 +3,6 @@
     "changelogDate": "20250624105857"
   },
   "applications": ["crmBackend"],
-  "documentation": "Meeting entity for scheduled appointments",
   "dto": "mapstruct",
   "fields": [
     {
@@ -62,14 +61,12 @@
     {
       "fieldName": "meetingStatus",
       "fieldType": "MeetingStatus",
-      "fieldTypeDocumentation": "Meeting status enum",
       "fieldValidateRules": ["required"],
       "fieldValues": "SCHEDULED,CONFIRMED,CANCELLED,COMPLETED,NO_SHOW"
     },
     {
       "fieldName": "meetingType",
       "fieldType": "MeetingType",
-      "fieldTypeDocumentation": "Meeting type enum",
       "fieldValidateRules": ["required"],
       "fieldValues": "VIRTUAL,IN_PERSON,PHONE_CALL"
     },
@@ -101,12 +98,13 @@
       "relationshipType": "one-to-many"
     },
     {
-      "otherEntityField": "email",
-      "otherEntityName": "userProfile",
+      "otherEntityField": "login",
+      "otherEntityName": "user",
       "relationshipName": "organizer",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
+      "relationshipValidateRules": "required",
+      "relationshipWithBuiltInEntity": true
     },
     {
       "otherEntityField": "customerBusinessName",
@@ -117,7 +115,7 @@
     },
     {
       "otherEntityName": "call",
-      "otherEntityRelationshipName": "meeting",
+      "otherEntityRelationshipName": "meetings",
       "relationshipName": "call",
       "relationshipSide": "right",
       "relationshipType": "many-to-one"

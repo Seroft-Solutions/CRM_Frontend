@@ -3,7 +3,6 @@
     "changelogDate": "20250624105844"
   },
   "applications": ["crmBackend"],
-  "documentation": "Sub call type entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -39,5 +38,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

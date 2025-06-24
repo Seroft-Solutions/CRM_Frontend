@@ -3,13 +3,11 @@
     "changelogDate": "20250624105858"
   },
   "applications": ["crmBackend"],
-  "documentation": "User availability for scheduling",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "dayOfWeek",
       "fieldType": "DayOfWeek",
-      "fieldTypeDocumentation": "Day of week enum",
       "fieldValidateRules": ["required"],
       "fieldValues": "MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY"
     },
@@ -50,7 +48,7 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityField": "email",
+      "otherEntityField": "displayName",
       "otherEntityName": "userProfile",
       "otherEntityRelationshipName": "availabilitySlots",
       "relationshipName": "user",

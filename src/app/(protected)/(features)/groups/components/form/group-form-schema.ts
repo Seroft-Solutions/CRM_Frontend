@@ -5,10 +5,24 @@ import { z } from "zod";
  * This file is auto-generated. To modify validation rules, update the generator templates.
  */
 export const groupFormSchema = z.object({
-  keycloakGroupId: z.string(),
+  keycloakGroupId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
-  path: z.string(),
+  path: z.string().max(500),
   description: z.string().max(255).optional(),
+  isActive: z.boolean(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  organization: z.number(),
   members: z.array(z.number()).optional(),
 });
 
@@ -16,10 +30,24 @@ export type GroupFormValues = z.infer<typeof groupFormSchema>;
 
 // Individual field schemas for granular validation
 export const groupFieldSchemas = {
-  keycloakGroupId: z.string(),
+  keycloakGroupId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
-  path: z.string(),
+  path: z.string().max(500),
   description: z.string().max(255).optional(),
+  isActive: z.boolean(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  organization: z.number(),
   members: z.array(z.number()).optional(),
 };
 
@@ -32,10 +60,20 @@ export const groupStepSchemas = {
     description: groupFieldSchemas.description,
   }),
   
+  dates: z.object({
+    createdAt: groupFieldSchemas.createdAt,
+    updatedAt: groupFieldSchemas.updatedAt,
+  }),
   
+  settings: z.object({
+    isActive: groupFieldSchemas.isActive,
+  }),
   
   user: z.object({
     members: groupFieldSchemas.members,
+  }),
+  other: z.object({
+    organization: groupFieldSchemas.organization,
   }),
   
   review: groupFormSchema
@@ -71,6 +109,7 @@ export const groupValidationHelpers = {
     if (fieldName === 'keycloakGroupId') {
       return {
         required: true,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       };
     }
     if (fieldName === 'name') {
@@ -83,12 +122,18 @@ export const groupValidationHelpers = {
     if (fieldName === 'path') {
       return {
         required: true,
+        maxLength: 500,
       };
     }
     if (fieldName === 'description') {
       return {
         required: false,
         maxLength: 255,
+      };
+    }
+    if (fieldName === 'isActive') {
+      return {
+        required: true,
       };
     }
     

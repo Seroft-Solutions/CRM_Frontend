@@ -5,20 +5,10 @@ import { Session } from 'next-auth';
 // Keycloak APIs
 import { getAdminRealmsRealmOrganizations } from '@/core/api/generated/keycloak/endpoints/organizations/organizations.gen';
 
-// Spring APIs
-import {
-  getAllOrganizations,
-  createOrganization,
-} from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
-import {
-  getAllUserProfiles,
-  createUserProfile,
-  searchUserProfiles,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
 // Types
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
+import {createUserProfile, getAllOrganizations, searchUserProfiles, setupSchema} from "@/core/api/generated/spring";
 
 export interface SyncResult {
   organizationSynced: boolean;
@@ -117,7 +107,7 @@ export class OrganizationSyncService {
         createdDate: new Date().toISOString(),
       };
 
-      const response = await createOrganization({ data: organizationDTO });
+      const response = await setupSchema({ data: organizationDTO });
 
       return {
         synced: true,

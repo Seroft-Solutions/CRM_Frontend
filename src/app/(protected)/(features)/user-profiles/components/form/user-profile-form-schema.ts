@@ -5,13 +5,24 @@ import { z } from "zod";
  * This file is auto-generated. To modify validation rules, update the generator templates.
  */
 export const userProfileFormSchema = z.object({
-  keycloakId: z.string(),
-  email: z.string().min(5).max(100),
-  firstName: z.string().max(50).optional(),
-  lastName: z.string().max(50).optional(),
-  organization: z.array(z.number()).optional(),
+  keycloakId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).optional(),
+  phone: z.string().max(20).regex(/^[+]?[0-9\s\-\(\)]{10,20}$/).optional(),
+  displayName: z.string().max(200).optional(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  user: z.string().optional(),
+  organizations: z.array(z.number()).optional(),
   groups: z.array(z.number()).optional(),
-  roles: z.array(z.number()).optional(),
   channelType: z.number().optional(),
 });
 
@@ -19,13 +30,24 @@ export type UserProfileFormValues = z.infer<typeof userProfileFormSchema>;
 
 // Individual field schemas for granular validation
 export const userProfileFieldSchemas = {
-  keycloakId: z.string(),
-  email: z.string().min(5).max(100),
-  firstName: z.string().max(50).optional(),
-  lastName: z.string().max(50).optional(),
-  organization: z.array(z.number()).optional(),
+  keycloakId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).optional(),
+  phone: z.string().max(20).regex(/^[+]?[0-9\s\-\(\)]{10,20}$/).optional(),
+  displayName: z.string().max(200).optional(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  user: z.string().optional(),
+  organizations: z.array(z.number()).optional(),
   groups: z.array(z.number()).optional(),
-  roles: z.array(z.number()).optional(),
   channelType: z.number().optional(),
 };
 
@@ -33,20 +55,25 @@ export const userProfileFieldSchemas = {
 export const userProfileStepSchemas = {
   basic: z.object({
     keycloakId: userProfileFieldSchemas.keycloakId,
-    email: userProfileFieldSchemas.email,
-    firstName: userProfileFieldSchemas.firstName,
-    lastName: userProfileFieldSchemas.lastName,
+    phone: userProfileFieldSchemas.phone,
+    displayName: userProfileFieldSchemas.displayName,
+  }),
+  
+  dates: z.object({
+    createdAt: userProfileFieldSchemas.createdAt,
+    updatedAt: userProfileFieldSchemas.updatedAt,
   }),
   
   
-  
+  user: z.object({
+    user: userProfileFieldSchemas.user,
+  }),
   classification: z.object({
     channelType: userProfileFieldSchemas.channelType,
   }),
   other: z.object({
-    organization: userProfileFieldSchemas.organization,
+    organizations: userProfileFieldSchemas.organizations,
     groups: userProfileFieldSchemas.groups,
-    roles: userProfileFieldSchemas.roles,
   }),
   
   review: userProfileFormSchema
@@ -81,26 +108,21 @@ export const userProfileValidationHelpers = {
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'keycloakId') {
       return {
-        required: true,
+        required: false,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       };
     }
-    if (fieldName === 'email') {
-      return {
-        required: true,
-        minLength: 5,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'firstName') {
+    if (fieldName === 'phone') {
       return {
         required: false,
-        maxLength: 50,
+        maxLength: 20,
+        pattern: /^[+]?[0-9\s\-\(\)]{10,20}$/,
       };
     }
-    if (fieldName === 'lastName') {
+    if (fieldName === 'displayName') {
       return {
         required: false,
-        maxLength: 50,
+        maxLength: 200,
       };
     }
     

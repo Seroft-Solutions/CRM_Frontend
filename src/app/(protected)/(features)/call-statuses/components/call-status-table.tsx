@@ -37,7 +37,7 @@ import {
   useDeleteCallStatus,
   useCountCallStatuses,
   usePartialUpdateCallStatus,
-  
+  useSearchCallStatuses,
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
 
 
@@ -143,19 +143,34 @@ export function CallStatusTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllCallStatuses(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchCallStatuses(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllCallStatuses(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -243,6 +258,12 @@ export function CallStatusTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

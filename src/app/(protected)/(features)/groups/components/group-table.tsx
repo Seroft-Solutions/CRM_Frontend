@@ -37,10 +37,19 @@ import {
   useDeleteGroup,
   useCountGroups,
   usePartialUpdateGroup,
-  
+  useSearchGroups,
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 
 
+
+
+// Relationship data imports
+
+
+
+import {
+  useGetAllOrganizations
+} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
 
 
 
@@ -80,6 +89,14 @@ export function GroupTable() {
   const pageSize = 10;
 
   
+  // Fetch relationship data for dropdowns
+  
+  const { data: organizationOptions = [] } = useGetAllOrganizations(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
+  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
@@ -92,38 +109,81 @@ export function GroupTable() {
     const params: Record<string, any> = {};
     
     
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      
+      'organization.name': { 
+        apiParam: 'organizationId.equals', 
+        options: organizationOptions, 
+        displayField: 'name' 
+      },
+      
+    };
+    
     
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "" && value !== null) {
         
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
         
         
+        // Handle isActive boolean filter
+        else if (key === 'isActive') {
+          params['isActive.equals'] = value === 'true';
+        }
+        
+        
+        
+        // Handle createdAt date filter
+        else if (key === 'createdAt') {
+          if (value instanceof Date) {
+            params['createdAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['createdAt.equals'] = value;
+          }
+        }
+        
+        // Handle updatedAt date filter
+        else if (key === 'updatedAt') {
+          if (value instanceof Date) {
+            params['updatedAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['updatedAt.equals'] = value;
+          }
+        }
         
         
         // Handle keycloakGroupId text filter with contains
-        if (key === 'keycloakGroupId') {
+        else if (key === 'keycloakGroupId') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['keycloakGroupId.contains'] = value;
           }
         }
         
         // Handle name text filter with contains
-        if (key === 'name') {
+        else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
         }
         
         // Handle path text filter with contains
-        if (key === 'path') {
+        else if (key === 'path') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['path.contains'] = value;
           }
         }
         
         // Handle description text filter with contains
-        if (key === 'description') {
+        else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['description.contains'] = value;
           }
@@ -142,6 +202,20 @@ export function GroupTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params['createdAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['createdAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+    if (dateRange.from) {
+      params['updatedAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['updatedAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
 
     return params;
   };
@@ -150,19 +224,34 @@ export function GroupTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllGroups(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchGroups(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllGroups(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -250,6 +339,12 @@ export function GroupTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages
@@ -362,6 +457,14 @@ export function GroupTable() {
   // Prepare relationship configurations for components
   const relationshipConfigs = [
     
+    {
+      name: "organization",
+      displayName: "Organization",
+      options: organizationOptions || [],
+      displayField: "name",
+      isEditable: false, // Disabled by default
+    },
+    
   ];
 
   // Check if any filters are active
@@ -430,7 +533,7 @@ export function GroupTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={9}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -453,7 +556,7 @@ export function GroupTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={9}
                   className="h-24 text-center"
                 >
                   No groups found

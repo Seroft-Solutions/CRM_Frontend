@@ -7,9 +7,6 @@
  */
 import type { StateDTO } from './StateDTO';
 
-/**
- * District master entity
- */
 export interface DistrictDTO {
   id?: number;
   /**

@@ -37,7 +37,7 @@ import {
   useDeleteMeetingReminder,
   useCountMeetingReminders,
   usePartialUpdateMeetingReminder,
-  
+  useSearchMeetingReminders,
 } from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
 
 
@@ -201,19 +201,34 @@ export function MeetingReminderTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllMeetingReminders(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchMeetingReminders(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllMeetingReminders(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -301,6 +316,12 @@ export function MeetingReminderTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

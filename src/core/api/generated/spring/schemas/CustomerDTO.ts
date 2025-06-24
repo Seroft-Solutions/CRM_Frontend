@@ -10,9 +10,6 @@ import type { DistrictDTO } from './DistrictDTO';
 import type { CityDTO } from './CityDTO';
 import type { AreaDTO } from './AreaDTO';
 
-/**
- * Customer entity - represents customers/leads/contacts
- */
 export interface CustomerDTO {
   id?: number;
   /**

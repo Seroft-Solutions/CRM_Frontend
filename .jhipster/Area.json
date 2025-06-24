@@ -3,7 +3,6 @@
     "changelogDate": "20250624105853"
   },
   "applications": ["crmBackend"],
-  "documentation": "Area master entity with pincode",
   "dto": "mapstruct",
   "fields": [
     {
@@ -36,5 +35,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

@@ -85,6 +85,10 @@ function OrganizationFormContent({ id }: OrganizationFormProps) {
           'name': '',
           'displayName': '',
           'domain': '',
+          'isActive': '',
+          'createdAt': '',
+          'updatedAt': '',
+          'members': 'Members',
         }}
       />
 

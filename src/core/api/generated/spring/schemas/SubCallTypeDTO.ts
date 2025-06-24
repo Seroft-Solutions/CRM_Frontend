@@ -7,9 +7,6 @@
  */
 import type { CallTypeDTO } from './CallTypeDTO';
 
-/**
- * Sub call type entity
- */
 export interface SubCallTypeDTO {
   id?: number;
   /**

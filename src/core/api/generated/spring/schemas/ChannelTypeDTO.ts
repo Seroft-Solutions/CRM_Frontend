@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Channel type master entity
- */
 export interface ChannelTypeDTO {
   id?: number;
   /**

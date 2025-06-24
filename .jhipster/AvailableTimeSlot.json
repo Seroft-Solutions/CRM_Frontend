@@ -3,7 +3,6 @@
     "changelogDate": "20250624105901"
   },
   "applications": ["crmBackend"],
-  "documentation": "Available time slot entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -32,7 +31,7 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityField": "email",
+      "otherEntityField": "displayName",
       "otherEntityName": "userProfile",
       "otherEntityRelationshipName": "availableTimeSlots",
       "relationshipName": "user",
@@ -41,5 +40,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

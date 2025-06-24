@@ -15,11 +15,39 @@ export const userProfileFormConfig: FormConfig = {
       description: 'Enter essential details',
       fields: [
         'keycloakId',
-        'email',
-        'firstName',
-        'lastName',
+        'phone',
+        'displayName',
       ],
       relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'dates',
+      title: 'Date & Time',
+      description: 'Set relevant dates',
+      fields: [
+        'createdAt',
+        'updatedAt',
+      ],
+      relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'users',
+      title: 'People & Assignment',
+      description: 'Assign users and responsibilities',
+      fields: [
+      ],
+      relationships: [
+        'user',
       ],
       validation: {
         mode: 'onBlur',
@@ -47,9 +75,8 @@ export const userProfileFormConfig: FormConfig = {
       fields: [
       ],
       relationships: [
-        'organization',
+        'organizations',
         'groups',
-        'roles',
       ],
       validation: {
         mode: 'onBlur',
@@ -78,49 +105,61 @@ export const userProfileFormConfig: FormConfig = {
       type: 'text',
       label: 'Keycloak Id',
       placeholder: 'Enter keycloak id',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {
-      }
-    },
-    {
-      name: 'email',
-      type: 'text',
-      label: 'Email',
-      placeholder: 'Enter email',
-      required: true,
-      validation: {
-        required: true,
-        minLength: 5,
-        maxLength: 100,
-      },
-      ui: {
-      }
-    },
-    {
-      name: 'firstName',
-      type: 'text',
-      label: 'First Name',
-      placeholder: 'Enter first name',
       required: false,
       validation: {
         required: false,
-        maxLength: 50,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
       ui: {
       }
     },
     {
-      name: 'lastName',
+      name: 'phone',
       type: 'text',
-      label: 'Last Name',
-      placeholder: 'Enter last name',
+      label: 'Phone',
+      placeholder: 'Enter phone',
       required: false,
       validation: {
         required: false,
-        maxLength: 50,
+        maxLength: 20,
+        pattern: /^[+]?[0-9\s\-\(\)]{10,20}$/,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'displayName',
+      type: 'text',
+      label: 'Display Name',
+      placeholder: 'Enter display name',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 200,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'createdAt',
+      type: 'date',
+      label: 'Created At',
+      placeholder: 'Enter created at',
+      required: false,
+      validation: {
+        required: false,
+      },
+      ui: {
+      }
+    },
+    {
+      name: 'updatedAt',
+      type: 'date',
+      label: 'Updated At',
+      placeholder: 'Enter updated at',
+      required: false,
+      validation: {
+        required: false,
       },
       ui: {
       }
@@ -130,7 +169,30 @@ export const userProfileFormConfig: FormConfig = {
   // Relationship definitions
   relationships: [
     {
-      name: 'organization',
+      name: 'user',
+      type: 'one-to-one',
+      targetEntity: 'user',
+      displayField: 'login',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'user',
+      api: {
+        useGetAllHook: 'useGetAllPublicUsers',
+        useSearchHook: 'useSearchPublicUsers',
+        entityName: 'PublicUsers',
+      },
+      creation: {
+        canCreate: false,
+      },
+      ui: {
+        label: 'User',
+        placeholder: 'Select user',
+        icon: '👥',
+      }
+    },
+    {
+      name: 'organizations',
       type: 'many-to-many',
       targetEntity: 'organization',
       displayField: 'name',
@@ -150,8 +212,8 @@ export const userProfileFormConfig: FormConfig = {
         createPermission: 'organization:create',
       },
       ui: {
-        label: 'Organization',
-        placeholder: 'Select organization',
+        label: 'Organizations',
+        placeholder: 'Select organizations',
         icon: '🔗',
       }
     },
@@ -178,32 +240,6 @@ export const userProfileFormConfig: FormConfig = {
       ui: {
         label: 'Groups',
         placeholder: 'Select groups',
-        icon: '🔗',
-      }
-    },
-    {
-      name: 'roles',
-      type: 'many-to-many',
-      targetEntity: 'role',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: false,
-      multiple: true,
-      category: 'other',
-      api: {
-        useGetAllHook: 'useGetAllRoles',
-        useSearchHook: 'useSearchRoles',
-        useCountHook: 'useCountRoles',
-        entityName: 'Roles',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/roles/new',
-        createPermission: 'role:create',
-      },
-      ui: {
-        label: 'Roles',
-        placeholder: 'Select roles',
         icon: '🔗',
       }
     },

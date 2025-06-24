@@ -45,6 +45,10 @@ import {
 
 // Relationship data imports
 
+import {
+  useGetAllPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+
 
 
 import {
@@ -74,10 +78,6 @@ import {
 import {
   useGetAllChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-
-import {
-  useGetAllUserProfiles
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 import {
   useGetAllCallStatuses
@@ -158,7 +158,7 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
-  const { data: userprofileOptions = [] } = useGetAllUserProfiles(
+  const { data: userOptions = [] } = useGetAllPublicUsers(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -226,16 +226,16 @@ export function CallTable() {
         displayField: 'name' 
       },
       
-      'channelCustomer.email': { 
+      'channelCustomer.login': { 
         apiParam: 'channelCustomerId.equals', 
-        options: userprofileOptions, 
-        displayField: 'email' 
+        options: userOptions, 
+        displayField: 'login' 
       },
       
-      'assignedTo.email': { 
+      'assignedTo.login': { 
         apiParam: 'assignedToId.equals', 
-        options: userprofileOptions, 
-        displayField: 'email' 
+        options: userOptions, 
+        displayField: 'login' 
       },
       
       'callStatus.name': { 
@@ -593,16 +593,16 @@ export function CallTable() {
     {
       name: "channelCustomer",
       displayName: "ChannelCustomer",
-      options: userprofileOptions || [],
-      displayField: "email",
+      options: userOptions || [],
+      displayField: "login",
       isEditable: false, // Disabled by default
     },
     
     {
       name: "assignedTo",
       displayName: "AssignedTo",
-      options: userprofileOptions || [],
-      displayField: "email",
+      options: userOptions || [],
+      displayField: "login",
       isEditable: false, // Disabled by default
     },
     

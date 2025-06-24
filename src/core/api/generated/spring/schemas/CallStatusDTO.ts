@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Call status master entity
- */
 export interface CallStatusDTO {
   id?: number;
   /**

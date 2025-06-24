@@ -3,7 +3,6 @@
     "changelogDate": "20250624105846"
   },
   "applications": ["crmBackend"],
-  "documentation": "Call category master entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -30,5 +29,6 @@
   "name": "CallCategory",
   "pagination": "pagination",
   "relationships": [],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

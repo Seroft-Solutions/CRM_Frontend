@@ -37,7 +37,7 @@ import {
   useDeleteDistrict,
   useCountDistricts,
   usePartialUpdateDistrict,
-  
+  useSearchDistricts,
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
 
 
@@ -166,19 +166,34 @@ export function DistrictTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllDistricts(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchDistricts(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllDistricts(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -266,6 +281,12 @@ export function DistrictTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

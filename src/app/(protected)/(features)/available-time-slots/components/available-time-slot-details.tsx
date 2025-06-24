@@ -162,7 +162,7 @@ export function AvailableTimeSlotDetails({ id }: AvailableTimeSlotDetailsProps) 
                     
                     {entity.user ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.user as any).email || entity.user.id}
+                        {(entity.user as any).displayName || entity.user.id}
                       </Badge>
                     ) : "—"}
                     
