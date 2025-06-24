@@ -90,10 +90,7 @@ export class TemplateVariablePreparer {
   /**
    * Prepare variables for EJS templates
    */
-  static prepareTemplateVariables(
-    entityName: string,
-    entityDefinition: EntityDefinition
-  ): TemplateVariables {
+  static prepareTemplateVariables(entityName: string, entityDefinition: EntityDefinition): TemplateVariables {
     const entityFileName = GeneratorUtils.camelToKebab(entityName);
     const entityClass = entityName;
     const entityClassPlural = pluralize(entityName);
@@ -105,13 +102,10 @@ export class TemplateVariablePreparer {
 
     // Process relationships to add computed properties
     const processedRelationships = this.processRelationships(entityDefinition.relationships || []);
-    const persistableRelationships = processedRelationships.filter(
-      (r) => r.relationshipType !== 'one-to-many'
-    );
-
+    const persistableRelationships = processedRelationships.filter((r) => r.relationshipType !== 'one-to-many');
+    
     // Get unique other entities for API imports
-    const otherEntitiesWithPersistableRelationship =
-      this.getUniqueOtherEntities(persistableRelationships);
+    const otherEntitiesWithPersistableRelationship = this.getUniqueOtherEntities(persistableRelationships);
 
     return {
       entityName,
@@ -129,10 +123,8 @@ export class TemplateVariablePreparer {
       persistableRelationships,
       otherEntitiesWithPersistableRelationship,
       searchEngineAny: entityDefinition.searchEngine,
-      anyFieldIsDateDerived: filteredFields.some(
-        (f) =>
-          f.fieldTypeTimed || f.fieldTypeLocalDate || f.fieldTypeZonedDateTime || f.fieldTypeInstant
-      ),
+      anyFieldIsDateDerived: filteredFields.some((f) => 
+        f.fieldTypeTimed || f.fieldTypeLocalDate || f.fieldTypeZonedDateTime || f.fieldTypeInstant),
       anyFieldIsBlobDerived: filteredFields.some((f) => f.fieldTypeBinary),
       readOnly: entityDefinition.readOnly || false,
       pagination: entityDefinition.pagination || 'no',
@@ -145,36 +137,33 @@ export class TemplateVariablePreparer {
    * Process relationships to add computed properties
    */
   private static processRelationships(relationships: Relationship[]): ProcessedRelationship[] {
-    return relationships.map((rel) => {
+    return relationships.map(rel => {
       const otherEntityName = rel.otherEntityName;
       const otherEntityClass = GeneratorUtils.upperFirstCamelCase(otherEntityName);
       const otherEntityClassPlural = pluralize(otherEntityClass);
       const otherEntityInstance = GeneratorUtils.lowerFirstCamelCase(otherEntityName);
       const otherEntityInstancePlural = pluralize(otherEntityInstance);
       const otherEntityFileName = GeneratorUtils.camelToKebab(otherEntityName);
-
+      
       // Determine relationship field names
       const relationshipName = rel.relationshipName;
       const relationshipFieldName = relationshipName;
       const relationshipFieldNamePlural = pluralize(relationshipName);
-
+      
       // Determine if this is a collection relationship
-      const isCollection =
-        rel.relationshipType === 'one-to-many' || rel.relationshipType === 'many-to-many';
-
+      const isCollection = rel.relationshipType === 'one-to-many' || rel.relationshipType === 'many-to-many';
+      
       // Determine display field - use 'login' for built-in user entity, otherwise default to 'name'
-      const otherEntityField =
-        rel.otherEntityField || (rel.relationshipWithBuiltInEntity ? 'login' : 'name');
-
+      const otherEntityField = rel.otherEntityField || (rel.relationshipWithBuiltInEntity ? 'login' : 'name');
+      
       // Determine if relationship is required
-      const relationshipRequired =
-        rel.relationshipRequired ||
-        (rel.relationshipValidateRules && rel.relationshipValidateRules.includes('required')) ||
+      const relationshipRequired = rel.relationshipRequired || 
+        (rel.relationshipValidateRules && rel.relationshipValidateRules.includes('required')) || 
         false;
-
+      
       // Determine if this is a built-in user entity
       const isBuiltInUser = rel.relationshipWithBuiltInEntity && otherEntityName === 'user';
-
+      
       return {
         ...rel,
         // Original relationship properties
@@ -186,7 +175,7 @@ export class TemplateVariablePreparer {
         relationshipRequired,
         collection: isCollection,
         otherEntityField,
-
+        
         // Computed other entity properties
         otherEntity: {
           entityName: otherEntityName,
@@ -199,7 +188,7 @@ export class TemplateVariablePreparer {
           routePath: pluralize(otherEntityFileName), // Add pluralized route path
           primaryKey: { name: 'id' }, // Default primary key
           builtInUser: Boolean(isBuiltInUser),
-        },
+        }
       };
     });
   }
@@ -207,18 +196,16 @@ export class TemplateVariablePreparer {
   /**
    * Get unique other entities for API imports
    */
-  private static getUniqueOtherEntities(
-    relationships: ProcessedRelationship[]
-  ): ProcessedRelationship['otherEntity'][] {
+  private static getUniqueOtherEntities(relationships: ProcessedRelationship[]): ProcessedRelationship['otherEntity'][] {
     const entityMap = new Map();
-
-    relationships.forEach((rel) => {
+    
+    relationships.forEach(rel => {
       const otherEntity = rel.otherEntity;
       if (!entityMap.has(otherEntity.entityName)) {
         entityMap.set(otherEntity.entityName, otherEntity);
       }
     });
-
+    
     return Array.from(entityMap.values());
   }
 
@@ -227,16 +214,14 @@ export class TemplateVariablePreparer {
    */
   private static filterFields(fields: Field[]): Field[] {
     const excludedFields = ['tenantId'];
-
-    return fields
-      .filter((field) => {
-        const shouldExclude = excludedFields.includes(field.fieldName);
-        if (shouldExclude) {
-          console.log(`Excluding system field from code generation: ${field.fieldName}`);
-        }
-        return !shouldExclude;
-      })
-      .map((field) => this.processFieldType(field));
+    
+    return fields.filter(field => {
+      const shouldExclude = excludedFields.includes(field.fieldName);
+      if (shouldExclude) {
+        console.log(`Excluding system field from code generation: ${field.fieldName}`);
+      }
+      return !shouldExclude;
+    }).map(field => this.processFieldType(field));
   }
 
   /**
@@ -244,7 +229,7 @@ export class TemplateVariablePreparer {
    */
   private static processFieldType(field: Field): Field {
     const processedField = { ...field };
-
+    
     // Set type-specific boolean flags based on fieldType
     switch (field.fieldType) {
       case 'Integer':
@@ -254,38 +239,38 @@ export class TemplateVariablePreparer {
       case 'BigDecimal':
         processedField.fieldTypeNumeric = true;
         break;
-
+      
       case 'Boolean':
         processedField.fieldTypeBoolean = true;
         break;
-
+      
       case 'LocalDate':
         processedField.fieldTypeLocalDate = true;
         processedField.fieldTypeTimed = true;
         break;
-
+      
       case 'ZonedDateTime':
         processedField.fieldTypeZonedDateTime = true;
         processedField.fieldTypeTimed = true;
         break;
-
+      
       case 'Instant':
         processedField.fieldTypeInstant = true;
         processedField.fieldTypeTimed = true;
         break;
-
+      
       case 'TextBlob':
       case 'ImageBlob':
       case 'AnyBlob':
         processedField.fieldTypeBinary = true;
         break;
     }
-
+    
     // Check if field is an enum (has enumValues)
     if (field.enumValues && field.enumValues.length > 0) {
       processedField.fieldIsEnum = true;
     }
-
+    
     return processedField;
   }
 }

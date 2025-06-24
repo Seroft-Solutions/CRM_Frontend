@@ -13,14 +13,19 @@ async function debugGeneration() {
     const templateDir = path.join(projectRoot, 'codgen', 'nextjs', 'templates');
     const outputDir = path.join(projectRoot, 'src');
 
-    const generator = new NextJsGenerator(projectRoot, jhipsterDir, templateDir, outputDir);
+    const generator = new NextJsGenerator(
+      projectRoot,
+      jhipsterDir,
+      templateDir,
+      outputDir
+    );
 
     console.log('📂 Template directory contents:');
     const formTemplatesPath = path.join(templateDir, 'entity', 'components', 'form');
     if (fs.existsSync(formTemplatesPath)) {
       console.log('✅ Form templates directory exists');
       const formTemplates = fs.readdirSync(formTemplatesPath, { recursive: true });
-      formTemplates.forEach((file) => console.log(`   - ${file}`));
+      formTemplates.forEach(file => console.log(`   - ${file}`));
     } else {
       console.log('❌ Form templates directory missing');
     }
@@ -29,18 +34,11 @@ async function debugGeneration() {
     await generator.generateEntity('UserAvailability');
 
     console.log('\n📋 Generated files:');
-    const entityDir = path.join(
-      outputDir,
-      'app',
-      '(protected)/(features)',
-      'user-availabilities',
-      'components',
-      'form'
-    );
+    const entityDir = path.join(outputDir, 'app', '(protected)/(features)', 'user-availabilities', 'components', 'form');
     if (fs.existsSync(entityDir)) {
       const generatedFiles = fs.readdirSync(entityDir, { recursive: true });
-      generatedFiles.forEach((file) => console.log(`   ✅ ${file}`));
-
+      generatedFiles.forEach(file => console.log(`   ✅ ${file}`));
+      
       // Check specifically for schema file
       const schemaFile = path.join(entityDir, 'user-availability-form-schema.ts');
       if (fs.existsSync(schemaFile)) {
@@ -51,6 +49,7 @@ async function debugGeneration() {
     } else {
       console.log('❌ Form directory not found');
     }
+
   } catch (error) {
     console.error('❌ Error during generation:', error);
   }

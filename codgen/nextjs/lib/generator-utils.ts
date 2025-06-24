@@ -27,12 +27,10 @@ export class GeneratorUtils {
    * Convert camelCase or PascalCase to Human Case
    */
   static humanize(str: string): string {
-    return (
-      str
-        // Split camelCase
-        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-        // uppercase first letter
-        .replace(/^./, (s) => s.toUpperCase())
-    );
+    return str
+      // Split camelCase
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      // uppercase first letter
+      .replace(/^./, s => s.toUpperCase());
   }
 }

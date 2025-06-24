@@ -15,49 +15,45 @@ export class SharedComponentGenerator {
    */
   async generateSharedComponents(): Promise<void> {
     console.log('Generating shared components...');
-
+    
     // Create components directory structure
     const componentsDir = path.join(this.outputDir, 'components');
     const authDir = path.join(componentsDir, 'auth');
-
+    
     this.ensureDir(componentsDir);
     this.ensureDir(authDir);
-
+    
     const components = [
       {
         template: path.join(this.templateDir, 'components', 'toaster-provider.tsx.ejs'),
         output: path.join(componentsDir, 'toaster-provider.tsx'),
-        name: 'ToasterProvider',
+        name: 'ToasterProvider'
       },
       {
         template: path.join(this.templateDir, 'components', 'auth', 'permission-guard.tsx'),
         output: path.join(authDir, 'permission-guard.tsx'),
-        name: 'PermissionGuard',
+        name: 'PermissionGuard'
       },
       {
         template: path.join(this.templateDir, 'components', 'auth', 'unauthorized-page.tsx'),
         output: path.join(authDir, 'unauthorized-page.tsx'),
-        name: 'UnauthorizedPage',
+        name: 'UnauthorizedPage'
       },
       {
         template: path.join(this.templateDir, 'components', 'context-aware-back-button.tsx'),
         output: path.join(componentsDir, 'context-aware-back-button.tsx'),
-        name: 'ContextAwareBackButton',
-      },
+        name: 'ContextAwareBackButton'
+      }
     ];
 
     for (const component of components) {
       await this.generateComponent(component.template, component.output, component.name);
     }
-
+    
     console.log('Shared components generated successfully');
   }
 
-  private async generateComponent(
-    templatePath: string,
-    outputPath: string,
-    componentName: string
-  ): Promise<void> {
+  private async generateComponent(templatePath: string, outputPath: string, componentName: string): Promise<void> {
     if (fs.existsSync(templatePath)) {
       const template = fs.readFileSync(templatePath, 'utf8');
       fs.writeFileSync(outputPath, template);
