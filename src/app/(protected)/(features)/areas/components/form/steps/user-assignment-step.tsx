@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "../../paginated-relationship-combobox";
-import type { StepComponentProps } from "../form-types";
-import { useEntityForm } from "../area-form-provider";
-import { 
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { PaginatedRelationshipCombobox } from '../../paginated-relationship-combobox';
+import type { StepComponentProps } from '../form-types';
+import { useEntityForm } from '../area-form-provider';
+import {
   useGetAllCities,
   useSearchCities,
-  useCountCities
-} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+  useCountCities,
+} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
   // Other entities
-  'useGetAllCities': useGetAllCities,
-  'useSearchCities': useSearchCities,
-  'useCountCities': useCountCities,
+  useGetAllCities: useGetAllCities,
+  useSearchCities: useSearchCities,
+  useCountCities: useCountCities,
 };
 
 export function UserAssignmentStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form, actions } = useEntityForm();
 
-  const relationshipsForThisStep = config.relationships.filter(rel => 
-    stepConfig.relationships.includes(rel.name) && rel.category === 'user'
+  const relationshipsForThisStep = config.relationships.filter(
+    (rel) => stepConfig.relationships.includes(rel.name) && rel.category === 'user'
   );
 
   if (relationshipsForThisStep.length === 0) {
@@ -41,8 +41,10 @@ export function UserAssignmentStep({ stepConfig, isActive, isCompleted }: StepCo
         <h3 className="text-lg font-medium">👥 People & Assignment</h3>
         <p className="text-muted-foreground">Assign users and responsibilities</p>
       </div>
-      
-      <div className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}>
+
+      <div
+        className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
+      >
         {relationshipsForThisStep.map((relConfig) => (
           <FormField
             key={relConfig.name}
@@ -52,7 +54,7 @@ export function UserAssignmentStep({ stepConfig, isActive, isCompleted }: StepCo
               <FormItem>
                 <FormLabel className="text-sm font-medium">
                   {relConfig.ui.label}
-                  {relConfig.required && " *"}
+                  {relConfig.required && ' *'}
                 </FormLabel>
                 <FormControl>
                   <PaginatedRelationshipCombobox
@@ -61,15 +63,25 @@ export function UserAssignmentStep({ stepConfig, isActive, isCompleted }: StepCo
                     displayField={relConfig.displayField}
                     placeholder={relConfig.ui.placeholder}
                     multiple={relConfig.multiple}
-                    useGetAllHook={hookMapping[relConfig.api.useGetAllHook as keyof typeof hookMapping]}
-                    useSearchHook={hookMapping[relConfig.api.useSearchHook as keyof typeof hookMapping]}
-                    useCountHook={relConfig.api.useCountHook ? hookMapping[relConfig.api.useCountHook as keyof typeof hookMapping] : undefined}
+                    useGetAllHook={
+                      hookMapping[relConfig.api.useGetAllHook as keyof typeof hookMapping]
+                    }
+                    useSearchHook={
+                      hookMapping[relConfig.api.useSearchHook as keyof typeof hookMapping]
+                    }
+                    useCountHook={
+                      relConfig.api.useCountHook
+                        ? hookMapping[relConfig.api.useCountHook as keyof typeof hookMapping]
+                        : undefined
+                    }
                     entityName={relConfig.api.entityName}
                     searchField={relConfig.displayField}
                     canCreate={relConfig.creation.canCreate}
-                    createEntityPath={relConfig.creation.createPath || ""}
-                    createPermission={relConfig.creation.createPermission || ""}
-                    onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+                    createEntityPath={relConfig.creation.createPath || ''}
+                    createPermission={relConfig.creation.createPermission || ''}
+                    onEntityCreated={(entityId) =>
+                      actions.handleEntityCreated(entityId, relConfig.name)
+                    }
                     disabled={relConfig.ui.disabled}
                     {...actions.getNavigationProps(relConfig.name)}
                   />

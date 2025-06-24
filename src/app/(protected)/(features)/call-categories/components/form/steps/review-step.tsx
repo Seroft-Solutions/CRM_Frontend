@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import type { StepComponentProps } from "../form-types";
-import { useEntityForm } from "../call-category-form-provider";
+import React from 'react';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import type { StepComponentProps } from '../form-types';
+import { useEntityForm } from '../call-category-form-provider';
 
 export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form } = useEntityForm();
@@ -12,19 +12,15 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
   const formValues = form.watch();
 
   const renderFieldValue = (fieldConfig: any, value: any) => {
-    if (value === undefined || value === null || value === "") {
+    if (value === undefined || value === null || value === '') {
       return <span className="text-muted-foreground">—</span>;
     }
 
     switch (fieldConfig.type) {
       case 'boolean':
-        return (
-          <Badge variant={value ? "default" : "secondary"}>
-            {value ? "Yes" : "No"}
-          </Badge>
-        );
+        return <Badge variant={value ? 'default' : 'secondary'}>{value ? 'Yes' : 'No'}</Badge>;
       case 'date':
-        return format(new Date(value), "PPP");
+        return format(new Date(value), 'PPP');
       case 'enum':
         return <Badge variant="outline">{value}</Badge>;
       default:
@@ -39,36 +35,24 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
 
     if (relConfig.multiple) {
       const count = Array.isArray(value) ? value.length : 0;
-      return (
-        <Badge variant="outline">
-          {count} selected
-        </Badge>
-      );
+      return <Badge variant="outline">{count} selected</Badge>;
     } else {
-      return (
-        <Badge variant="outline">
-          Selected
-        </Badge>
-      );
+      return <Badge variant="outline">Selected</Badge>;
     }
   };
 
   const fieldsByCategory = {
-    basic: config.fields.filter(field => 
-      ['text', 'number', 'enum'].includes(field.type)
-    ),
-    dates: config.fields.filter(field => field.type === 'date'),
-    settings: config.fields.filter(field => 
-      ['boolean', 'file', 'textarea'].includes(field.type)
-    )
+    basic: config.fields.filter((field) => ['text', 'number', 'enum'].includes(field.type)),
+    dates: config.fields.filter((field) => field.type === 'date'),
+    settings: config.fields.filter((field) => ['boolean', 'file', 'textarea'].includes(field.type)),
   };
 
   const relationshipsByCategory = {
-    geographic: config.relationships.filter(rel => rel.category === 'geographic'),
-    user: config.relationships.filter(rel => rel.category === 'user'),
-    classification: config.relationships.filter(rel => rel.category === 'classification'),
-    business: config.relationships.filter(rel => rel.category === 'business'),
-    other: config.relationships.filter(rel => rel.category === 'other')
+    geographic: config.relationships.filter((rel) => rel.category === 'geographic'),
+    user: config.relationships.filter((rel) => rel.category === 'user'),
+    classification: config.relationships.filter((rel) => rel.category === 'classification'),
+    business: config.relationships.filter((rel) => rel.category === 'business'),
+    other: config.relationships.filter((rel) => rel.category === 'other'),
   };
 
   return (
@@ -77,7 +61,7 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
         <h3 className="text-lg font-medium mb-2">Review Your Information</h3>
         <p className="text-muted-foreground">Please review all the information before submitting</p>
       </div>
-      
+
       {/* Basic Information */}
       {fieldsByCategory.basic.length > 0 && (
         <div className="space-y-4">
@@ -85,9 +69,7 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {fieldsByCategory.basic.map((fieldConfig) => (
               <div key={fieldConfig.name} className="space-y-1">
-                <dt className="text-sm font-medium text-muted-foreground">
-                  {fieldConfig.label}
-                </dt>
+                <dt className="text-sm font-medium text-muted-foreground">{fieldConfig.label}</dt>
                 <dd className="text-sm">
                   {renderFieldValue(fieldConfig, formValues[fieldConfig.name])}
                 </dd>
@@ -104,9 +86,7 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {fieldsByCategory.dates.map((fieldConfig) => (
               <div key={fieldConfig.name} className="space-y-1">
-                <dt className="text-sm font-medium text-muted-foreground">
-                  {fieldConfig.label}
-                </dt>
+                <dt className="text-sm font-medium text-muted-foreground">{fieldConfig.label}</dt>
                 <dd className="text-sm">
                   {renderFieldValue(fieldConfig, formValues[fieldConfig.name])}
                 </dd>
@@ -123,9 +103,7 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {fieldsByCategory.settings.map((fieldConfig) => (
               <div key={fieldConfig.name} className="space-y-1">
-                <dt className="text-sm font-medium text-muted-foreground">
-                  {fieldConfig.label}
-                </dt>
+                <dt className="text-sm font-medium text-muted-foreground">{fieldConfig.label}</dt>
                 <dd className="text-sm">
                   {renderFieldValue(fieldConfig, formValues[fieldConfig.name])}
                 </dd>
@@ -144,7 +122,7 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
           user: { icon: '👥', title: 'People & Assignment' },
           classification: { icon: '🏷️', title: 'Classification' },
           business: { icon: '🏢', title: 'Business Relations' },
-          other: { icon: '🔗', title: 'Additional Relations' }
+          other: { icon: '🔗', title: 'Additional Relations' },
         }[categoryName] || { icon: '🔗', title: 'Relations' };
 
         return (
@@ -171,7 +149,8 @@ export function ReviewStep({ stepConfig, isActive, isCompleted }: StepComponentP
       {/* Submission Note */}
       <div className="bg-muted/50 rounded-lg p-4 text-center">
         <p className="text-sm text-muted-foreground">
-          By submitting this form, you confirm that the information provided is accurate and complete.
+          By submitting this form, you confirm that the information provided is accurate and
+          complete.
         </p>
       </div>
     </div>

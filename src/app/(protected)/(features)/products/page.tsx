@@ -1,20 +1,20 @@
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 
-import { ProductTable } from "./components/product-table";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ProductTable } from './components/product-table';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
 
 export const metadata = {
-  title: "Products",
+  title: 'Products',
 };
 
 export default function ProductPage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="product:read"
       unauthorizedTitle="Access Denied to Products"
       unauthorizedDescription="You don't have permission to view products."
@@ -40,7 +40,11 @@ export default function ProductPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="product:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs"
+                >
                   <Link href="/products/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

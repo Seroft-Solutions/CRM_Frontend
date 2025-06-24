@@ -8,7 +8,12 @@ import { getAdminRealmsRealmOrganizations } from '@/core/api/generated/keycloak/
 // Types
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
-import {createUserProfile, getAllOrganizations, searchUserProfiles, setupSchema} from "@/core/api/generated/spring";
+import {
+  createUserProfile,
+  getAllOrganizations,
+  searchUserProfiles,
+  setupSchema,
+} from '@/core/api/generated/spring';
 
 export interface SyncResult {
   organizationSynced: boolean;

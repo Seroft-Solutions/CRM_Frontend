@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { userAvailabilityToast, handleUserAvailabilityError } from "./user-availability-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { userAvailabilityToast, handleUserAvailabilityError } from './user-availability-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetUserAvailability,
   useDeleteUserAvailability,
-} from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
 interface UserAvailabilityDetailsProps {
   id: number;
@@ -54,7 +46,7 @@ export function UserAvailabilityDetails({ id }: UserAvailabilityDetailsProps) {
     mutation: {
       onSuccess: () => {
         userAvailabilityToast.deleted();
-        router.push("/user-availabilities");
+        router.push('/user-availabilities');
       },
       onError: (error) => {
         handleUserAvailabilityError(error);
@@ -96,82 +88,82 @@ export function UserAvailabilityDetails({ id }: UserAvailabilityDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Day Of Week</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Day Of Week
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.dayOfWeek || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.dayOfWeek || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Start Time</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Start Time
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.startTime || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.startTime || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">End Time</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    End Time
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.endTime || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.endTime || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Available</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Is Available
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isAvailable ? "default" : "secondary"} className="text-sm">
-                      {entity.isAvailable ? "Yes" : "No"}
+                    <Badge
+                      variant={entity.isAvailable ? 'default' : 'secondary'}
+                      className="text-sm"
+                    >
+                      {entity.isAvailable ? 'Yes' : 'No'}
                     </Badge>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Effective From</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Effective From
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     <span className="text-foreground">
-                      {entity.effectiveFrom ? format(new Date(entity.effectiveFrom), "PPP") : "—"}
+                      {entity.effectiveFrom ? format(new Date(entity.effectiveFrom), 'PPP') : '—'}
                     </span>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Effective To</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Effective To
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     <span className="text-foreground">
-                      {entity.effectiveTo ? format(new Date(entity.effectiveTo), "PPP") : "—"}
+                      {entity.effectiveTo ? format(new Date(entity.effectiveTo), 'PPP') : '—'}
                     </span>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Time Zone</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Time Zone
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.timeZone || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.timeZone || '—'}</span>
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
 
-        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -182,25 +174,24 @@ export function UserAvailabilityDetails({ id }: UserAvailabilityDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">User</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    User
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     {entity.user ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.user as any).displayName || entity.user.id}
                       </Badge>
-                    ) : "—"}
-                    
+                    ) : (
+                      '—'
+                    )}
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-        
       </div>
 
       {/* Action Buttons */}
@@ -212,7 +203,7 @@ export function UserAvailabilityDetails({ id }: UserAvailabilityDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -228,8 +219,8 @@ export function UserAvailabilityDetails({ id }: UserAvailabilityDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              useravailability and remove its data from the server.
+              This action cannot be undone. This will permanently delete the useravailability and
+              remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

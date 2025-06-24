@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ProductFormProvider, useEntityForm } from "./product-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ProductFormProvider, useEntityForm } from './product-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateProduct,
   useUpdateProduct,
   useGetProduct,
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import { productToast, handleProductError } from "../product-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { productToast, handleProductError } from '../product-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface ProductFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function ProductFormContent({ id }: ProductFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetProduct(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-product", id]
+      queryKey: ['get-product', id],
     },
   });
 
@@ -42,13 +42,13 @@ function ProductFormContent({ id }: ProductFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/products";
-      
+      const backRoute = returnUrl || '/products';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,17 +78,17 @@ function ProductFormContent({ id }: ProductFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'code': '',
-          'description': '',
-          'category': '',
-          'basePrice': '',
-          'minPrice': '',
-          'maxPrice': '',
-          'remark': '',
+          name: '',
+          code: '',
+          description: '',
+          category: '',
+          basePrice: '',
+          minPrice: '',
+          maxPrice: '',
+          remark: '',
         }}
       />
 
@@ -96,7 +96,7 @@ function ProductFormContent({ id }: ProductFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -120,7 +120,7 @@ export function ProductForm({ id }: ProductFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -128,7 +128,7 @@ export function ProductForm({ id }: ProductFormProps) {
         } else {
           setIsRedirecting(true);
           productToast.created();
-          router.push("/products");
+          router.push('/products');
         }
       },
       onError: (error) => {
@@ -142,7 +142,7 @@ export function ProductForm({ id }: ProductFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         productToast.updated();
-        router.push("/products");
+        router.push('/products');
       },
       onError: (error) => {
         handleProductError(error);
@@ -163,11 +163,11 @@ export function ProductForm({ id }: ProductFormProps) {
   }
 
   return (
-    <ProductFormProvider 
+    <ProductFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

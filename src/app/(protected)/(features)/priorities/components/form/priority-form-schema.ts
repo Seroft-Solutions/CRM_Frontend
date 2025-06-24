@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for Priority form
@@ -26,11 +26,8 @@ export const priorityStepSchemas = {
     description: priorityFieldSchemas.description,
     remark: priorityFieldSchemas.remark,
   }),
-  
-  
-  
-  
-  review: priorityFormSchema
+
+  review: priorityFormSchema,
 };
 
 // Validation helper functions
@@ -38,7 +35,7 @@ export const priorityValidationHelpers = {
   validateStep: (stepId: string, data: Partial<PriorityFormValues>) => {
     const stepSchema = priorityStepSchemas[stepId as keyof typeof priorityStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -46,11 +43,11 @@ export const priorityValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = priorityFieldSchemas[fieldName as keyof typeof priorityFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -58,7 +55,7 @@ export const priorityValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -79,7 +76,7 @@ export const priorityValidationHelpers = {
         maxLength: 1000,
       };
     }
-    
+
     return {};
-  }
+  },
 };

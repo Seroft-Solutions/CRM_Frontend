@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ContextAwareBackButtonProps {
   defaultRoute: string;
@@ -11,10 +11,10 @@ interface ContextAwareBackButtonProps {
   entityName: string;
 }
 
-export function ContextAwareBackButton({ 
-  defaultRoute, 
-  defaultLabel = "Back to Previous Page", 
-  entityName 
+export function ContextAwareBackButton({
+  defaultRoute,
+  defaultLabel = 'Back to Previous Page',
+  entityName,
 }: ContextAwareBackButtonProps) {
   const [backRoute, setBackRoute] = useState(defaultRoute);
 
@@ -29,14 +29,14 @@ export function ContextAwareBackButton({
     // Clean up form state if coming from a form
     const currentPath = window.location.pathname;
     const isFromForm = currentPath.includes('/new') || currentPath.includes('/edit');
-    
+
     if (isFromForm && entityName) {
       // Get current session ID and clean up form state
       const formSession = sessionStorage.getItem(`${entityName}FormSession`);
       if (formSession) {
         localStorage.removeItem(`${entityName}FormState_${formSession}`);
         sessionStorage.removeItem(`${entityName}FormSession`);
-        
+
         // Clean up all old form states for this entity
         const keysToRemove: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -45,10 +45,10 @@ export function ContextAwareBackButton({
             keysToRemove.push(key);
           }
         }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
       }
     }
-    
+
     // Clean up navigation context
     localStorage.removeItem('entityCreationContext');
     localStorage.removeItem('referrerInfo');

@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { SourceDetails } from "../components/source-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { SourceDetails } from '../components/source-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface SourcePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface SourcePageProps {
 }
 
 export const metadata = {
-  title: "Source Details",
+  title: 'Source Details',
 };
 
 export default async function SourcePage({ params }: SourcePageProps) {
@@ -23,7 +23,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="source:read"
       unauthorizedTitle="Access Denied to Source Details"
       unauthorizedDescription="You don't have permission to view this source."
@@ -31,7 +31,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/sources"
               defaultLabel="Back to Sources"
               entityName="Source"
@@ -44,10 +44,12 @@ export default async function SourcePage({ params }: SourcePageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Source Details</h1>
-              <p className="text-sm text-gray-600 mt-1">View detailed information for this source</p>
+              <p className="text-sm text-gray-600 mt-1">
+                View detailed information for this source
+              </p>
             </div>
           </div>
-          
+
           <SourceDetails id={id} />
         </div>
       </div>

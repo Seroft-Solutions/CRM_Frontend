@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { AreaDetails } from "../components/area-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { AreaDetails } from '../components/area-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface AreaPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface AreaPageProps {
 }
 
 export const metadata = {
-  title: "Area Details",
+  title: 'Area Details',
 };
 
 export default async function AreaPage({ params }: AreaPageProps) {
@@ -23,7 +23,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="area:read"
       unauthorizedTitle="Access Denied to Area Details"
       unauthorizedDescription="You don't have permission to view this area."
@@ -31,7 +31,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/areas"
               defaultLabel="Back to Areas"
               entityName="Area"
@@ -47,7 +47,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this area</p>
             </div>
           </div>
-          
+
           <AreaDetails id={id} />
         </div>
       </div>

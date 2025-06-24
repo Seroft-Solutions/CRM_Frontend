@@ -1,20 +1,20 @@
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 
-import { MeetingReminderTable } from "./components/meeting-reminder-table";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { MeetingReminderTable } from './components/meeting-reminder-table';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
 
 export const metadata = {
-  title: "MeetingReminders",
+  title: 'MeetingReminders',
 };
 
 export default function MeetingReminderPage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="meetingReminder:read"
       unauthorizedTitle="Access Denied to Meeting Reminders"
       unauthorizedDescription="You don't have permission to view meeting reminders."
@@ -40,7 +40,11 @@ export default function MeetingReminderPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="meetingReminder:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs"
+                >
                   <Link href="/meeting-reminders/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

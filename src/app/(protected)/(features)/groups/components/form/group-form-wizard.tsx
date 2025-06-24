@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { GroupFormProvider, useEntityForm } from "./group-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { GroupFormProvider, useEntityForm } from './group-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateGroup,
   useUpdateGroup,
   useGetGroup,
-} from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
-import { groupToast, handleGroupError } from "../group-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/group-resource/group-resource.gen';
+import { groupToast, handleGroupError } from '../group-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface GroupFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function GroupFormContent({ id }: GroupFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetGroup(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-group", id]
+      queryKey: ['get-group', id],
     },
   });
 
@@ -42,13 +42,13 @@ function GroupFormContent({ id }: GroupFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/groups";
-      
+      const backRoute = returnUrl || '/groups';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,18 +78,18 @@ function GroupFormContent({ id }: GroupFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'keycloakGroupId': '',
-          'name': '',
-          'path': '',
-          'description': '',
-          'isActive': '',
-          'createdAt': '',
-          'updatedAt': '',
-          'organization': 'Organization',
-          'members': 'Members',
+          keycloakGroupId: '',
+          name: '',
+          path: '',
+          description: '',
+          isActive: '',
+          createdAt: '',
+          updatedAt: '',
+          organization: 'Organization',
+          members: 'Members',
         }}
       />
 
@@ -97,7 +97,7 @@ function GroupFormContent({ id }: GroupFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -121,7 +121,7 @@ export function GroupForm({ id }: GroupFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -129,7 +129,7 @@ export function GroupForm({ id }: GroupFormProps) {
         } else {
           setIsRedirecting(true);
           groupToast.created();
-          router.push("/groups");
+          router.push('/groups');
         }
       },
       onError: (error) => {
@@ -143,7 +143,7 @@ export function GroupForm({ id }: GroupFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         groupToast.updated();
-        router.push("/groups");
+        router.push('/groups');
       },
       onError: (error) => {
         handleGroupError(error);
@@ -164,11 +164,11 @@ export function GroupForm({ id }: GroupFormProps) {
   }
 
   return (
-    <GroupFormProvider 
+    <GroupFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

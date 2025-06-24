@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { OrganizationForm } from "./form/organization-form-wizard";
+import React from 'react';
+import { OrganizationForm } from './form/organization-form-wizard';
 
 interface OrganizationFormProps {
   id?: number;

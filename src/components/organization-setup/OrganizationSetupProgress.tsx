@@ -13,7 +13,7 @@ import {
   AlertCircle,
   Sparkles,
 } from 'lucide-react';
-import {useGetOrganizationSetupProgress} from "@/core/api/generated/spring";
+import { useGetOrganizationSetupProgress } from '@/core/api/generated/spring';
 
 interface OrganizationSetupProgressProps {
   organizationName: string;

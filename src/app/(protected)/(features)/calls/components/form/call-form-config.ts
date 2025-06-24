@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Call form
@@ -6,44 +6,36 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const callFormConfig: FormConfig = {
   entity: 'Call',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'dates',
       title: 'Date & Time',
       description: 'Set relevant dates',
-      fields: [
-        'callDateTime',
-      ],
-      relationships: [
-      ],
+      fields: ['callDateTime'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'users',
       title: 'People & Assignment',
       description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'channelCustomer',
-        'assignedTo',
-      ],
+      fields: [],
+      relationships: ['channelCustomer', 'assignedTo'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
-      fields: [
-      ],
+      fields: [],
       relationships: [
         'priority',
         'callType',
@@ -54,36 +46,30 @@ export const callFormConfig: FormConfig = {
       ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'business',
       title: 'Business Relations',
       description: 'Connect with customers and products',
-      fields: [
-      ],
-      relationships: [
-        'source',
-        'customer',
-      ],
+      fields: [],
+      relationships: ['source', 'customer'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -98,8 +84,7 @@ export const callFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -129,7 +114,7 @@ export const callFormConfig: FormConfig = {
         label: 'Priority',
         placeholder: 'Select priority',
         icon: '🏷️',
-      }
+      },
     },
     {
       name: 'callType',
@@ -155,7 +140,7 @@ export const callFormConfig: FormConfig = {
         label: 'Call Type',
         placeholder: 'Select call type',
         icon: '🏷️',
-      }
+      },
     },
     {
       name: 'subCallType',
@@ -185,7 +170,7 @@ export const callFormConfig: FormConfig = {
         label: 'Sub Call Type',
         placeholder: 'Select sub call type',
         icon: '🏷️',
-      }
+      },
     },
     {
       name: 'callCategory',
@@ -211,7 +196,7 @@ export const callFormConfig: FormConfig = {
         label: 'Call Category',
         placeholder: 'Select call category',
         icon: '🏷️',
-      }
+      },
     },
     {
       name: 'source',
@@ -237,7 +222,7 @@ export const callFormConfig: FormConfig = {
         label: 'Source',
         placeholder: 'Select source',
         icon: '🏢',
-      }
+      },
     },
     {
       name: 'customer',
@@ -263,7 +248,7 @@ export const callFormConfig: FormConfig = {
         label: 'Customer',
         placeholder: 'Select customer',
         icon: '🏢',
-      }
+      },
     },
     {
       name: 'channelType',
@@ -289,7 +274,7 @@ export const callFormConfig: FormConfig = {
         label: 'Channel Type',
         placeholder: 'Select channel type',
         icon: '🏷️',
-      }
+      },
     },
     {
       name: 'channelCustomer',
@@ -312,7 +297,7 @@ export const callFormConfig: FormConfig = {
         label: 'Channel Customer',
         placeholder: 'Select channel customer',
         icon: '👥',
-      }
+      },
     },
     {
       name: 'assignedTo',
@@ -335,7 +320,7 @@ export const callFormConfig: FormConfig = {
         label: 'Assigned To',
         placeholder: 'Select assigned to',
         icon: '👥',
-      }
+      },
     },
     {
       name: 'callStatus',
@@ -361,7 +346,7 @@ export const callFormConfig: FormConfig = {
         label: 'Call Status',
         placeholder: 'Select call status',
         icon: '🏷️',
-      }
+      },
     },
   ],
 
@@ -386,7 +371,7 @@ export const callFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -409,17 +394,19 @@ export const callFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const callFormHelpers = {
-  getStepById: (stepId: string) => callFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => callFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => callFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => callFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    callFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    callFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = callFormConfig.steps.find(s => s.id === stepId);
+    const step = callFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

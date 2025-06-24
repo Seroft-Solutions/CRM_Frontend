@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { useEntityForm } from "./user-profile-form-provider";
-import { BasicInfoStep } from "./steps/basic-info-step";
-import { DateTimeStep } from "./steps/date-time-step";
-import { SettingsStep } from "./steps/settings-step";
-import { GeographicStep } from "./steps/geographic-step";
-import { UserAssignmentStep } from "./steps/user-assignment-step";
-import { ClassificationStep } from "./steps/classification-step";
-import { BusinessRelationsStep } from "./steps/business-relations-step";
-import { OtherRelationsStep } from "./steps/other-relations-step";
-import { ReviewStep } from "./steps/review-step";
+import React, { useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { useEntityForm } from './user-profile-form-provider';
+import { BasicInfoStep } from './steps/basic-info-step';
+import { DateTimeStep } from './steps/date-time-step';
+import { SettingsStep } from './steps/settings-step';
+import { GeographicStep } from './steps/geographic-step';
+import { UserAssignmentStep } from './steps/user-assignment-step';
+import { ClassificationStep } from './steps/classification-step';
+import { BusinessRelationsStep } from './steps/business-relations-step';
+import { OtherRelationsStep } from './steps/other-relations-step';
+import { ReviewStep } from './steps/review-step';
 
 interface FormStepRendererProps {
   entity?: any;
@@ -28,22 +28,22 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
       const formValues: Record<string, any> = {};
 
       // Handle regular fields
-      config.fields.forEach(fieldConfig => {
+      config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
-        
+
         if (fieldConfig.type === 'date') {
           formValues[fieldConfig.name] = value ? new Date(value) : undefined;
         } else if (fieldConfig.type === 'number') {
-          formValues[fieldConfig.name] = value != null ? String(value) : "";
+          formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
-          formValues[fieldConfig.name] = value || "";
+          formValues[fieldConfig.name] = value || '';
         }
       });
 
       // Handle relationships
-      config.relationships.forEach(relConfig => {
+      config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
-        
+
         if (relConfig.multiple) {
           formValues[relConfig.name] = value?.map((item: any) => item[relConfig.primaryKey]);
         } else {
@@ -61,7 +61,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     const stepProps = {
       stepConfig: currentStepConfig,
       isActive: true,
-      isCompleted: state.currentStep < state.currentStep
+      isCompleted: state.currentStep < state.currentStep,
     };
 
     switch (currentStepConfig.id) {
@@ -96,9 +96,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     <Form {...form}>
       <form className="space-y-6">
         <Card>
-          <CardContent className="p-4 sm:p-6">
-            {renderCurrentStep()}
-          </CardContent>
+          <CardContent className="p-4 sm:p-6">{renderCurrentStep()}</CardContent>
         </Card>
       </form>
     </Form>

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CallCategoryForm } from "./form/call-category-form-wizard";
+import React from 'react';
+import { CallCategoryForm } from './form/call-category-form-wizard';
 
 interface CallCategoryFormProps {
   id?: number;

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CallTypeForm } from "./form/call-type-form-wizard";
+import React from 'react';
+import { CallTypeForm } from './form/call-type-form-wizard';
 
 interface CallTypeFormProps {
   id?: number;

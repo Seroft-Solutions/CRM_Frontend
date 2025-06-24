@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { AreaFormProvider, useEntityForm } from "./area-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AreaFormProvider, useEntityForm } from './area-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateArea,
   useUpdateArea,
   useGetArea,
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-import { areaToast, handleAreaError } from "../area-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { areaToast, handleAreaError } from '../area-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface AreaFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function AreaFormContent({ id }: AreaFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetArea(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-area", id]
+      queryKey: ['get-area', id],
     },
   });
 
@@ -42,13 +42,13 @@ function AreaFormContent({ id }: AreaFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/areas";
-      
+      const backRoute = returnUrl || '/areas';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,12 +78,12 @@ function AreaFormContent({ id }: AreaFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'pincode': '',
-          'city': 'City',
+          name: '',
+          pincode: '',
+          city: 'City',
         }}
       />
 
@@ -91,7 +91,7 @@ function AreaFormContent({ id }: AreaFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -115,7 +115,7 @@ export function AreaForm({ id }: AreaFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -123,7 +123,7 @@ export function AreaForm({ id }: AreaFormProps) {
         } else {
           setIsRedirecting(true);
           areaToast.created();
-          router.push("/areas");
+          router.push('/areas');
         }
       },
       onError: (error) => {
@@ -137,7 +137,7 @@ export function AreaForm({ id }: AreaFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         areaToast.updated();
-        router.push("/areas");
+        router.push('/areas');
       },
       onError: (error) => {
         handleAreaError(error);
@@ -158,11 +158,11 @@ export function AreaForm({ id }: AreaFormProps) {
   }
 
   return (
-    <AreaFormProvider 
+    <AreaFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });
