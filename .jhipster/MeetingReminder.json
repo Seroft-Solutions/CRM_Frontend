@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250617064015"
+    "changelogDate": "20250624105859"
   },
   "applications": ["crmBackend"],
   "documentation": "Meeting reminder configuration",

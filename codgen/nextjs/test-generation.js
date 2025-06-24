@@ -38,7 +38,7 @@ function testFormGeneration(entityName) {
 
     // Validate generated files
     console.log('\n🔍 Validating generated files...');
-    const outputDir = path.join(__dirname, '..', '..', 'src', 'app', '(protected)');
+    const outputDir = path.join(__dirname, '..', '..', 'src', 'app', '(protected)/(features)');
     const entityRoute = entityName
       .toLowerCase()
       .replace(/([A-Z])/g, '-$1')
@@ -72,7 +72,7 @@ function testFormGeneration(entityName) {
       console.log('1. Review the generated form configuration');
       console.log('2. Customize steps/fields as needed');
       console.log('3. Test the form in your application');
-      console.log(`4. Check: src/app/(protected)/${entityRoute}/components/form/`);
+      console.log(`4. Check: src/app/(protected)/(features)/${entityRoute}/components/form/`);
       return true;
     } else {
       console.log('\n⚠️  Some files were not generated correctly');

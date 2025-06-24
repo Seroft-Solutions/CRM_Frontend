@@ -18,7 +18,7 @@ export class EntityComponentGenerator {
     console.log(`Generating components for entity: ${entityName}`);
 
     // Create directory structure
-    const entityDir = path.join(this.outputDir, 'app', '(protected)', vars.routePath);
+    const entityDir = path.join(this.outputDir, 'app', '(protected)/(features)', vars.routePath);
     console.log(`Creating directories at: ${entityDir}`);
     this.createEntityDirectories(entityDir);
 

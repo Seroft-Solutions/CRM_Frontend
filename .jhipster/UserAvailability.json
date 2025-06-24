@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250617064014"
+    "changelogDate": "20250624105858"
   },
   "applications": ["crmBackend"],
   "documentation": "User availability for scheduling",

@@ -8,15 +8,12 @@
 import type { PriorityDTO } from './PriorityDTO';
 import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
-import type { SourceDTO } from './SourceDTO';
-import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { CallCategoryDTO } from './CallCategoryDTO';
-import type { CallStatusDTO } from './CallStatusDTO';
-import type { StateDTO } from './StateDTO';
-import type { DistrictDTO } from './DistrictDTO';
-import type { CityDTO } from './CityDTO';
-import type { AreaDTO } from './AreaDTO';
+import type { SourceDTO } from './SourceDTO';
+import type { CustomerDTO } from './CustomerDTO';
+import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { UserProfileDTO } from './UserProfileDTO';
+import type { CallStatusDTO } from './CallStatusDTO';
 import type { PartyDTO } from './PartyDTO';
 
 /**
@@ -28,15 +25,12 @@ export interface CallDTO {
   priority: PriorityDTO;
   callType: CallTypeDTO;
   subCallType: SubCallTypeDTO;
-  source: SourceDTO;
-  channelType: ChannelTypeDTO;
   callCategory: CallCategoryDTO;
-  callStatus: CallStatusDTO;
-  state: StateDTO;
-  district: DistrictDTO;
-  city: CityDTO;
-  area: AreaDTO;
+  source: SourceDTO;
+  customer: CustomerDTO;
+  channelType: ChannelTypeDTO;
+  channelCustomer?: UserProfileDTO;
   assignedTo?: UserProfileDTO;
-  channelParty?: UserProfileDTO;
-  party: PartyDTO;
+  callStatus: CallStatusDTO;
+  party?: PartyDTO;
 }

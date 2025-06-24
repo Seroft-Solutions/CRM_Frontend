@@ -30,3 +30,4 @@ export * from './endpoints/meeting-resource/meeting-resource.gen';
 export * from './endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
 export * from './endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 export * from './endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+export * from './endpoints/customer-resource/customer-resource.gen';

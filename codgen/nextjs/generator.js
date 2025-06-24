@@ -212,7 +212,7 @@ var NextJsGenerator = /** @class */ (function () {
             console.log('Reading entity definition from: '.concat(entityDefinitionPath));
             entityDefinition = JSON.parse(fs.readFileSync(entityDefinitionPath, 'utf8'));
             vars = this.prepareTemplateVariables(entityName, entityDefinition);
-            entityDir = path.join(this.outputDir, 'app', '(protected)', vars.routePath);
+            entityDir = path.join(this.outputDir, 'app', '(protected)/(features)', vars.routePath);
             console.log('Creating directories at: '.concat(entityDir));
             this.ensureDir(entityDir);
             this.ensureDir(path.join(entityDir, 'new'));
