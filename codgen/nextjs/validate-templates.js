@@ -12,7 +12,7 @@ const templatesDir = path.join(__dirname, 'templates', 'entity', 'components', '
 
 const requiredTemplates = [
   'form-config.ts.ejs',
-  'form-types.ts.ejs',
+  'form-types.ts.ejs', 
   'entity-form-schema.ts.ejs',
   'entity-form-provider.tsx.ejs',
   'entity-form-wizard.tsx.ejs',
@@ -29,7 +29,7 @@ const requiredTemplates = [
   'steps/business-relations-step.tsx.ejs',
   'steps/other-relations-step.tsx.ejs',
   'steps/review-step.tsx.ejs',
-  'README.md',
+  'README.md'
 ];
 
 function validateTemplates() {
@@ -41,7 +41,7 @@ function validateTemplates() {
   for (const templateFile of requiredTemplates) {
     const fullPath = path.join(templatesDir, templateFile);
     const exists = fs.existsSync(fullPath);
-
+    
     if (exists) {
       const stats = fs.statSync(fullPath);
       const sizeKB = (stats.size / 1024).toFixed(1);
@@ -53,12 +53,12 @@ function validateTemplates() {
   }
 
   // Print results
-  results.forEach((result) => console.log(result));
+  results.forEach(result => console.log(result));
 
   console.log('\n📊 Summary:');
   console.log(`Total templates: ${requiredTemplates.length}`);
-  console.log(`Found: ${results.filter((r) => r.startsWith('✅')).length}`);
-  console.log(`Missing: ${results.filter((r) => r.startsWith('❌')).length}`);
+  console.log(`Found: ${results.filter(r => r.startsWith('✅')).length}`);
+  console.log(`Missing: ${results.filter(r => r.startsWith('❌')).length}`);
 
   if (allValid) {
     console.log('\n🎉 All templates are present! The modular form system is ready.');
@@ -79,15 +79,15 @@ function validateTemplates() {
 // Check if entity-component-generator.ts has been updated
 function validateGenerator() {
   console.log('\n🔧 Checking generator configuration...');
-
+  
   const generatorPath = path.join(__dirname, 'lib', 'entity-component-generator.ts');
   if (fs.existsSync(generatorPath)) {
     const content = fs.readFileSync(generatorPath, 'utf8');
-
+    
     const hasFormDirectory = content.includes("path.join(entityDir, 'components', 'form')");
     const hasFormConfig = content.includes('form-config.ts.ejs');
     const hasStepComponents = content.includes('steps/basic-info-step.tsx.ejs');
-
+    
     if (hasFormDirectory && hasFormConfig && hasStepComponents) {
       console.log('✅ Generator has been updated for modular forms');
     } else {

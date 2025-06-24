@@ -15,23 +15,20 @@ You can run the generator in one of two ways:
 ### Option 1: Direct execution (recommended)
 
 1. Navigate to the generator directory:
-
    ```bash
    cd D:\code\CRMCup\CRM_Frontend\codgen\nextjs
    ```
 
 2. Run the simple test generator to verify it's working:
-
    ```bash
    node simple-generator.js
    ```
 
 3. When the test generator works, run the full generator:
-
    ```bash
    # For all entities:
    node generator.js
-
+   
    # For a specific entity:
    node generator.js Party
    ```
@@ -39,7 +36,6 @@ You can run the generator in one of two ways:
 ### Option 2: Using npm scripts
 
 1. In your project's main package.json, we've added two scripts:
-
    ```json
    "generate-nextjs": "cd codgen/nextjs && npm run generate",
    "generate-nextjs:entity": "cd codgen/nextjs && npm run generate:entity"
@@ -61,7 +57,6 @@ If you encounter any issues:
 ## Expected Output
 
 The generator will create Next.js components in the following structure:
-
 ```
 src/app/(protected)/(features)/[entity-name]s/
 ├── components/
