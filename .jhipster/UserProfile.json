@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250624170803"
+    "changelogDate": "20250624194217"
   },
   "applications": ["crmBackend"],
   "documentation": "Extended user profile for CRM-specific data",

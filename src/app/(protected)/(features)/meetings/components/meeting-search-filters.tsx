@@ -225,8 +225,8 @@ export function MeetingSearchAndFilters({
                     </label>
                     <Input
                       placeholder="Filter by organizer..."
-                      value={filters["organizer.login"] as string || ""}
-                      onChange={(e) => onFilterChange("organizer.login", e.target.value || undefined)}
+                      value={filters["organizer.displayName"] as string || ""}
+                      onChange={(e) => onFilterChange("organizer.displayName", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

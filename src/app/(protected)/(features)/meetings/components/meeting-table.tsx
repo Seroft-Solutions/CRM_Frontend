@@ -45,11 +45,11 @@ import {
 
 // Relationship data imports
 
+
+
 import {
-  useGetAllPublicUsers
-} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
-
-
+  useGetAllUserProfiles
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 import {
   useGetAllCustomers
@@ -99,7 +99,7 @@ export function MeetingTable() {
   
   // Fetch relationship data for dropdowns
   
-  const { data: userOptions = [] } = useGetAllPublicUsers(
+  const { data: userprofileOptions = [] } = useGetAllUserProfiles(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -130,10 +130,10 @@ export function MeetingTable() {
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
       
-      'organizer.login': { 
+      'organizer.displayName': { 
         apiParam: 'organizerId.equals', 
-        options: userOptions, 
-        displayField: 'login' 
+        options: userprofileOptions, 
+        displayField: 'displayName' 
       },
       
       'assignedCustomer.customerBusinessName': { 
@@ -541,8 +541,8 @@ export function MeetingTable() {
     {
       name: "organizer",
       displayName: "Organizer",
-      options: userOptions || [],
-      displayField: "login",
+      options: userprofileOptions || [],
+      displayField: "displayName",
       isEditable: false, // Disabled by default
     },
     

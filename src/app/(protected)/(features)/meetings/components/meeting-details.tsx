@@ -245,7 +245,7 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
                     
                     {entity.organizer ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.organizer as any).login || entity.organizer.id}
+                        {(entity.organizer as any).displayName || entity.organizer.id}
                       </Badge>
                     ) : "—"}
                     

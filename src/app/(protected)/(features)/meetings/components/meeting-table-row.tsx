@@ -137,12 +137,12 @@ export function MeetingTableRow({
           relationshipName="organizer"
           currentValue={meeting.organizer}
           options={relationshipConfigs.find(config => config.name === "organizer")?.options || []}
-          displayField="login"
+          displayField="displayName"
           onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
           isEditable={relationshipConfigs.find(config => config.name === "organizer")?.isEditable || false}
           isLoading={isUpdating}
           className="min-w-[150px]"
-          relatedEntityRoute="users"
+          relatedEntityRoute="user-profiles"
           showNavigationIcon={true}
         />
       </TableCell>

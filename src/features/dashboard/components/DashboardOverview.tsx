@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import { useGetAllParties } from '@/core/api/generated/spring/endpoints/party-resource/party-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   Area,
@@ -37,10 +36,11 @@ import {
   Clock,
   PhoneCall,
 } from 'lucide-react';
+import {useGetAllCustomers} from "@/core/api/generated/spring";
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
-  const { data: parties = [] } = useGetAllParties({ size: 1000 });
+  const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
   const { data: products = [] } = useGetAllProducts({ size: 1000 });
 
   const [tabValue, setTabValue] = useState('overview');

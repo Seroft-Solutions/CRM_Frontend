@@ -293,19 +293,22 @@ export const meetingFormConfig: FormConfig = {
     {
       name: 'organizer',
       type: 'many-to-one',
-      targetEntity: 'user',
-      displayField: 'login',
+      targetEntity: 'userProfile',
+      displayField: 'displayName',
       primaryKey: 'id',
       required: true,
       multiple: false,
       category: 'user',
       api: {
-        useGetAllHook: 'useGetAllPublicUsers',
-        useSearchHook: 'useSearchPublicUsers',
-        entityName: 'PublicUsers',
+        useGetAllHook: 'useGetAllUserProfiles',
+        useSearchHook: 'useSearchUserProfiles',
+        useCountHook: 'useCountUserProfiles',
+        entityName: 'UserProfiles',
       },
       creation: {
-        canCreate: false,
+        canCreate: true,
+        createPath: '/user-profiles/new',
+        createPermission: 'userProfile:create',
       },
       ui: {
         label: 'Organizer',
@@ -345,7 +348,7 @@ export const meetingFormConfig: FormConfig = {
       targetEntity: 'call',
       displayField: 'name',
       primaryKey: 'id',
-      required: false,
+      required: true,
       multiple: false,
       category: 'other',
       api: {

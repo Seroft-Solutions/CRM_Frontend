@@ -33,9 +33,9 @@ export const meetingFormSchema = z.object({
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Invalid date format"
   }).optional(),
-  organizer: z.string(),
+  organizer: z.number(),
   assignedCustomer: z.number().optional(),
-  call: z.number().optional(),
+  call: z.number(),
 });
 
 export type MeetingFormValues = z.infer<typeof meetingFormSchema>;
@@ -70,9 +70,9 @@ export const meetingFieldSchemas = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Invalid date format"
   }).optional(),
-  organizer: z.string(),
+  organizer: z.number(),
   assignedCustomer: z.number().optional(),
-  call: z.number().optional(),
+  call: z.number(),
 };
 
 // Step-specific validation schemas
