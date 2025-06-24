@@ -15,15 +15,12 @@ export async function POST(
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { userId } = await params;
     const realm = keycloakService.getRealm();
-    
+
     if (!realm) {
       throw new Error('Realm configuration missing');
     }
@@ -32,41 +29,32 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const {
       lifespan = 43200, // 12 hours default
-      redirectUri
+      redirectUri,
     } = body;
 
     // Prepare the required actions - UPDATE_PASSWORD for password reset
     const requiredActions = ['UPDATE_PASSWORD'];
 
     // Send the UPDATE_PASSWORD required action email using generated endpoint
-    await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
-      realm,
-      userId,
-      requiredActions,
-      {
-        client_id: 'web_app', // Using your specified client
-        lifespan,
-        redirect_uri: redirectUri
-      }
-    );
+    await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(realm, userId, requiredActions, {
+      client_id: 'web_app', // Using your specified client
+      lifespan,
+      redirect_uri: redirectUri,
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Password reset email sent successfully',
       userId,
-      action: 'UPDATE_PASSWORD'
+      action: 'UPDATE_PASSWORD',
     });
-
   } catch (error: any) {
     console.error('Send password reset email error:', error);
-    
+
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     if (error.status === 400) {
       return NextResponse.json(
         { error: 'Invalid request - check user email configuration' },
@@ -75,9 +63,9 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to send password reset email',
-        details: error.status ? `HTTP ${error.status}` : 'Unknown error'
+        details: error.status ? `HTTP ${error.status}` : 'Unknown error',
       },
       { status: error.status || 500 }
     );

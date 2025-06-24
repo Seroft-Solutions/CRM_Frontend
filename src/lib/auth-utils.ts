@@ -1,4 +1,4 @@
-import { signOut } from "next-auth/react";
+import { signOut } from 'next-auth/react';
 
 /**
  * Logout utility function that handles both NextAuth and Keycloak logout

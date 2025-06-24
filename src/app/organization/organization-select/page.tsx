@@ -22,7 +22,7 @@ export default function OrganizationSelectPage() {
 
   persistentLog('OrganizationSelectPage: Render', {
     isLoading,
-    organizationsCount: organizations?.length
+    organizationsCount: organizations?.length,
   });
 
   if (isLoading) {

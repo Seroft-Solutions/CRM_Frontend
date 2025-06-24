@@ -40,8 +40,8 @@ export class BaseService {
     // Listen for token refresh events
     if (typeof window !== 'undefined') {
       window.addEventListener('token-refreshed', ((event: CustomEvent) => {
-        this.tokenCache.invalidate()
-      }) as EventListener)
+        this.tokenCache.invalidate();
+      }) as EventListener);
     }
 
     // Request interceptor for authentication
@@ -82,7 +82,7 @@ export class BaseService {
 
             sessionEventEmitter.emit('session-expired', {
               message: 'Your session has expired',
-              statusCode: 401
+              statusCode: 401,
             });
           }
         }

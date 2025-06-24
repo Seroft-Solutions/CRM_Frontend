@@ -23,7 +23,7 @@ export function UserStatusBadge({ user, className }: UserStatusBadgeProps) {
         className: 'bg-red-100 text-red-800 hover:bg-red-100',
       };
     }
-    
+
     if (!user.emailVerified) {
       return {
         variant: 'outline' as const,
@@ -31,7 +31,7 @@ export function UserStatusBadge({ user, className }: UserStatusBadgeProps) {
         className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-300',
       };
     }
-    
+
     return {
       variant: 'default' as const,
       label: 'Active',
@@ -42,10 +42,7 @@ export function UserStatusBadge({ user, className }: UserStatusBadgeProps) {
   const statusInfo = getStatusInfo();
 
   return (
-    <Badge 
-      variant={statusInfo.variant}
-      className={cn(statusInfo.className, className)}
-    >
+    <Badge variant={statusInfo.variant} className={cn(statusInfo.className, className)}>
       {statusInfo.label}
     </Badge>
   );

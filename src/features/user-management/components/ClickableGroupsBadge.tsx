@@ -6,12 +6,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Users, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -28,32 +23,28 @@ interface ClickableGroupsBadgeProps {
   enableProgressiveLoading?: boolean;
 }
 
-export function ClickableGroupsBadge({ 
+export function ClickableGroupsBadge({
   userId,
   organizationId,
-  groups = [], 
+  groups = [],
   variant = 'outline',
   size = 'sm',
   className,
-  enableProgressiveLoading = true
+  enableProgressiveLoading = true,
 }: ClickableGroupsBadgeProps) {
   const router = useRouter();
   const hasInitialData = groups && Array.isArray(groups) && groups.length > 0;
-  
+
   // Only fetch additional data if we don't have initial data and progressive loading is enabled
-  const { 
-    groupCount: fetchedGroupCount, 
-    groups: fetchedGroups, 
+  const {
+    groupCount: fetchedGroupCount,
+    groups: fetchedGroups,
     hasData: hasFetchedData,
-    isLoading 
-  } = useUserRoleGroupCounts(
-    organizationId, 
-    userId, 
-    enableProgressiveLoading && !hasInitialData
-  );
+    isLoading,
+  } = useUserRoleGroupCounts(organizationId, userId, enableProgressiveLoading && !hasInitialData);
 
   // Determine which data to use
-  const finalGroups = hasInitialData ? groups : (fetchedGroups || []);
+  const finalGroups = hasInitialData ? groups : fetchedGroups || [];
   const finalGroupCount = hasInitialData ? groups.length : fetchedGroupCount;
   const hasAnyData = hasInitialData || hasFetchedData;
 
@@ -72,10 +63,10 @@ export function ClickableGroupsBadge({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
-                sizeClasses[size], 
+                sizeClasses[size],
                 'cursor-pointer transition-all duration-200 hover:shadow-sm hover:border-green-300 hover:bg-green-50',
                 className
               )}
@@ -101,10 +92,10 @@ export function ClickableGroupsBadge({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
-                sizeClasses[size], 
+                sizeClasses[size],
                 'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-green-400 hover:bg-green-50 hover:scale-105',
                 'border-slate-300 text-slate-600 hover:text-green-700',
                 className
@@ -117,7 +108,9 @@ export function ClickableGroupsBadge({
           </TooltipTrigger>
           <TooltipContent className="bg-white border-2 border-slate-200 shadow-lg">
             <div className="p-2">
-              <p className="text-slate-800 font-medium">Click to {hasAnyData ? 'manage' : 'view'} groups</p>
+              <p className="text-slate-800 font-medium">
+                Click to {hasAnyData ? 'manage' : 'view'} groups
+              </p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -129,10 +122,10 @@ export function ClickableGroupsBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className={cn(
-              sizeClasses[size], 
+              sizeClasses[size],
               'cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105',
               'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-400 hover:text-green-800',
               'font-medium',

@@ -1,6 +1,6 @@
 /**
  * Unified Keycloak Service Exports
- * 
+ *
  * This module exports the unified Keycloak admin client service and all related utilities
  * for consistent usage throughout the application.
  */
@@ -8,11 +8,11 @@
 // Main service exports
 export { keycloakService, KeycloakService } from './index';
 export { keycloakServiceMutator, KeycloakAdminOperations } from './service-mutator';
-export { 
-  KEYCLOAK_SERVICE_CONFIG, 
-  KEYCLOAK_REALM, 
+export {
+  KEYCLOAK_SERVICE_CONFIG,
+  KEYCLOAK_REALM,
   KEYCLOAK_ADMIN_CONFIG,
-  KEYCLOAK_ENDPOINTS 
+  KEYCLOAK_ENDPOINTS,
 } from './config';
 
 // Re-export commonly used generated types for convenience

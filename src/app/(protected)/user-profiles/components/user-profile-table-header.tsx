@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -33,21 +27,21 @@ interface UserProfileTableHeaderProps {
   onSelectAll: () => void;
 }
 
-export function UserProfileTableHeader({ 
-  onSort, 
+export function UserProfileTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
-  onSelectAll
+  onSelectAll,
 }: UserProfileTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -67,73 +61,62 @@ export function UserProfileTableHeader({
             }}
           />
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("keycloakId")}
+            onClick={() => onSort('keycloakId')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Keycloak Id
-            <div className="text-gray-400">
-              {renderSortIcon("keycloakId")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('keycloakId')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("email")}
+            onClick={() => onSort('email')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Email
-            <div className="text-gray-400">
-              {renderSortIcon("email")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('email')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("firstName")}
+            onClick={() => onSort('firstName')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             First Name
-            <div className="text-gray-400">
-              {renderSortIcon("firstName")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('firstName')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("lastName")}
+            onClick={() => onSort('lastName')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Last Name
-            <div className="text-gray-400">
-              {renderSortIcon("lastName")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('lastName')}</div>
           </Button>
         </TableHead>
-        
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("channelType.name")}
+            onClick={() => onSort('channelType.name')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Channel Type
-            <div className="text-gray-400">
-              {renderSortIcon("channelType.name")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('channelType.name')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -141,69 +124,56 @@ export function UserProfileTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">
-          {/* Empty cell for checkbox column */}
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["keycloakId"] as string || ""}
-            onChange={(e) => onFilterChange("keycloakId", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["email"] as string || ""}
-            onChange={(e) => onFilterChange("email", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["firstName"] as string || ""}
-            onChange={(e) => onFilterChange("firstName", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["lastName"] as string || ""}
-            onChange={(e) => onFilterChange("lastName", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        
-        
+        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
+
         <TableHead className="px-3 py-2">
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["channelType.name"] as string || ""}
-            onChange={(e) => onFilterChange("channelType.name", e.target.value || undefined)}
+            value={(filters['keycloakId'] as string) || ''}
+            onChange={(e) => onFilterChange('keycloakId', e.target.value || undefined)}
           />
         </TableHead>
-        
-        
+
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={(filters['email'] as string) || ''}
+            onChange={(e) => onFilterChange('email', e.target.value || undefined)}
+          />
+        </TableHead>
+
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={(filters['firstName'] as string) || ''}
+            onChange={(e) => onFilterChange('firstName', e.target.value || undefined)}
+          />
+        </TableHead>
+
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={(filters['lastName'] as string) || ''}
+            onChange={(e) => onFilterChange('lastName', e.target.value || undefined)}
+          />
+        </TableHead>
+
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={(filters['channelType.name'] as string) || ''}
+            onChange={(e) => onFilterChange('channelType.name', e.target.value || undefined)}
+          />
+        </TableHead>
+
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

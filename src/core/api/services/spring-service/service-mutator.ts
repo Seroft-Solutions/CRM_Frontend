@@ -15,10 +15,10 @@ if (typeof window !== 'undefined') {
 // Function to get tenant header from localStorage
 const getTenantHeader = (): string | undefined => {
   if (typeof window === 'undefined') return undefined;
-  
+
   const selectedOrgName = localStorage.getItem('selectedOrganizationName');
   if (!selectedOrgName) return undefined;
-  
+
   // Convert to lowercase and replace special characters with underscores
   return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 };
@@ -28,7 +28,7 @@ export const springServiceMutator = async <T>(
   options?: AxiosRequestConfig
 ): Promise<T> => {
   const { url, method = 'GET', data, params } = requestConfig;
-  
+
   // Log API calls to debug data transformation
   if (method === 'POST' && url?.includes('sub-call-types')) {
     console.log('🚀 API MUTATOR - About to send POST request:');
@@ -38,7 +38,7 @@ export const springServiceMutator = async <T>(
     console.log('🚀 Data type:', typeof data);
     console.log('🚀 Data constructor:', data?.constructor?.name);
     console.log('🚀 Stringified Data:', JSON.stringify(data, null, 2));
-    
+
     if (data && typeof data === 'object') {
       console.log('🚀 Data keys:', Object.keys(data));
       if (data.callType) {
@@ -48,9 +48,9 @@ export const springServiceMutator = async <T>(
       }
     }
   }
-  
+
   const instance = axios.create(SPRING_SERVICE_CONFIG);
-  
+
   // Add auth and tenant interceptor
   instance.interceptors.request.use(async (config) => {
     const token = await tokenCache.getToken(fetchAccessToken);

@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -33,21 +27,21 @@ interface MeetingReminderTableHeaderProps {
   onSelectAll: () => void;
 }
 
-export function MeetingReminderTableHeader({ 
-  onSort, 
+export function MeetingReminderTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
-  onSelectAll
+  onSelectAll,
 }: MeetingReminderTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -67,86 +61,73 @@ export function MeetingReminderTableHeader({
             }}
           />
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("reminderType")}
+            onClick={() => onSort('reminderType')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Reminder Type
-            <div className="text-gray-400">
-              {renderSortIcon("reminderType")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('reminderType')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("reminderMinutesBefore")}
+            onClick={() => onSort('reminderMinutesBefore')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Reminder Minutes Before
-            <div className="text-gray-400">
-              {renderSortIcon("reminderMinutesBefore")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('reminderMinutesBefore')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("isTriggered")}
+            onClick={() => onSort('isTriggered')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Is Triggered
-            <div className="text-gray-400">
-              {renderSortIcon("isTriggered")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('isTriggered')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("triggeredAt")}
+            onClick={() => onSort('triggeredAt')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Triggered At
-            <div className="text-gray-400">
-              {renderSortIcon("triggeredAt")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('triggeredAt')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("failureReason")}
+            onClick={() => onSort('failureReason')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Failure Reason
-            <div className="text-gray-400">
-              {renderSortIcon("failureReason")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('failureReason')}</div>
           </Button>
         </TableHead>
-        
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("meeting.name")}
+            onClick={() => onSort('meeting.name')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Meeting
-            <div className="text-gray-400">
-              {renderSortIcon("meeting.name")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('meeting.name')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -154,40 +135,35 @@ export function MeetingReminderTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">
-          {/* Empty cell for checkbox column */}
-        </TableHead>
-        
+        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["reminderType"] as string || ""}
-            onChange={(e) => onFilterChange("reminderType", e.target.value || undefined)}
+            value={(filters['reminderType'] as string) || ''}
+            onChange={(e) => onFilterChange('reminderType', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["reminderMinutesBefore"] as string || ""}
-            onChange={(e) => onFilterChange("reminderMinutesBefore", e.target.value || undefined)}
+            value={(filters['reminderMinutesBefore'] as string) || ''}
+            onChange={(e) => onFilterChange('reminderMinutesBefore', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Select
-            value={filters["isTriggered"] as string || "__all__"}
-            onValueChange={(value) => onFilterChange("isTriggered", value === "__all__" ? undefined : value)}
+            value={(filters['isTriggered'] as string) || '__all__'}
+            onValueChange={(value) =>
+              onFilterChange('isTriggered', value === '__all__' ? undefined : value)
+            }
           >
             <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
               <SelectValue placeholder="All" />
@@ -198,43 +174,35 @@ export function MeetingReminderTableHeader({
               <SelectItem value="false">No</SelectItem>
             </SelectContent>
           </Select>
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             type="date"
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={filters["triggeredAt"] as string || ""}
-            onChange={(e) => onFilterChange("triggeredAt", e.target.value || undefined)}
+            value={(filters['triggeredAt'] as string) || ''}
+            onChange={(e) => onFilterChange('triggeredAt', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
-        <TableHead className="px-3 py-2">
-          
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["failureReason"] as string || ""}
-            onChange={(e) => onFilterChange("failureReason", e.target.value || undefined)}
-          />
-          
-        </TableHead>
-        
-        
-        
+
         <TableHead className="px-3 py-2">
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["meeting.name"] as string || ""}
-            onChange={(e) => onFilterChange("meeting.name", e.target.value || undefined)}
+            value={(filters['failureReason'] as string) || ''}
+            onChange={(e) => onFilterChange('failureReason', e.target.value || undefined)}
           />
         </TableHead>
-        
-        
+
+        <TableHead className="px-3 py-2">
+          <Input
+            placeholder="Filter..."
+            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+            value={(filters['meeting.name'] as string) || ''}
+            onChange={(e) => onFilterChange('meeting.name', e.target.value || undefined)}
+          />
+        </TableHead>
+
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

@@ -31,15 +31,20 @@ export { useUserManagementRefresh } from './useUserManagementRefresh';
 
 // Query Keys
 export const USER_MANAGEMENT_QUERY_KEYS = {
-  organizationUsers: (orgId: string, filters?: UserFilters) => 
-    ['organizationUsers', orgId, filters],
-  userDetails: (orgId: string, userId: string) => 
-    ['userDetails', orgId, userId],
+  organizationUsers: (orgId: string, filters?: UserFilters) => [
+    'organizationUsers',
+    orgId,
+    filters,
+  ],
+  userDetails: (orgId: string, userId: string) => ['userDetails', orgId, userId],
   availableRoles: ['availableRoles'],
   availableGroups: ['availableGroups'],
   userAvailableRoles: (userId: string) => ['userAvailableRoles', userId],
-  pendingInvitations: (orgId: string, filters?: InvitationFilters) =>
-    ['pendingInvitations', orgId, filters],
+  pendingInvitations: (orgId: string, filters?: InvitationFilters) => [
+    'pendingInvitations',
+    orgId,
+    filters,
+  ],
 } as const;
 
 // Hook for organization users list
@@ -161,12 +166,12 @@ export function useInviteUserWithGroups() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (invitation: UserInvitationWithGroups) => 
+    mutationFn: (invitation: UserInvitationWithGroups) =>
       userManagementService.inviteUserWithGroups(invitation),
     onSuccess: (result, variables) => {
       if (result.success) {
         toast.success(result.message || 'User invited successfully');
-        
+
         // Multiple-step aggressive refresh strategy
         const performRefresh = async () => {
           // Step 1: Immediate invalidation
@@ -174,7 +179,7 @@ export function useInviteUserWithGroups() {
             queryKey: ['organizationUsers', variables.organizationId],
             exact: false,
           });
-          
+
           await queryClient.invalidateQueries({
             queryKey: ['pendingInvitations', variables.organizationId],
             exact: false,
@@ -206,7 +211,6 @@ export function useInviteUserWithGroups() {
         };
 
         performRefresh();
-        
       } else {
         toast.error(result.message || 'Failed to invite user');
       }
@@ -231,8 +235,7 @@ export function useInviteUser() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (invitation: UserInvitation) => 
-      userManagementService.inviteUser(invitation),
+    mutationFn: (invitation: UserInvitation) => userManagementService.inviteUser(invitation),
     onSuccess: (_, variables) => {
       toast.success('User invited successfully');
       queryClient.invalidateQueries({
@@ -285,15 +288,17 @@ export function useRoleAssignment() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (assignment: RoleAssignment) =>
-      userManagementService.assignRealmRoles(assignment),
+    mutationFn: (assignment: RoleAssignment) => userManagementService.assignRealmRoles(assignment),
     onSuccess: (_, variables) => {
       const action = variables.action === 'assign' ? 'assigned' : 'unassigned';
       toast.success(`Roles ${action} successfully`);
-      
+
       // Invalidate user details and organization users
       queryClient.invalidateQueries({
-        queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(variables.organizationId, variables.userId),
+        queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(
+          variables.organizationId,
+          variables.userId
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
@@ -316,15 +321,17 @@ export function useGroupAssignment() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (assignment: GroupAssignment) =>
-      userManagementService.assignGroups(assignment),
+    mutationFn: (assignment: GroupAssignment) => userManagementService.assignGroups(assignment),
     onSuccess: (_, variables) => {
       const action = variables.action === 'assign' ? 'assigned' : 'unassigned';
       toast.success(`Groups ${action} successfully`);
-      
+
       // Invalidate user details and organization users
       queryClient.invalidateQueries({
-        queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(variables.organizationId, variables.userId),
+        queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(
+          variables.organizationId,
+          variables.userId
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
@@ -368,11 +375,11 @@ export function useOrganizationContext() {
       const primaryOrg = organizations[0]; // Use first organization as primary
       setOrganizationId(primaryOrg.id);
       setOrganizationName(primaryOrg.name);
-      
+
       console.log('Organization context loaded:', {
         id: primaryOrg.id,
         name: primaryOrg.name,
-        totalOrgs: organizations.length
+        totalOrgs: organizations.length,
       });
     } else {
       // User has no organizations
@@ -385,15 +392,18 @@ export function useOrganizationContext() {
   }, [session, status, organizations, orgLoading]);
 
   // Function to switch organization (if user has multiple)
-  const switchOrganization = useCallback((orgId: string) => {
-    if (organizations) {
-      const org = organizations.find(o => o.id === orgId);
-      if (org) {
-        setOrganizationId(org.id);
-        setOrganizationName(org.name);
+  const switchOrganization = useCallback(
+    (orgId: string) => {
+      if (organizations) {
+        const org = organizations.find((o) => o.id === orgId);
+        if (org) {
+          setOrganizationId(org.id);
+          setOrganizationName(org.name);
+        }
       }
-    }
-  }, [organizations]);
+    },
+    [organizations]
+  );
 
   return {
     organizationId,
@@ -435,10 +445,14 @@ export function useAssignUserGroups() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ userId, groupIds, action }: { 
-      userId: string; 
-      groupIds: string[]; 
-      action: 'assign' | 'unassign' 
+    mutationFn: ({
+      userId,
+      groupIds,
+      action,
+    }: {
+      userId: string;
+      groupIds: string[];
+      action: 'assign' | 'unassign';
     }) => userManagementService.assignUserGroups(userId, groupIds, action),
     onSuccess: (result, variables) => {
       if (result.success) {
@@ -474,11 +488,11 @@ export function useBulkUserOperations() {
   });
 
   const selectUser = useCallback((userId: string) => {
-    setSelectedUsers(prev => [...prev, userId]);
+    setSelectedUsers((prev) => [...prev, userId]);
   }, []);
 
   const unselectUser = useCallback((userId: string) => {
-    setSelectedUsers(prev => prev.filter(id => id !== userId));
+    setSelectedUsers((prev) => prev.filter((id) => id !== userId));
   }, []);
 
   const selectAllUsers = useCallback((userIds: string[]) => {
@@ -490,10 +504,8 @@ export function useBulkUserOperations() {
   }, []);
 
   const toggleUserSelection = useCallback((userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
     );
   }, []);
 

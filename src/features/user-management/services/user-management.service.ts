@@ -27,7 +27,7 @@ import type {
 
 /**
  * Unified User Management Service
- * 
+ *
  * This service provides a high-level API for user management operations
  * while leveraging the unified Keycloak admin client and generated endpoints
  * for type safety and consistency.
@@ -46,14 +46,15 @@ export class UserManagementService {
   ): Promise<UserListResponse> {
     try {
       const params = new URLSearchParams();
-      
+
       if (filters?.search) params.append('search', filters.search);
       if (filters?.page) params.append('first', String((filters.page - 1) * (filters.size || 20)));
       if (filters?.size) params.append('max', String(filters.size));
-      
+
       // Add status filters
       if (filters?.enabled !== undefined) params.append('enabled', String(filters.enabled));
-      if (filters?.emailVerified !== undefined) params.append('emailVerified', String(filters.emailVerified));
+      if (filters?.emailVerified !== undefined)
+        params.append('emailVerified', String(filters.emailVerified));
 
       const response = await fetch(
         `${this.baseUrl}/organizations/${organizationId}/members?${params.toString()}`
@@ -91,20 +92,21 @@ export class UserManagementService {
       // Apply client-side filtering if backend doesn't support it
       if (filters?.search) {
         const searchTerm = filters.search.toLowerCase();
-        users = users.filter(user => 
-          user.firstName?.toLowerCase().includes(searchTerm) ||
-          user.lastName?.toLowerCase().includes(searchTerm) ||
-          user.email?.toLowerCase().includes(searchTerm) ||
-          user.username?.toLowerCase().includes(searchTerm)
+        users = users.filter(
+          (user) =>
+            user.firstName?.toLowerCase().includes(searchTerm) ||
+            user.lastName?.toLowerCase().includes(searchTerm) ||
+            user.email?.toLowerCase().includes(searchTerm) ||
+            user.username?.toLowerCase().includes(searchTerm)
         );
       }
 
       if (filters?.enabled !== undefined) {
-        users = users.filter(user => user.enabled === filters.enabled);
+        users = users.filter((user) => user.enabled === filters.enabled);
       }
 
       if (filters?.emailVerified !== undefined) {
-        users = users.filter(user => user.emailVerified === filters.emailVerified);
+        users = users.filter((user) => user.emailVerified === filters.emailVerified);
       }
 
       // Calculate pagination
@@ -112,7 +114,7 @@ export class UserManagementService {
       const pageSize = filters?.size || 20;
       const currentPage = filters?.page || 1;
       const totalPages = Math.ceil(totalCount / pageSize);
-      
+
       // Apply pagination
       const startIndex = (currentPage - 1) * pageSize;
       const endIndex = startIndex + pageSize;
@@ -126,7 +128,9 @@ export class UserManagementService {
       };
     } catch (error) {
       console.error('Failed to fetch organization users:', error);
-      throw new Error('Failed to fetch organization users. Please check your permissions and try again.');
+      throw new Error(
+        'Failed to fetch organization users. Please check your permissions and try again.'
+      );
     }
   }
 
@@ -145,7 +149,7 @@ export class UserManagementService {
       // Get available roles and groups
       const [availableRoles, availableGroups] = await Promise.all([
         this.getAvailableRealmRoles(),
-        this.getAvailableGroups()
+        this.getAvailableGroups(),
       ]);
 
       // Transform UserRepresentation to OrganizationUser
@@ -172,7 +176,9 @@ export class UserManagementService {
   }
 
   // ENHANCED: User Invitation with Groups
-  async inviteUserWithGroups(invitation: UserInvitationWithGroups): Promise<InvitationActionResult> {
+  async inviteUserWithGroups(
+    invitation: UserInvitationWithGroups
+  ): Promise<InvitationActionResult> {
     try {
       const response = await fetch(
         `${this.baseUrl}/organizations/${invitation.organizationId}/members`,
@@ -202,14 +208,14 @@ export class UserManagementService {
       return {
         success: true,
         message: 'User invited successfully with group assignments',
-        invitationId: result.invitationId
+        invitationId: result.invitationId,
       };
     } catch (error) {
       console.error('Failed to invite user with groups:', error);
       return {
         success: false,
         message: 'Failed to invite user',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
@@ -221,7 +227,7 @@ export class UserManagementService {
   ): Promise<InvitationListResponse> {
     try {
       const params = new URLSearchParams();
-      
+
       if (filters?.status) params.append('status', filters.status.join(','));
       if (filters?.search) params.append('search', filters.search);
       if (filters?.page) params.append('page', String(filters.page));
@@ -249,19 +255,16 @@ export class UserManagementService {
     userId: string
   ): Promise<InvitationActionResult> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/organizations/${organizationId}/invitations`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId,
-            action: 'assign-groups'
-          }),
-        }
-      );
+      const response = await fetch(`${this.baseUrl}/organizations/${organizationId}/invitations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'assign-groups',
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -278,7 +281,7 @@ export class UserManagementService {
       return {
         success: false,
         message: 'Failed to assign groups from invitation',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
@@ -314,19 +317,16 @@ export class UserManagementService {
   // Role Management
   async assignRealmRoles(assignment: RoleAssignment): Promise<void> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/users/${assignment.userId}/roles`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            roles: assignment.roles,
-            action: assignment.action,
-          }),
-        }
-      );
+      const response = await fetch(`${this.baseUrl}/users/${assignment.userId}/roles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roles: assignment.roles,
+          action: assignment.action,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -342,21 +342,18 @@ export class UserManagementService {
   async assignGroups(assignment: GroupAssignment): Promise<void> {
     try {
       // Extract group IDs from GroupRepresentation objects
-      const groupIds = assignment.groups.map(group => group.id).filter(Boolean) as string[];
-      
-      const response = await fetch(
-        `${this.baseUrl}/users/${assignment.userId}/groups`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: assignment.action,
-            groupIds: groupIds,
-          }),
-        }
-      );
+      const groupIds = assignment.groups.map((group) => group.id).filter(Boolean) as string[];
+
+      const response = await fetch(`${this.baseUrl}/users/${assignment.userId}/groups`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: assignment.action,
+          groupIds: groupIds,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -462,8 +459,8 @@ export class UserManagementService {
   }
 
   async assignUserGroups(
-    userId: string, 
-    groupIds: string[], 
+    userId: string,
+    groupIds: string[],
     action: 'assign' | 'unassign'
   ): Promise<InvitationActionResult> {
     try {
@@ -474,7 +471,7 @@ export class UserManagementService {
         },
         body: JSON.stringify({
           action,
-          groupIds
+          groupIds,
         }),
       });
 
@@ -493,7 +490,7 @@ export class UserManagementService {
       return {
         success: false,
         message: `Failed to ${action} user groups`,
-        errors: [error instanceof Error ? error.message : 'Unknown error']
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
@@ -508,9 +505,12 @@ export class UserManagementService {
 
   async removeUserFromOrganization(organizationId: string, userId: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/organizations/${organizationId}/members/${userId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${this.baseUrl}/organizations/${organizationId}/members/${userId}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();

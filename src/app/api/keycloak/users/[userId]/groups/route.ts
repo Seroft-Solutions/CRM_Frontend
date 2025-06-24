@@ -5,17 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmUsersUserIdGroups,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   getAdminRealmsRealmGroups,
-  getAdminRealmsRealmUsersUserId
+  getAdminRealmsRealmUsersUserId,
 } from '@/core/api/generated/keycloak';
-import type { 
-  GroupRepresentation,
-  UserRepresentation
-} from '@/core/api/generated/keycloak';
+import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(
   request: NextRequest,
@@ -24,10 +21,7 @@ export async function GET(
   try {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { userId } = await params;
@@ -35,10 +29,10 @@ export async function GET(
 
     // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
-    
+
     // Get all available groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
-    
+
     // Get user details
     const user = await getAdminRealmsRealmUsersUserId(realm, userId);
 
@@ -46,7 +40,7 @@ export async function GET(
       user,
       assignedGroups: userGroups,
       availableGroups: allGroups,
-      success: true
+      success: true,
     });
   } catch (error: any) {
     console.error('Get user groups API error:', error);
@@ -64,10 +58,7 @@ export async function POST(
   try {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { userId } = await params;
@@ -103,10 +94,10 @@ export async function POST(
         }
       } catch (error: any) {
         console.error(`Failed to ${action} group ${groupId} for user ${userId}:`, error);
-        results.push({ 
-          groupId, 
-          success: false, 
-          error: error.message || `Failed to ${action} group`
+        results.push({
+          groupId,
+          success: false,
+          error: error.message || `Failed to ${action} group`,
         });
         errorCount++;
       }
@@ -117,7 +108,7 @@ export async function POST(
       message: `${successCount} group(s) ${action}ed successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
       results,
       successCount,
-      errorCount
+      errorCount,
     });
   } catch (error: any) {
     console.error('User groups assignment API error:', error);

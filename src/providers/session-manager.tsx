@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useEffect,
+  useRef,
+} from 'react';
 import { signIn } from 'next-auth/react';
 import { useSessionMonitor } from '@/hooks/use-session-monitor';
 import { SessionExpiredModal } from '@/components/auth/session-expired-modal';
@@ -50,7 +58,7 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
   }, []);
 
   const hideSessionModal = useCallback(() => {
-    setModalState(prev => ({
+    setModalState((prev) => ({
       ...prev,
       isOpen: false,
     }));

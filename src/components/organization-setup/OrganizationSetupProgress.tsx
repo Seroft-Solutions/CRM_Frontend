@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { 
-  Building2, 
-  Database, 
-  Settings, 
-  CheckCircle, 
+import {
+  Building2,
+  Database,
+  Settings,
+  CheckCircle,
   Loader2,
   AlertCircle,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { useGetSetupProgress } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
@@ -22,16 +22,21 @@ interface OrganizationSetupProgressProps {
 }
 
 const setupSteps = [
-  { key: 'Creating workspace schema', label: 'Setting up workspace', icon: Building2, progress: 25 },
+  {
+    key: 'Creating workspace schema',
+    label: 'Setting up workspace',
+    icon: Building2,
+    progress: 25,
+  },
   { key: 'Running migrations', label: 'Configuring database', icon: Database, progress: 60 },
   { key: 'Loading default data', label: 'Loading default data', icon: Settings, progress: 85 },
   { key: 'COMPLETED', label: 'Setup complete', icon: CheckCircle, progress: 100 },
 ];
 
-export function OrganizationSetupProgress({ 
-  organizationName, 
-  onComplete, 
-  onError 
+export function OrganizationSetupProgress({
+  organizationName,
+  onComplete,
+  onError,
 }: OrganizationSetupProgressProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -39,16 +44,17 @@ export function OrganizationSetupProgress({
   const [hasError, setHasError] = useState(false);
 
   // Poll for setup progress
-  const { data: progressData, isError, error } = useGetSetupProgress(
-    organizationName,
-    {
-      query: {
-        refetchInterval: 2000, // Poll every 2 seconds
-        refetchIntervalInBackground: true,
-        retry: 3,
-      }
-    }
-  );
+  const {
+    data: progressData,
+    isError,
+    error,
+  } = useGetSetupProgress(organizationName, {
+    query: {
+      refetchInterval: 2000, // Poll every 2 seconds
+      refetchIntervalInBackground: true,
+      retry: 3,
+    },
+  });
 
   useEffect(() => {
     if (progressData) {
@@ -60,8 +66,11 @@ export function OrganizationSetupProgress({
 
       // Find current step using simple keyword matching
       let stepIndex = -1;
-      
-      if (progressData.includes('Creating workspace schema') || progressData.includes('Initializing setup')) {
+
+      if (
+        progressData.includes('Creating workspace schema') ||
+        progressData.includes('Initializing setup')
+      ) {
         stepIndex = 0;
       } else if (progressData.includes('Running migrations')) {
         stepIndex = 1;
@@ -69,7 +78,7 @@ export function OrganizationSetupProgress({
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(25 + (percentage * 0.35)); // 25% base + up to 35% for migrations (25% to 60%)
+          setProgress(25 + percentage * 0.35); // 25% base + up to 35% for migrations (25% to 60%)
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -79,7 +88,7 @@ export function OrganizationSetupProgress({
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(85 + (percentage * 0.1)); // 85% base + up to 10% for loading
+          setProgress(85 + percentage * 0.1); // 85% base + up to 10% for loading
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -88,7 +97,7 @@ export function OrganizationSetupProgress({
         setIsComplete(true);
         setTimeout(() => onComplete(), 1500);
       }
-      
+
       if (stepIndex !== -1) {
         setCurrentStep(stepIndex);
         if ((stepIndex !== 1 && stepIndex !== 2) || !progressData.includes('%')) {
@@ -116,9 +125,7 @@ export function OrganizationSetupProgress({
           <p className="text-muted-foreground mb-4">
             There was an issue setting up your organization workspace.
           </p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </CardContent>
       </Card>
     );
@@ -144,10 +151,9 @@ export function OrganizationSetupProgress({
           {isComplete ? 'Setup Complete!' : 'Setting Up Your Workspace'}
         </h1>
         <p className="text-muted-foreground">
-          {isComplete 
+          {isComplete
             ? `Welcome to ${organizationName}! Redirecting to dashboard...`
-            : `Creating workspace for ${organizationName}`
-          }
+            : `Creating workspace for ${organizationName}`}
         </p>
       </div>
 
@@ -166,10 +172,7 @@ export function OrganizationSetupProgress({
               <span className="font-medium">Progress</span>
               <span className="text-muted-foreground">{progress}%</span>
             </div>
-            <Progress 
-              value={progress} 
-              className="h-2 bg-muted"
-            />
+            <Progress value={progress} className="h-2 bg-muted" />
           </div>
 
           {/* Step List - Compact */}
@@ -186,8 +189,8 @@ export function OrganizationSetupProgress({
                     isCurrentStep
                       ? 'bg-primary/10 border border-primary/20'
                       : isCompleted
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-muted/30'
+                        ? 'bg-green-50 border border-green-200'
+                        : 'bg-muted/30'
                   }`}
                 >
                   <div
@@ -195,8 +198,8 @@ export function OrganizationSetupProgress({
                       isCompleted
                         ? 'bg-green-100 text-green-600'
                         : isCurrentStep
-                        ? 'bg-primary text-primary-foreground animate-pulse'
-                        : 'bg-muted text-muted-foreground'
+                          ? 'bg-primary text-primary-foreground animate-pulse'
+                          : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {isCompleted ? (
@@ -207,31 +210,25 @@ export function OrganizationSetupProgress({
                       <Icon className="w-4 h-4" />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
-                    <h4 className={`font-medium text-sm ${
+                    <h4
+                      className={`font-medium text-sm ${
                         isCompleted
                           ? 'text-green-700'
                           : isCurrentStep
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
+                            ? 'text-primary'
+                            : 'text-muted-foreground'
                       }`}
                     >
                       {step.label}
                     </h4>
                     <p className="text-xs text-muted-foreground">
-                      {isCompleted
-                        ? 'Completed'
-                        : isCurrentStep
-                        ? 'In progress...'
-                        : 'Pending'
-                      }
+                      {isCompleted ? 'Completed' : isCurrentStep ? 'In progress...' : 'Pending'}
                     </p>
                   </div>
 
-                  {isCompleted && (
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  )}
+                  {isCompleted && <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />}
                 </div>
               );
             })}
@@ -250,8 +247,7 @@ export function OrganizationSetupProgress({
               <p className="text-sm text-muted-foreground">
                 {isComplete
                   ? '🎉 Your workspace is ready!'
-                  : progressData || 'Initializing setup...'
-                }
+                  : progressData || 'Initializing setup...'}
               </p>
             </div>
             {!isComplete && (

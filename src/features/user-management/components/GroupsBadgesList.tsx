@@ -6,12 +6,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { GroupRepresentation } from '@/core/api/generated/keycloak';
 
@@ -23,12 +18,12 @@ interface GroupsBadgesListProps {
   className?: string;
 }
 
-export function GroupsBadgesList({ 
-  groups, 
-  maxVisible = 2, 
+export function GroupsBadgesList({
+  groups,
+  maxVisible = 2,
   variant = 'outline',
   size = 'sm',
-  className 
+  className,
 }: GroupsBadgesListProps) {
   const visibleGroups = groups.slice(0, maxVisible);
   const hiddenCount = groups.length - maxVisible;
@@ -39,11 +34,7 @@ export function GroupsBadgesList({
   };
 
   if (groups.length === 0) {
-    return (
-      <span className={cn('text-muted-foreground text-sm', className)}>
-        No groups
-      </span>
-    );
+    return <span className={cn('text-muted-foreground text-sm', className)}>No groups</span>;
   }
 
   return (
@@ -52,10 +43,7 @@ export function GroupsBadgesList({
         {visibleGroups.map((group) => (
           <Tooltip key={group.id}>
             <TooltipTrigger asChild>
-              <Badge 
-                variant={variant} 
-                className={cn(sizeClasses[size], 'cursor-help')}
-              >
+              <Badge variant={variant} className={cn(sizeClasses[size], 'cursor-help')}>
                 {group.name}
               </Badge>
             </TooltipTrigger>
@@ -63,9 +51,7 @@ export function GroupsBadgesList({
               <div className="max-w-xs">
                 <p className="font-medium">{group.name}</p>
                 {group.path && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Path: {group.path}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Path: {group.path}</p>
                 )}
                 {group.attributes && Object.keys(group.attributes).length > 0 && (
                   <div className="mt-2">
@@ -73,7 +59,8 @@ export function GroupsBadgesList({
                     <div className="text-xs text-muted-foreground">
                       {Object.entries(group.attributes).map(([key, value]) => (
                         <div key={key}>
-                          <span className="font-medium">{key}:</span> {Array.isArray(value) ? value.join(', ') : value}
+                          <span className="font-medium">{key}:</span>{' '}
+                          {Array.isArray(value) ? value.join(', ') : value}
                         </div>
                       ))}
                     </div>
@@ -83,14 +70,11 @@ export function GroupsBadgesList({
             </TooltipContent>
           </Tooltip>
         ))}
-        
+
         {hiddenCount > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge 
-                variant="outline" 
-                className={cn(sizeClasses[size], 'cursor-help')}
-              >
+              <Badge variant="outline" className={cn(sizeClasses[size], 'cursor-help')}>
                 +{hiddenCount}
               </Badge>
             </TooltipTrigger>
@@ -101,11 +85,7 @@ export function GroupsBadgesList({
                   {groups.slice(maxVisible).map((group) => (
                     <div key={group.id} className="text-sm">
                       <span className="font-medium">{group.name}</span>
-                      {group.path && (
-                        <p className="text-muted-foreground text-xs">
-                          {group.path}
-                        </p>
-                      )}
+                      {group.path && <p className="text-muted-foreground text-xs">{group.path}</p>}
                     </div>
                   ))}
                 </div>

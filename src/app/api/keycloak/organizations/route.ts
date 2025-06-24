@@ -5,9 +5,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmOrganizations,
-  postAdminRealmsRealmOrganizations
+  postAdminRealmsRealmOrganizations,
 } from '@/core/api/generated/keycloak';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 
@@ -16,10 +16,7 @@ export async function GET(request: NextRequest) {
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const realm = keycloakService.getRealm();
@@ -38,16 +35,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       organizations,
       count: Array.isArray(organizations) ? organizations.length : 0,
-      message: 'Available organizations in Keycloak'
+      message: 'Available organizations in Keycloak',
     });
   } catch (error: any) {
     console.error('Organizations GET API error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to fetch organizations',
         organizations: [],
-        count: 0
+        count: 0,
       },
       { status: error.status || 500 }
     );
@@ -59,10 +56,7 @@ export async function POST(request: NextRequest) {
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const realm = keycloakService.getRealm();
@@ -76,23 +70,20 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!requestData.organizationName && !requestData.name) {
-      return NextResponse.json(
-        { error: 'Organization name is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
     }
 
     // Create minimal valid organization data structure for Keycloak
     const organizationData: OrganizationRepresentation = {
       name: requestData.organizationName || requestData.name,
-      enabled: true
+      enabled: true,
     };
 
     // Only add optional fields if they have meaningful values
     if (requestData.displayName && requestData.displayName.trim()) {
       organizationData.alias = requestData.displayName.trim();
     }
-    
+
     if (requestData.description && requestData.description.trim()) {
       organizationData.description = requestData.description.trim();
     }
@@ -100,11 +91,14 @@ export async function POST(request: NextRequest) {
     // Handle domains properly - must be valid domain format (no @ symbol)
     if (requestData.domain && requestData.domain.trim()) {
       const domain = requestData.domain.trim().replace(/^@/, ''); // Remove @ if present
-      if (domain && domain.includes('.')) { // Basic domain validation
-        organizationData.domains = [{
-          name: domain,
-          verified: false
-        }];
+      if (domain && domain.includes('.')) {
+        // Basic domain validation
+        organizationData.domains = [
+          {
+            name: domain,
+            verified: false,
+          },
+        ];
       }
     }
 
@@ -113,11 +107,13 @@ export async function POST(request: NextRequest) {
     // Create organization using generated endpoint
     await postAdminRealmsRealmOrganizations(realm, organizationData);
 
-    return NextResponse.json({
-      message: 'Organization created successfully',
-      name: organizationData.name
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        message: 'Organization created successfully',
+        name: organizationData.name,
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error('Organizations POST API detailed error:', {
       message: error.message,
@@ -125,29 +121,26 @@ export async function POST(request: NextRequest) {
       responseData: error.response?.data,
       responseStatus: error.response?.status,
       requestUrl: error.config?.url,
-      requestData: error.config?.data
+      requestData: error.config?.data,
     });
-    
+
     if (error.status === 409) {
-      return NextResponse.json(
-        { error: 'Organization already exists' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Organization already exists' }, { status: 409 });
     }
-    
+
     if (error.status === 400) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid organization data',
-          details: error.response?.data || error.message
+          details: error.response?.data || error.message,
         },
         { status: 400 }
       );
     }
-    
+
     return NextResponse.json(
-      { 
-        error: error.message || 'Failed to create organization'
+      {
+        error: error.message || 'Failed to create organization',
       },
       { status: error.status || 500 }
     );

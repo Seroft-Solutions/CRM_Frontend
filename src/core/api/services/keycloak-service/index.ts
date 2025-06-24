@@ -1,12 +1,17 @@
 import { BaseService } from '../base/base-service';
-import { KEYCLOAK_SERVICE_CONFIG, KEYCLOAK_REALM, KEYCLOAK_ADMIN_CONFIG, KEYCLOAK_DEBUG } from './config';
+import {
+  KEYCLOAK_SERVICE_CONFIG,
+  KEYCLOAK_REALM,
+  KEYCLOAK_ADMIN_CONFIG,
+  KEYCLOAK_DEBUG,
+} from './config';
 
 /**
  * Unified Keycloak Admin Client Service
- * 
+ *
  * This service handles both regular Keycloak operations and admin operations
  * with proper authentication and authorization management.
- * 
+ *
  * Features:
  * - Automatic admin token management
  * - Type-safe operations using generated endpoints
@@ -48,7 +53,7 @@ export class KeycloakService extends BaseService {
     this.adminTokenRefreshPromise = this.refreshAdminToken();
     const token = await this.adminTokenRefreshPromise;
     this.adminTokenRefreshPromise = null;
-    
+
     return token;
   }
 
@@ -69,7 +74,7 @@ export class KeycloakService extends BaseService {
       if (KEYCLOAK_DEBUG.enabled) {
         console.warn('admin-cli authentication failed, trying fallback client:', adminCliError);
       }
-      
+
       // Try fallback client
       try {
         return await this.tryAdminAuth(
@@ -80,7 +85,7 @@ export class KeycloakService extends BaseService {
       } catch (fallbackError) {
         console.error('Both admin-cli and fallback client failed:', {
           adminCliError: adminCliError.message,
-          fallbackError: fallbackError.message
+          fallbackError: fallbackError.message,
         });
         throw fallbackError;
       }
@@ -90,15 +95,19 @@ export class KeycloakService extends BaseService {
   /**
    * Try admin authentication with specific client
    */
-  private async tryAdminAuth(clientId: string, clientSecret: string | null, credentials: any): Promise<string> {
+  private async tryAdminAuth(
+    clientId: string,
+    clientSecret: string | null,
+    credentials: any
+  ): Promise<string> {
     const tokenUrl = `${this.config.baseURL}/realms/master/protocol/openid-connect/token`;
-    
+
     if (KEYCLOAK_DEBUG.enabled) {
       console.log('Attempting admin authentication:', {
         url: tokenUrl,
         clientId,
         username: credentials.adminUsername,
-        hasClientSecret: !!clientSecret
+        hasClientSecret: !!clientSecret,
       });
     }
 
@@ -130,31 +139,33 @@ export class KeycloakService extends BaseService {
       } catch {
         errorDetail = { error: errorText };
       }
-      
+
       console.error(`Keycloak admin token error [${clientId}]:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorDetail,
-        url: tokenUrl
+        url: tokenUrl,
       });
-      
-      throw new Error(`Failed to get admin token with ${clientId}: ${response.status} ${response.statusText} - ${errorDetail.error_description || errorDetail.error || errorText}`);
+
+      throw new Error(
+        `Failed to get admin token with ${clientId}: ${response.status} ${response.statusText} - ${errorDetail.error_description || errorDetail.error || errorText}`
+      );
     }
 
     const data = await response.json();
-    
+
     if (!data.access_token) {
       console.error('No access token in response:', data);
       throw new Error('No access token received from Keycloak');
     }
 
     this.adminAccessToken = data.access_token;
-    this.adminTokenExpiry = Date.now() + (data.expires_in * 1000);
+    this.adminTokenExpiry = Date.now() + data.expires_in * 1000;
 
     if (KEYCLOAK_DEBUG.enabled) {
       console.log(`Admin token refresh successful [${clientId}]:`, {
         expiresIn: data.expires_in,
-        tokenLength: data.access_token.length
+        tokenLength: data.access_token.length,
       });
     }
 
@@ -175,7 +186,7 @@ export class KeycloakService extends BaseService {
         hasAdminUsername: !!adminUsername,
         hasAdminPassword: !!adminPassword,
         hasFallbackClientId: !!fallbackClientId,
-        hasFallbackClientSecret: !!fallbackClientSecret
+        hasFallbackClientSecret: !!fallbackClientSecret,
       });
       return null;
     }
@@ -278,20 +289,25 @@ export class KeycloakService extends BaseService {
       if (typeof window === 'undefined') {
         const { auth } = await import('@/auth');
         const session = await auth();
-        
+
         if (!session?.user) {
           return { authorized: false, error: 'Not authenticated' };
         }
 
         // Check if user has manage-users role or is admin
-        const hasPermission = session.user.roles?.includes('manage-users') || 
-                            session.user.roles?.includes('admin') || 
-                            session.user.roles?.includes('realm-admin') ||
-                            session.user.roles?.includes('realm-management') ||
-                            false;
-        
+        const hasPermission =
+          session.user.roles?.includes('manage-users') ||
+          session.user.roles?.includes('admin') ||
+          session.user.roles?.includes('realm-admin') ||
+          session.user.roles?.includes('realm-management') ||
+          false;
+
         if (!hasPermission) {
-          return { authorized: false, error: 'Insufficient permissions. Required: manage-users, admin, realm-admin, or realm-management role' };
+          return {
+            authorized: false,
+            error:
+              'Insufficient permissions. Required: manage-users, admin, realm-admin, or realm-management role',
+          };
         }
 
         return { authorized: true };
@@ -366,7 +382,7 @@ export class KeycloakService extends BaseService {
       adminTokenExpiry: this.adminTokenExpiry,
       isAdminTokenValid: this.adminAccessToken && Date.now() < this.adminTokenExpiry,
       config: KEYCLOAK_ADMIN_CONFIG,
-      debug: KEYCLOAK_DEBUG
+      debug: KEYCLOAK_DEBUG,
     };
   }
 }

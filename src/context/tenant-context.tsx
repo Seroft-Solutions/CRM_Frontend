@@ -21,7 +21,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
   useEffect(() => {
     const storedOrgId = localStorage.getItem('selectedOrganizationId');
     const storedOrgName = localStorage.getItem('selectedOrganizationName');
-    
+
     if (storedOrgName) {
       setSelectedOrgNameState(storedOrgName);
     }
@@ -45,11 +45,13 @@ export function TenantProvider({ children }: TenantProviderProps) {
   };
 
   return (
-    <TenantContext.Provider value={{
-      selectedOrgName,
-      setSelectedOrgName,
-      getTenantHeader
-    }}>
+    <TenantContext.Provider
+      value={{
+        selectedOrgName,
+        setSelectedOrgName,
+        getTenantHeader,
+      }}
+    >
       {children}
     </TenantContext.Provider>
   );

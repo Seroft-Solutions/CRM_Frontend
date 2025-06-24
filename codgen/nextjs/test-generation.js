@@ -20,10 +20,11 @@ function testFormGeneration(entityName) {
       console.log('Available entities:');
       const jhipsterDir = path.dirname(entityPath);
       if (fs.existsSync(jhipsterDir)) {
-        const entities = fs.readdirSync(jhipsterDir)
-          .filter(file => file.endsWith('.json'))
-          .map(file => file.replace('.json', ''));
-        entities.forEach(entity => console.log(`   - ${entity}`));
+        const entities = fs
+          .readdirSync(jhipsterDir)
+          .filter((file) => file.endsWith('.json'))
+          .map((file) => file.replace('.json', ''));
+        entities.forEach((entity) => console.log(`   - ${entity}`));
       }
       return false;
     }
@@ -38,7 +39,10 @@ function testFormGeneration(entityName) {
     // Validate generated files
     console.log('\n🔍 Validating generated files...');
     const outputDir = path.join(__dirname, '..', '..', 'src', 'app', '(protected)');
-    const entityRoute = entityName.toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
+    const entityRoute = entityName
+      .toLowerCase()
+      .replace(/([A-Z])/g, '-$1')
+      .replace(/^-/, '');
     const entityDir = path.join(outputDir, entityRoute);
 
     const expectedFiles = [
@@ -48,7 +52,7 @@ function testFormGeneration(entityName) {
       'components/form/entity-form-provider.tsx',
       'components/form/entity-form-wizard.tsx',
       'components/form/steps/basic-info-step.tsx',
-      'components/form/steps/review-step.tsx'
+      'components/form/steps/review-step.tsx',
     ];
 
     let allGenerated = true;
@@ -74,7 +78,6 @@ function testFormGeneration(entityName) {
       console.log('\n⚠️  Some files were not generated correctly');
       return false;
     }
-
   } catch (error) {
     console.error('❌ Generation failed:', error.message);
     return false;
@@ -91,7 +94,7 @@ function showUsage() {
 
 if (require.main === module) {
   const entityName = process.argv[2];
-  
+
   if (!entityName) {
     showUsage();
     process.exit(1);

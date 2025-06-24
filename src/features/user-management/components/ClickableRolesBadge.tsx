@@ -6,12 +6,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Shield, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -28,32 +23,28 @@ interface ClickableRolesBadgeProps {
   enableProgressiveLoading?: boolean;
 }
 
-export function ClickableRolesBadge({ 
+export function ClickableRolesBadge({
   userId,
   organizationId,
-  roles = [], 
+  roles = [],
   variant = 'secondary',
   size = 'sm',
   className,
-  enableProgressiveLoading = true
+  enableProgressiveLoading = true,
 }: ClickableRolesBadgeProps) {
   const router = useRouter();
   const hasInitialData = roles && Array.isArray(roles) && roles.length > 0;
-  
+
   // Only fetch additional data if we don't have initial data and progressive loading is enabled
-  const { 
-    roleCount: fetchedRoleCount, 
-    roles: fetchedRoles, 
+  const {
+    roleCount: fetchedRoleCount,
+    roles: fetchedRoles,
     hasData: hasFetchedData,
-    isLoading 
-  } = useUserRoleGroupCounts(
-    organizationId, 
-    userId, 
-    enableProgressiveLoading && !hasInitialData
-  );
+    isLoading,
+  } = useUserRoleGroupCounts(organizationId, userId, enableProgressiveLoading && !hasInitialData);
 
   // Determine which data to use
-  const finalRoles = hasInitialData ? roles : (fetchedRoles || []);
+  const finalRoles = hasInitialData ? roles : fetchedRoles || [];
   const finalRoleCount = hasInitialData ? roles.length : fetchedRoleCount;
   const hasAnyData = hasInitialData || hasFetchedData;
 
@@ -72,10 +63,10 @@ export function ClickableRolesBadge({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
-                sizeClasses[size], 
+                sizeClasses[size],
                 'cursor-pointer transition-all duration-200 hover:shadow-sm hover:border-blue-300 hover:bg-blue-50',
                 className
               )}
@@ -101,10 +92,10 @@ export function ClickableRolesBadge({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
-                sizeClasses[size], 
+                sizeClasses[size],
                 'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-400 hover:bg-blue-50 hover:scale-105',
                 'border-slate-300 text-slate-600 hover:text-blue-700',
                 className
@@ -117,7 +108,9 @@ export function ClickableRolesBadge({
           </TooltipTrigger>
           <TooltipContent className="bg-white border-2 border-slate-200 shadow-lg">
             <div className="p-2">
-              <p className="text-slate-800 font-medium">Click to {hasAnyData ? 'manage' : 'view'} roles</p>
+              <p className="text-slate-800 font-medium">
+                Click to {hasAnyData ? 'manage' : 'view'} roles
+              </p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -129,10 +122,10 @@ export function ClickableRolesBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className={cn(
-              sizeClasses[size], 
+              sizeClasses[size],
               'cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105',
               'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-400 hover:text-blue-800',
               'font-medium',
@@ -155,9 +148,7 @@ export function ClickableRolesBadge({
                 <div key={role.id} className="bg-blue-50 border border-blue-200 rounded-md p-2">
                   <span className="font-medium text-blue-900 text-sm">{role.name}</span>
                   {role.description && (
-                    <p className="text-blue-700 text-xs mt-1 leading-relaxed">
-                      {role.description}
-                    </p>
+                    <p className="text-blue-700 text-xs mt-1 leading-relaxed">{role.description}</p>
                   )}
                 </div>
               ))}

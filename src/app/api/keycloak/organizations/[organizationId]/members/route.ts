@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmOrganizationsOrgIdMembers,
   postAdminRealmsRealmOrganizationsOrgIdMembers,
   postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
@@ -17,21 +17,21 @@ import {
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   getAdminRealmsRealmUsersUserIdGroups,
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
-  getAdminRealmsRealmGroups
+  getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
-import type { 
+import type {
   GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteUserBody,
   MemberRepresentation,
   UserRepresentation,
-  GroupRepresentation
+  GroupRepresentation,
 } from '@/core/api/generated/keycloak';
-import type { 
-  PendingInvitation, 
+import type {
+  PendingInvitation,
   UserInvitationWithGroups,
   InvitationStatus,
-  OrganizationWithInvitations 
+  OrganizationWithInvitations,
 } from '@/features/user-management/types';
 
 // Helper function to generate invitation ID
@@ -42,43 +42,46 @@ function generateInvitationId(): string {
 // Helper function to store invitation metadata in user attributes
 function createInvitationUserAttributes(invitation: PendingInvitation) {
   return {
-    'invitation_id': invitation.id,
-    'invitation_status': invitation.status,
-    'invitation_invited_by': invitation.invitedBy,
-    'invitation_invited_at': invitation.invitedAt.toString(),
-    'invitation_organization_id': invitation.organizationId,
-    'invitation_selected_groups': JSON.stringify(invitation.selectedGroups.map(g => g.id)),
-    'invitation_note': invitation.invitationNote || '',
-    'invitation_expires_at': invitation.expiresAt?.toString() || ''
+    invitation_id: invitation.id,
+    invitation_status: invitation.status,
+    invitation_invited_by: invitation.invitedBy,
+    invitation_invited_at: invitation.invitedAt.toString(),
+    invitation_organization_id: invitation.organizationId,
+    invitation_selected_groups: JSON.stringify(invitation.selectedGroups.map((g) => g.id)),
+    invitation_note: invitation.invitationNote || '',
+    invitation_expires_at: invitation.expiresAt?.toString() || '',
   };
 }
 
 // Helper function to ensure Users group assignment and remove Admins group if present
-async function ensureProperGroupAssignment(realm: string, userId: string): Promise<{
+async function ensureProperGroupAssignment(
+  realm: string,
+  userId: string
+): Promise<{
   usersGroupAssigned: boolean;
   adminsGroupRemoved: boolean;
 }> {
   let usersGroupAssigned = false;
   let adminsGroupRemoved = false;
-  
+
   try {
     // Get all groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
-    const usersGroup = allGroups.find(g => g.name === 'Users');
-    const adminsGroup = allGroups.find(g => g.name === 'Admins');
-    
+    const usersGroup = allGroups.find((g) => g.name === 'Users');
+    const adminsGroup = allGroups.find((g) => g.name === 'Admins');
+
     // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
-    
+
     // Assign Users group if not already assigned
-    if (usersGroup && !userGroups.some(g => g.id === usersGroup.id)) {
+    if (usersGroup && !userGroups.some((g) => g.id === usersGroup.id)) {
       await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, usersGroup.id!);
       usersGroupAssigned = true;
       console.log('Assigned Users group to user:', userId);
     }
-    
+
     // Remove Admins group if present
-    if (adminsGroup && userGroups.some(g => g.id === adminsGroup.id)) {
+    if (adminsGroup && userGroups.some((g) => g.id === adminsGroup.id)) {
       await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
       adminsGroupRemoved = true;
       console.log('Removed Admins group from user:', userId);
@@ -86,7 +89,7 @@ async function ensureProperGroupAssignment(realm: string, userId: string): Promi
   } catch (error) {
     console.warn('Failed to manage group assignments for user:', userId, error);
   }
-  
+
   return { usersGroupAssigned, adminsGroupRemoved };
 }
 
@@ -106,9 +109,11 @@ function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInv
       status: (attributes.invitation_status?.[0] as InvitationStatus) || 'pending',
       invitedBy: attributes.invitation_invited_by?.[0] || '',
       invitedAt: parseInt(attributes.invitation_invited_at?.[0] || '0'),
-      expiresAt: attributes.invitation_expires_at?.[0] ? parseInt(attributes.invitation_expires_at[0]) : undefined,
+      expiresAt: attributes.invitation_expires_at?.[0]
+        ? parseInt(attributes.invitation_expires_at[0])
+        : undefined,
       selectedGroups: selectedGroupIds.map((id: string) => ({ id, name: '', path: '' })), // Will be populated later
-      invitationNote: attributes.invitation_note?.[0] || ''
+      invitationNote: attributes.invitation_note?.[0] || '',
     };
   } catch (error) {
     console.error('Failed to parse invitation metadata:', error);
@@ -124,20 +129,17 @@ export async function GET(
     // Verify permissions using the unified service
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
     const { organizationId } = await params;
     const { searchParams } = new URL(request.url);
     const realm = keycloakService.getRealm();
-    
+
     // Extract and type-safe query parameters
     const queryParams: GetAdminRealmsRealmOrganizationsOrgIdMembersParams = {};
-    
+
     if (searchParams.has('search')) {
       queryParams.search = searchParams.get('search') || undefined;
     }
@@ -150,30 +152,27 @@ export async function GET(
 
     // Get organization members using generated endpoint
     const members: MemberRepresentation[] = await getAdminRealmsRealmOrganizationsOrgIdMembers(
-      realm, 
-      organizationId, 
+      realm,
+      organizationId,
       queryParams
     );
 
     return NextResponse.json(members);
   } catch (error: any) {
     console.error('Organization members API error:', error);
-    
+
     // Enhanced error handling with proper status codes
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'Organization not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
-    
+
     if (error.status === 403) {
       return NextResponse.json(
         { error: 'Access denied. Insufficient permissions.' },
         { status: 403 }
       );
     }
-    
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch organization members' },
       { status: error.status || 500 }
@@ -189,10 +188,7 @@ export async function POST(
     // Verify permissions using the unified service
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
@@ -203,14 +199,14 @@ export async function POST(
     // Check if this is a simple member addition (for organization setup)
     if (body.userId && !body.email) {
       console.log('Simple member addition:', { organizationId, userId: body.userId });
-      
+
       // Add existing user to organization using generated endpoint
       await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, body.userId);
 
       return NextResponse.json({
         message: 'User added to organization successfully',
         organizationId,
-        userId: body.userId
+        userId: body.userId,
       });
     }
 
@@ -224,52 +220,48 @@ export async function POST(
       selectedRoles: body.selectedRoles || [],
       invitationNote: body.invitationNote,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
-      sendPasswordReset: body.sendPasswordReset !== false // New option for password reset
+      sendPasswordReset: body.sendPasswordReset !== false, // New option for password reset
     };
 
     // Validate required fields
     if (!inviteData.email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteData.email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
     // CLEAR SCENARIO-BASED FLOW
     let userId: string;
     let invitationId: string;
     let groupManagement = { usersGroupAssigned: false, adminsGroupRemoved: false };
-    
+
     try {
       // Check if user exists
       const existingUsers = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
-        exact: true
+        exact: true,
       });
-      
+
       if (existingUsers.length > 0) {
         // SCENARIO 2: User exists - add to org then invite
         userId = existingUsers[0].id!;
         console.log('Found existing user:', userId);
-        
+
         // First add user to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing user to organization');
-        
+
         // Ensure proper group assignment for existing user too
         const groupResult = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned = groupResult.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved = groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
-        
+        groupManagement.usersGroupAssigned =
+          groupResult.usersGroupAssigned || groupManagement.usersGroupAssigned;
+        groupManagement.adminsGroupRemoved =
+          groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+
         // Then send appropriate email
         if (inviteData.sendPasswordReset !== false) {
           // Send UPDATE_PASSWORD email if user needs to set/reset password
@@ -281,7 +273,7 @@ export async function POST(
               {
                 client_id: 'web_app',
                 lifespan: 43200, // 12 hours
-                redirect_uri: body.redirectUri
+                redirect_uri: body.redirectUri,
               }
             );
             console.log('Sent UPDATE_PASSWORD email to existing user');
@@ -290,10 +282,11 @@ export async function POST(
           }
         } else {
           // Send organization invite
-          const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
-            id: userId
-          };
-          
+          const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
+            {
+              id: userId,
+            };
+
           await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
             realm,
             organizationId,
@@ -301,10 +294,9 @@ export async function POST(
           );
           console.log('Invited existing user to organization');
         }
-        
       } else {
         // SCENARIO 1: User doesn't exist - create then invite
-        
+
         // 1. Create User first
         const newUser: UserRepresentation = {
           username: inviteData.email,
@@ -314,30 +306,32 @@ export async function POST(
           enabled: true,
           emailVerified: false,
           attributes: {
-            organization: [organizationId]
-          }
+            organization: [organizationId],
+          },
         };
 
         await postAdminRealmsRealmUsers(realm, newUser);
         console.log('Created new user');
-        
+
         // Get created user ID
         const createdUsers = await getAdminRealmsRealmUsers(realm, {
           email: inviteData.email,
-          exact: true
+          exact: true,
         });
-        
+
         if (createdUsers.length === 0) {
           throw new Error('Failed to find created user');
         }
-        
+
         userId = createdUsers[0].id!;
         console.log('Found created user ID:', userId);
 
         // 2. Ensure proper group assignment (Users group + remove Admins if present)
         const groupResult1 = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned = groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved = groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        groupManagement.usersGroupAssigned =
+          groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
+        groupManagement.adminsGroupRemoved =
+          groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
         // 3. Add User to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
@@ -354,7 +348,7 @@ export async function POST(
               {
                 client_id: 'web_app',
                 lifespan: 43200, // 12 hours
-                redirect_uri: body.redirectUri // Optional redirect after password setup
+                redirect_uri: body.redirectUri, // Optional redirect after password setup
               }
             );
             console.log('Sent UPDATE_PASSWORD email to new user');
@@ -364,10 +358,11 @@ export async function POST(
           }
         } else if (inviteData.sendWelcomeEmail !== false) {
           // Fallback to organization invite email
-          const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody = {
-            id: userId
-          };
-          
+          const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
+            {
+              id: userId,
+            };
+
           await postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser(
             realm,
             organizationId,
@@ -387,12 +382,14 @@ export async function POST(
             console.warn('Failed to assign group:', group.id, groupError);
           }
         }
-        
+
         // After assigning selected groups, ensure Users group is still present
         // and remove Admins group if it was accidentally selected
         const groupResult2 = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned = groupResult2.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved = groupResult2.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        groupManagement.usersGroupAssigned =
+          groupResult2.usersGroupAssigned || groupManagement.usersGroupAssigned;
+        groupManagement.adminsGroupRemoved =
+          groupResult2.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
       }
 
       // Add invitation metadata for tracking
@@ -406,38 +403,37 @@ export async function POST(
         status: 'pending',
         invitedBy: 'current-user',
         invitedAt: Date.now(),
-        expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
         selectedGroups: inviteData.selectedGroups || [],
-        invitationNote: inviteData.invitationNote
+        invitationNote: inviteData.invitationNote,
       };
 
       const invitationAttributes = createInvitationUserAttributes(pendingInvitation);
-      
+
       // Update user with invitation metadata
       const currentUser = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
-        exact: true
+        exact: true,
       });
-      
+
       if (currentUser.length > 0) {
         const updatedUser: UserRepresentation = {
           ...currentUser[0],
           attributes: {
             ...currentUser[0].attributes,
-            ...invitationAttributes
-          }
+            ...invitationAttributes,
+          },
         };
 
         await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
         console.log('Added invitation metadata');
       }
-      
     } catch (error: any) {
       console.error('Invitation flow failed:', error);
       throw error;
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: 'User invited successfully',
       email: inviteData.email,
@@ -448,12 +444,12 @@ export async function POST(
       groupManagement: {
         usersGroupAssigned: groupManagement.usersGroupAssigned,
         adminsGroupRemoved: groupManagement.adminsGroupRemoved,
-        message: groupManagement.adminsGroupRemoved 
+        message: groupManagement.adminsGroupRemoved
           ? 'User was removed from Admins group and assigned to Users group'
-          : groupManagement.usersGroupAssigned 
+          : groupManagement.usersGroupAssigned
             ? 'User was assigned to Users group'
-            : 'User group assignments unchanged'
-      }
+            : 'User group assignments unchanged',
+      },
     });
   } catch (error: any) {
     console.error('Enhanced invite user API error:', error);
@@ -462,50 +458,46 @@ export async function POST(
       statusText: error.statusText,
       message: error.message,
       response: error.response?.data,
-      config: error.config ? {
-        url: error.config.url,
-        method: error.config.method,
-        headers: error.config.headers,
-        data: error.config.data
-      } : null
+      config: error.config
+        ? {
+            url: error.config.url,
+            method: error.config.method,
+            headers: error.config.headers,
+            data: error.config.data,
+          }
+        : null,
     });
-    
+
     // Enhanced error handling with specific status codes
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'Organization not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
-    
+
     if (error.status === 409) {
-      return NextResponse.json(
-        { error: 'User already exists in organization' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'User already exists in organization' }, { status: 409 });
     }
-    
+
     if (error.status === 400) {
       return NextResponse.json(
-        { 
-          error: 'Invalid invitation data', 
-          details: error.response?.data || error.message 
+        {
+          error: 'Invalid invitation data',
+          details: error.response?.data || error.message,
         },
         { status: 400 }
       );
     }
-    
+
     if (error.status === 403) {
       return NextResponse.json(
         { error: 'Access denied. Insufficient permissions.' },
         { status: 403 }
       );
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to invite user to organization',
-        details: error.response?.data
+        details: error.response?.data,
       },
       { status: error.status || 500 }
     );

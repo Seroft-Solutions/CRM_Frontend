@@ -10,11 +10,7 @@ interface SpinnerProps {
 
 export function Spinner({ className, size = 24 }: SpinnerProps) {
   return (
-    <Loader2
-      className={cn('h-6 w-6 animate-spin', className)}
-      size={size}
-      aria-hidden="true"
-    />
+    <Loader2 className={cn('h-6 w-6 animate-spin', className)} size={size} aria-hidden="true" />
   );
 }
 

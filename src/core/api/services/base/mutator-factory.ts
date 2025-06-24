@@ -12,9 +12,9 @@ export function createServiceMutator(serviceInstance: BaseService) {
     options?: AxiosRequestConfig
   ): Promise<T> => {
     const { url, method = 'GET', data, params } = requestConfig;
-    
+
     const config = { params, ...options };
-    
+
     switch (method.toUpperCase()) {
       case 'GET':
         return serviceInstance.get<T>(url, config);

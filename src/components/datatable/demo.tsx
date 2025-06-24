@@ -1,41 +1,41 @@
-"use client"
+'use client';
 
-import { ColumnDef } from "@tanstack/react-table"
-import { DataTable } from "./data-table"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown } from "lucide-react"
+import { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from './data-table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { ArrowUpDown } from 'lucide-react';
 
 // Demo data type
 interface Person {
-  id: string
-  name: string
-  email: string
-  role: string
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 // Demo data
 const data: Person[] = [
   {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Admin",
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'Admin',
   },
   {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "User",
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'User',
   },
   // Add more demo data as needed
-]
+];
 
 export function DataTableDemo() {
   // Define columns
   const columns: ColumnDef<Person>[] = [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
@@ -54,36 +54,36 @@ export function DataTableDemo() {
       enableHiding: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: 'name',
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-        )
+        );
       },
     },
     {
-      accessorKey: "email",
-      header: "Email",
+      accessorKey: 'email',
+      header: 'Email',
     },
     {
-      accessorKey: "role",
-      header: "Role",
+      accessorKey: 'role',
+      header: 'Role',
     },
-  ]
+  ];
 
   const onRowClick = (row: Person) => {
-    console.log("Row clicked:", row)
-  }
+    console.log('Row clicked:', row);
+  };
 
   const onSelectionChange = (rows: Person[]) => {
-    console.log("Selected rows:", rows)
-  }
+    console.log('Selected rows:', rows);
+  };
 
   return (
     <div className="container mx-auto py-10">
@@ -94,5 +94,5 @@ export function DataTableDemo() {
         onSelectionChange={onSelectionChange}
       />
     </div>
-  )
+  );
 }

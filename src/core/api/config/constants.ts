@@ -4,7 +4,8 @@ export const AUTH_REFRESH_TOKEN_KEY =
   process.env.NEXT_PUBLIC_AUTH_REFRESH_TOKEN_KEY || 'refresh_token';
 
 // Spring API configuration
-export const SPRING_API_URL = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com';
+export const SPRING_API_URL =
+  process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com';
 
 // Keycloak API configuration
 export const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080/auth';

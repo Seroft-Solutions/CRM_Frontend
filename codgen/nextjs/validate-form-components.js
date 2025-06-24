@@ -10,9 +10,21 @@ const path = require('path');
 function validateEntityForm(entityName) {
   console.log(`🔍 Validating ${entityName} form components...\n`);
 
-  const entityRoute = entityName.toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
-  const entityDir = path.join(__dirname, '..', '..', 'src', 'app', '(protected)', entityRoute, 'components');
-  
+  const entityRoute = entityName
+    .toLowerCase()
+    .replace(/([A-Z])/g, '-$1')
+    .replace(/^-/, '');
+  const entityDir = path.join(
+    __dirname,
+    '..',
+    '..',
+    'src',
+    'app',
+    '(protected)',
+    entityRoute,
+    'components'
+  );
+
   // Check if the entity directory exists
   if (!fs.existsSync(entityDir)) {
     console.log(`❌ Entity directory not found: ${entityDir}`);
@@ -38,7 +50,7 @@ function validateEntityForm(entityName) {
     'form/steps/classification-step.tsx',
     'form/steps/business-relations-step.tsx',
     'form/steps/other-relations-step.tsx',
-    'form/steps/review-step.tsx'
+    'form/steps/review-step.tsx',
   ];
 
   let allExist = true;
@@ -59,13 +71,13 @@ function validateEntityForm(entityName) {
   const wizardPath = path.join(entityDir, `form/${entityName.toLowerCase()}-form-wizard.tsx`);
   if (fs.existsSync(wizardPath)) {
     const content = fs.readFileSync(wizardPath, 'utf8');
-    
+
     // Check for incorrect import paths
     if (content.includes('./form/')) {
       console.log(`⚠️  Form wizard has incorrect import paths (./form/ instead of ./)`);
       validImports = false;
     }
-    
+
     if (content.includes('../call-type-toast')) {
       console.log(`✅ Toast import path is correct`);
     } else {
@@ -83,20 +95,22 @@ function validateEntityForm(entityName) {
 
 function validateAllEntities() {
   const jhipsterDir = path.join(__dirname, '..', '..', '.jhipster');
-  
+
   if (!fs.existsSync(jhipsterDir)) {
     console.log('❌ .jhipster directory not found');
     return false;
   }
 
-  const entities = fs.readdirSync(jhipsterDir)
-    .filter(file => file.endsWith('.json'))
-    .map(file => file.replace('.json', ''));
+  const entities = fs
+    .readdirSync(jhipsterDir)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => file.replace('.json', ''));
 
   console.log(`Found ${entities.length} entities to validate\n`);
 
   let allValid = true;
-  for (const entity of entities.slice(0, 3)) { // Test first 3 entities
+  for (const entity of entities.slice(0, 3)) {
+    // Test first 3 entities
     const isValid = validateEntityForm(entity);
     if (!isValid) allValid = false;
     console.log(''); // spacing
@@ -108,13 +122,13 @@ function validateAllEntities() {
 // CLI usage
 if (require.main === module) {
   const entityName = process.argv[2];
-  
+
   if (entityName) {
     validateEntityForm(entityName);
   } else {
     console.log('🧪 Validating modular form components...\n');
     const result = validateAllEntities();
-    
+
     if (result) {
       console.log('🎉 All form components are valid!');
     } else {

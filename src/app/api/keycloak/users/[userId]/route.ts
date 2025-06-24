@@ -5,15 +5,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmUsersUserId,
   getAdminRealmsRealmUsersUserIdGroups,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
 } from '@/core/api/generated/keycloak';
-import type { 
+import type {
   UserRepresentation,
   GroupRepresentation,
-  RoleRepresentation 
+  RoleRepresentation,
 } from '@/core/api/generated/keycloak';
 
 export async function GET(
@@ -24,16 +24,13 @@ export async function GET(
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
     const { userId } = await params;
     const realm = keycloakService.getRealm();
-    
+
     if (!realm) {
       throw new Error('Realm configuration missing');
     }
@@ -54,15 +51,12 @@ export async function GET(
     return NextResponse.json(userDetails);
   } catch (error: any) {
     console.error('User details API error:', error);
-    
+
     // Handle specific Keycloak errors
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     if (error.status === 403) {
       return NextResponse.json(
         { error: 'Access denied. Insufficient permissions.' },
@@ -88,16 +82,13 @@ export async function PUT(
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
     const { userId } = await params;
     const realm = keycloakService.getRealm();
-    
+
     if (!realm) {
       throw new Error('Realm configuration missing');
     }
@@ -105,35 +96,26 @@ export async function PUT(
 
     // Validate required fields
     if (!userData.username && !userData.email) {
-      return NextResponse.json(
-        { error: 'Username or email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Username or email is required' }, { status: 400 });
     }
 
     // Update user using generated endpoint (when available)
     // For now, use the admin service directly
     await keycloakService.adminPut(`/users/${userId}`, userData);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'User updated successfully',
-      userId 
+      userId,
     });
   } catch (error: any) {
     console.error('User update API error:', error);
-    
+
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     if (error.status === 409) {
-      return NextResponse.json(
-        { error: 'Username or email already exists' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Username or email already exists' }, { status: 409 });
     }
 
     return NextResponse.json(

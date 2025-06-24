@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Settings, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Settings, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -10,12 +10,10 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-
-
+} from '@/components/ui/sheet';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 interface RelationshipEditingConfig {
   [relationshipName: string]: boolean;
@@ -33,9 +31,7 @@ export function StateTableSettings({
   const [open, setOpen] = React.useState(false);
 
   // Available relationships for configuration
-  const availableRelationships = [
-    
-  ];
+  const availableRelationships = [];
 
   // Handle relationship config change
   const handleRelationshipToggle = (relationshipName: string, enabled: boolean) => {
@@ -49,7 +45,7 @@ export function StateTableSettings({
   // Enable all relationships
   const enableAll = () => {
     const newConfig: RelationshipEditingConfig = {};
-    availableRelationships.forEach(rel => {
+    availableRelationships.forEach((rel) => {
       newConfig[rel.name] = true;
     });
     onRelationshipConfigChange(newConfig);
@@ -58,16 +54,14 @@ export function StateTableSettings({
   // Disable all relationships
   const disableAll = () => {
     const newConfig: RelationshipEditingConfig = {};
-    availableRelationships.forEach(rel => {
+    availableRelationships.forEach((rel) => {
       newConfig[rel.name] = false;
     });
     onRelationshipConfigChange(newConfig);
   };
 
   // Get count of enabled relationships
-  const enabledCount = availableRelationships.filter(
-    rel => relationshipConfig[rel.name]
-  ).length;
+  const enabledCount = availableRelationships.filter((rel) => relationshipConfig[rel.name]).length;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -129,7 +123,10 @@ export function StateTableSettings({
             ) : (
               <div className="space-y-4">
                 {availableRelationships.map((relationship) => (
-                  <div key={relationship.name} className="flex items-center justify-between space-x-2">
+                  <div
+                    key={relationship.name}
+                    className="flex items-center justify-between space-x-2"
+                  >
                     <div className="flex-1 space-y-1">
                       <Label
                         htmlFor={`relationship-${relationship.name}`}
@@ -137,9 +134,7 @@ export function StateTableSettings({
                       >
                         {relationship.displayName}
                       </Label>
-                      <p className="text-xs text-muted-foreground">
-                        {relationship.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{relationship.description}</p>
                     </div>
                     <Switch
                       id={`relationship-${relationship.name}`}
@@ -169,15 +164,9 @@ export function StateTableSettings({
         {/* Footer Info */}
         <div className="border-t pt-4 mt-6">
           <div className="text-xs text-muted-foreground space-y-1">
-            <div>
-              • Enabled relationships can be edited directly in table cells
-            </div>
-            <div>
-              • Use bulk assignment to update multiple rows at once
-            </div>
-            <div>
-              • Changes are saved automatically when you make selections
-            </div>
+            <div>• Enabled relationships can be edited directly in table cells</div>
+            <div>• Use bulk assignment to update multiple rows at once</div>
+            <div>• Changes are saved automatically when you make selections</div>
           </div>
         </div>
       </SheetContent>

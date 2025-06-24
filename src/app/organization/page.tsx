@@ -19,7 +19,7 @@ export default function OrganizationPage() {
     if (!isLoading && organizations !== undefined) {
       persistentLog('OrganizationPage: Routing decision', {
         organizationsCount: organizations.length,
-        organizations: organizations.map(o => ({ id: o.id, name: o.name }))
+        organizations: organizations.map((o) => ({ id: o.id, name: o.name })),
       });
 
       if (organizations.length === 0) {
@@ -28,7 +28,7 @@ export default function OrganizationPage() {
       } else if (organizations.length === 1) {
         persistentLog('OrganizationPage: Single org → /dashboard', {
           orgId: organizations[0].id,
-          orgName: organizations[0].name
+          orgName: organizations[0].name,
         });
         localStorage.setItem('selectedOrganizationId', organizations[0].id);
         localStorage.setItem('selectedOrganizationName', organizations[0].name);
@@ -40,12 +40,15 @@ export default function OrganizationPage() {
     }
   }, [organizations, isLoading, router]);
 
-  persistentLog('OrganizationPage: Render', { isLoading, organizationsCount: organizations?.length });
+  persistentLog('OrganizationPage: Render', {
+    isLoading,
+    organizationsCount: organizations?.length,
+  });
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="flex flex-col items-center">
-        <Coffee className="w-12 h-12 text-primary animate-bounce mb-4"/>
+        <Coffee className="w-12 h-12 text-primary animate-bounce mb-4" />
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         <p className="mt-4 text-muted-foreground">Brewing your organization...</p>
       </div>

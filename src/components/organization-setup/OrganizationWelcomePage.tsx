@@ -1,18 +1,24 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { signIn } from 'next-auth/react'
-import dynamic from 'next/dynamic'
-import { Coffee, CheckCircle, Sparkles, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
+import dynamic from 'next/dynamic';
+import { Coffee, CheckCircle, Sparkles, ArrowRight } from 'lucide-react';
 
-const MotionContainer = dynamic(() => import('@/features/home/components/motion-components').then(mod => mod.MotionContainer), { ssr: false })
-const MotionItem = dynamic(() => import('@/features/home/components/motion-components').then(mod => mod.MotionItem), { ssr: false })
+const MotionContainer = dynamic(
+  () => import('@/features/home/components/motion-components').then((mod) => mod.MotionContainer),
+  { ssr: false }
+);
+const MotionItem = dynamic(
+  () => import('@/features/home/components/motion-components').then((mod) => mod.MotionItem),
+  { ssr: false }
+);
 
 export function OrganizationWelcomePage() {
   const handleLetsBrew = () => {
     // Don't call onFinish - just redirect directly to avoid re-triggering setup flow
-    signIn('keycloak', { redirectTo: '/dashboard' })
-  }
+    signIn('keycloak', { redirectTo: '/dashboard' });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-primary/5 flex items-center justify-center px-4 overflow-hidden">
@@ -33,7 +39,8 @@ export function OrganizationWelcomePage() {
               🎉 Welcome to Your Workspace!
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Your organization has been successfully set up. Everything is ready for you to start brewing amazing customer relationships!
+              Your organization has been successfully set up. Everything is ready for you to start
+              brewing amazing customer relationships!
             </p>
           </div>
 
@@ -44,9 +51,11 @@ export function OrganizationWelcomePage() {
                 <Coffee className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold mb-2">Customer Management</h3>
-              <p className="text-sm text-muted-foreground">Centralized customer data and interactions</p>
+              <p className="text-sm text-muted-foreground">
+                Centralized customer data and interactions
+              </p>
             </div>
-            
+
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
                 <Sparkles className="w-6 h-6 text-primary" />
@@ -54,7 +63,7 @@ export function OrganizationWelcomePage() {
               <h3 className="font-semibold mb-2">Smart Analytics</h3>
               <p className="text-sm text-muted-foreground">Insights to grow your business</p>
             </div>
-            
+
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
                 <ArrowRight className="w-6 h-6 text-primary" />
@@ -66,8 +75,8 @@ export function OrganizationWelcomePage() {
 
           {/* CTA Button */}
           <MotionItem className="pt-8">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={handleLetsBrew}
               className="bg-primary hover:bg-primary/90 text-white font-bold text-lg px-12 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
@@ -75,7 +84,7 @@ export function OrganizationWelcomePage() {
               Let's Brew Together
               <ArrowRight className="w-6 h-6 ml-3" />
             </Button>
-            
+
             <p className="text-sm text-muted-foreground mt-4">
               Sign in to access your personalized CRM workspace
             </p>
@@ -87,5 +96,5 @@ export function OrganizationWelcomePage() {
         </MotionItem>
       </MotionContainer>
     </div>
-  )
+  );
 }

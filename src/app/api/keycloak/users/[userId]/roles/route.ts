@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   postAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm,
@@ -20,18 +20,15 @@ export async function GET(
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
     const { userId } = await params;
     const realm = 'crm'; // Hardcode for now - same as groups work
-    
+
     console.log('API Debug:', { userId, realm, baseURL: process.env.AUTH_KEYCLOAK_ISSUER });
-    
+
     if (!realm) {
       throw new Error('Realm configuration missing');
     }
@@ -42,14 +39,11 @@ export async function GET(
     return NextResponse.json(userRoles);
   } catch (error: any) {
     console.error('Get user roles API error:', error);
-    
+
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch user roles' },
       { status: error.status || 500 }
@@ -65,10 +59,7 @@ export async function POST(
     // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     // Await params in Next.js 15+
@@ -111,32 +102,32 @@ export async function POST(
     if (action === 'assign') {
       await postAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId, validatedRoles);
     } else {
-      console.log('Deleting roles:', validatedRoles.map(r => r.name));
+      console.log(
+        'Deleting roles:',
+        validatedRoles.map((r) => r.name)
+      );
       await deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId, validatedRoles);
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: `Roles ${action === 'assign' ? 'assigned' : 'unassigned'} successfully`,
-      rolesCount: validatedRoles.length
+      rolesCount: validatedRoles.length,
     });
   } catch (error: any) {
     console.error('User roles assignment API error:', error);
-    
+
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     if (error.status === 409) {
       return NextResponse.json(
         { error: 'Role assignment conflict. Some roles may already be assigned.' },
         { status: 409 }
       );
     }
-    
+
     return NextResponse.json(
       { error: error.message || 'Failed to assign/unassign roles' },
       { status: error.status || 500 }

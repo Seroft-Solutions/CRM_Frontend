@@ -81,9 +81,7 @@ export class OrganizationSetupService {
       };
     } catch (error) {
       console.error('❌ Organization setup failed at step:', error);
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to setup organization'
-      );
+      throw new Error(error instanceof Error ? error.message : 'Failed to setup organization');
     }
   }
 
@@ -92,14 +90,14 @@ export class OrganizationSetupService {
    */
   private async getKeycloakUserId(): Promise<string> {
     const response = await fetch('/api/keycloak/user/current');
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Failed to get Keycloak user ID');
     }
 
     const userData = await response.json();
-    
+
     if (!userData.keycloakUserId) {
       throw new Error('No Keycloak user ID found');
     }
@@ -110,14 +108,12 @@ export class OrganizationSetupService {
   /**
    * Create organization in Keycloak
    */
-  private async createKeycloakOrganization(
-    request: OrganizationSetupRequest
-  ): Promise<string> {
+  private async createKeycloakOrganization(request: OrganizationSetupRequest): Promise<string> {
     const organizationData = {
       organizationName: request.organizationName,
       displayName: request.organizationName, // Use organization name as display name
       description: `CRM organization for ${request.organizationName}`,
-      domain: request.domain
+      domain: request.domain,
     };
 
     // Create the organization via API route
@@ -129,25 +125,27 @@ export class OrganizationSetupService {
 
     if (!createResponse.ok) {
       const error = await createResponse.json();
-      
+
       // Handle 409 conflict error specifically
       if (createResponse.status === 409) {
         throw new Error('ORGANIZATION_EXISTS');
       }
-      
+
       throw new Error(error.error || 'Failed to create organization');
     }
 
     // Fetch organizations to get the created one's ID
-    const listResponse = await fetch(`/api/keycloak/organizations?search=${encodeURIComponent(request.organizationName)}`);
-    
+    const listResponse = await fetch(
+      `/api/keycloak/organizations?search=${encodeURIComponent(request.organizationName)}`
+    );
+
     if (!listResponse.ok) {
       throw new Error('Failed to retrieve created organization');
     }
 
     const { organizations } = await listResponse.json();
     const createdOrg = organizations.find((org: any) => org.name === request.organizationName);
-    
+
     if (!createdOrg?.id) {
       throw new Error('Failed to retrieve created organization ID');
     }
@@ -158,10 +156,7 @@ export class OrganizationSetupService {
   /**
    * Add user as member of Keycloak organization
    */
-  private async addUserToOrganization(
-    orgId: string,
-    userId: string
-  ): Promise<void> {
+  private async addUserToOrganization(orgId: string, userId: string): Promise<void> {
     const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -184,20 +179,20 @@ export class OrganizationSetupService {
     console.log('Creating Spring organization with:', {
       keycloakOrgId,
       name: request.organizationName,
-      domain: request.domain
+      domain: request.domain,
     });
 
     const organizationDTO: OrganizationDTO = {
       keycloakOrgId,
       name: request.organizationName,
       isActive: true,
-      ...(request.domain && { domain: request.domain })
+      ...(request.domain && { domain: request.domain }),
     };
 
     console.log('Sending OrganizationDTO to Spring:', organizationDTO);
 
     const response = await createOrganization(organizationDTO);
-    
+
     if (!response.id) {
       throw new Error('Failed to create organization: no ID returned');
     }
@@ -213,7 +208,7 @@ export class OrganizationSetupService {
       keycloakId: keycloakUserId,
       email: session.user.email,
       firstName: session.user.name?.split(' ')[0],
-      lastName: session.user.name?.split(' ').slice(1).join(' ')
+      lastName: session.user.name?.split(' ').slice(1).join(' '),
     });
 
     const userProfileDTO: UserProfileDTO = {
@@ -221,13 +216,15 @@ export class OrganizationSetupService {
       email: session.user.email!,
       isActive: true,
       ...(session.user.name?.split(' ')[0] && { firstName: session.user.name.split(' ')[0] }),
-      ...(session.user.name?.split(' ').slice(1).join(' ') && { lastName: session.user.name.split(' ').slice(1).join(' ') })
+      ...(session.user.name?.split(' ').slice(1).join(' ') && {
+        lastName: session.user.name.split(' ').slice(1).join(' '),
+      }),
     };
 
     console.log('Sending UserProfileDTO to Spring:', userProfileDTO);
 
     const response = await createUserProfile(userProfileDTO);
-    
+
     if (!response.id) {
       throw new Error('Failed to create user profile: no ID returned');
     }
@@ -253,7 +250,7 @@ export class OrganizationSetupService {
    * Check if user has existing organization
    */
   static hasOrganization(session: Session | null): boolean {
-    return !!(session?.user?.organizations?.length);
+    return !!session?.user?.organizations?.length;
   }
 
   /**
