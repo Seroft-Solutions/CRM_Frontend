@@ -13,7 +13,7 @@ import {
   AlertCircle,
   Sparkles,
 } from 'lucide-react';
-import {useGetSetupProgress} from "@/core/api/generated/spring";
+import {useGetOrganizationSetupProgress} from "@/core/api/generated/spring";
 
 interface OrganizationSetupProgressProps {
   organizationName: string;
@@ -43,12 +43,12 @@ export function OrganizationSetupProgress({
   const [isComplete, setIsComplete] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Poll for setup progress
+  // Poll for setup progress using the correct hook
   const {
     data: progressData,
     isError,
     error,
-  } = useGetSetupProgress(organizationName, {
+  } = useGetOrganizationSetupProgress(organizationName, {
     query: {
       refetchInterval: 2000, // Poll every 2 seconds
       refetchIntervalInBackground: true,

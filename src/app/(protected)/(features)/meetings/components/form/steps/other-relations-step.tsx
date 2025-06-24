@@ -6,6 +6,11 @@ import { PaginatedRelationshipCombobox } from "../../paginated-relationship-comb
 import type { StepComponentProps } from "../form-types";
 import { useEntityForm } from "../meeting-form-provider";
 import { 
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useCountUserProfiles
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+import { 
   useGetAllCustomers,
   useSearchCustomers,
   useCountCustomers
@@ -15,17 +20,14 @@ import {
   useSearchCalls,
   useCountCalls
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-import { 
-  useGetAllPublicUsers,
-  useSearchPublicUsers
-} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
-  'useGetAllPublicUsers': useGetAllPublicUsers,
-  'useSearchPublicUsers': useSearchPublicUsers,
   // Other entities
+  'useGetAllUserProfiles': useGetAllUserProfiles,
+  'useSearchUserProfiles': useSearchUserProfiles,
+  'useCountUserProfiles': useCountUserProfiles,
   'useGetAllCustomers': useGetAllCustomers,
   'useSearchCustomers': useSearchCustomers,
   'useCountCustomers': useCountCustomers,

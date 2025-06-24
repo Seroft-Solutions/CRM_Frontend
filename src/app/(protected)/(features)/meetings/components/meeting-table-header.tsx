@@ -241,12 +241,12 @@ export function MeetingTableHeader({
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("organizer.login")}
+            onClick={() => onSort("organizer.displayName")}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Organizer
             <div className="text-gray-400">
-              {renderSortIcon("organizer.login")}
+              {renderSortIcon("organizer.displayName")}
             </div>
           </Button>
         </TableHead>
@@ -447,8 +447,8 @@ export function MeetingTableHeader({
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["organizer.login"] as string || ""}
-            onChange={(e) => onFilterChange("organizer.login", e.target.value || undefined)}
+            value={filters["organizer.displayName"] as string || ""}
+            onChange={(e) => onFilterChange("organizer.displayName", e.target.value || undefined)}
           />
         </TableHead>
         

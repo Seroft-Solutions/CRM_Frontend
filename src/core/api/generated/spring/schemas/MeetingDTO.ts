@@ -7,7 +7,7 @@
  */
 import type { MeetingDTOMeetingStatus } from './MeetingDTOMeetingStatus';
 import type { MeetingDTOMeetingType } from './MeetingDTOMeetingType';
-import type { UserDTO } from './UserDTO';
+import type { UserProfileDTO } from './UserProfileDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { CallDTO } from './CallDTO';
 
@@ -54,7 +54,7 @@ export interface MeetingDTO {
   meetingType: MeetingDTOMeetingType;
   createdAt?: string;
   updatedAt?: string;
-  organizer: UserDTO;
+  organizer: UserProfileDTO;
   assignedCustomer?: CustomerDTO;
-  call?: CallDTO;
+  call: CallDTO;
 }

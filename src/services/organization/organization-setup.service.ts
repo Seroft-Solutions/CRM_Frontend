@@ -8,7 +8,7 @@ import { createUserProfile } from '@/core/api/generated/spring/endpoints/user-pr
 // Types
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
-import {setupSchema} from "@/core/api/generated/spring";
+import {createOrganizationWithSchema} from "@/core/api/generated/spring";
 
 export interface OrganizationSetupRequest {
   organizationName: string;
@@ -59,8 +59,8 @@ export class OrganizationSetupService {
       await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
       console.log('✓ Step 3 completed - User added to organization');
 
-      // Step 4: Create Spring organization record
-      console.log('Step 4: Creating Spring organization...');
+      // Step 4: Create Spring organization record and setup tenant schema
+      console.log('Step 4: Creating Spring organization with schema setup...');
       const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
       console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
 
@@ -170,13 +170,13 @@ export class OrganizationSetupService {
   }
 
   /**
-   * Create organization record in Spring backend
+   * Create organization record in Spring backend with tenant schema setup
    */
   private async createSpringOrganization(
     request: OrganizationSetupRequest,
     keycloakOrgId: string
   ): Promise<number> {
-    console.log('Creating Spring organization with:', {
+    console.log('Creating Spring organization with schema setup:', {
       keycloakOrgId,
       name: request.organizationName,
       domain: request.domain,
@@ -191,7 +191,8 @@ export class OrganizationSetupService {
 
     console.log('Sending OrganizationDTO to Spring:', organizationDTO);
 
-    const response = await setupSchema(organizationDTO);
+    // Use the correct endpoint that creates organization AND sets up schema
+    const response = await createOrganizationWithSchema(organizationDTO);
 
     if (!response.id) {
       throw new Error('Failed to create organization: no ID returned');

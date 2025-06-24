@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250624170821"
+    "changelogDate": "20250624194235"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -84,6 +84,9 @@
   "pagination": "pagination",
   "relationships": [
     {
+      "options": {
+        "onDelete": "CASCADE"
+      },
       "otherEntityName": "meetingReminder",
       "otherEntityRelationshipName": "meeting",
       "relationshipName": "reminders",
@@ -91,6 +94,9 @@
       "relationshipType": "one-to-many"
     },
     {
+      "options": {
+        "onDelete": "CASCADE"
+      },
       "otherEntityName": "meetingParticipant",
       "otherEntityRelationshipName": "meeting",
       "relationshipName": "participants",
@@ -98,13 +104,12 @@
       "relationshipType": "one-to-many"
     },
     {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
+      "otherEntityField": "displayName",
+      "otherEntityName": "userProfile",
       "relationshipName": "organizer",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required",
-      "relationshipWithBuiltInEntity": true
+      "relationshipValidateRules": "required"
     },
     {
       "otherEntityField": "customerBusinessName",
@@ -118,7 +123,8 @@
       "otherEntityRelationshipName": "meetings",
       "relationshipName": "call",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "searchEngine": "elasticsearch",
