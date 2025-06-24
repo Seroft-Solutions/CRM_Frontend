@@ -9,7 +9,7 @@ The generator now uses these hardcoded paths for clarity:
 
 - JHipster entity definitions: `D:\code\CRMCup\CRM_Frontend\.jhipster`
 - Template files: `D:\code\CRMCup\CRM_Frontend\codgen\nextjs\templates`
-- Output directory: `D:\code\CRMCup\CRM_Frontend\src\app\(protected)`
+- Output directory: `D:\code\CRMCup\CRM_Frontend\src\app\(protected)/(features)`
 
 ## Usage
 
@@ -54,7 +54,7 @@ If you encounter any issues:
 The generator will create the following structure for each entity:
 
 ```
-src/app/(protected)/[entity-name-plural]/
+src/app/(protected)/(features)/[entity-name-plural]/
 ├── components/
 │   ├── [entity-name]-table.tsx
 │   ├── [entity-name]-form.tsx

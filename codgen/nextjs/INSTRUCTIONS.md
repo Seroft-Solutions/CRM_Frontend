@@ -63,7 +63,7 @@ If you encounter any issues:
 The generator will create Next.js components in the following structure:
 
 ```
-src/app/(protected)/[entity-name]s/
+src/app/(protected)/(features)/[entity-name]s/
 ├── components/
 │   ├── [entity-name]-table.tsx
 │   ├── [entity-name]-form.tsx

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250617064016"
+    "changelogDate": "20250624105900"
   },
   "applications": ["crmBackend"],
   "documentation": "Meeting participant entity",

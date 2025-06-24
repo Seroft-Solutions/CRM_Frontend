@@ -120,7 +120,7 @@ The generated endpoints provide these hooks automatically:
 ## Generated Files Structure
 
 ```
-src/app/(protected)/[entity-plural]/
+src/app/(protected)/(features)/[entity-plural]/
 ├── components/
 │   ├── [entity]-form.tsx                    # Updated to use paginated combobox
 │   ├── paginated-relationship-combobox.tsx # New paginated component

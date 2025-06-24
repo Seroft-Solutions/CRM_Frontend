@@ -32,7 +32,7 @@ async function debugGeneration() {
     const entityDir = path.join(
       outputDir,
       'app',
-      '(protected)',
+      '(protected)/(features)',
       'user-availabilities',
       'components',
       'form'

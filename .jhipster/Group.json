@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250607212209"
+    "changelogDate": "20250624105904"
   },
   "applications": ["crmBackend"],
   "documentation": "Keycloak Group representation.",

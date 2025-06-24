@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250617064013"
+    "changelogDate": "20250624105857"
   },
   "applications": ["crmBackend"],
   "documentation": "Meeting entity for scheduled appointments",
@@ -109,9 +109,9 @@
       "relationshipValidateRules": "required"
     },
     {
-      "otherEntityField": "name",
-      "otherEntityName": "party",
-      "relationshipName": "assignedParty",
+      "otherEntityField": "customerBusinessName",
+      "otherEntityName": "customer",
+      "relationshipName": "assignedCustomer",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     },

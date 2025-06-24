@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250603183931"
+    "changelogDate": "20250624105851"
   },
   "applications": ["crmBackend"],
   "documentation": "District master entity",

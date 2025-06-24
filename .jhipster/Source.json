@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250603183922"
+    "changelogDate": "20250624105845"
   },
   "applications": ["crmBackend"],
   "documentation": "Source master entity for lead sources",

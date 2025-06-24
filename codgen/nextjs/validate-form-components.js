@@ -20,7 +20,7 @@ function validateEntityForm(entityName) {
     '..',
     'src',
     'app',
-    '(protected)',
+    '(protected)/(features)',
     entityRoute,
     'components'
   );
