@@ -3,12 +3,12 @@
 import { Session } from 'next-auth';
 
 // Spring APIs
-import { createOrganization } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 import { createUserProfile } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 // Types
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
+import {setupSchema} from "@/core/api/generated/spring";
 
 export interface OrganizationSetupRequest {
   organizationName: string;
@@ -191,7 +191,7 @@ export class OrganizationSetupService {
 
     console.log('Sending OrganizationDTO to Spring:', organizationDTO);
 
-    const response = await createOrganization(organizationDTO);
+    const response = await setupSchema(organizationDTO);
 
     if (!response.id) {
       throw new Error('Failed to create organization: no ID returned');

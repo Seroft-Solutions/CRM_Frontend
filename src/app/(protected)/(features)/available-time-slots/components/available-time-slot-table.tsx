@@ -37,7 +37,7 @@ import {
   useDeleteAvailableTimeSlot,
   useCountAvailableTimeSlots,
   usePartialUpdateAvailableTimeSlot,
-  useSearchAvailableTimeSlots,
+  
 } from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
 
 
@@ -203,34 +203,19 @@ export function AvailableTimeSlotTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchAvailableTimeSlots(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllAvailableTimeSlots(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllAvailableTimeSlots(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -318,12 +303,6 @@ export function AvailableTimeSlotTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

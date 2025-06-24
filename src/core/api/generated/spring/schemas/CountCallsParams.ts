@@ -129,14 +129,5 @@ export type CountCallsParams = {
 'callStatusId.specified'?: boolean;
 'callStatusId.in'?: number[];
 'callStatusId.notIn'?: number[];
-'partyId.greaterThan'?: number;
-'partyId.lessThan'?: number;
-'partyId.greaterThanOrEqual'?: number;
-'partyId.lessThanOrEqual'?: number;
-'partyId.equals'?: number;
-'partyId.notEquals'?: number;
-'partyId.specified'?: boolean;
-'partyId.in'?: number[];
-'partyId.notIn'?: number[];
 distinct?: boolean;
 };

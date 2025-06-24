@@ -37,7 +37,7 @@ import {
   useDeleteMeetingParticipant,
   useCountMeetingParticipants,
   usePartialUpdateMeetingParticipant,
-  useSearchMeetingParticipants,
+  
 } from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
 
 
@@ -204,34 +204,19 @@ export function MeetingParticipantTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchMeetingParticipants(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllMeetingParticipants(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllMeetingParticipants(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -319,12 +304,6 @@ export function MeetingParticipantTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

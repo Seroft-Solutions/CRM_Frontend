@@ -9,7 +9,6 @@ import type { UserDTO } from './UserDTO';
 import type { OrganizationDTO } from './OrganizationDTO';
 import type { GroupDTO } from './GroupDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
-import type { RoleDTO } from './RoleDTO';
 
 /**
  * Extended user profile for CRM-specific data
@@ -35,5 +34,4 @@ export interface UserProfileDTO {
   organizations?: OrganizationDTO[];
   groups?: GroupDTO[];
   channelType?: ChannelTypeDTO;
-  roles?: RoleDTO[];
 }
