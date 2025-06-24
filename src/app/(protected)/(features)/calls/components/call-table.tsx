@@ -1,26 +1,20 @@
+'use client';
 
-"use client";
-
-import { useState } from "react";
-import { toast } from "sonner";
-import { callToast, handleCallError } from "./call-toast";
-import { Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { callToast, handleCallError } from './call-toast';
+import { Search, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetAllCalls,
@@ -38,61 +32,36 @@ import {
   useCountCalls,
   usePartialUpdateCall,
   useSearchCalls,
-} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-
-
-
+} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 
 // Relationship data imports
 
-import {
-  useGetAllPublicUsers
-} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 
+import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 
+import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
 
-import {
-  useGetAllPriorities
-} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
+import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 
-import {
-  useGetAllCallTypes
-} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+import { useGetAllCallCategories } from '@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen';
 
-import {
-  useGetAllSubCallTypes
-} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
 
-import {
-  useGetAllCallCategories
-} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
+import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
-import {
-  useGetAllSources
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
-import {
-  useGetAllCustomers
-} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
+import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
-import {
-  useGetAllChannelTypes
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-
-import {
-  useGetAllCallStatuses
-} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
-
-
-
-import { CallSearchAndFilters } from "./call-search-filters";
-import { CallTableHeader } from "./call-table-header";
-import { CallTableRow } from "./call-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CallSearchAndFilters } from './call-search-filters';
+import { CallTableHeader } from './call-table-header';
+import { CallTableRow } from './call-table-row';
+import { BulkRelationshipAssignment } from './bulk-relationship-assignment';
 
 // Define sort ordering constants
-const ASC = "asc";
-const DESC = "desc";
+const ASC = 'asc';
+const DESC = 'desc';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -105,9 +74,9 @@ interface DateRange {
 
 export function CallTable() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
+  const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -120,149 +89,144 @@ export function CallTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
-  
   // Fetch relationship data for dropdowns
-  
+
   const { data: priorityOptions = [] } = useGetAllPriorities(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: calltypeOptions = [] } = useGetAllCallTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: subcalltypeOptions = [] } = useGetAllSubCallTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: callcategoryOptions = [] } = useGetAllCallCategories(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: sourceOptions = [] } = useGetAllSources(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: customerOptions = [] } = useGetAllCustomers(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: userOptions = [] } = useGetAllPublicUsers(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
+
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
-  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    const entity = entities?.find((e) =>
+      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+    );
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-    
-    
+
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      
-      'priority.name': { 
-        apiParam: 'priorityId.equals', 
-        options: priorityOptions, 
-        displayField: 'name' 
+      'priority.name': {
+        apiParam: 'priorityId.equals',
+        options: priorityOptions,
+        displayField: 'name',
       },
-      
-      'callType.name': { 
-        apiParam: 'callTypeId.equals', 
-        options: calltypeOptions, 
-        displayField: 'name' 
+
+      'callType.name': {
+        apiParam: 'callTypeId.equals',
+        options: calltypeOptions,
+        displayField: 'name',
       },
-      
-      'subCallType.name': { 
-        apiParam: 'subCallTypeId.equals', 
-        options: subcalltypeOptions, 
-        displayField: 'name' 
+
+      'subCallType.name': {
+        apiParam: 'subCallTypeId.equals',
+        options: subcalltypeOptions,
+        displayField: 'name',
       },
-      
-      'callCategory.name': { 
-        apiParam: 'callCategoryId.equals', 
-        options: callcategoryOptions, 
-        displayField: 'name' 
+
+      'callCategory.name': {
+        apiParam: 'callCategoryId.equals',
+        options: callcategoryOptions,
+        displayField: 'name',
       },
-      
-      'source.name': { 
-        apiParam: 'sourceId.equals', 
-        options: sourceOptions, 
-        displayField: 'name' 
+
+      'source.name': {
+        apiParam: 'sourceId.equals',
+        options: sourceOptions,
+        displayField: 'name',
       },
-      
-      'customer.customerBusinessName': { 
-        apiParam: 'customerId.equals', 
-        options: customerOptions, 
-        displayField: 'customerBusinessName' 
+
+      'customer.customerBusinessName': {
+        apiParam: 'customerId.equals',
+        options: customerOptions,
+        displayField: 'customerBusinessName',
       },
-      
-      'channelType.name': { 
-        apiParam: 'channelTypeId.equals', 
-        options: channeltypeOptions, 
-        displayField: 'name' 
+
+      'channelType.name': {
+        apiParam: 'channelTypeId.equals',
+        options: channeltypeOptions,
+        displayField: 'name',
       },
-      
-      'channelCustomer.login': { 
-        apiParam: 'channelCustomerId.equals', 
-        options: userOptions, 
-        displayField: 'login' 
+
+      'channelCustomer.login': {
+        apiParam: 'channelCustomerId.equals',
+        options: userOptions,
+        displayField: 'login',
       },
-      
-      'assignedTo.login': { 
-        apiParam: 'assignedToId.equals', 
-        options: userOptions, 
-        displayField: 'login' 
+
+      'assignedTo.login': {
+        apiParam: 'assignedToId.equals',
+        options: userOptions,
+        displayField: 'login',
       },
-      
-      'callStatus.name': { 
-        apiParam: 'callStatusId.equals', 
-        options: callstatusOptions, 
-        displayField: 'name' 
+
+      'callStatus.name': {
+        apiParam: 'callStatusId.equals',
+        options: callstatusOptions,
+        displayField: 'name',
       },
-      
     };
-    
-    
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        
+      if (value !== undefined && value !== '' && value !== null) {
         // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          const entityId = findEntityIdByName(
+            mapping.options,
+            value as string,
+            mapping.displayField
+          );
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
         }
-        
-        
-        
-        
+
         // Handle callDateTime date filter
         else if (key === 'callDateTime') {
           if (value instanceof Date) {
@@ -271,8 +235,7 @@ export function CallTable() {
             params['callDateTime.equals'] = value;
           }
         }
-        
-        
+
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -285,14 +248,13 @@ export function CallTable() {
     });
 
     // Add date range filters
-    
+
     if (dateRange.from) {
       params['callDateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['callDateTime.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
 
     return params;
   };
@@ -300,8 +262,8 @@ export function CallTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
-  const { data, isLoading, refetch } = searchTerm 
+
+  const { data, isLoading, refetch } = searchTerm
     ? useSearchCalls(
         {
           query: searchTerm,
@@ -329,17 +291,13 @@ export function CallTable() {
           },
         }
       );
-  
 
   // Get total count for pagination
-  const { data: countData } = useCountCalls(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data: countData } = useCountCalls(filterParams, {
+    query: {
+      enabled: true,
+    },
+  });
 
   // Partial update mutation for relationship editing
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCall({
@@ -381,9 +339,9 @@ export function CallTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return 'ChevronsUpDown';
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
   // Handle delete
@@ -401,9 +359,9 @@ export function CallTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [column]: value
+      [column]: value,
     }));
     setPage(1);
   };
@@ -411,18 +369,16 @@ export function CallTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
     setPage(1);
   };
 
-  
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setPage(1);
   };
-  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -444,7 +400,7 @@ export function CallTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map((item) => item.id)));
     }
   };
 
@@ -454,13 +410,17 @@ export function CallTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
+    const deletePromises = Array.from(selectedRows).map(
+      (id) =>
+        new Promise<void>((resolve, reject) => {
+          deleteEntity(
+            { id },
+            {
+              onSuccess: () => resolve(),
+              onError: (error) => reject(error),
+            }
+          );
+        })
     );
 
     try {
@@ -475,40 +435,51 @@ export function CallTable() {
   };
 
   // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  const handleRelationshipUpdate = async (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     return new Promise<void>((resolve, reject) => {
       // For JHipster partial updates, need entity ID and relationship structure
       const updateData: any = {
-        id: entityId
+        id: entityId,
       };
-      
+
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
 
-      updateEntity({ 
-        id: entityId,
-        data: updateData
-      }, {
-        onSuccess: () => {
-          callToast.relationshipUpdated(relationshipName);
-          resolve();
+      updateEntity(
+        {
+          id: entityId,
+          data: updateData,
         },
-        onError: (error) => {
-          handleCallError(error);
-          reject(error);
+        {
+          onSuccess: () => {
+            callToast.relationshipUpdated(relationshipName);
+            resolve();
+          },
+          onError: (error) => {
+            handleCallError(error);
+            reject(error);
+          },
         }
-      });
+      );
     });
   };
 
   // Handle bulk relationship updates
-  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+  const handleBulkRelationshipUpdate = async (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     let successCount = 0;
     let errorCount = 0;
-    
+
     // Process updates sequentially to avoid overwhelming the server
     for (const id of entityIds) {
       try {
@@ -519,10 +490,10 @@ export function CallTable() {
         errorCount++;
       }
     }
-    
+
     // Refresh data after updates
     refetch();
-    
+
     // Throw error if all failed, otherwise consider it partially successful
     if (errorCount === entityIds.length) {
       throw new Error(`All ${errorCount} updates failed`);
@@ -533,91 +504,93 @@ export function CallTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
-    
     {
-      name: "priority",
-      displayName: "Priority",
+      name: 'priority',
+      displayName: 'Priority',
       options: priorityOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "callType",
-      displayName: "CallType",
+      name: 'callType',
+      displayName: 'CallType',
       options: calltypeOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "subCallType",
-      displayName: "SubCallType",
+      name: 'subCallType',
+      displayName: 'SubCallType',
       options: subcalltypeOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "callCategory",
-      displayName: "CallCategory",
+      name: 'callCategory',
+      displayName: 'CallCategory',
       options: callcategoryOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "source",
-      displayName: "Source",
+      name: 'source',
+      displayName: 'Source',
       options: sourceOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "customer",
-      displayName: "Customer",
+      name: 'customer',
+      displayName: 'Customer',
       options: customerOptions || [],
-      displayField: "customerBusinessName",
+      displayField: 'customerBusinessName',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "channelType",
-      displayName: "ChannelType",
+      name: 'channelType',
+      displayName: 'ChannelType',
       options: channeltypeOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "channelCustomer",
-      displayName: "ChannelCustomer",
+      name: 'channelCustomer',
+      displayName: 'ChannelCustomer',
       options: userOptions || [],
-      displayField: "login",
+      displayField: 'login',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "assignedTo",
-      displayName: "AssignedTo",
+      name: 'assignedTo',
+      displayName: 'AssignedTo',
       options: userOptions || [],
-      displayField: "login",
+      displayField: 'login',
       isEditable: false, // Disabled by default
     },
-    
+
     {
-      name: "callStatus",
-      displayName: "CallStatus",
+      name: 'callStatus',
+      displayName: 'CallStatus',
       options: callstatusOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
   ];
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 ||
+    Boolean(searchTerm) ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -630,7 +603,7 @@ export function CallTable() {
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
           <div className="ml-auto flex gap-2">
-            {relationshipConfigs.some(config => config.isEditable) && (
+            {relationshipConfigs.some((config) => config.isEditable) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -640,11 +613,7 @@ export function CallTable() {
                 Assign Associations
               </Button>
             )}
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-            >
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
               Delete Selected
             </Button>
           </div>
@@ -669,7 +638,7 @@ export function CallTable() {
       {/* Data Table */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-full">
-          <CallTableHeader 
+          <CallTableHeader
             onSort={handleSort}
             getSortIcon={getSortIcon}
             filters={filters}
@@ -681,10 +650,7 @@ export function CallTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={12}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={12} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -704,10 +670,7 @@ export function CallTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={12}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={12} className="h-24 text-center">
                   No calls found
                   {hasActiveFilters && (
                     <div className="text-sm text-muted-foreground mt-1">
@@ -732,33 +695,35 @@ export function CallTable() {
                   e.preventDefault();
                   if (page > 1) setPage(page - 1);
                 }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const pageNumbers = [];
               const startPage = Math.max(1, page - 2);
               const endPage = Math.min(totalPages, startPage + 4);
-              
+
               for (let j = startPage; j <= endPage; j++) {
                 pageNumbers.push(j);
               }
-              
+
               return pageNumbers[i];
-            }).filter(Boolean).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(p);
-                  }}
-                  isActive={page === p}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            })
+              .filter(Boolean)
+              .map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage(p);
+                    }}
+                    isActive={page === p}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
             <PaginationItem>
               <PaginationNext
                 href="#"
@@ -766,7 +731,7 @@ export function CallTable() {
                   e.preventDefault();
                   if (page < totalPages) setPage(page + 1);
                 }}
-                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
           </PaginationContent>
@@ -777,15 +742,17 @@ export function CallTable() {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected calls and remove their data from the server.
+              This action cannot be undone. This will permanently delete the selected calls and
+              remove their data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -801,13 +768,13 @@ export function CallTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              call and remove its data from the server.
+              This action cannot be undone. This will permanently delete the call and remove its
+              data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

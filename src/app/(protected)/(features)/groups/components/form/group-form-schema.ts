@@ -1,27 +1,29 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for Group form
  * This file is auto-generated. To modify validation rules, update the generator templates.
  */
 export const groupFormSchema = z.object({
-  keycloakGroupId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+  keycloakGroupId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
   path: z.string().max(500),
   description: z.string().max(255).optional(),
   isActive: z.boolean(),
-  createdAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  updatedAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  createdAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  updatedAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   organization: z.number(),
   members: z.array(z.number()).optional(),
 });
@@ -30,23 +32,25 @@ export type GroupFormValues = z.infer<typeof groupFormSchema>;
 
 // Individual field schemas for granular validation
 export const groupFieldSchemas = {
-  keycloakGroupId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+  keycloakGroupId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
   path: z.string().max(500),
   description: z.string().max(255).optional(),
   isActive: z.boolean(),
-  createdAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  updatedAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  createdAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  updatedAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   organization: z.number(),
   members: z.array(z.number()).optional(),
 };
@@ -59,24 +63,24 @@ export const groupStepSchemas = {
     path: groupFieldSchemas.path,
     description: groupFieldSchemas.description,
   }),
-  
+
   dates: z.object({
     createdAt: groupFieldSchemas.createdAt,
     updatedAt: groupFieldSchemas.updatedAt,
   }),
-  
+
   settings: z.object({
     isActive: groupFieldSchemas.isActive,
   }),
-  
+
   user: z.object({
     members: groupFieldSchemas.members,
   }),
   other: z.object({
     organization: groupFieldSchemas.organization,
   }),
-  
-  review: groupFormSchema
+
+  review: groupFormSchema,
 };
 
 // Validation helper functions
@@ -84,7 +88,7 @@ export const groupValidationHelpers = {
   validateStep: (stepId: string, data: Partial<GroupFormValues>) => {
     const stepSchema = groupStepSchemas[stepId as keyof typeof groupStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -92,11 +96,11 @@ export const groupValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = groupFieldSchemas[fieldName as keyof typeof groupFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -104,7 +108,7 @@ export const groupValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'keycloakGroupId') {
       return {
@@ -136,7 +140,7 @@ export const groupValidationHelpers = {
         required: true,
       };
     }
-    
+
     return {};
-  }
+  },
 };

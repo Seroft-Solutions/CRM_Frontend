@@ -1,12 +1,15 @@
 # Entity Form Configuration System
 
-This project uses a **config-driven, modular form architecture** that allows you to modify form structure, field order, step sequence, and validation rules purely through configuration files—no code changes required.
+This project uses a **config-driven, modular form architecture** that allows you
+to modify form structure, field order, step sequence, and validation rules
+purely through configuration files—no code changes required.
 
 ## 🎯 Key Benefits
 
 - **Config-Driven**: Change form structure by editing configuration files only
 - **Modular Components**: Each step and field type has its own focused component
-- **Preserved UX**: All original visual styling, animations, and behaviors are maintained
+- **Preserved UX**: All original visual styling, animations, and behaviors are
+  maintained
 - **Cross-Entity Support**: Full support for creating related entities mid-flow
 - **State Persistence**: Automatic form state saving and restoration
 - **Responsive Design**: Mobile-first responsive layout maintained
@@ -42,7 +45,8 @@ entity/
 
 ## 🔧 Configuration Guide
 
-The main configuration file `entity-form-config.ts` controls all aspects of the form:
+The main configuration file `entity-form-config.ts` controls all aspects of the
+form:
 
 ### Form Steps Configuration
 
@@ -56,11 +60,11 @@ steps: [
     relationships: [],
     validation: {
       mode: 'onChange',
-      validateOnNext: true
-    }
+      validateOnNext: true,
+    },
   },
   // ... more steps
-]
+];
 ```
 
 ### Field Configuration
@@ -76,14 +80,14 @@ fields: [
     validation: {
       required: true,
       min: 0,
-      max: 999999
+      max: 999999,
     },
     ui: {
       inputType: 'number',
-      className: 'font-mono'
-    }
-  }
-]
+      className: 'font-mono',
+    },
+  },
+];
 ```
 
 ### Relationship Configuration
@@ -100,10 +104,10 @@ relationships: [
     category: 'business',
     cascadingFilter: {
       parentField: 'state',
-      filterField: 'state'
-    }
-  }
-]
+      filterField: 'state',
+    },
+  },
+];
 ```
 
 ## 🛠️ Common Customization Tasks
@@ -133,14 +137,14 @@ steps: [
   {
     id: 'basic',
     fields: ['name', 'description', 'priority'], // Added here
-    relationships: []
+    relationships: [],
   },
   {
     id: 'classification',
     fields: [], // Removed from here
-    relationships: ['status', 'category']
-  }
-]
+    relationships: ['status', 'category'],
+  },
+];
 ```
 
 ### 3. Add Field Validation
@@ -155,9 +159,9 @@ fields: [
       required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       // Custom validation message will be generated
-    }
-  }
-]
+    },
+  },
+];
 ```
 
 ### 4. Configure Cascading Relationships
@@ -175,11 +179,11 @@ relationships: [
     name: 'district',
     category: 'geographic',
     cascadingFilter: {
-      parentField: 'state',    // Clear when state changes
-      filterField: 'state'     // Filter districts by selected state
-    }
-  }
-]
+      parentField: 'state', // Clear when state changes
+      filterField: 'state', // Filter districts by selected state
+    },
+  },
+];
 ```
 
 ### 5. Customize UI Behavior
@@ -226,17 +230,18 @@ steps: [
     conditionalRender: {
       field: 'type',
       operator: 'equals',
-      value: 'premium'
-    }
-  }
-]
+      value: 'premium',
+    },
+  },
+];
 ```
 
 ## 🔄 Regeneration Process
 
 After modifying templates:
 
-1. Update the generator templates in `codgen/nextjs/templates/entity/components/form/`
+1. Update the generator templates in
+   `codgen/nextjs/templates/entity/components/form/`
 2. Run the generator: `npm run generate` or `npm run generate EntityName`
 3. The configuration files will be regenerated with your changes
 4. All forms will automatically use the new structure
@@ -285,21 +290,26 @@ ui: {
 ## 🔍 Troubleshooting
 
 ### Form Not Rendering
+
 - Check that step IDs match between configuration and step renderer
 - Verify all required imports are present in generated files
 
 ### Validation Not Working
+
 - Ensure field names match between configuration and schema
 - Check that validation rules are properly formatted
 
 ### Cascading Filters Broken
+
 - Verify parent field names are correct
 - Check that relationship categories are properly set
 
 ### State Persistence Issues
+
 - Confirm session storage keys are unique
 - Check that persistence is enabled in behavior configuration
 
 ---
 
-**Need Help?** Check the generated configuration file for your entity - it contains extensive inline documentation and examples.
+**Need Help?** Check the generated configuration file for your entity - it
+contains extensive inline documentation and examples.

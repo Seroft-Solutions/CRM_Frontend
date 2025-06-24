@@ -1,26 +1,20 @@
+'use client';
 
-"use client";
-
-import { useState } from "react";
-import { toast } from "sonner";
-import { districtToast, handleDistrictError } from "./district-toast";
-import { Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { districtToast, handleDistrictError } from './district-toast';
+import { Search, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,37 +24,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetAllDistricts,
   useDeleteDistrict,
   useCountDistricts,
   usePartialUpdateDistrict,
-  
-} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
-
-
-
+} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
 
 // Relationship data imports
 
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
-
-import {
-  useGetAllStates
-} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-
-
-
-import { DistrictSearchAndFilters } from "./district-search-filters";
-import { DistrictTableHeader } from "./district-table-header";
-import { DistrictTableRow } from "./district-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { DistrictSearchAndFilters } from './district-search-filters';
+import { DistrictTableHeader } from './district-table-header';
+import { DistrictTableRow } from './district-table-row';
+import { BulkRelationshipAssignment } from './bulk-relationship-assignment';
 
 // Define sort ordering constants
-const ASC = "asc";
-const DESC = "desc";
+const ASC = 'asc';
+const DESC = 'desc';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -73,9 +57,9 @@ interface DateRange {
 
 export function DistrictTable() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
+  const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -88,63 +72,57 @@ export function DistrictTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
-  
   // Fetch relationship data for dropdowns
-  
+
   const { data: stateOptions = [] } = useGetAllStates(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
-  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    const entity = entities?.find((e) =>
+      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+    );
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-    
-    
+
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      
-      'state.name': { 
-        apiParam: 'stateId.equals', 
-        options: stateOptions, 
-        displayField: 'name' 
+      'state.name': {
+        apiParam: 'stateId.equals',
+        options: stateOptions,
+        displayField: 'name',
       },
-      
     };
-    
-    
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        
+      if (value !== undefined && value !== '' && value !== null) {
         // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          const entityId = findEntityIdByName(
+            mapping.options,
+            value as string,
+            mapping.displayField
+          );
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
         }
-        
-        
-        
-        
-        
+
         // Handle name text filter with contains
         else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
         }
-        
+
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -157,7 +135,6 @@ export function DistrictTable() {
     });
 
     // Add date range filters
-    
 
     return params;
   };
@@ -165,7 +142,7 @@ export function DistrictTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
+
   const { data, isLoading, refetch } = useGetAllDistricts(
     {
       page: apiPage,
@@ -179,17 +156,13 @@ export function DistrictTable() {
       },
     }
   );
-  
 
   // Get total count for pagination
-  const { data: countData } = useCountDistricts(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data: countData } = useCountDistricts(filterParams, {
+    query: {
+      enabled: true,
+    },
+  });
 
   // Partial update mutation for relationship editing
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateDistrict({
@@ -231,9 +204,9 @@ export function DistrictTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return 'ChevronsUpDown';
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
   // Handle delete
@@ -251,9 +224,9 @@ export function DistrictTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [column]: value
+      [column]: value,
     }));
     setPage(1);
   };
@@ -261,12 +234,10 @@ export function DistrictTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
     setPage(1);
   };
-
-  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -288,7 +259,7 @@ export function DistrictTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map((item) => item.id)));
     }
   };
 
@@ -298,13 +269,17 @@ export function DistrictTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
+    const deletePromises = Array.from(selectedRows).map(
+      (id) =>
+        new Promise<void>((resolve, reject) => {
+          deleteEntity(
+            { id },
+            {
+              onSuccess: () => resolve(),
+              onError: (error) => reject(error),
+            }
+          );
+        })
     );
 
     try {
@@ -319,40 +294,51 @@ export function DistrictTable() {
   };
 
   // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  const handleRelationshipUpdate = async (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     return new Promise<void>((resolve, reject) => {
       // For JHipster partial updates, need entity ID and relationship structure
       const updateData: any = {
-        id: entityId
+        id: entityId,
       };
-      
+
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
 
-      updateEntity({ 
-        id: entityId,
-        data: updateData
-      }, {
-        onSuccess: () => {
-          districtToast.relationshipUpdated(relationshipName);
-          resolve();
+      updateEntity(
+        {
+          id: entityId,
+          data: updateData,
         },
-        onError: (error) => {
-          handleDistrictError(error);
-          reject(error);
+        {
+          onSuccess: () => {
+            districtToast.relationshipUpdated(relationshipName);
+            resolve();
+          },
+          onError: (error) => {
+            handleDistrictError(error);
+            reject(error);
+          },
         }
-      });
+      );
     });
   };
 
   // Handle bulk relationship updates
-  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+  const handleBulkRelationshipUpdate = async (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     let successCount = 0;
     let errorCount = 0;
-    
+
     // Process updates sequentially to avoid overwhelming the server
     for (const id of entityIds) {
       try {
@@ -363,10 +349,10 @@ export function DistrictTable() {
         errorCount++;
       }
     }
-    
+
     // Refresh data after updates
     refetch();
-    
+
     // Throw error if all failed, otherwise consider it partially successful
     if (errorCount === entityIds.length) {
       throw new Error(`All ${errorCount} updates failed`);
@@ -377,19 +363,21 @@ export function DistrictTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
-    
     {
-      name: "state",
-      displayName: "State",
+      name: 'state',
+      displayName: 'State',
       options: stateOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
   ];
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 ||
+    Boolean(searchTerm) ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -402,7 +390,7 @@ export function DistrictTable() {
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
           <div className="ml-auto flex gap-2">
-            {relationshipConfigs.some(config => config.isEditable) && (
+            {relationshipConfigs.some((config) => config.isEditable) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -412,11 +400,7 @@ export function DistrictTable() {
                 Assign Associations
               </Button>
             )}
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-            >
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
               Delete Selected
             </Button>
           </div>
@@ -441,7 +425,7 @@ export function DistrictTable() {
       {/* Data Table */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-full">
-          <DistrictTableHeader 
+          <DistrictTableHeader
             onSort={handleSort}
             getSortIcon={getSortIcon}
             filters={filters}
@@ -453,10 +437,7 @@ export function DistrictTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={3}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={3} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -476,10 +457,7 @@ export function DistrictTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={3}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={3} className="h-24 text-center">
                   No districts found
                   {hasActiveFilters && (
                     <div className="text-sm text-muted-foreground mt-1">
@@ -504,33 +482,35 @@ export function DistrictTable() {
                   e.preventDefault();
                   if (page > 1) setPage(page - 1);
                 }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const pageNumbers = [];
               const startPage = Math.max(1, page - 2);
               const endPage = Math.min(totalPages, startPage + 4);
-              
+
               for (let j = startPage; j <= endPage; j++) {
                 pageNumbers.push(j);
               }
-              
+
               return pageNumbers[i];
-            }).filter(Boolean).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(p);
-                  }}
-                  isActive={page === p}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            })
+              .filter(Boolean)
+              .map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage(p);
+                    }}
+                    isActive={page === p}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
             <PaginationItem>
               <PaginationNext
                 href="#"
@@ -538,7 +518,7 @@ export function DistrictTable() {
                   e.preventDefault();
                   if (page < totalPages) setPage(page + 1);
                 }}
-                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
           </PaginationContent>
@@ -549,15 +529,17 @@ export function DistrictTable() {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected districts and remove their data from the server.
+              This action cannot be undone. This will permanently delete the selected districts and
+              remove their data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -573,13 +555,13 @@ export function DistrictTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              district and remove its data from the server.
+              This action cannot be undone. This will permanently delete the district and remove its
+              data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

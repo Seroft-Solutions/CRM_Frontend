@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "../../paginated-relationship-combobox";
-import type { StepComponentProps } from "../form-types";
-import { useEntityForm } from "../call-type-form-provider";
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { PaginatedRelationshipCombobox } from '../../paginated-relationship-combobox';
+import type { StepComponentProps } from '../form-types';
+import { useEntityForm } from '../call-type-form-provider';
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
@@ -15,8 +15,8 @@ const hookMapping = {
 export function OtherRelationsStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form, actions } = useEntityForm();
 
-  const relationshipsForThisStep = config.relationships.filter(rel => 
-    stepConfig.relationships.includes(rel.name) && rel.category === 'other'
+  const relationshipsForThisStep = config.relationships.filter(
+    (rel) => stepConfig.relationships.includes(rel.name) && rel.category === 'other'
   );
 
   if (relationshipsForThisStep.length === 0) {
@@ -33,7 +33,7 @@ export function OtherRelationsStep({ stepConfig, isActive, isCompleted }: StepCo
         <h3 className="text-lg font-medium">🔗 Additional Relations</h3>
         <p className="text-muted-foreground">Other connections and references</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {relationshipsForThisStep.map((relConfig) => (
           <FormField
@@ -44,7 +44,7 @@ export function OtherRelationsStep({ stepConfig, isActive, isCompleted }: StepCo
               <FormItem>
                 <FormLabel className="text-sm font-medium">
                   {relConfig.ui.label}
-                  {relConfig.required && " *"}
+                  {relConfig.required && ' *'}
                 </FormLabel>
                 <FormControl>
                   <PaginatedRelationshipCombobox
@@ -53,15 +53,25 @@ export function OtherRelationsStep({ stepConfig, isActive, isCompleted }: StepCo
                     displayField={relConfig.displayField}
                     placeholder={relConfig.ui.placeholder}
                     multiple={relConfig.multiple}
-                    useGetAllHook={hookMapping[relConfig.api.useGetAllHook as keyof typeof hookMapping]}
-                    useSearchHook={hookMapping[relConfig.api.useSearchHook as keyof typeof hookMapping]}
-                    useCountHook={relConfig.api.useCountHook ? hookMapping[relConfig.api.useCountHook as keyof typeof hookMapping] : undefined}
+                    useGetAllHook={
+                      hookMapping[relConfig.api.useGetAllHook as keyof typeof hookMapping]
+                    }
+                    useSearchHook={
+                      hookMapping[relConfig.api.useSearchHook as keyof typeof hookMapping]
+                    }
+                    useCountHook={
+                      relConfig.api.useCountHook
+                        ? hookMapping[relConfig.api.useCountHook as keyof typeof hookMapping]
+                        : undefined
+                    }
                     entityName={relConfig.api.entityName}
                     searchField={relConfig.displayField}
                     canCreate={relConfig.creation.canCreate}
-                    createEntityPath={relConfig.creation.createPath || ""}
-                    createPermission={relConfig.creation.createPermission || ""}
-                    onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+                    createEntityPath={relConfig.creation.createPath || ''}
+                    createPermission={relConfig.creation.createPermission || ''}
+                    onEntityCreated={(entityId) =>
+                      actions.handleEntityCreated(entityId, relConfig.name)
+                    }
                     disabled={relConfig.ui.disabled}
                     {...actions.getNavigationProps(relConfig.name)}
                   />

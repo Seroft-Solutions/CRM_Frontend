@@ -36,7 +36,7 @@ import {
   Clock,
   PhoneCall,
 } from 'lucide-react';
-import {useGetAllCustomers} from "@/core/api/generated/spring";
+import { useGetAllCustomers } from '@/core/api/generated/spring';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });

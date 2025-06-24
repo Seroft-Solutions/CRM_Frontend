@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { PriorityFormProvider, useEntityForm } from "./priority-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { PriorityFormProvider, useEntityForm } from './priority-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreatePriority,
   useUpdatePriority,
   useGetPriority,
-} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
-import { priorityToast, handlePriorityError } from "../priority-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+import { priorityToast, handlePriorityError } from '../priority-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface PriorityFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function PriorityFormContent({ id }: PriorityFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetPriority(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-priority", id]
+      queryKey: ['get-priority', id],
     },
   });
 
@@ -42,13 +42,13 @@ function PriorityFormContent({ id }: PriorityFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/priorities";
-      
+      const backRoute = returnUrl || '/priorities';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,12 +78,12 @@ function PriorityFormContent({ id }: PriorityFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'description': '',
-          'remark': '',
+          name: '',
+          description: '',
+          remark: '',
         }}
       />
 
@@ -91,7 +91,7 @@ function PriorityFormContent({ id }: PriorityFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -115,7 +115,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -123,7 +123,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
         } else {
           setIsRedirecting(true);
           priorityToast.created();
-          router.push("/priorities");
+          router.push('/priorities');
         }
       },
       onError: (error) => {
@@ -137,7 +137,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         priorityToast.updated();
-        router.push("/priorities");
+        router.push('/priorities');
       },
       onError: (error) => {
         handlePriorityError(error);
@@ -158,11 +158,11 @@ export function PriorityForm({ id }: PriorityFormProps) {
   }
 
   return (
-    <PriorityFormProvider 
+    <PriorityFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

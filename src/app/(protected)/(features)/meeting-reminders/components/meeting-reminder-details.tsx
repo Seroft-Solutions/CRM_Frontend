@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { meetingReminderToast, handleMeetingReminderError } from "./meeting-reminder-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { meetingReminderToast, handleMeetingReminderError } from './meeting-reminder-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetMeetingReminder,
   useDeleteMeetingReminder,
-} from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
 
 interface MeetingReminderDetailsProps {
   id: number;
@@ -54,7 +46,7 @@ export function MeetingReminderDetails({ id }: MeetingReminderDetailsProps) {
     mutation: {
       onSuccess: () => {
         meetingReminderToast.deleted();
-        router.push("/meeting-reminders");
+        router.push('/meeting-reminders');
       },
       onError: (error) => {
         handleMeetingReminderError(error);
@@ -96,62 +88,68 @@ export function MeetingReminderDetails({ id }: MeetingReminderDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Reminder Type</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Reminder Type
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.reminderType || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Reminder Minutes Before</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.reminderMinutesBefore || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Triggered</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isTriggered ? "default" : "secondary"} className="text-sm">
-                      {entity.isTriggered ? "Yes" : "No"}
-                    </Badge>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Triggered At</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.triggeredAt ? format(new Date(entity.triggeredAt), "PPP") : "—"}
+                    <span className="text-foreground break-words">
+                      {entity.reminderType || '—'}
                     </span>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Failure Reason</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Reminder Minutes Before
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.failureReason || "—"}</span>
-                    
+                    <span className="text-foreground break-words">
+                      {entity.reminderMinutesBefore || '—'}
+                    </span>
                   </dd>
                 </div>
-                
+
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Is Triggered
+                  </dt>
+                  <dd className="text-sm font-medium">
+                    <Badge
+                      variant={entity.isTriggered ? 'default' : 'secondary'}
+                      className="text-sm"
+                    >
+                      {entity.isTriggered ? 'Yes' : 'No'}
+                    </Badge>
+                  </dd>
+                </div>
+
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Triggered At
+                  </dt>
+                  <dd className="text-sm font-medium">
+                    <span className="text-foreground">
+                      {entity.triggeredAt ? format(new Date(entity.triggeredAt), 'PPP') : '—'}
+                    </span>
+                  </dd>
+                </div>
+
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Failure Reason
+                  </dt>
+                  <dd className="text-sm font-medium">
+                    <span className="text-foreground break-words">
+                      {entity.failureReason || '—'}
+                    </span>
+                  </dd>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -162,25 +160,24 @@ export function MeetingReminderDetails({ id }: MeetingReminderDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Meeting
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     {entity.meeting ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.meeting as any).name || entity.meeting.id}
                       </Badge>
-                    ) : "—"}
-                    
+                    ) : (
+                      '—'
+                    )}
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-        
       </div>
 
       {/* Action Buttons */}
@@ -192,7 +189,7 @@ export function MeetingReminderDetails({ id }: MeetingReminderDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -208,8 +205,8 @@ export function MeetingReminderDetails({ id }: MeetingReminderDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              meetingreminder and remove its data from the server.
+              This action cannot be undone. This will permanently delete the meetingreminder and
+              remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

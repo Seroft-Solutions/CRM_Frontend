@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for UserProfile form
@@ -6,95 +6,74 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const userProfileFormConfig: FormConfig = {
   entity: 'UserProfile',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'keycloakId',
-        'phone',
-        'displayName',
-      ],
-      relationships: [
-      ],
+      fields: ['keycloakId', 'phone', 'displayName'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'dates',
       title: 'Date & Time',
       description: 'Set relevant dates',
-      fields: [
-        'createdAt',
-        'updatedAt',
-      ],
-      relationships: [
-      ],
+      fields: ['createdAt', 'updatedAt'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'users',
       title: 'People & Assignment',
       description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'user',
-      ],
+      fields: [],
+      relationships: ['user'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
-      fields: [
-      ],
-      relationships: [
-        'channelType',
-      ],
+      fields: [],
+      relationships: ['channelType'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'organizations',
-        'groups',
-      ],
+      fields: [],
+      relationships: ['organizations', 'groups'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -110,8 +89,7 @@ export const userProfileFormConfig: FormConfig = {
         required: false,
         pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'phone',
@@ -124,8 +102,7 @@ export const userProfileFormConfig: FormConfig = {
         maxLength: 20,
         pattern: /^[+]?[0-9\s\-\(\)]{10,20}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'displayName',
@@ -137,8 +114,7 @@ export const userProfileFormConfig: FormConfig = {
         required: false,
         maxLength: 200,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'createdAt',
@@ -149,8 +125,7 @@ export const userProfileFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'updatedAt',
@@ -161,8 +136,7 @@ export const userProfileFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -189,7 +163,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'User',
         placeholder: 'Select user',
         icon: '👥',
-      }
+      },
     },
     {
       name: 'organizations',
@@ -215,7 +189,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Organizations',
         placeholder: 'Select organizations',
         icon: '🔗',
-      }
+      },
     },
     {
       name: 'groups',
@@ -241,7 +215,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Groups',
         placeholder: 'Select groups',
         icon: '🔗',
-      }
+      },
     },
     {
       name: 'channelType',
@@ -267,7 +241,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Channel Type',
         placeholder: 'Select channel type',
         icon: '🏷️',
-      }
+      },
     },
   ],
 
@@ -292,7 +266,7 @@ export const userProfileFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -315,17 +289,19 @@ export const userProfileFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const userProfileFormHelpers = {
-  getStepById: (stepId: string) => userProfileFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => userProfileFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => userProfileFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => userProfileFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    userProfileFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    userProfileFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = userProfileFormConfig.steps.find(s => s.id === stepId);
+    const step = userProfileFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

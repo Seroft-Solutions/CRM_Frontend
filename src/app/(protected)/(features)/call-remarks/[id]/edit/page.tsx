@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { CallRemarkForm } from "../../components/call-remark-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard } from "@/components/auth/permission-guard";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { CallRemarkForm } from '../../components/call-remark-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditCallRemarkPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditCallRemarkPageProps {
 }
 
 export const metadata = {
-  title: "Edit CallRemark",
+  title: 'Edit CallRemark',
 };
 
 export default async function EditCallRemarkPage({ params }: EditCallRemarkPageProps) {
@@ -23,7 +23,7 @@ export default async function EditCallRemarkPage({ params }: EditCallRemarkPageP
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="callRemark:update"
       unauthorizedTitle="Access Denied to Edit Call Remark"
       unauthorizedDescription="You don't have permission to edit call remark records."
@@ -31,7 +31,7 @@ export default async function EditCallRemarkPage({ params }: EditCallRemarkPageP
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/call-remarks"
               defaultLabel="Back to Call Remarks"
               entityName="CallRemark"
@@ -44,10 +44,12 @@ export default async function EditCallRemarkPage({ params }: EditCallRemarkPageP
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Edit Call Remark</h1>
-              <p className="text-sm text-gray-600 mt-1">Update the information for this call remark</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Update the information for this call remark
+              </p>
             </div>
           </div>
-          
+
           <CallRemarkForm id={id} />
         </div>
       </div>

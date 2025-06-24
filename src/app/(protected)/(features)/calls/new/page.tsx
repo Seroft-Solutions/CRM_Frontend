@@ -1,20 +1,20 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { CallForm } from "../components/call-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard } from "@/components/auth/permission-guard";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { CallForm } from '../components/call-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 export const metadata = {
-  title: "Create Call",
+  title: 'Create Call',
 };
 
 export default function CreateCallPage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="call:create"
       unauthorizedTitle="Access Denied to Create Call"
       unauthorizedDescription="You don't have permission to create new call records."
@@ -22,7 +22,7 @@ export default function CreateCallPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/calls"
               defaultLabel="Back to Calls"
               entityName="Call"
@@ -35,10 +35,12 @@ export default function CreateCallPage() {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Create Call</h1>
-              <p className="text-sm text-gray-600 mt-1">Enter the details below to create a new call</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Enter the details below to create a new call
+              </p>
             </div>
           </div>
-          
+
           <CallForm />
         </div>
       </div>

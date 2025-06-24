@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { GroupForm } from "../../components/group-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard } from "@/components/auth/permission-guard";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { GroupForm } from '../../components/group-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditGroupPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditGroupPageProps {
 }
 
 export const metadata = {
-  title: "Edit Group",
+  title: 'Edit Group',
 };
 
 export default async function EditGroupPage({ params }: EditGroupPageProps) {
@@ -23,7 +23,7 @@ export default async function EditGroupPage({ params }: EditGroupPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="group:update"
       unauthorizedTitle="Access Denied to Edit Group"
       unauthorizedDescription="You don't have permission to edit group records."
@@ -31,7 +31,7 @@ export default async function EditGroupPage({ params }: EditGroupPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/groups"
               defaultLabel="Back to Groups"
               entityName="Group"
@@ -47,7 +47,7 @@ export default async function EditGroupPage({ params }: EditGroupPageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this group</p>
             </div>
           </div>
-          
+
           <GroupForm id={id} />
         </div>
       </div>

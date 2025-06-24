@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { stateToast, handleStateError } from "./state-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { stateToast, handleStateError } from './state-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetState,
   useDeleteState,
-} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
 interface StateDetailsProps {
   id: number;
@@ -54,7 +46,7 @@ export function StateDetails({ id }: StateDetailsProps) {
     mutation: {
       onSuccess: () => {
         stateToast.deleted();
-        router.push("/states");
+        router.push('/states');
       },
       onError: (error) => {
         handleStateError(error);
@@ -96,31 +88,27 @@ export function StateDetails({ id }: StateDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Name
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.name || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.name || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Country</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Country
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.country || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.country || '—'}</span>
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-
-        
       </div>
 
       {/* Action Buttons */}
@@ -132,7 +120,7 @@ export function StateDetails({ id }: StateDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -148,8 +136,8 @@ export function StateDetails({ id }: StateDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              state and remove its data from the server.
+              This action cannot be undone. This will permanently delete the state and remove its
+              data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -33,21 +27,21 @@ interface ProductTableHeaderProps {
   onSelectAll: () => void;
 }
 
-export function ProductTableHeader({ 
-  onSort, 
+export function ProductTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
-  onSelectAll
+  onSelectAll,
 }: ProductTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -67,112 +61,95 @@ export function ProductTableHeader({
             }}
           />
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("name")}
+            onClick={() => onSort('name')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Name
-            <div className="text-gray-400">
-              {renderSortIcon("name")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('name')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("code")}
+            onClick={() => onSort('code')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Code
-            <div className="text-gray-400">
-              {renderSortIcon("code")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('code')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("description")}
+            onClick={() => onSort('description')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Description
-            <div className="text-gray-400">
-              {renderSortIcon("description")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('description')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("category")}
+            onClick={() => onSort('category')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Category
-            <div className="text-gray-400">
-              {renderSortIcon("category")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('category')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("basePrice")}
+            onClick={() => onSort('basePrice')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Base Price
-            <div className="text-gray-400">
-              {renderSortIcon("basePrice")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('basePrice')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("minPrice")}
+            onClick={() => onSort('minPrice')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Min Price
-            <div className="text-gray-400">
-              {renderSortIcon("minPrice")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('minPrice')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("maxPrice")}
+            onClick={() => onSort('maxPrice')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Max Price
-            <div className="text-gray-400">
-              {renderSortIcon("maxPrice")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('maxPrice')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("remark")}
+            onClick={() => onSort('remark')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Remark
-            <div className="text-gray-400">
-              {renderSortIcon("remark")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('remark')}</div>
           </Button>
         </TableHead>
-        
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -180,104 +157,83 @@ export function ProductTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">
-          {/* Empty cell for checkbox column */}
-        </TableHead>
-        
+        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["name"] as string || ""}
-            onChange={(e) => onFilterChange("name", e.target.value || undefined)}
+            value={(filters['name'] as string) || ''}
+            onChange={(e) => onFilterChange('name', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["code"] as string || ""}
-            onChange={(e) => onFilterChange("code", e.target.value || undefined)}
+            value={(filters['code'] as string) || ''}
+            onChange={(e) => onFilterChange('code', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["description"] as string || ""}
-            onChange={(e) => onFilterChange("description", e.target.value || undefined)}
+            value={(filters['description'] as string) || ''}
+            onChange={(e) => onFilterChange('description', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["category"] as string || ""}
-            onChange={(e) => onFilterChange("category", e.target.value || undefined)}
+            value={(filters['category'] as string) || ''}
+            onChange={(e) => onFilterChange('category', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["basePrice"] as string || ""}
-            onChange={(e) => onFilterChange("basePrice", e.target.value || undefined)}
+            value={(filters['basePrice'] as string) || ''}
+            onChange={(e) => onFilterChange('basePrice', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["minPrice"] as string || ""}
-            onChange={(e) => onFilterChange("minPrice", e.target.value || undefined)}
+            value={(filters['minPrice'] as string) || ''}
+            onChange={(e) => onFilterChange('minPrice', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["maxPrice"] as string || ""}
-            onChange={(e) => onFilterChange("maxPrice", e.target.value || undefined)}
+            value={(filters['maxPrice'] as string) || ''}
+            onChange={(e) => onFilterChange('maxPrice', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["remark"] as string || ""}
-            onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
+            value={(filters['remark'] as string) || ''}
+            onChange={(e) => onFilterChange('remark', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
-        
-        
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

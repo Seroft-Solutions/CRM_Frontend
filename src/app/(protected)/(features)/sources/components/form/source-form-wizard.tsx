@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SourceFormProvider, useEntityForm } from "./source-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { SourceFormProvider, useEntityForm } from './source-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateSource,
   useUpdateSource,
   useGetSource,
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
-import { sourceToast, handleSourceError } from "../source-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+import { sourceToast, handleSourceError } from '../source-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface SourceFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function SourceFormContent({ id }: SourceFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetSource(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-source", id]
+      queryKey: ['get-source', id],
     },
   });
 
@@ -42,13 +42,13 @@ function SourceFormContent({ id }: SourceFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/sources";
-      
+      const backRoute = returnUrl || '/sources';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,12 +78,12 @@ function SourceFormContent({ id }: SourceFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'description': '',
-          'remark': '',
+          name: '',
+          description: '',
+          remark: '',
         }}
       />
 
@@ -91,7 +91,7 @@ function SourceFormContent({ id }: SourceFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -115,7 +115,7 @@ export function SourceForm({ id }: SourceFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -123,7 +123,7 @@ export function SourceForm({ id }: SourceFormProps) {
         } else {
           setIsRedirecting(true);
           sourceToast.created();
-          router.push("/sources");
+          router.push('/sources');
         }
       },
       onError: (error) => {
@@ -137,7 +137,7 @@ export function SourceForm({ id }: SourceFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         sourceToast.updated();
-        router.push("/sources");
+        router.push('/sources');
       },
       onError: (error) => {
         handleSourceError(error);
@@ -158,11 +158,11 @@ export function SourceForm({ id }: SourceFormProps) {
   }
 
   return (
-    <SourceFormProvider 
+    <SourceFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

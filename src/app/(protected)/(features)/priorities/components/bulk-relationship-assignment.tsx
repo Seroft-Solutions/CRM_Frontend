@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Loader2, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Loader2, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Command,
   CommandEmpty,
@@ -18,18 +18,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { priorityToast } from "./priority-toast";
-
-
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { priorityToast } from './priority-toast';
 
 interface BulkRelationshipAssignmentProps {
   open: boolean;
@@ -42,7 +36,11 @@ interface BulkRelationshipAssignmentProps {
     displayField: string;
     isEditable: boolean;
   }>;
-  onBulkUpdate: (entityIds: number[], relationshipName: string, newValue: number | null) => Promise<void>;
+  onBulkUpdate: (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => Promise<void>;
 }
 
 export function BulkRelationshipAssignment({
@@ -52,62 +50,62 @@ export function BulkRelationshipAssignment({
   relationshipConfigs,
   onBulkUpdate,
 }: BulkRelationshipAssignmentProps) {
-  const [selectedRelationship, setSelectedRelationship] = React.useState<string>("");
+  const [selectedRelationship, setSelectedRelationship] = React.useState<string>('');
   const [selectedValue, setSelectedValue] = React.useState<number | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [relationshipOpen, setRelationshipOpen] = React.useState(false);
   const [valueOpen, setValueOpen] = React.useState(false);
 
   // Get editable relationships
-  const editableRelationships = relationshipConfigs.filter(config => config.isEditable);
+  const editableRelationships = relationshipConfigs.filter((config) => config.isEditable);
 
   // Get current relationship config
   const currentRelationshipConfig = editableRelationships.find(
-    config => config.name === selectedRelationship
+    (config) => config.name === selectedRelationship
   );
 
   // Get display value for selected relationship
   const getRelationshipDisplayValue = () => {
-    if (!selectedRelationship) return "Select relationship...";
+    if (!selectedRelationship) return 'Select relationship...';
     const config = currentRelationshipConfig;
     return config ? config.displayName : selectedRelationship;
   };
 
   // Get display value for selected value
   const getValueDisplayValue = () => {
-    if (!currentRelationshipConfig) return "Select relationship first...";
-    if (selectedValue === null) return "None (clear relationship)";
-    
-    const option = currentRelationshipConfig.options.find(opt => opt.id === selectedValue);
-    return option ? option[currentRelationshipConfig.displayField] : "Select value...";
+    if (!currentRelationshipConfig) return 'Select relationship first...';
+    if (selectedValue === null) return 'None (clear relationship)';
+
+    const option = currentRelationshipConfig.options.find((opt) => opt.id === selectedValue);
+    return option ? option[currentRelationshipConfig.displayField] : 'Select value...';
   };
 
   // Handle bulk update
   const handleBulkUpdate = async () => {
     if (!selectedRelationship) {
-      priorityToast.validationError(["relationship field"]);
+      priorityToast.validationError(['relationship field']);
       return;
     }
 
     setIsUpdating(true);
-    
+
     try {
       await onBulkUpdate(selectedEntityIds, selectedRelationship, selectedValue);
-      
-      const action = selectedValue === null ? "cleared" : "updated";
+
+      const action = selectedValue === null ? 'cleared' : 'updated';
       priorityToast.custom.success(
         `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
         `${selectedRelationship} ${action} for ${selectedEntityIds.length} item${
           selectedEntityIds.length > 1 ? 's' : ''
         }`
       );
-      
+
       // Close dialog and reset state
       onOpenChange(false);
     } catch (error) {
       console.error('Bulk update error:', error);
       priorityToast.custom.error(
-        "❌ Bulk Update Failed",
+        '❌ Bulk Update Failed',
         `Failed to update ${selectedRelationship}`
       );
     } finally {
@@ -118,7 +116,7 @@ export function BulkRelationshipAssignment({
   // Reset form when dialog closes
   React.useEffect(() => {
     if (!open) {
-      setSelectedRelationship("");
+      setSelectedRelationship('');
       setSelectedValue(null);
       setIsUpdating(false); // Ensure updating state is reset
     }
@@ -181,8 +179,10 @@ export function BulkRelationshipAssignment({
                               >
                                 <Check
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedRelationship === config.name ? "opacity-100" : "opacity-0"
+                                    'mr-2 h-4 w-4',
+                                    selectedRelationship === config.name
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
                                   )}
                                 />
                                 {config.displayName}
@@ -231,13 +231,13 @@ export function BulkRelationshipAssignment({
                             >
                               <Check
                                 className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedValue === null ? "opacity-100" : "opacity-0"
+                                  'mr-2 h-4 w-4',
+                                  selectedValue === null ? 'opacity-100' : 'opacity-0'
                                 )}
                               />
                               <span className="text-muted-foreground">None (clear)</span>
                             </CommandItem>
-                            
+
                             {/* Available options */}
                             {currentRelationshipConfig?.options.map((option) => (
                               <CommandItem
@@ -250,8 +250,8 @@ export function BulkRelationshipAssignment({
                               >
                                 <Check
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedValue === option.id ? "opacity-100" : "opacity-0"
+                                    'mr-2 h-4 w-4',
+                                    selectedValue === option.id ? 'opacity-100' : 'opacity-0'
                                   )}
                                 />
                                 {option[currentRelationshipConfig.displayField]}
@@ -269,11 +269,7 @@ export function BulkRelationshipAssignment({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isUpdating}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating}>
             Cancel
           </Button>
           <Button
@@ -286,7 +282,7 @@ export function BulkRelationshipAssignment({
                 Updating...
               </>
             ) : (
-              "Update All"
+              'Update All'
             )}
           </Button>
         </DialogFooter>

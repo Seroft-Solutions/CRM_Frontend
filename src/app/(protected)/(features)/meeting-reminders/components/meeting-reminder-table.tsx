@@ -1,26 +1,20 @@
+'use client';
 
-"use client";
-
-import { useState } from "react";
-import { toast } from "sonner";
-import { meetingReminderToast, handleMeetingReminderError } from "./meeting-reminder-toast";
-import { Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { meetingReminderToast, handleMeetingReminderError } from './meeting-reminder-toast';
+import { Search, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,37 +24,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetAllMeetingReminders,
   useDeleteMeetingReminder,
   useCountMeetingReminders,
   usePartialUpdateMeetingReminder,
-  
-} from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-
-
-
+} from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
 
 // Relationship data imports
 
+import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 
-
-import {
-  useGetAllMeetings
-} from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
-
-
-
-import { MeetingReminderSearchAndFilters } from "./meeting-reminder-search-filters";
-import { MeetingReminderTableHeader } from "./meeting-reminder-table-header";
-import { MeetingReminderTableRow } from "./meeting-reminder-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { MeetingReminderSearchAndFilters } from './meeting-reminder-search-filters';
+import { MeetingReminderTableHeader } from './meeting-reminder-table-header';
+import { MeetingReminderTableRow } from './meeting-reminder-table-row';
+import { BulkRelationshipAssignment } from './bulk-relationship-assignment';
 
 // Define sort ordering constants
-const ASC = "asc";
-const DESC = "desc";
+const ASC = 'asc';
+const DESC = 'desc';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -73,9 +57,9 @@ interface DateRange {
 
 export function MeetingReminderTable() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
+  const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -88,60 +72,55 @@ export function MeetingReminderTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
-  
   // Fetch relationship data for dropdowns
-  
+
   const { data: meetingOptions = [] } = useGetAllMeetings(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
-  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    const entity = entities?.find((e) =>
+      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+    );
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-    
-    
+
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      
-      'meeting.name': { 
-        apiParam: 'meetingId.equals', 
-        options: meetingOptions, 
-        displayField: 'name' 
+      'meeting.name': {
+        apiParam: 'meetingId.equals',
+        options: meetingOptions,
+        displayField: 'name',
       },
-      
     };
-    
-    
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        
+      if (value !== undefined && value !== '' && value !== null) {
         // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          const entityId = findEntityIdByName(
+            mapping.options,
+            value as string,
+            mapping.displayField
+          );
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
         }
-        
-        
+
         // Handle isTriggered boolean filter
         else if (key === 'isTriggered') {
           params['isTriggered.equals'] = value === 'true';
         }
-        
-        
-        
+
         // Handle triggeredAt date filter
         else if (key === 'triggeredAt') {
           if (value instanceof Date) {
@@ -150,29 +129,28 @@ export function MeetingReminderTable() {
             params['triggeredAt.equals'] = value;
           }
         }
-        
-        
+
         // Handle reminderType text filter with contains
         else if (key === 'reminderType') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['reminderType.contains'] = value;
           }
         }
-        
+
         // Handle reminderMinutesBefore text filter with contains
         else if (key === 'reminderMinutesBefore') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['reminderMinutesBefore.contains'] = value;
           }
         }
-        
+
         // Handle failureReason text filter with contains
         else if (key === 'failureReason') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['failureReason.contains'] = value;
           }
         }
-        
+
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -185,14 +163,13 @@ export function MeetingReminderTable() {
     });
 
     // Add date range filters
-    
+
     if (dateRange.from) {
       params['triggeredAt.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['triggeredAt.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
 
     return params;
   };
@@ -200,7 +177,7 @@ export function MeetingReminderTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
+
   const { data, isLoading, refetch } = useGetAllMeetingReminders(
     {
       page: apiPage,
@@ -214,17 +191,13 @@ export function MeetingReminderTable() {
       },
     }
   );
-  
 
   // Get total count for pagination
-  const { data: countData } = useCountMeetingReminders(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data: countData } = useCountMeetingReminders(filterParams, {
+    query: {
+      enabled: true,
+    },
+  });
 
   // Partial update mutation for relationship editing
   const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateMeetingReminder({
@@ -266,9 +239,9 @@ export function MeetingReminderTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return 'ChevronsUpDown';
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
   // Handle delete
@@ -286,9 +259,9 @@ export function MeetingReminderTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [column]: value
+      [column]: value,
     }));
     setPage(1);
   };
@@ -296,12 +269,10 @@ export function MeetingReminderTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
     setPage(1);
   };
-
-  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -323,7 +294,7 @@ export function MeetingReminderTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map((item) => item.id)));
     }
   };
 
@@ -333,13 +304,17 @@ export function MeetingReminderTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
+    const deletePromises = Array.from(selectedRows).map(
+      (id) =>
+        new Promise<void>((resolve, reject) => {
+          deleteEntity(
+            { id },
+            {
+              onSuccess: () => resolve(),
+              onError: (error) => reject(error),
+            }
+          );
+        })
     );
 
     try {
@@ -354,40 +329,51 @@ export function MeetingReminderTable() {
   };
 
   // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  const handleRelationshipUpdate = async (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     return new Promise<void>((resolve, reject) => {
       // For JHipster partial updates, need entity ID and relationship structure
       const updateData: any = {
-        id: entityId
+        id: entityId,
       };
-      
+
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
 
-      updateEntity({ 
-        id: entityId,
-        data: updateData
-      }, {
-        onSuccess: () => {
-          meetingReminderToast.relationshipUpdated(relationshipName);
-          resolve();
+      updateEntity(
+        {
+          id: entityId,
+          data: updateData,
         },
-        onError: (error) => {
-          handleMeetingReminderError(error);
-          reject(error);
+        {
+          onSuccess: () => {
+            meetingReminderToast.relationshipUpdated(relationshipName);
+            resolve();
+          },
+          onError: (error) => {
+            handleMeetingReminderError(error);
+            reject(error);
+          },
         }
-      });
+      );
     });
   };
 
   // Handle bulk relationship updates
-  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+  const handleBulkRelationshipUpdate = async (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     let successCount = 0;
     let errorCount = 0;
-    
+
     // Process updates sequentially to avoid overwhelming the server
     for (const id of entityIds) {
       try {
@@ -398,10 +384,10 @@ export function MeetingReminderTable() {
         errorCount++;
       }
     }
-    
+
     // Refresh data after updates
     refetch();
-    
+
     // Throw error if all failed, otherwise consider it partially successful
     if (errorCount === entityIds.length) {
       throw new Error(`All ${errorCount} updates failed`);
@@ -412,19 +398,21 @@ export function MeetingReminderTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
-    
     {
-      name: "meeting",
-      displayName: "Meeting",
+      name: 'meeting',
+      displayName: 'Meeting',
       options: meetingOptions || [],
-      displayField: "name",
+      displayField: 'name',
       isEditable: false, // Disabled by default
     },
-    
   ];
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 ||
+    Boolean(searchTerm) ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -437,7 +425,7 @@ export function MeetingReminderTable() {
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
           <div className="ml-auto flex gap-2">
-            {relationshipConfigs.some(config => config.isEditable) && (
+            {relationshipConfigs.some((config) => config.isEditable) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -447,11 +435,7 @@ export function MeetingReminderTable() {
                 Assign Associations
               </Button>
             )}
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-            >
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
               Delete Selected
             </Button>
           </div>
@@ -476,7 +460,7 @@ export function MeetingReminderTable() {
       {/* Data Table */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-full">
-          <MeetingReminderTableHeader 
+          <MeetingReminderTableHeader
             onSort={handleSort}
             getSortIcon={getSortIcon}
             filters={filters}
@@ -488,10 +472,7 @@ export function MeetingReminderTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={7} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -511,10 +492,7 @@ export function MeetingReminderTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={7} className="h-24 text-center">
                   No meeting reminders found
                   {hasActiveFilters && (
                     <div className="text-sm text-muted-foreground mt-1">
@@ -539,33 +517,35 @@ export function MeetingReminderTable() {
                   e.preventDefault();
                   if (page > 1) setPage(page - 1);
                 }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const pageNumbers = [];
               const startPage = Math.max(1, page - 2);
               const endPage = Math.min(totalPages, startPage + 4);
-              
+
               for (let j = startPage; j <= endPage; j++) {
                 pageNumbers.push(j);
               }
-              
+
               return pageNumbers[i];
-            }).filter(Boolean).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(p);
-                  }}
-                  isActive={page === p}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            })
+              .filter(Boolean)
+              .map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage(p);
+                    }}
+                    isActive={page === p}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
             <PaginationItem>
               <PaginationNext
                 href="#"
@@ -573,7 +553,7 @@ export function MeetingReminderTable() {
                   e.preventDefault();
                   if (page < totalPages) setPage(page + 1);
                 }}
-                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
           </PaginationContent>
@@ -584,15 +564,17 @@ export function MeetingReminderTable() {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected meeting reminders and remove their data from the server.
+              This action cannot be undone. This will permanently delete the selected meeting
+              reminders and remove their data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -608,13 +590,13 @@ export function MeetingReminderTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              meetingreminder and remove its data from the server.
+              This action cannot be undone. This will permanently delete the meetingreminder and
+              remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

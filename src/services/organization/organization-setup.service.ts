@@ -8,7 +8,7 @@ import { createUserProfile } from '@/core/api/generated/spring/endpoints/user-pr
 // Types
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
-import {createOrganizationWithSchema} from "@/core/api/generated/spring";
+import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 
 export interface OrganizationSetupRequest {
   organizationName: string;

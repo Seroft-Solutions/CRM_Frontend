@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { channelTypeToast, handleChannelTypeError } from "./channel-type-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { channelTypeToast, handleChannelTypeError } from './channel-type-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetChannelType,
   useDeleteChannelType,
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 interface ChannelTypeDetailsProps {
   id: number;
@@ -54,7 +46,7 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
     mutation: {
       onSuccess: () => {
         channelTypeToast.deleted();
-        router.push("/channel-types");
+        router.push('/channel-types');
       },
       onError: (error) => {
         handleChannelTypeError(error);
@@ -96,40 +88,38 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Name
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.name || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.name || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Description
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.description || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.description || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Commission Rate</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Commission Rate
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.commissionRate || "—"}</span>
-                    
+                    <span className="text-foreground break-words">
+                      {entity.commissionRate || '—'}
+                    </span>
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-
-        
       </div>
 
       {/* Action Buttons */}
@@ -141,7 +131,7 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -157,8 +147,8 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              channeltype and remove its data from the server.
+              This action cannot be undone. This will permanently delete the channeltype and remove
+              its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,23 +1,21 @@
-"use client";
+'use client';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { StepComponentProps } from "../form-types";
-import { useEntityForm } from "../meeting-participant-form-provider";
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { StepComponentProps } from '../form-types';
+import { useEntityForm } from '../meeting-participant-form-provider';
 
 export function SettingsStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form } = useEntityForm();
 
-  const fieldsForThisStep = config.fields.filter(field => 
-    stepConfig.fields.includes(field.name)
-  );
+  const fieldsForThisStep = config.fields.filter((field) => stepConfig.fields.includes(field.name));
 
-  const booleanFields = fieldsForThisStep.filter(field => field.type === 'boolean');
-  const fileFields = fieldsForThisStep.filter(field => field.type === 'file');
-  const textareaFields = fieldsForThisStep.filter(field => field.type === 'textarea');
+  const booleanFields = fieldsForThisStep.filter((field) => field.type === 'boolean');
+  const fileFields = fieldsForThisStep.filter((field) => field.type === 'file');
+  const textareaFields = fieldsForThisStep.filter((field) => field.type === 'textarea');
 
   if (fieldsForThisStep.length === 0) {
     return (
@@ -42,13 +40,11 @@ export function SettingsStep({ stepConfig, isActive, isCompleted }: StepComponen
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base font-medium">
-                        {fieldConfig.label}
-                      </FormLabel>
+                      <FormLabel className="text-base font-medium">{fieldConfig.label}</FormLabel>
                     </div>
                     <FormControl>
-                      <Checkbox 
-                        checked={field.value} 
+                      <Checkbox
+                        checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={fieldConfig.ui?.disabled}
                       />
@@ -75,7 +71,7 @@ export function SettingsStep({ stepConfig, isActive, isCompleted }: StepComponen
                   <FormItem>
                     <FormLabel className="text-sm font-medium">
                       {fieldConfig.label}
-                      {fieldConfig.required && " *"}
+                      {fieldConfig.required && ' *'}
                     </FormLabel>
                     <FormControl>
                       <Textarea
@@ -92,7 +88,7 @@ export function SettingsStep({ stepConfig, isActive, isCompleted }: StepComponen
                 )}
               />
             ))}
-            
+
             {fileFields.map((fieldConfig) => (
               <FormField
                 key={fieldConfig.name}
@@ -102,7 +98,7 @@ export function SettingsStep({ stepConfig, isActive, isCompleted }: StepComponen
                   <FormItem>
                     <FormLabel className="text-sm font-medium">
                       {fieldConfig.label}
-                      {fieldConfig.required && " *"}
+                      {fieldConfig.required && ' *'}
                     </FormLabel>
                     <FormControl>
                       <Input

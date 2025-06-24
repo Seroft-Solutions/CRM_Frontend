@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import type { StepComponentProps } from "../form-types";
-import { useEntityForm } from "../group-form-provider";
+import React from 'react';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import type { StepComponentProps } from '../form-types';
+import { useEntityForm } from '../group-form-provider';
 
 export function DateTimeStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form } = useEntityForm();
 
-  const fieldsForThisStep = config.fields.filter(field => 
-    stepConfig.fields.includes(field.name) && field.type === 'date'
+  const fieldsForThisStep = config.fields.filter(
+    (field) => stepConfig.fields.includes(field.name) && field.type === 'date'
   );
 
   if (fieldsForThisStep.length === 0) {
@@ -28,7 +28,9 @@ export function DateTimeStep({ stepConfig, isActive, isCompleted }: StepComponen
 
   return (
     <div className="space-y-6">
-      <div className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}>
+      <div
+        className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
+      >
         {fieldsForThisStep.map((fieldConfig) => (
           <FormField
             key={fieldConfig.name}
@@ -37,7 +39,7 @@ export function DateTimeStep({ stepConfig, isActive, isCompleted }: StepComponen
             render={({ field }) => {
               // Handle string to Date conversion for field value
               let fieldValue: Date | undefined = undefined;
-              
+
               if (field.value instanceof Date) {
                 fieldValue = field.value;
               } else if (field.value) {
@@ -47,15 +49,15 @@ export function DateTimeStep({ stepConfig, isActive, isCompleted }: StepComponen
                   fieldValue = parsed;
                 }
               }
-              
+
               // Ensure the date is valid
               const validDate = fieldValue && !isNaN(fieldValue.getTime()) ? fieldValue : undefined;
-              
+
               return (
                 <FormItem className="flex flex-col">
                   <FormLabel className="text-sm font-medium">
                     {fieldConfig.label}
-                    {fieldConfig.required && " *"}
+                    {fieldConfig.required && ' *'}
                   </FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -63,17 +65,17 @@ export function DateTimeStep({ stepConfig, isActive, isCompleted }: StepComponen
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !validDate && "text-muted-foreground",
+                            'w-full pl-3 text-left font-normal',
+                            !validDate && 'text-muted-foreground',
                             config.ui.animations.fieldFocus,
                             fieldConfig.ui?.className
                           )}
                           disabled={fieldConfig.ui?.disabled}
                         >
                           {validDate ? (
-                            format(validDate, "PPP")
+                            format(validDate, 'PPP')
                           ) : (
-                            <span>{fieldConfig.placeholder || "Select date"}</span>
+                            <span>{fieldConfig.placeholder || 'Select date'}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>

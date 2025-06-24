@@ -1,12 +1,18 @@
 # Paginated Relationship Combobox Implementation
 
 ## Overview
-Successfully implemented paginated/infinite query support for relationship fields in the Next.js code generator templates. This allows handling large datasets in relationship dropdowns with search functionality and infinite scrolling.
+
+Successfully implemented paginated/infinite query support for relationship
+fields in the Next.js code generator templates. This allows handling large
+datasets in relationship dropdowns with search functionality and infinite
+scrolling.
 
 ## Changes Made
 
 ### 1. New Component: `PaginatedRelationshipCombobox`
-- **Location**: `templates/entity/components/paginated-relationship-combobox.tsx.ejs`
+
+- **Location**:
+  `templates/entity/components/paginated-relationship-combobox.tsx.ejs`
 - **Features**:
   - ✅ Infinite query support with pagination
   - ✅ Search functionality with debounced input (300ms)
@@ -16,22 +22,29 @@ Successfully implemented paginated/infinite query support for relationship field
   - ✅ Unique keys to prevent React warnings
 
 ### 2. Updated Entity Form Template
+
 - **Location**: `templates/entity/components/entity-form.tsx.ejs`
 - **Changes**:
-  - ✅ Replaced static `RelationshipCombobox` with `PaginatedRelationshipCombobox`
-  - ✅ Added infinite query hook imports (`useGetAll[Entity]Infinite`, `useSearch[Entity]Infinite`)
-  - ✅ Fixed TextBlob field rendering (now uses `<Textarea>` instead of `<Input>`)
+  - ✅ Replaced static `RelationshipCombobox` with
+    `PaginatedRelationshipCombobox`
+  - ✅ Added infinite query hook imports (`useGetAll[Entity]Infinite`,
+    `useSearch[Entity]Infinite`)
+  - ✅ Fixed TextBlob field rendering (now uses `<Textarea>` instead of
+    `<Input>`)
   - ✅ Added proper error handling for built-in user relationships
 
 ### 3. Updated Generator
+
 - **Location**: `generator.ts`
 - **Changes**:
-  - ✅ Added automatic generation of `paginated-relationship-combobox.tsx` for entities with relationships
+  - ✅ Added automatic generation of `paginated-relationship-combobox.tsx` for
+    entities with relationships
   - ✅ Only generates the component when there are persistable relationships
 
 ## Key Features
 
 ### Infinite Query Support
+
 ```typescript
 const infiniteQuery = useInfiniteQueryHook(
   shouldUseSearch ? {} : { size: 20 },
@@ -40,13 +53,14 @@ const infiniteQuery = useInfiniteQueryHook(
       enabled: !shouldUseSearch,
       getNextPageParam: (lastPage, allPages) => {
         // Smart pagination logic that handles both array and paginated responses
-      }
-    }
+      },
+    },
   }
 );
 ```
 
 ### Search with Debouncing
+
 ```typescript
 // 300ms debounced search
 React.useEffect(() => {
@@ -58,11 +72,14 @@ React.useEffect(() => {
 ```
 
 ### Smart Data Handling
+
 The component automatically handles different API response formats:
+
 - Direct arrays: `[{id: 1, name: "Item 1"}, ...]`
 - Paginated responses: `{content: [{id: 1, name: "Item 1"}], ...}`
 
 ### Usage Example
+
 ```tsx
 <PaginatedRelationshipCombobox
   value={field.value}
@@ -80,11 +97,14 @@ The component automatically handles different API response formats:
 ## API Integration
 
 ### Required Infinite Query Hooks
+
 The generated endpoints provide these hooks automatically:
+
 - `useGetAll[Entity]Infinite` - For paginated loading
 - `useSearch[Entity]Infinite` - For search functionality
 
 ### Parameters Supported
+
 - **Pagination**: `page`, `size`
 - **Search**: `query` parameter
 - **Filtering**: Entity-specific filters (e.g., `name.contains`)
@@ -98,6 +118,7 @@ The generated endpoints provide these hooks automatically:
 5. **Error Handling**: Proper loading states and error messages
 
 ## Generated Files Structure
+
 ```
 src/app/(protected)/(features)/[entity-plural]/
 ├── components/
@@ -107,6 +128,7 @@ src/app/(protected)/(features)/[entity-plural]/
 ```
 
 ## Testing
+
 - ✅ Generated Party form with City relationship
 - ✅ Generated City form with District relationship
 - ✅ Fixed React key warnings
@@ -114,8 +136,11 @@ src/app/(protected)/(features)/[entity-plural]/
 - ✅ Proper API integration
 
 ## Browser Console Error Fixes
-- Fixed "children with same key" error by using unique keys: `${entityName}-${option.id}`
+
+- Fixed "children with same key" error by using unique keys:
+  `${entityName}-${option.id}`
 - Enhanced data structure handling for different API response formats
 - Added proper loading states and error boundaries
 
-The implementation is now ready for production use and provides a smooth, scalable solution for handling relationships in forms.
+The implementation is now ready for production use and provides a smooth,
+scalable solution for handling relationships in forms.

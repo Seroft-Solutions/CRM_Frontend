@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Link from "next/link";
-import { Check, ChevronDown, Loader2, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import Link from 'next/link';
+import { Check, ChevronDown, Loader2, ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,22 +12,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { toast } from "sonner";
-import { callStatusToast } from "./call-status-toast";
-
-
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
+import { callStatusToast } from './call-status-toast';
 
 interface RelationshipCellProps {
   entityId: number;
@@ -49,7 +38,7 @@ export function RelationshipCell({
   relationshipName,
   currentValue,
   options = [],
-  displayField = "name",
+  displayField = 'name',
   onUpdate,
   isEditable = false,
   isLoading = false,
@@ -62,17 +51,17 @@ export function RelationshipCell({
 
   // Get current display value
   const getCurrentDisplayValue = () => {
-    if (!currentValue) return "";
-    
+    if (!currentValue) return '';
+
     if (typeof currentValue === 'object' && currentValue[displayField]) {
       return currentValue[displayField];
     }
-    
+
     if (typeof currentValue === 'object' && currentValue.id) {
-      const option = options.find(opt => opt.id === currentValue.id);
+      const option = options.find((opt) => opt.id === currentValue.id);
       return option ? option[displayField] : `ID: ${currentValue.id}`;
     }
-    
+
     return currentValue.toString();
   };
 
@@ -82,15 +71,15 @@ export function RelationshipCell({
   // Handle selection
   const handleSelect = async (optionId: number | null) => {
     if (updating) return;
-    
+
     setUpdating(true);
     setOpen(false);
-    
+
     try {
       await onUpdate(entityId, relationshipName, optionId);
       callStatusToast.relationshipUpdated(relationshipName);
     } catch (error) {
-      callStatusToast.custom.error("❌ Update Failed", `Failed to update ${relationshipName}`);
+      callStatusToast.custom.error('❌ Update Failed', `Failed to update ${relationshipName}`);
       console.error('Relationship update error:', error);
     } finally {
       setUpdating(false);
@@ -101,7 +90,7 @@ export function RelationshipCell({
   if (!isEditable) {
     if (isLoading) {
       return (
-        <div className={cn("px-2 py-1", className)}>
+        <div className={cn('px-2 py-1', className)}>
           <div className="flex items-center gap-2">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span className="text-sm text-muted-foreground">Loading...</span>
@@ -113,7 +102,7 @@ export function RelationshipCell({
     // If no current value, show empty state
     if (!currentDisplayValue) {
       return (
-        <div className={cn("px-1 py-1", className)}>
+        <div className={cn('px-1 py-1', className)}>
           <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50/50 border border-slate-100">
             <span className="text-xs text-slate-400">—</span>
           </div>
@@ -125,7 +114,7 @@ export function RelationshipCell({
     const currentId = currentValue?.id || currentValue;
     if (relatedEntityRoute && currentId) {
       return (
-        <div className={cn("px-1 py-1", className)}>
+        <div className={cn('px-1 py-1', className)}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -135,18 +124,21 @@ export function RelationshipCell({
                   asChild
                   className="h-auto p-0 text-left justify-start font-normal hover:bg-transparent group"
                 >
-                  <Link 
-                    href={`/${relatedEntityRoute}/${currentId}`} 
+                  <Link
+                    href={`/${relatedEntityRoute}/${currentId}`}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-blue-100 border border-slate-200 hover:border-blue-300 transition-all duration-200 hover:shadow-sm"
                     onClick={() => {
                       // Store the current page info for context-aware back navigation
                       if (typeof window !== 'undefined') {
-                        localStorage.setItem('referrerInfo', JSON.stringify({
-                          url: window.location.pathname,
-                          title: document.title,
-                          entityType: 'CallStatus',
-                          timestamp: Date.now()
-                        }));
+                        localStorage.setItem(
+                          'referrerInfo',
+                          JSON.stringify({
+                            url: window.location.pathname,
+                            title: document.title,
+                            entityType: 'CallStatus',
+                            timestamp: Date.now(),
+                          })
+                        );
                       }
                     }}
                   >
@@ -168,7 +160,7 @@ export function RelationshipCell({
 
     // Fallback: display as styled badge (non-clickable)
     return (
-      <div className={cn("px-1 py-1", className)}>
+      <div className={cn('px-1 py-1', className)}>
         <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50 border border-slate-200">
           <span className="text-sm font-medium text-slate-600">{currentDisplayValue}</span>
         </div>
@@ -177,7 +169,7 @@ export function RelationshipCell({
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -199,7 +191,7 @@ export function RelationshipCell({
                   <span>Loading...</span>
                 </div>
               ) : (
-                currentDisplayValue || "Select..."
+                currentDisplayValue || 'Select...'
               )}
             </span>
             <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
@@ -217,19 +209,14 @@ export function RelationshipCell({
                   onSelect={() => handleSelect(null)}
                   className="text-sm"
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-3 w-3",
-                      !currentId ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  <Check className={cn('mr-2 h-3 w-3', !currentId ? 'opacity-100' : 'opacity-0')} />
                   <span className="text-muted-foreground">None</span>
                 </CommandItem>
-                
+
                 {/* Available options */}
                 {options.map((option) => {
                   const isSelected = currentId === option.id;
-                  
+
                   return (
                     <CommandItem
                       key={option.id}
@@ -238,10 +225,7 @@ export function RelationshipCell({
                       className="text-sm"
                     >
                       <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          isSelected ? "opacity-100" : "opacity-0"
-                        )}
+                        className={cn('mr-2 h-3 w-3', isSelected ? 'opacity-100' : 'opacity-0')}
                       />
                       {option[displayField]}
                     </CommandItem>

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ReactNode } from "react";
-import { useAuth } from "@/providers/session-provider";
-import { UnauthorizedPage } from "./unauthorized-page";
+import { ReactNode } from 'react';
+import { useAuth } from '@/providers/session-provider';
+import { UnauthorizedPage } from './unauthorized-page';
 
 interface PermissionGuardProps {
   children: ReactNode;
@@ -15,16 +15,16 @@ interface PermissionGuardProps {
 
 /**
  * Permission Guard Component
- * 
+ *
  * Renders children only if the user has the required permission.
  * Uses the optimized session provider to reduce redundant session calls.
- * 
+ *
  * Permission naming convention:
  * - {entityName}:create - Can create new entities
- * - {entityName}:read   - Can view entities  
+ * - {entityName}:read   - Can view entities
  * - {entityName}:update - Can edit entities
  * - {entityName}:delete - Can delete entities
- * 
+ *
  * @param children - Content to render if permission is granted
  * @param requiredPermission - Permission string to check (e.g., "user:create", "party:read")
  * @param fallback - Optional fallback content to render if permission is denied
@@ -32,13 +32,13 @@ interface PermissionGuardProps {
  * @param unauthorizedTitle - Custom title for unauthorized page
  * @param unauthorizedDescription - Custom description for unauthorized page
  */
-export function PermissionGuard({ 
-  children, 
-  requiredPermission, 
+export function PermissionGuard({
+  children,
+  requiredPermission,
   fallback = null,
   showUnauthorizedPage = true,
   unauthorizedTitle,
-  unauthorizedDescription
+  unauthorizedDescription,
 }: PermissionGuardProps) {
   const { session, status, isLoading } = useAuth();
 
@@ -87,14 +87,14 @@ export function PermissionGuard({
 
 /**
  * Inline Permission Guard Component
- * 
- * For smaller UI elements like buttons, use this component which doesn't show 
+ *
+ * For smaller UI elements like buttons, use this component which doesn't show
  * the full unauthorized page but just hides the content.
  */
-export function InlinePermissionGuard({ 
-  children, 
-  requiredPermission, 
-  fallback = null 
+export function InlinePermissionGuard({
+  children,
+  requiredPermission,
+  fallback = null,
 }: {
   children: ReactNode;
   requiredPermission: string;
@@ -114,14 +114,14 @@ export function InlinePermissionGuard({
 /**
  * Hook to check if user has a specific permission
  * Uses the auth provider for better performance
- * 
+ *
  * @param permission - Permission string to check
  * @returns boolean indicating if user has the permission
  */
 export function usePermission(permission: string): boolean {
   const { session, status } = useAuth();
 
-  if (status === "loading" || !session?.user) {
+  if (status === 'loading' || !session?.user) {
     return false;
   }
 
@@ -132,35 +132,35 @@ export function usePermission(permission: string): boolean {
 /**
  * Hook to check if user has any of the specified roles
  * Uses the auth provider for better performance
- * 
+ *
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has at least one of the roles
  */
 export function useAnyPermission(roles: string[]): boolean {
   const { session, status } = useAuth();
 
-  if (status === "loading" || !session?.user) {
+  if (status === 'loading' || !session?.user) {
     return false;
   }
 
   const userRoles = session.user.roles || [];
-  return roles.some(permission => userRoles.includes(permission));
+  return roles.some((permission) => userRoles.includes(permission));
 }
 
 /**
  * Hook to check if user has all of the specified roles
  * Uses the auth provider for better performance
- * 
+ *
  * @param roles - Array of permission strings to check
  * @returns boolean indicating if user has all of the roles
  */
 export function useAllRoles(roles: string[]): boolean {
   const { session, status } = useAuth();
 
-  if (status === "loading" || !session?.user) {
+  if (status === 'loading' || !session?.user) {
     return false;
   }
 
   const userRoles = session.user.roles || [];
-  return roles.every(permission => userRoles.includes(permission));
+  return roles.every((permission) => userRoles.includes(permission));
 }

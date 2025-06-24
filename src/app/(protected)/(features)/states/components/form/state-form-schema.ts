@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for State form
@@ -23,11 +23,8 @@ export const stateStepSchemas = {
     name: stateFieldSchemas.name,
     country: stateFieldSchemas.country,
   }),
-  
-  
-  
-  
-  review: stateFormSchema
+
+  review: stateFormSchema,
 };
 
 // Validation helper functions
@@ -35,7 +32,7 @@ export const stateValidationHelpers = {
   validateStep: (stepId: string, data: Partial<StateFormValues>) => {
     const stepSchema = stateStepSchemas[stepId as keyof typeof stateStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -43,11 +40,11 @@ export const stateValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = stateFieldSchemas[fieldName as keyof typeof stateFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -55,7 +52,7 @@ export const stateValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -71,7 +68,7 @@ export const stateValidationHelpers = {
         maxLength: 50,
       };
     }
-    
+
     return {};
-  }
+  },
 };

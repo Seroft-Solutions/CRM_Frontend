@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SubCallTypeFormProvider, useEntityForm } from "./sub-call-type-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { SubCallTypeFormProvider, useEntityForm } from './sub-call-type-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateSubCallType,
   useUpdateSubCallType,
   useGetSubCallType,
-} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
-import { subCallTypeToast, handleSubCallTypeError } from "../sub-call-type-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+import { subCallTypeToast, handleSubCallTypeError } from '../sub-call-type-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface SubCallTypeFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetSubCallType(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-sub-call-type", id]
+      queryKey: ['get-sub-call-type', id],
     },
   });
 
@@ -42,13 +42,13 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || "/sub-call-types";
-      
+      const backRoute = returnUrl || '/sub-call-types';
+
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-      
+
       router.push(backRoute);
     }
   };
@@ -78,13 +78,13 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'description': '',
-          'remark': '',
-          'callType': 'Call Type',
+          name: '',
+          description: '',
+          remark: '',
+          callType: 'Call Type',
         }}
       />
 
@@ -92,7 +92,7 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -116,7 +116,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -124,7 +124,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
         } else {
           setIsRedirecting(true);
           subCallTypeToast.created();
-          router.push("/sub-call-types");
+          router.push('/sub-call-types');
         }
       },
       onError: (error) => {
@@ -138,7 +138,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         subCallTypeToast.updated();
-        router.push("/sub-call-types");
+        router.push('/sub-call-types');
       },
       onError: (error) => {
         handleSubCallTypeError(error);
@@ -159,11 +159,11 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
   }
 
   return (
-    <SubCallTypeFormProvider 
+    <SubCallTypeFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });
