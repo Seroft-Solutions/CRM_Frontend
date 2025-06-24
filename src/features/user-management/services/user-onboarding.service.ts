@@ -3,11 +3,7 @@
  * Comprehensive service for proper user onboarding with password setup
  */
 
-import type { 
-  UserInvitationWithGroups, 
-  PendingInvitation,
-  InvitationActionResult
-} from '../types';
+import type { UserInvitationWithGroups, PendingInvitation, InvitationActionResult } from '../types';
 
 export interface OnboardingConfig {
   defaultGroups?: string[]; // Default groups for new users
@@ -39,7 +35,7 @@ export class UserOnboardingService {
       defaultPasswordLifespan: 43200, // 12 hours
       autoAssignUsersGroup: true,
       requireEmailVerification: false,
-      ...config
+      ...config,
     };
   }
 
@@ -77,28 +73,27 @@ export class UserOnboardingService {
           success: false,
           emailType: 'none',
           message: result.error || 'Failed to invite business partner',
-          errors: [result.error]
+          errors: [result.error],
         };
       }
 
       const baseMessage = `Business partner invited successfully. ${result.emailType === 'password_reset' ? 'Password setup email sent.' : 'Organization invite sent.'}`;
       const groupMessage = result.groupManagement ? ` ${result.groupManagement.message}` : '';
-      
+
       return {
         success: true,
         userId: result.userId,
         invitationId: result.invitationId,
         emailType: result.emailType || 'password_reset',
         message: baseMessage + groupMessage,
-        groupManagement: result.groupManagement
+        groupManagement: result.groupManagement,
       };
-
     } catch (error: any) {
       return {
         success: false,
         emailType: 'none',
         message: 'Network error during partner invitation',
-        errors: [error.message]
+        errors: [error.message],
       };
     }
   }
@@ -119,8 +114,8 @@ export class UserOnboardingService {
         redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
         selectedGroups: [
           ...(inviteData.selectedGroups || []),
-          ...(this.config.defaultGroups || [])
-        ]
+          ...(this.config.defaultGroups || []),
+        ],
       };
 
       // Call the API endpoint
@@ -139,28 +134,27 @@ export class UserOnboardingService {
           success: false,
           emailType: 'none',
           message: result.error || 'Failed to invite user',
-          errors: [result.error]
+          errors: [result.error],
         };
       }
 
       const baseMessage = `User invited successfully. ${result.emailType === 'password_reset' ? 'Password setup email sent.' : 'Organization invite sent.'}`;
       const groupMessage = result.groupManagement ? ` ${result.groupManagement.message}` : '';
-      
+
       return {
         success: true,
         userId: result.userId,
         invitationId: result.invitationId,
         emailType: result.emailType || 'password_reset',
         message: baseMessage + groupMessage,
-        groupManagement: result.groupManagement
+        groupManagement: result.groupManagement,
       };
-
     } catch (error: any) {
       return {
         success: false,
         emailType: 'none',
         message: 'Network error during invitation',
-        errors: [error.message]
+        errors: [error.message],
       };
     }
   }
@@ -168,10 +162,13 @@ export class UserOnboardingService {
   /**
    * Send password reset email to existing user
    */
-  async sendPasswordReset(userId: string, options?: {
-    lifespan?: number;
-    redirectUri?: string;
-  }): Promise<OnboardingResult> {
+  async sendPasswordReset(
+    userId: string,
+    options?: {
+      lifespan?: number;
+      redirectUri?: string;
+    }
+  ): Promise<OnboardingResult> {
     try {
       const response = await fetch(`/api/keycloak/users/${userId}/send-password-reset`, {
         method: 'POST',
@@ -180,7 +177,7 @@ export class UserOnboardingService {
         },
         body: JSON.stringify({
           lifespan: options?.lifespan || this.config.defaultPasswordLifespan,
-          redirectUri: options?.redirectUri || this.config.defaultRedirectUri
+          redirectUri: options?.redirectUri || this.config.defaultRedirectUri,
         }),
       });
 
@@ -191,7 +188,7 @@ export class UserOnboardingService {
           success: false,
           emailType: 'none',
           message: result.error || 'Failed to send password reset',
-          errors: [result.error]
+          errors: [result.error],
         };
       }
 
@@ -199,15 +196,14 @@ export class UserOnboardingService {
         success: true,
         userId,
         emailType: 'password_reset',
-        message: 'Password reset email sent successfully'
+        message: 'Password reset email sent successfully',
       };
-
     } catch (error: any) {
       return {
         success: false,
         emailType: 'none',
         message: 'Network error sending password reset',
-        errors: [error.message]
+        errors: [error.message],
       };
     }
   }
@@ -224,9 +220,9 @@ export class UserOnboardingService {
     for (const invitation of invitations) {
       const result = await this.inviteUserWithPasswordSetup(organizationId, invitation);
       results.push(result);
-      
+
       // Add small delay to prevent overwhelming the server
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
     return results;
@@ -277,14 +273,14 @@ export class UserOnboardingService {
         hasPassword: !user.user?.requiredActions?.includes('UPDATE_PASSWORD'),
         emailVerified: user.user?.emailVerified || false,
         groupsAssigned: user.assignedGroups?.length || 0,
-        requiresAction: user.user?.requiredActions || []
+        requiresAction: user.user?.requiredActions || [],
       };
     } catch (error) {
       return {
         hasPassword: false,
         emailVerified: false,
         groupsAssigned: 0,
-        requiresAction: ['UPDATE_PASSWORD']
+        requiresAction: ['UPDATE_PASSWORD'],
       };
     }
   }
@@ -308,5 +304,5 @@ export class UserOnboardingService {
 export const userOnboardingService = new UserOnboardingService();
 
 // Export factory for custom configurations
-export const createOnboardingService = (config: OnboardingConfig) => 
+export const createOnboardingService = (config: OnboardingConfig) =>
   new UserOnboardingService(config);

@@ -1,6 +1,6 @@
 /**
  * Multi-Service Orval Configuration for CRM API
- * 
+ *
  * Generates TypeScript clients for different services:
  * - Spring Backend API (CRM business logic)
  * - Keycloak Admin API (Authentication & user management)
@@ -33,11 +33,11 @@ module.exports = {
     },
   },
 
-  // Keycloak Admin API Configuration  
+  // Keycloak Admin API Configuration
   keycloakService: {
     output: {
       mode: 'tags-split',
-      namingConvention: 'PascalCase', 
+      namingConvention: 'PascalCase',
       fileExtension: '.gen.ts',
       workspace: 'src/core/api/generated/keycloak',
       target: './endpoints',
@@ -48,7 +48,7 @@ module.exports = {
         mutator: {
           path: '../../services/keycloak-service/service-mutator.ts',
           name: 'keycloakServiceMutator',
-        }
+        },
       },
     },
     input: {

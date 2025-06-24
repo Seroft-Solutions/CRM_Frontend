@@ -2,13 +2,13 @@
  * Channel Type Selector with Channel Party cascading
  */
 import { PaginatedRelationshipCombobox } from '@/app/(protected)/calls/components/paginated-relationship-combobox';
-import { 
+import {
   useGetAllChannelTypes,
-  useCountChannelTypes 
+  useCountChannelTypes,
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-import { 
+import {
   useGetAllUserProfiles,
-  useCountUserProfiles 
+  useCountUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 
@@ -34,11 +34,11 @@ interface CascadingChannelSelectorsProps {
   disabled?: boolean;
 }
 
-export function ChannelTypeSelector({ 
-  value, 
-  onValueChange, 
+export function ChannelTypeSelector({
+  value,
+  onValueChange,
   disabled = false,
-  className 
+  className,
 }: ChannelTypeSelectorProps) {
   return (
     <PaginatedRelationshipCombobox
@@ -59,12 +59,12 @@ export function ChannelTypeSelector({
   );
 }
 
-export function ChannelPartySelector({ 
-  value, 
-  onValueChange, 
+export function ChannelPartySelector({
+  value,
+  onValueChange,
   channelTypeId,
   disabled = false,
-  className 
+  className,
 }: ChannelPartySelectorProps) {
   return (
     <PaginatedRelationshipCombobox
@@ -87,11 +87,11 @@ export function ChannelPartySelector({
   );
 }
 
-export function CascadingChannelSelectors({ 
-  form, 
+export function CascadingChannelSelectors({
+  form,
   channelTypeFieldName = 'channelType',
   channelPartyFieldName = 'channelParty',
-  disabled = false 
+  disabled = false,
 }: CascadingChannelSelectorsProps) {
   const handleEntityCreated = (entityId: number, relationshipName: string) => {
     form.setValue(relationshipName, entityId);
@@ -131,7 +131,7 @@ export function CascadingChannelSelectors({
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name={channelPartyFieldName}

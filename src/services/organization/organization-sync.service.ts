@@ -6,14 +6,14 @@ import { Session } from 'next-auth';
 import { getAdminRealmsRealmOrganizations } from '@/core/api/generated/keycloak/endpoints/organizations/organizations.gen';
 
 // Spring APIs
-import { 
-  getAllOrganizations, 
-  createOrganization 
+import {
+  getAllOrganizations,
+  createOrganization,
 } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
-import { 
-  getAllUserProfiles, 
+import {
+  getAllUserProfiles,
   createUserProfile,
-  searchUserProfiles 
+  searchUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 // Types
@@ -47,7 +47,7 @@ export class OrganizationSyncService {
     const result: SyncResult = {
       organizationSynced: false,
       userProfileSynced: false,
-      errors: []
+      errors: [],
     };
 
     // This service needs to be refactored to work with API-based organization data
@@ -61,7 +61,7 @@ export class OrganizationSyncService {
 
       // Use first organization found
       const sessionOrg = { id: keycloakOrgs[0].id!, name: keycloakOrgs[0].name! };
-      
+
       // Sync organization
       const orgResult = await this.syncOrganization(sessionOrg);
       result.organizationSynced = orgResult.synced;
@@ -73,7 +73,6 @@ export class OrganizationSyncService {
       result.userProfileSynced = userResult.synced;
       result.userProfileId = userResult.id;
       if (userResult.error) result.errors.push(userResult.error);
-
     } catch (error) {
       result.errors.push(error instanceof Error ? error.message : 'Sync failed');
     }
@@ -84,11 +83,14 @@ export class OrganizationSyncService {
   /**
    * Sync organization from Keycloak to Spring
    */
-  private async syncOrganization(sessionOrg: { id: string; name: string }): Promise<{ synced: boolean; id?: number; error?: string }> {
+  private async syncOrganization(sessionOrg: {
+    id: string;
+    name: string;
+  }): Promise<{ synced: boolean; id?: number; error?: string }> {
     try {
       // Check if organization exists in Spring by keycloakOrgId
       const existingOrgs = await getAllOrganizations({
-        'keycloakOrgId.equals': sessionOrg.id
+        'keycloakOrgId.equals': sessionOrg.id,
       });
 
       if (existingOrgs?.length > 0) {
@@ -97,10 +99,10 @@ export class OrganizationSyncService {
 
       // Get full organization data from Keycloak
       const keycloakOrgs = await getAdminRealmsRealmOrganizations(this.realm, {
-        search: sessionOrg.name
+        search: sessionOrg.name,
       });
 
-      const keycloakOrg = keycloakOrgs.find(org => org.id === sessionOrg.id);
+      const keycloakOrg = keycloakOrgs.find((org) => org.id === sessionOrg.id);
       if (!keycloakOrg) {
         return { synced: false, error: 'Organization not found in Keycloak' };
       }
@@ -116,16 +118,15 @@ export class OrganizationSyncService {
       };
 
       const response = await createOrganization({ data: organizationDTO });
-      
-      return { 
-        synced: true, 
+
+      return {
+        synced: true,
         id: response.id,
       };
-
     } catch (error) {
-      return { 
-        synced: false, 
-        error: `Failed to sync organization: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      return {
+        synced: false,
+        error: `Failed to sync organization: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -133,7 +134,10 @@ export class OrganizationSyncService {
   /**
    * Sync user profile from session to Spring
    */
-  private async syncUserProfile(session: Session, organizationId?: number): Promise<{ synced: boolean; id?: number; error?: string }> {
+  private async syncUserProfile(
+    session: Session,
+    organizationId?: number
+  ): Promise<{ synced: boolean; id?: number; error?: string }> {
     try {
       if (!session.user?.id || !session.user?.email) {
         return { synced: false, error: 'Invalid session data' };
@@ -141,21 +145,24 @@ export class OrganizationSyncService {
 
       // Check if user profile exists in Spring by keycloakId
       const existingUsers = await searchUserProfiles({
-        query: `keycloakId:${session.user.id}`
+        query: `keycloakId:${session.user.id}`,
       });
 
       if (existingUsers?.length > 0) {
         const existingUser = existingUsers[0];
-        
+
         // Check if user needs organization association
-        if (organizationId && existingUser.organization?.every(org => org.id !== organizationId)) {
+        if (
+          organizationId &&
+          existingUser.organization?.every((org) => org.id !== organizationId)
+        ) {
           // TODO: Add API to associate user with organization
           console.log('User profile exists but needs organization association', {
             userId: existingUser.id,
-            organizationId
+            organizationId,
           });
         }
-        
+
         return { synced: true, id: existingUser.id };
       }
 
@@ -171,16 +178,15 @@ export class OrganizationSyncService {
       };
 
       const response = await createUserProfile({ data: userProfileDTO });
-      
-      return { 
-        synced: true, 
+
+      return {
+        synced: true,
         id: response.id,
       };
-
     } catch (error) {
-      return { 
-        synced: false, 
-        error: `Failed to sync user profile: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      return {
+        synced: false,
+        error: `Failed to sync user profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -192,7 +198,9 @@ export class OrganizationSyncService {
   static async checkSyncNeeded(session: Session): Promise<boolean> {
     // This method needs to be refactored to work with API-based organization data
     // For now, return false as sync logic should be handled elsewhere
-    console.warn('OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking');
+    console.warn(
+      'OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking'
+    );
     return false;
   }
 }

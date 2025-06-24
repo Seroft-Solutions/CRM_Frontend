@@ -9,7 +9,7 @@ import { Session } from 'next-auth';
  * Check if user has existing organizations
  */
 export function hasOrganizations(organizations: UserOrganization[] | undefined): boolean {
-  return !!(organizations?.length);
+  return !!organizations?.length;
 }
 
 /**
@@ -17,14 +17,18 @@ export function hasOrganizations(organizations: UserOrganization[] | undefined):
  */
 export function hasOrganization(session: Session | null): boolean {
   // For backward compatibility during migration
-  console.warn('hasOrganization(session) is deprecated - use hasOrganizations(organizations) with API data');
+  console.warn(
+    'hasOrganization(session) is deprecated - use hasOrganizations(organizations) with API data'
+  );
   return false; // Always return false to force API-based checks
 }
 
 /**
  * Get user's primary organization (first one)
  */
-export function getPrimaryOrganization(organizations: UserOrganization[] | undefined): UserOrganization | null {
+export function getPrimaryOrganization(
+  organizations: UserOrganization[] | undefined
+): UserOrganization | null {
   return organizations?.[0] || null;
 }
 
@@ -38,13 +42,19 @@ export function isOrganizationSetupNeeded(organizations: UserOrganization[] | un
 /**
  * Get organization by ID
  */
-export function getOrganizationById(organizations: UserOrganization[] | undefined, id: string): UserOrganization | null {
-  return organizations?.find(org => org.id === id) || null;
+export function getOrganizationById(
+  organizations: UserOrganization[] | undefined,
+  id: string
+): UserOrganization | null {
+  return organizations?.find((org) => org.id === id) || null;
 }
 
 /**
  * Get organization by name
  */
-export function getOrganizationByName(organizations: UserOrganization[] | undefined, name: string): UserOrganization | null {
-  return organizations?.find(org => org.name === name) || null;
+export function getOrganizationByName(
+  organizations: UserOrganization[] | undefined,
+  name: string
+): UserOrganization | null {
+  return organizations?.find((org) => org.name === name) || null;
 }

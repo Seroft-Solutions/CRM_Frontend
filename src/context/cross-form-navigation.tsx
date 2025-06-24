@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,78 +34,89 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
   const router = useRouter();
   const [navigationState, setNavigationState] = useState<NavigationState>({});
 
-  const navigateToCreateEntity = useCallback((params: {
-    entityPath: string;
-    referrerForm: string;
-    referrerSessionId: string;
-    referrerField: string;
-    referrerUrl: string;
-  }) => {
-    // Save current form state before navigating
-    const saveEvent = new CustomEvent('saveFormState');
-    window.dispatchEvent(saveEvent);
+  const navigateToCreateEntity = useCallback(
+    (params: {
+      entityPath: string;
+      referrerForm: string;
+      referrerSessionId: string;
+      referrerField: string;
+      referrerUrl: string;
+    }) => {
+      // Save current form state before navigating
+      const saveEvent = new CustomEvent('saveFormState');
+      window.dispatchEvent(saveEvent);
 
-    // Update navigation state
-    setNavigationState({
-      referrerForm: params.referrerForm,
-      referrerSessionId: params.referrerSessionId,
-      referrerField: params.referrerField,
-      referrerUrl: params.referrerUrl,
-    });
+      // Update navigation state
+      setNavigationState({
+        referrerForm: params.referrerForm,
+        referrerSessionId: params.referrerSessionId,
+        referrerField: params.referrerField,
+        referrerUrl: params.referrerUrl,
+      });
 
-    // Store navigation state in localStorage for persistence across reloads
-    localStorage.setItem('crossFormNavigation', JSON.stringify({
-      referrerForm: params.referrerForm,
-      referrerSessionId: params.referrerSessionId,
-      referrerField: params.referrerField,
-      referrerUrl: params.referrerUrl,
-      timestamp: Date.now(),
-    }));
-
-    // Navigate with query parameters
-    const url = new URL(params.entityPath, window.location.origin);
-    url.searchParams.set('ref', params.referrerForm);
-    url.searchParams.set('sessionId', params.referrerSessionId);
-    url.searchParams.set('field', params.referrerField);
-    url.searchParams.set('returnUrl', params.referrerUrl);
-
-    router.push(url.pathname + url.search);  }, [router]);  const navigateBackToReferrer = useCallback((createdEntityId?: number, createdEntityType?: string) => {
-    const storedNavigation = localStorage.getItem('crossFormNavigation');
-    const navState = storedNavigation ? JSON.parse(storedNavigation) : navigationState;
-
-    console.log('navigateBackToReferrer called with:', { createdEntityId, createdEntityType });
-    console.log('Navigation state:', navState);
-
-    if (navState.referrerUrl) {
-      // Set redirecting state immediately
-      setNavigationState(prev => ({ ...prev, isRedirecting: true }));
-
-      // Store created entity info for auto-population
-      if (createdEntityId) {
-        const entityInfo = {
-          entityId: createdEntityId,
-          entityType: createdEntityType,
-          targetField: navState.referrerField,
-          targetSessionId: navState.referrerSessionId,
+      // Store navigation state in localStorage for persistence across reloads
+      localStorage.setItem(
+        'crossFormNavigation',
+        JSON.stringify({
+          referrerForm: params.referrerForm,
+          referrerSessionId: params.referrerSessionId,
+          referrerField: params.referrerField,
+          referrerUrl: params.referrerUrl,
           timestamp: Date.now(),
-        };
-        
-        console.log('Storing created entity info:', entityInfo);
-        localStorage.setItem('createdEntityInfo', JSON.stringify(entityInfo));
+        })
+      );
+
+      // Navigate with query parameters
+      const url = new URL(params.entityPath, window.location.origin);
+      url.searchParams.set('ref', params.referrerForm);
+      url.searchParams.set('sessionId', params.referrerSessionId);
+      url.searchParams.set('field', params.referrerField);
+      url.searchParams.set('returnUrl', params.referrerUrl);
+
+      router.push(url.pathname + url.search);
+    },
+    [router]
+  );
+  const navigateBackToReferrer = useCallback(
+    (createdEntityId?: number, createdEntityType?: string) => {
+      const storedNavigation = localStorage.getItem('crossFormNavigation');
+      const navState = storedNavigation ? JSON.parse(storedNavigation) : navigationState;
+
+      console.log('navigateBackToReferrer called with:', { createdEntityId, createdEntityType });
+      console.log('Navigation state:', navState);
+
+      if (navState.referrerUrl) {
+        // Set redirecting state immediately
+        setNavigationState((prev) => ({ ...prev, isRedirecting: true }));
+
+        // Store created entity info for auto-population
+        if (createdEntityId) {
+          const entityInfo = {
+            entityId: createdEntityId,
+            entityType: createdEntityType,
+            targetField: navState.referrerField,
+            targetSessionId: navState.referrerSessionId,
+            timestamp: Date.now(),
+          };
+
+          console.log('Storing created entity info:', entityInfo);
+          localStorage.setItem('createdEntityInfo', JSON.stringify(entityInfo));
+        }
+
+        // Clear navigation state
+        localStorage.removeItem('crossFormNavigation');
+
+        // Navigate back to referrer immediately
+        router.push(navState.referrerUrl);
+
+        // Clear redirect state after navigation
+        setTimeout(() => {
+          setNavigationState({});
+        }, 100);
       }
-
-      // Clear navigation state
-      localStorage.removeItem('crossFormNavigation');
-
-      // Navigate back to referrer immediately
-      router.push(navState.referrerUrl);
-      
-      // Clear redirect state after navigation
-      setTimeout(() => {
-        setNavigationState({});
-      }, 100);
-    }
-  }, [router, navigationState]);
+    },
+    [router, navigationState]
+  );
 
   const clearNavigation = useCallback(() => {
     localStorage.removeItem('crossFormNavigation');
@@ -138,14 +149,16 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
   }, []);
 
   return (
-    <NavigationContext.Provider value={{
-      navigationState,
-      setNavigationState,
-      navigateToCreateEntity,
-      navigateBackToReferrer,
-      clearNavigation,
-      hasReferrer,
-    }}>
+    <NavigationContext.Provider
+      value={{
+        navigationState,
+        setNavigationState,
+        navigateToCreateEntity,
+        navigateBackToReferrer,
+        clearNavigation,
+        hasReferrer,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );

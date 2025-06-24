@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AlertCircle, X } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React from 'react';
+import { AlertCircle, X } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface FormErrorsDisplayProps {
   errors: Record<string, any>;
@@ -13,11 +13,11 @@ interface FormErrorsDisplayProps {
   className?: string;
 }
 
-export function FormErrorsDisplay({ 
-  errors, 
-  fieldLabels = {}, 
+export function FormErrorsDisplay({
+  errors,
+  fieldLabels = {},
   onDismiss,
-  className = "" 
+  className = '',
 }: FormErrorsDisplayProps) {
   // Convert React Hook Form errors to simple string messages
   const getErrorMessage = (error: any): string | null => {
@@ -30,14 +30,20 @@ export function FormErrorsDisplay({
 
   const errorEntries = Object.entries(errors)
     .map(([fieldName, error]) => [fieldName, getErrorMessage(error)])
-    .filter(([_, message]) => message && typeof message === 'string' && message.trim() !== "") as [string, string][];
-  
+    .filter(([_, message]) => message && typeof message === 'string' && message.trim() !== '') as [
+    string,
+    string,
+  ][];
+
   if (errorEntries.length === 0) {
     return null;
   }
 
   const getFieldLabel = (fieldName: string): string => {
-    return fieldLabels[fieldName] || fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    return (
+      fieldLabels[fieldName] ||
+      fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+    );
   };
 
   return (
@@ -47,7 +53,8 @@ export function FormErrorsDisplay({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="font-medium mb-3">
-              Please fix the following {errorEntries.length} error{errorEntries.length > 1 ? 's' : ''} before continuing:
+              Please fix the following {errorEntries.length} error
+              {errorEntries.length > 1 ? 's' : ''} before continuing:
             </p>
             <div className="space-y-2">
               {errorEntries.map(([fieldName, message]) => (

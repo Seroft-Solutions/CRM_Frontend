@@ -2,7 +2,7 @@ import { BaseServiceConfig } from '../base/base-service';
 
 /**
  * Keycloak Service Configuration
- * 
+ *
  * This configuration supports both regular Keycloak operations and admin operations.
  * The service will automatically handle authentication based on the operation type.
  */
@@ -12,7 +12,7 @@ export const KEYCLOAK_SERVICE_CONFIG: BaseServiceConfig = {
   authType: 'bearer', // Uses bearer token authentication
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
 };
 

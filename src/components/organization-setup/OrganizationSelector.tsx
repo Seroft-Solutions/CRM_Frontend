@@ -18,7 +18,7 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
 
   const handleContinue = () => {
     if (selectedOrgId) {
-      const selectedOrg = organizations.find(org => org.id === selectedOrgId);
+      const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
       localStorage.setItem('selectedOrganizationId', selectedOrgId);
       localStorage.setItem('selectedOrganizationName', selectedOrg?.name || '');
       console.log('Selected organization:', selectedOrgId, selectedOrg?.name);
@@ -51,11 +51,11 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
 
         <div className="space-y-3">
           {organizations.map((org) => (
-            <Card 
+            <Card
               key={org.id}
               className={`cursor-pointer transition-all ${
-                selectedOrgId === org.id 
-                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                selectedOrgId === org.id
+                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                   : 'hover:border-primary/50'
               }`}
               onClick={() => setSelectedOrgId(org.id)}
@@ -77,11 +77,13 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
                     )}
                   </div>
                   <div className="flex-shrink-0">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedOrgId === org.id 
-                        ? 'bg-primary border-primary' 
-                        : 'border-muted-foreground/30'
-                    }`}>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        selectedOrgId === org.id
+                          ? 'bg-primary border-primary'
+                          : 'border-muted-foreground/30'
+                      }`}
+                    >
                       {selectedOrgId === org.id && (
                         <div className="w-2 h-2 bg-white rounded-full m-0.5" />
                       )}
@@ -93,12 +95,7 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
           ))}
         </div>
 
-        <Button 
-          onClick={handleContinue}
-          disabled={!selectedOrgId}
-          size="lg"
-          className="w-full"
-        >
+        <Button onClick={handleContinue} disabled={!selectedOrgId} size="lg" className="w-full">
           Continue to Dashboard
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>

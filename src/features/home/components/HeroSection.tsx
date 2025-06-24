@@ -1,18 +1,23 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { signIn } from 'next-auth/react'
-import dynamic from 'next/dynamic'
+import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
+import dynamic from 'next/dynamic';
 
-const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false })
-const MotionContainer = dynamic(() => import('./motion-components').then(mod => mod.MotionContainer), { ssr: false })
-const MotionItem = dynamic(() => import('./motion-components').then(mod => mod.MotionItem), { ssr: false })
+const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
+const MotionContainer = dynamic(
+  () => import('./motion-components').then((mod) => mod.MotionContainer),
+  { ssr: false }
+);
+const MotionItem = dynamic(() => import('./motion-components').then((mod) => mod.MotionItem), {
+  ssr: false,
+});
 
 export default function HeroSection() {
   const handleStartBrewing = () => {
-    signIn('keycloak', { redirectTo: '/organization' })
-  }
-  
+    signIn('keycloak', { redirectTo: '/organization' });
+  };
+
   return (
     <div className="bg-gradient-to-br from-primary/10 to-background py-24 px-4 overflow-hidden">
       <MotionContainer className="container mx-auto max-w-6xl">
@@ -22,7 +27,8 @@ export default function HeroSection() {
               Brew Better <span className="text-primary">Customer Relationships</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              CRM Cup helps you manage contacts, track interactions, and nurture customer relationships all in one place.
+              CRM Cup helps you manage contacts, track interactions, and nurture customer
+              relationships all in one place.
             </p>
             <ul className="space-y-2 text-muted-foreground">
               <li className="flex items-center">
@@ -39,16 +45,16 @@ export default function HeroSection() {
               </li>
             </ul>
             <div className="pt-6 flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                onClick={handleStartBrewing} 
+              <Button
+                size="lg"
+                onClick={handleStartBrewing}
                 className="bg-primary hover:bg-primary/90 text-white font-medium"
               >
                 Start Brewing
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
+              <Button
+                size="lg"
+                variant="outline"
                 onClick={handleStartBrewing}
                 className="border-primary text-primary hover:bg-primary/10"
               >
@@ -62,5 +68,5 @@ export default function HeroSection() {
         </div>
       </MotionContainer>
     </div>
-  )
+  );
 }

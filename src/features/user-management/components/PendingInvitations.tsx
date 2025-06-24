@@ -18,14 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
-  Search, 
-  Mail, 
-  Users, 
-  Calendar,
-  UserCheck,
-  Filter
-} from 'lucide-react';
+import { Search, Mail, Users, Calendar, UserCheck, Filter } from 'lucide-react';
 import { RefreshButton } from './LoadingButton';
 import { usePendingInvitations, useOrganizationContext } from '../hooks';
 import type { InvitationFilters, PendingInvitation } from '../types';
@@ -45,17 +38,27 @@ export function PendingInvitations({ className }: PendingInvitationsProps) {
     search: searchTerm || undefined,
     status: statusFilter === 'all' ? undefined : [statusFilter as any],
     page: 1,
-    size: 50
+    size: 50,
   };
 
-  const { invitations = [], totalCount = 0, isLoading, error, refetch } = usePendingInvitations(organizationId, filters);
+  const {
+    invitations = [],
+    totalCount = 0,
+    isLoading,
+    error,
+    refetch,
+  } = usePendingInvitations(organizationId, filters);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
       case 'accepted':
-        return <Badge variant="default" className="bg-green-600">Accepted</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-600">
+            Accepted
+          </Badge>
+        );
       case 'expired':
         return <Badge variant="destructive">Expired</Badge>;
       case 'cancelled':
@@ -195,9 +198,7 @@ export function PendingInvitations({ className }: PendingInvitationsProps) {
                         {invitation.email}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getStatusBadge(invitation.status)}
-                    </TableCell>
+                    <TableCell>{getStatusBadge(invitation.status)}</TableCell>
                     <TableCell>
                       {invitation.selectedGroups.length > 0 ? (
                         <div className="flex flex-wrap gap-1">

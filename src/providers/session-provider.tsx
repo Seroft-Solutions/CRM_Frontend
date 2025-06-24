@@ -1,27 +1,23 @@
-'use client'
+'use client';
 
-import { SessionProvider, useSession } from 'next-auth/react'
-import type { Session } from 'next-auth'
+import { SessionProvider, useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
 interface AppSessionProviderProps {
-  children: React.ReactNode
-  session?: Session | null
+  children: React.ReactNode;
+  session?: Session | null;
 }
 
 export function AppSessionProvider({ children, session }: AppSessionProviderProps) {
-  return (
-    <SessionProvider session={session}>
-      {children}
-    </SessionProvider>
-  )
+  return <SessionProvider session={session}>{children}</SessionProvider>;
 }
 
 // Export useAuth hook for client components
 export function useAuth() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   return {
     session,
     status,
-    isLoading: status === 'loading'
-  }
+    isLoading: status === 'loading',
+  };
 }

@@ -10,12 +10,12 @@ export { GroupsBadgesList } from './GroupsBadgesList';
 export { RolesBadgesList } from './RolesBadgesList';
 export { ClickableGroupsBadge } from './ClickableGroupsBadge';
 export { ClickableRolesBadge } from './ClickableRolesBadge';
-export { 
+export {
   LoadingButton,
   SendInviteButton,
   BulkInviteButton,
   SaveButton,
   DeleteButton,
   RefreshButton,
-  AddRowButton
+  AddRowButton,
 } from './LoadingButton';

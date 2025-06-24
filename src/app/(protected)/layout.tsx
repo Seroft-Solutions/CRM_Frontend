@@ -1,26 +1,18 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/auth"
-import { AppSidebar } from "@/components/sidebar/app-sidebar"
-import { DynamicBreadcrumbs } from "@/components/breadcrumbs/dynamic-breadcrumbs"
-import { TenantHeader } from "@/components/layout/tenant-header"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { SessionManagerProvider } from "@/providers/session-manager"
-import {hasOrganization} from "@/lib/organization-utils";
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import { AppSidebar } from '@/components/sidebar/app-sidebar';
+import { DynamicBreadcrumbs } from '@/components/breadcrumbs/dynamic-breadcrumbs';
+import { TenantHeader } from '@/components/layout/tenant-header';
+import { Separator } from '@/components/ui/separator';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SessionManagerProvider } from '@/providers/session-manager';
+import { hasOrganization } from '@/lib/organization-utils';
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const session = await auth()
-  
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+
   if (!session) {
-    redirect("/")
+    redirect('/');
   }
 
   return (
@@ -45,12 +37,10 @@ export default async function ProtectedLayout({
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden">
-            <div className="container mx-auto">
-              {children}
-            </div>
+            <div className="container mx-auto">{children}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
     </SessionManagerProvider>
-  )
+  );
 }

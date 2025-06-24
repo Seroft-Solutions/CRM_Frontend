@@ -9,18 +9,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Area"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Area"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -31,18 +23,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Area"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Area"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -53,18 +37,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Area"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Area"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -75,18 +51,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Area"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Area"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -97,26 +65,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "area:create",
-            "area:read",
-            "area:update",
-            "area:delete"
-          ]
+          "realm": ["area:create", "area:read", "area:update", "area:delete"]
         },
         "attributes": {
-          "entity": [
-            "Area"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Area"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -127,18 +82,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Call"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Call"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -149,18 +96,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Call"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Call"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -171,18 +110,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Call"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Call"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -193,18 +124,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Call"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Call"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -215,26 +138,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "call:create",
-            "call:read",
-            "call:update",
-            "call:delete"
-          ]
+          "realm": ["call:create", "call:read", "call:update", "call:delete"]
         },
         "attributes": {
-          "entity": [
-            "Call"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Call"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -245,18 +155,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallCategory"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallCategory"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -267,18 +169,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallCategory"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallCategory"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -289,18 +183,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallCategory"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallCategory"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -311,18 +197,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallCategory"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallCategory"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -333,26 +211,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "callCategory:create",
-            "callCategory:read",
-            "callCategory:update",
-            "callCategory:delete"
-          ]
+          "realm": ["callCategory:create", "callCategory:read", "callCategory:update", "callCategory:delete"]
         },
         "attributes": {
-          "entity": [
-            "CallCategory"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallCategory"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -363,18 +228,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallRemark"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallRemark"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -385,18 +242,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallRemark"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallRemark"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -407,18 +256,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallRemark"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallRemark"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -429,18 +270,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallRemark"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallRemark"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -451,26 +284,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "callRemark:create",
-            "callRemark:read",
-            "callRemark:update",
-            "callRemark:delete"
-          ]
+          "realm": ["callRemark:create", "callRemark:read", "callRemark:update", "callRemark:delete"]
         },
         "attributes": {
-          "entity": [
-            "CallRemark"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallRemark"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -481,18 +301,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallStatus"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallStatus"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -503,18 +315,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallStatus"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallStatus"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -525,18 +329,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallStatus"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallStatus"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -547,18 +343,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallStatus"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallStatus"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -569,26 +357,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "callStatus:create",
-            "callStatus:read",
-            "callStatus:update",
-            "callStatus:delete"
-          ]
+          "realm": ["callStatus:create", "callStatus:read", "callStatus:update", "callStatus:delete"]
         },
         "attributes": {
-          "entity": [
-            "CallStatus"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallStatus"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -599,18 +374,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallType"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallType"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -621,18 +388,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallType"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallType"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -643,18 +402,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallType"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallType"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -665,18 +416,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "CallType"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallType"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -687,26 +430,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "callType:create",
-            "callType:read",
-            "callType:update",
-            "callType:delete"
-          ]
+          "realm": ["callType:create", "callType:read", "callType:update", "callType:delete"]
         },
         "attributes": {
-          "entity": [
-            "CallType"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["CallType"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -717,18 +447,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "ChannelType"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["ChannelType"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -739,18 +461,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "ChannelType"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["ChannelType"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -761,18 +475,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "ChannelType"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["ChannelType"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -783,18 +489,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "ChannelType"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["ChannelType"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -805,26 +503,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "channelType:create",
-            "channelType:read",
-            "channelType:update",
-            "channelType:delete"
-          ]
+          "realm": ["channelType:create", "channelType:read", "channelType:update", "channelType:delete"]
         },
         "attributes": {
-          "entity": [
-            "ChannelType"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["ChannelType"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -835,18 +520,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "City"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["City"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -857,18 +534,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "City"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["City"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -879,18 +548,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "City"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["City"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -901,18 +562,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "City"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["City"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -923,26 +576,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "city:create",
-            "city:read",
-            "city:update",
-            "city:delete"
-          ]
+          "realm": ["city:create", "city:read", "city:update", "city:delete"]
         },
         "attributes": {
-          "entity": [
-            "City"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["City"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -953,18 +593,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "District"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["District"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -975,18 +607,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "District"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["District"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -997,18 +621,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "District"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["District"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1019,18 +635,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "District"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["District"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1041,26 +649,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "district:create",
-            "district:read",
-            "district:update",
-            "district:delete"
-          ]
+          "realm": ["district:create", "district:read", "district:update", "district:delete"]
         },
         "attributes": {
-          "entity": [
-            "District"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["District"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1071,18 +666,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Party"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Party"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1093,18 +680,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Party"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Party"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1115,18 +694,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Party"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Party"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1137,18 +708,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Party"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Party"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1159,26 +722,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "party:create",
-            "party:read",
-            "party:update",
-            "party:delete"
-          ]
+          "realm": ["party:create", "party:read", "party:update", "party:delete"]
         },
         "attributes": {
-          "entity": [
-            "Party"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Party"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1189,18 +739,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Priority"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Priority"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1211,18 +753,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Priority"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Priority"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1233,18 +767,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Priority"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Priority"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1255,18 +781,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Priority"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Priority"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1277,26 +795,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "priority:create",
-            "priority:read",
-            "priority:update",
-            "priority:delete"
-          ]
+          "realm": ["priority:create", "priority:read", "priority:update", "priority:delete"]
         },
         "attributes": {
-          "entity": [
-            "Priority"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Priority"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1307,18 +812,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Product"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Product"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1329,18 +826,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Product"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Product"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1351,18 +840,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Product"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Product"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1373,18 +854,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Product"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Product"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1395,26 +868,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "product:create",
-            "product:read",
-            "product:update",
-            "product:delete"
-          ]
+          "realm": ["product:create", "product:read", "product:update", "product:delete"]
         },
         "attributes": {
-          "entity": [
-            "Product"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Product"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1425,18 +885,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Source"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Source"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1447,18 +899,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Source"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Source"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1469,18 +913,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Source"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Source"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1491,18 +927,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "Source"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Source"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1513,26 +941,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "source:create",
-            "source:read",
-            "source:update",
-            "source:delete"
-          ]
+          "realm": ["source:create", "source:read", "source:update", "source:delete"]
         },
         "attributes": {
-          "entity": [
-            "Source"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["Source"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1543,18 +958,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "State"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["State"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1565,18 +972,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "State"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["State"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1587,18 +986,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "State"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["State"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1609,18 +1000,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "State"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["State"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1631,26 +1014,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "state:create",
-            "state:read",
-            "state:update",
-            "state:delete"
-          ]
+          "realm": ["state:create", "state:read", "state:update", "state:delete"]
         },
         "attributes": {
-          "entity": [
-            "State"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["State"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1661,18 +1031,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "SubCallType"
-          ],
-          "action": [
-            "create"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["SubCallType"],
+          "action": ["create"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1683,18 +1045,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "SubCallType"
-          ],
-          "action": [
-            "read"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["SubCallType"],
+          "action": ["read"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1705,18 +1059,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "SubCallType"
-          ],
-          "action": [
-            "update"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["SubCallType"],
+          "action": ["update"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1727,18 +1073,10 @@
         "clientRole": false,
         "containerId": "crm",
         "attributes": {
-          "entity": [
-            "SubCallType"
-          ],
-          "action": [
-            "delete"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["SubCallType"],
+          "action": ["delete"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1749,26 +1087,13 @@
         "clientRole": false,
         "containerId": "crm",
         "composites": {
-          "realm": [
-            "subCallType:create",
-            "subCallType:read",
-            "subCallType:update",
-            "subCallType:delete"
-          ]
+          "realm": ["subCallType:create", "subCallType:read", "subCallType:update", "subCallType:delete"]
         },
         "attributes": {
-          "entity": [
-            "SubCallType"
-          ],
-          "action": [
-            "admin"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "entity": ["SubCallType"],
+          "action": ["admin"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       },
       {
@@ -1798,15 +1123,9 @@
           ]
         },
         "attributes": {
-          "systemRole": [
-            "true"
-          ],
-          "generated": [
-            "true"
-          ],
-          "generatedAt": [
-            "2025-06-01T15:56:11.873Z"
-          ]
+          "systemRole": ["true"],
+          "generated": ["true"],
+          "generatedAt": ["2025-06-01T15:56:11.873Z"]
         }
       }
     ]

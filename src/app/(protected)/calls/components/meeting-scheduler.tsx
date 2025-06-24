@@ -1,47 +1,45 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarDays, Video, Phone, MapPin, Users, Bell } from "lucide-react";
-import { format } from "date-fns";
-import Calendar20 from "@/components/calendar-20";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CalendarDays, Video, Phone, MapPin, Users, Bell } from 'lucide-react';
+import { format } from 'date-fns';
+import Calendar20 from '@/components/calendar-20';
 
 // Import backend hooks
-import { 
+import {
   useCreateMeeting,
-  useGetAllMeetings 
-} from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
-import { 
-  useCreateMeetingParticipant 
-} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
-import { 
-  useCreateMeetingReminder 
-} from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-import { 
-  useGetAllAvailableTimeSlots 
-} from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
-import { useGetAllUserAvailabilities } from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
-import { 
-  useGetParty 
-} from "@/core/api/generated/spring/endpoints/party-resource/party-resource.gen";
+  useGetAllMeetings,
+} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+import { useCreateMeetingParticipant } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+import { useCreateMeetingReminder } from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
+import { useGetAllAvailableTimeSlots } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
+import { useGetParty } from '@/core/api/generated/spring/endpoints/party-resource/party-resource.gen';
 
-import { 
-  MeetingDTOMeetingType, 
+import {
+  MeetingDTOMeetingType,
   MeetingDTOMeetingStatus,
-  MeetingReminderDTOReminderType 
-} from "@/core/api/generated/spring/schemas";
-import type { 
+  MeetingReminderDTOReminderType,
+} from '@/core/api/generated/spring/schemas';
+import type {
   MeetingDTO,
   MeetingParticipantDTO,
-  MeetingReminderDTO 
-} from "@/core/api/generated/spring/schemas";
+  MeetingReminderDTO,
+} from '@/core/api/generated/spring/schemas';
 
 interface MeetingDetails {
   title: string;
@@ -75,7 +73,7 @@ export function MeetingScheduler({
   partyId,
   assignedUserId,
   onMeetingScheduled,
-  disabled = false
+  disabled = false,
 }: MeetingSchedulerProps) {
   const [meetingDetails, setMeetingDetails] = useState<MeetingDetails>({
     title: '',
@@ -83,19 +81,21 @@ export function MeetingScheduler({
     duration: 30,
     meetingType: 'VIRTUAL',
     meetingUrl: '',
-    location: ''
+    location: '',
   });
-  const [selectedDateTime, setSelectedDateTime] = useState<{ date: Date; time: string } | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState<{ date: Date; time: string } | null>(
+    null
+  );
   const [participants, setParticipants] = useState<ParticipantDetails[]>([]);
   const [reminders, setReminders] = useState<ReminderDetails[]>([
-    { enabled: true, type: 'EMAIL', minutesBefore: 15 }
+    { enabled: true, type: 'EMAIL', minutesBefore: 15 },
   ]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
   // Fetch party details
   const { data: partyData } = useGetParty(partyId || 0, {
-    query: { enabled: !!partyId }
+    query: { enabled: !!partyId },
   });
 
   const titleSuggestions = [
@@ -114,7 +114,7 @@ export function MeetingScheduler({
         // Create participants after meeting is created
         if (participants.length > 0) {
           await Promise.all(
-            participants.map(participant =>
+            participants.map((participant) =>
               createMeetingParticipant({
                 data: {
                   email: participant.email,
@@ -122,24 +122,24 @@ export function MeetingScheduler({
                   isRequired: participant.isRequired,
                   hasAccepted: false,
                   hasDeclined: false,
-                  meeting: meetingData
-                }
+                  meeting: meetingData,
+                },
               })
             )
           );
         }
 
         // Create reminders if enabled
-        const enabledReminders = reminders.filter(r => r.enabled);
+        const enabledReminders = reminders.filter((r) => r.enabled);
         if (enabledReminders.length > 0) {
           await Promise.all(
-            enabledReminders.map(reminder =>
+            enabledReminders.map((reminder) =>
               createMeetingReminder({
                 data: {
                   reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
                   reminderMinutesBefore: reminder.minutesBefore,
-                  meeting: meetingData
-                }
+                  meeting: meetingData,
+                },
               })
             )
           );
@@ -161,7 +161,7 @@ export function MeetingScheduler({
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
     assignedUserId ? { 'userId.equals': assignedUserId, 'isBooked.equals': false } : undefined,
     {
-      query: { enabled: !!assignedUserId }
+      query: { enabled: !!assignedUserId },
     }
   );
 
@@ -169,7 +169,7 @@ export function MeetingScheduler({
   const { data: userAvailabilities } = useGetAllUserAvailabilities(
     assignedUserId ? { 'userId.equals': assignedUserId } : undefined,
     {
-      query: { enabled: !!assignedUserId }
+      query: { enabled: !!assignedUserId },
     }
   );
 
@@ -177,18 +177,20 @@ export function MeetingScheduler({
   const { data: existingMeetings } = useGetAllMeetings(
     assignedUserId ? { 'organizerId.equals': assignedUserId } : undefined,
     {
-      query: { enabled: !!assignedUserId }
+      query: { enabled: !!assignedUserId },
     }
   );
 
   // Initialize default participant if party data is available
   useEffect(() => {
     if (partyData && participants.length === 0) {
-      setParticipants([{
-        email: partyData.email || '',
-        name: partyData.name || '',
-        isRequired: true
-      }]);
+      setParticipants([
+        {
+          email: partyData.email || '',
+          name: partyData.name || '',
+          isRequired: true,
+        },
+      ]);
     }
   }, [partyData, participants.length]);
 
@@ -196,9 +198,9 @@ export function MeetingScheduler({
   useEffect(() => {
     if (timeSlots && userAvailabilities) {
       const slots: string[] = [];
-      
+
       // Combine time slots from both sources
-      timeSlots.forEach(slot => {
+      timeSlots.forEach((slot) => {
         if (!slot.isBooked) {
           const slotTime = new Date(slot.slotDateTime);
           const timeString = format(slotTime, 'HH:mm');
@@ -209,20 +211,20 @@ export function MeetingScheduler({
       });
 
       // Add availability-based slots
-      userAvailabilities.forEach(availability => {
+      userAvailabilities.forEach((availability) => {
         if (availability.isAvailable) {
           const [startHour, startMin] = availability.startTime.split(':').map(Number);
           const [endHour, endMin] = availability.endTime.split(':').map(Number);
-          
+
           let currentHour = startHour;
           let currentMin = startMin;
-          
+
           while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
             const timeSlot = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
             if (!slots.includes(timeSlot)) {
               slots.push(timeSlot);
             }
-            
+
             currentMin += 30;
             if (currentMin >= 60) {
               currentMin = 0;
@@ -231,7 +233,7 @@ export function MeetingScheduler({
           }
         }
       });
-      
+
       setAvailableTimeSlots(slots.sort());
     }
   }, [timeSlots, userAvailabilities]);
@@ -240,12 +242,13 @@ export function MeetingScheduler({
   useEffect(() => {
     if (existingMeetings) {
       const booked = existingMeetings
-        .filter(meeting => 
-          meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED || 
-          meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED
+        .filter(
+          (meeting) =>
+            meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED ||
+            meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED
         )
-        .map(meeting => new Date(meeting.meetingDateTime));
-      
+        .map((meeting) => new Date(meeting.meetingDateTime));
+
       setBookedDates(booked);
     }
   }, [existingMeetings]);
@@ -255,23 +258,23 @@ export function MeetingScheduler({
   };
 
   const addParticipant = () => {
-    setParticipants(prev => [...prev, { email: '', name: '', isRequired: false }]);
+    setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }]);
   };
 
   const updateParticipant = (index: number, field: keyof ParticipantDetails, value: any) => {
-    setParticipants(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
+    setParticipants((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
   };
 
   const removeParticipant = (index: number) => {
-    setParticipants(prev => prev.filter((_, i) => i !== index));
+    setParticipants((prev) => prev.filter((_, i) => i !== index));
   };
 
   const updateReminder = (index: number, field: keyof ReminderDetails, value: any) => {
-    setReminders(prev => prev.map((r, i) => i === index ? { ...r, [field]: value } : r));
+    setReminders((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   };
 
   const addReminder = () => {
-    setReminders(prev => [...prev, { enabled: true, type: 'EMAIL', minutesBefore: 60 }]);
+    setReminders((prev) => [...prev, { enabled: true, type: 'EMAIL', minutesBefore: 60 }]);
   };
 
   const resetForm = () => {
@@ -282,13 +285,19 @@ export function MeetingScheduler({
       duration: 30,
       meetingType: 'VIRTUAL',
       meetingUrl: '',
-      location: ''
+      location: '',
     });
-    setParticipants(partyData ? [{
-      email: partyData.email || '',
-      name: partyData.name || '',
-      isRequired: true
-    }] : []);
+    setParticipants(
+      partyData
+        ? [
+            {
+              email: partyData.email || '',
+              name: partyData.name || '',
+              isRequired: true,
+            },
+          ]
+        : []
+    );
     setReminders([{ enabled: true, type: 'EMAIL', minutesBefore: 15 }]);
   };
 
@@ -374,7 +383,8 @@ export function MeetingScheduler({
             <CardHeader>
               <CardTitle>Meeting Details</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Selected: {format(selectedDateTime.date, "EEEE, MMMM d, yyyy")} at {selectedDateTime.time}
+                Selected: {format(selectedDateTime.date, 'EEEE, MMMM d, yyyy')} at{' '}
+                {selectedDateTime.time}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -385,7 +395,9 @@ export function MeetingScheduler({
                     id="title"
                     placeholder={titleSuggestions[0]}
                     value={meetingDetails.title}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) =>
+                      setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                    }
                   />
                   {/* Title Suggestions */}
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -395,19 +407,23 @@ export function MeetingScheduler({
                         variant="ghost"
                         size="sm"
                         className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => setMeetingDetails(prev => ({ ...prev, title: suggestion }))}
+                        onClick={() =>
+                          setMeetingDetails((prev) => ({ ...prev, title: suggestion }))
+                        }
                       >
                         {suggestion.length > 25 ? `${suggestion.substring(0, 25)}...` : suggestion}
                       </Button>
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="duration">Duration (minutes)</Label>
                   <Select
                     value={meetingDetails.duration.toString()}
-                    onValueChange={(value) => setMeetingDetails(prev => ({ ...prev, duration: parseInt(value) }))}
+                    onValueChange={(value) =>
+                      setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -428,8 +444,8 @@ export function MeetingScheduler({
                 <Label htmlFor="type">Meeting Type</Label>
                 <Select
                   value={meetingDetails.meetingType}
-                  onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') => 
-                    setMeetingDetails(prev => ({ ...prev, meetingType: value }))
+                  onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') =>
+                    setMeetingDetails((prev) => ({ ...prev, meetingType: value }))
                   }
                 >
                   <SelectTrigger>
@@ -465,7 +481,9 @@ export function MeetingScheduler({
                     id="meetingUrl"
                     placeholder="https://meet.google.com/..."
                     value={meetingDetails.meetingUrl}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, meetingUrl: e.target.value }))}
+                    onChange={(e) =>
+                      setMeetingDetails((prev) => ({ ...prev, meetingUrl: e.target.value }))
+                    }
                   />
                 </div>
               )}
@@ -477,7 +495,9 @@ export function MeetingScheduler({
                     id="location"
                     placeholder="Enter meeting location"
                     value={meetingDetails.location}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setMeetingDetails((prev) => ({ ...prev, location: e.target.value }))
+                    }
                   />
                 </div>
               )}
@@ -488,7 +508,9 @@ export function MeetingScheduler({
                   id="description"
                   placeholder="Add meeting agenda or notes..."
                   value={meetingDetails.description}
-                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                  }
                   rows={3}
                 />
               </div>
@@ -568,7 +590,7 @@ export function MeetingScheduler({
                     <Label>Type</Label>
                     <Select
                       value={reminder.type}
-                      onValueChange={(value: 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION') => 
+                      onValueChange={(value: 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION') =>
                         updateReminder(index, 'type', value)
                       }
                     >
@@ -586,7 +608,9 @@ export function MeetingScheduler({
                     <Label>Minutes Before</Label>
                     <Select
                       value={reminder.minutesBefore.toString()}
-                      onValueChange={(value) => updateReminder(index, 'minutesBefore', parseInt(value))}
+                      onValueChange={(value) =>
+                        updateReminder(index, 'minutesBefore', parseInt(value))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -604,7 +628,7 @@ export function MeetingScheduler({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setReminders(prev => prev.filter((_, i) => i !== index))}
+                      onClick={() => setReminders((prev) => prev.filter((_, i) => i !== index))}
                       disabled={reminders.length === 1}
                     >
                       Remove
@@ -620,7 +644,7 @@ export function MeetingScheduler({
 
           <Button
             onClick={scheduleMeeting}
-            disabled={isCreating || participants.some(p => !p.email)}
+            disabled={isCreating || participants.some((p) => !p.email)}
             className="w-full"
             size="lg"
           >

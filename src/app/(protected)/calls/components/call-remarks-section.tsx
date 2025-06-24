@@ -1,16 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { format } from "date-fns";
-import { Plus, Edit2, Trash2, MessageSquare } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { Plus, Edit2, Trash2, MessageSquare } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,19 +23,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 import {
   useGetAllCallRemarks,
   useCreateCallRemark,
   useUpdateCallRemark,
   useDeleteCallRemark,
-} from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
-import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
+} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRemarkDTO';
 
 interface CallRemarksSectionProps {
   callId: number;
@@ -51,14 +46,18 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedRemark, setSelectedRemark] = useState<CallRemarkDTO | null>(null);
-  const [newRemark, setNewRemark] = useState("");
-  const [editRemark, setEditRemark] = useState("");
+  const [newRemark, setNewRemark] = useState('');
+  const [editRemark, setEditRemark] = useState('');
 
   // Fetch call remarks for this specific call
-  const { data: callRemarks = [], isLoading, refetch } = useGetAllCallRemarks(
+  const {
+    data: callRemarks = [],
+    isLoading,
+    refetch,
+  } = useGetAllCallRemarks(
     {
       'callId.equals': callId,
-      sort: ["dateTime,desc"], // Most recent first
+      sort: ['dateTime,desc'], // Most recent first
     },
     {
       query: {
@@ -71,9 +70,9 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: createCallRemark, isPending: isCreating } = useCreateCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark added successfully");
+        toast.success('Call remark added successfully');
         setShowAddDialog(false);
-        setNewRemark("");
+        setNewRemark('');
         refetch();
       },
       onError: (error) => {
@@ -86,10 +85,10 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: updateCallRemark, isPending: isUpdating } = useUpdateCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark updated successfully");
+        toast.success('Call remark updated successfully');
         setShowEditDialog(false);
         setSelectedRemark(null);
-        setEditRemark("");
+        setEditRemark('');
         refetch();
       },
       onError: (error) => {
@@ -102,7 +101,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: deleteCallRemark, isPending: isDeleting } = useDeleteCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark deleted successfully");
+        toast.success('Call remark deleted successfully');
         setShowDeleteDialog(false);
         setSelectedRemark(null);
         refetch();
@@ -115,7 +114,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
 
   const handleAddRemark = () => {
     if (!newRemark.trim()) {
-      toast.error("Please enter a remark");
+      toast.error('Please enter a remark');
       return;
     }
 
@@ -130,7 +129,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
 
   const handleEditRemark = () => {
     if (!selectedRemark || !editRemark.trim()) {
-      toast.error("Please enter a remark");
+      toast.error('Please enter a remark');
       return;
     }
 
@@ -151,7 +150,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
 
   const openEditDialog = (remark: CallRemarkDTO) => {
     setSelectedRemark(remark);
-    setEditRemark(remark.remark || "");
+    setEditRemark(remark.remark || '');
     setShowEditDialog(true);
   };
 
@@ -167,9 +166,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-lg font-semibold text-foreground">
-                Call Remarks
-              </CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">Call Remarks</CardTitle>
               <Badge variant="secondary" className="text-xs">
                 {callRemarks.length}
               </Badge>
@@ -206,16 +203,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-primary"></div>
                         <div className="text-xs text-muted-foreground">
-                          {remark.dateTime 
+                          {remark.dateTime
                             ? format(new Date(remark.dateTime), "PPP 'at' p")
-                            : "No date"
-                          }
+                            : 'No date'}
                         </div>
                       </div>
                       <div className="ml-4 p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {remark.remark}
-                        </p>
+                        <p className="text-sm whitespace-pre-wrap break-words">{remark.remark}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -237,9 +231,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                       </Button>
                     </div>
                   </div>
-                  {index < callRemarks.length - 1 && (
-                    <Separator className="mt-4" />
-                  )}
+                  {index < callRemarks.length - 1 && <Separator className="mt-4" />}
                 </div>
               ))}
             </div>
@@ -274,16 +266,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               variant="outline"
               onClick={() => {
                 setShowAddDialog(false);
-                setNewRemark("");
+                setNewRemark('');
               }}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleAddRemark}
-              disabled={isCreating || !newRemark.trim()}
-            >
-              {isCreating ? "Adding..." : "Add Remark"}
+            <Button onClick={handleAddRemark} disabled={isCreating || !newRemark.trim()}>
+              {isCreating ? 'Adding...' : 'Add Remark'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -294,9 +283,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Call Remark</DialogTitle>
-            <DialogDescription>
-              Update the remark content.
-            </DialogDescription>
+            <DialogDescription>Update the remark content.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -317,16 +304,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               onClick={() => {
                 setShowEditDialog(false);
                 setSelectedRemark(null);
-                setEditRemark("");
+                setEditRemark('');
               }}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleEditRemark}
-              disabled={isUpdating || !editRemark.trim()}
-            >
-              {isUpdating ? "Updating..." : "Update Remark"}
+            <Button onClick={handleEditRemark} disabled={isUpdating || !editRemark.trim()}>
+              {isUpdating ? 'Updating...' : 'Update Remark'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -355,7 +339,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

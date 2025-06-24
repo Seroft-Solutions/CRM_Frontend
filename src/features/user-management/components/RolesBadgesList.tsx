@@ -6,12 +6,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { RoleRepresentation } from '@/core/api/generated/keycloak';
 
@@ -23,12 +18,12 @@ interface RolesBadgesListProps {
   className?: string;
 }
 
-export function RolesBadgesList({ 
-  roles, 
-  maxVisible = 2, 
+export function RolesBadgesList({
+  roles,
+  maxVisible = 2,
   variant = 'secondary',
   size = 'sm',
-  className 
+  className,
 }: RolesBadgesListProps) {
   const visibleRoles = roles.slice(0, maxVisible);
   const hiddenCount = roles.length - maxVisible;
@@ -39,11 +34,7 @@ export function RolesBadgesList({
   };
 
   if (roles.length === 0) {
-    return (
-      <span className={cn('text-muted-foreground text-sm', className)}>
-        No roles
-      </span>
-    );
+    return <span className={cn('text-muted-foreground text-sm', className)}>No roles</span>;
   }
 
   return (
@@ -52,10 +43,7 @@ export function RolesBadgesList({
         {visibleRoles.map((role) => (
           <Tooltip key={role.id}>
             <TooltipTrigger asChild>
-              <Badge 
-                variant={variant} 
-                className={cn(sizeClasses[size], 'cursor-help')}
-              >
+              <Badge variant={variant} className={cn(sizeClasses[size], 'cursor-help')}>
                 {role.name}
               </Badge>
             </TooltipTrigger>
@@ -63,22 +51,17 @@ export function RolesBadgesList({
               <div className="max-w-xs">
                 <p className="font-medium">{role.name}</p>
                 {role.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {role.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
                 )}
               </div>
             </TooltipContent>
           </Tooltip>
         ))}
-        
+
         {hiddenCount > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge 
-                variant="outline" 
-                className={cn(sizeClasses[size], 'cursor-help')}
-              >
+              <Badge variant="outline" className={cn(sizeClasses[size], 'cursor-help')}>
                 +{hiddenCount}
               </Badge>
             </TooltipTrigger>
@@ -90,9 +73,7 @@ export function RolesBadgesList({
                     <div key={role.id} className="text-sm">
                       <span className="font-medium">{role.name}</span>
                       {role.description && (
-                        <p className="text-muted-foreground text-xs">
-                          {role.description}
-                        </p>
+                        <p className="text-muted-foreground text-xs">{role.description}</p>
                       )}
                     </div>
                   ))}

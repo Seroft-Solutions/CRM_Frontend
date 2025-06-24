@@ -7,123 +7,174 @@ import { Badge } from '@/components/ui/badge';
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import { useGetAllParties } from '@/core/api/generated/spring/endpoints/party-resource/party-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { Area, AreaChart, Bar, BarChart, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Building, Phone, ShoppingCart, Users, TrendingUp, Calendar, MapPin, UserCheck, Activity, Target, Clock, PhoneCall } from 'lucide-react';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import {
+  Building,
+  Phone,
+  ShoppingCart,
+  Users,
+  TrendingUp,
+  Calendar,
+  MapPin,
+  UserCheck,
+  Activity,
+  Target,
+  Clock,
+  PhoneCall,
+} from 'lucide-react';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: parties = [] } = useGetAllParties({ size: 1000 });
   const { data: products = [] } = useGetAllProducts({ size: 1000 });
-  
-  const [tabValue, setTabValue] = useState("overview");
+
+  const [tabValue, setTabValue] = useState('overview');
 
   // **FIX: Proper call status handling**
-  const callStatuses = calls.reduce((acc, call) => {
-    const status = call.callStatus?.name || 'Unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const callStatuses = calls.reduce(
+    (acc, call) => {
+      const status = call.callStatus?.name || 'Unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const callStatusData = Object.entries(callStatuses).map(([name, value]) => ({
     name,
     value,
-    percentage: ((value / calls.length) * 100).toFixed(1)
+    percentage: ((value / calls.length) * 100).toFixed(1),
   }));
 
   // Call categories distribution
-  const callCategories = calls.reduce((acc, call) => {
-    const category = call.callCategory?.name || 'Uncategorized';
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const callCategories = calls.reduce(
+    (acc, call) => {
+      const category = call.callCategory?.name || 'Uncategorized';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const callCategoryData = Object.entries(callCategories).map(([name, value]) => ({
     name,
-    value
+    value,
   }));
 
   // Call types distribution
-  const callTypes = calls.reduce((acc, call) => {
-    const type = call.callType?.name || 'Unknown';
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const callTypes = calls.reduce(
+    (acc, call) => {
+      const type = call.callType?.name || 'Unknown';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const callTypeData = Object.entries(callTypes).map(([name, value]) => ({
     name,
-    value
+    value,
   }));
 
   // Priority distribution
-  const priorityData = calls.reduce((acc, call) => {
-    const priority = call.priority?.name || 'Normal';
-    acc[priority] = (acc[priority] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const priorityData = calls.reduce(
+    (acc, call) => {
+      const priority = call.priority?.name || 'Normal';
+      acc[priority] = (acc[priority] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const priorityChartData = Object.entries(priorityData).map(([name, value]) => ({
     name,
-    value
+    value,
   }));
 
   // Channel distribution
-  const channelData = calls.reduce((acc, call) => {
-    const channel = call.channelType?.name || 'Unknown';
-    acc[channel] = (acc[channel] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const channelData = calls.reduce(
+    (acc, call) => {
+      const channel = call.channelType?.name || 'Unknown';
+      acc[channel] = (acc[channel] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const channelChartData = Object.entries(channelData).map(([name, value]) => ({
     name,
-    value
+    value,
   }));
 
   // Geographic distribution
-  const geoData = calls.reduce((acc, call) => {
-    const state = call.state?.name || 'Unknown';
-    acc[state] = (acc[state] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const geoData = calls.reduce(
+    (acc, call) => {
+      const state = call.state?.name || 'Unknown';
+      acc[state] = (acc[state] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const topStates = Object.entries(geoData)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
   // Agent/User performance
-  const agentPerformance = calls.reduce((acc, call) => {
-    const agent = call.assignedTo?.firstName && call.assignedTo?.lastName 
-      ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-      : call.assignedTo?.firstName || 'Unassigned';
-    acc[agent] = (acc[agent] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const agentPerformance = calls.reduce(
+    (acc, call) => {
+      const agent =
+        call.assignedTo?.firstName && call.assignedTo?.lastName
+          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
+          : call.assignedTo?.firstName || 'Unassigned';
+      acc[agent] = (acc[agent] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const topAgents = Object.entries(agentPerformance)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
   // Recent calls with proper date handling
   const recentCalls = calls
-    .filter(call => call.callDateTime)
+    .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
     .slice(0, 10)
-    .map(call => ({
+    .map((call) => ({
       id: call.id,
       party: call.party?.name || 'Unknown Party',
       status: call.callStatus?.name || 'Unknown',
       type: call.callType?.name || 'Unknown',
       priority: call.priority?.name || 'Normal',
-      agent: call.assignedTo?.firstName && call.assignedTo?.lastName 
-        ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-        : 'Unassigned',
+      agent:
+        call.assignedTo?.firstName && call.assignedTo?.lastName
+          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
+          : 'Unassigned',
       date: new Date(call.callDateTime).toLocaleDateString(),
-      time: new Date(call.callDateTime).toLocaleTimeString()
+      time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
 
   // Calculate trends
-  const last30Days = calls.filter(call => {
+  const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
     const callDate = new Date(call.callDateTime);
     const thirtyDaysAgo = new Date();
@@ -131,19 +182,38 @@ export function DashboardOverview() {
     return callDate >= thirtyDaysAgo;
   });
 
-  const conversionRate = calls.length > 0 
-    ? ((calls.filter(call => call.callStatus?.name?.toLowerCase().includes('success') || 
-                           call.callStatus?.name?.toLowerCase().includes('completed')).length / calls.length) * 100).toFixed(1)
-    : '0.0';
+  const conversionRate =
+    calls.length > 0
+      ? (
+          (calls.filter(
+            (call) =>
+              call.callStatus?.name?.toLowerCase().includes('success') ||
+              call.callStatus?.name?.toLowerCase().includes('completed')
+          ).length /
+            calls.length) *
+          100
+        ).toFixed(1)
+      : '0.0';
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658', '#ff7c7c'];
+  const COLORS = [
+    '#0088FE',
+    '#00C49F',
+    '#FFBB28',
+    '#FF8042',
+    '#8884D8',
+    '#82ca9d',
+    '#ffc658',
+    '#ff7c7c',
+  ];
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-          <p className="text-muted-foreground">Complete overview of your customer relationship management</p>
+          <p className="text-muted-foreground">
+            Complete overview of your customer relationship management
+          </p>
         </div>
       </div>
 
@@ -164,12 +234,10 @@ export function DashboardOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{calls.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  {last30Days.length} in last 30 days
-                </p>
+                <p className="text-xs text-muted-foreground">{last30Days.length} in last 30 days</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Active Parties</CardTitle>
@@ -177,12 +245,10 @@ export function DashboardOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{parties.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Customer database size
-                </p>
+                <p className="text-xs text-muted-foreground">Customer database size</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
@@ -190,12 +256,10 @@ export function DashboardOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{conversionRate}%</div>
-                <p className="text-xs text-muted-foreground">
-                  Call success rate
-                </p>
+                <p className="text-xs text-muted-foreground">Call success rate</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Products</CardTitle>
@@ -203,9 +267,7 @@ export function DashboardOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{products.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Available products
-                </p>
+                <p className="text-xs text-muted-foreground">Available products</p>
               </CardContent>
             </Card>
           </div>
@@ -215,9 +277,7 @@ export function DashboardOverview() {
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Call Status Distribution</CardTitle>
-                <CardDescription>
-                  Real-time status of all calls in the system
-                </CardDescription>
+                <CardDescription>Real-time status of all calls in the system</CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 {callStatusData.length > 0 ? (
@@ -225,7 +285,7 @@ export function DashboardOverview() {
                     <BarChart data={callStatusData}>
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value, name) => [`${value} calls`, 'Count']}
                         labelFormatter={(label) => `Status: ${label}`}
                       />
@@ -239,13 +299,11 @@ export function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Priority Distribution</CardTitle>
-                <CardDescription>
-                  Call priority breakdown
-                </CardDescription>
+                <CardDescription>Call priority breakdown</CardDescription>
               </CardHeader>
               <CardContent>
                 {priorityChartData.length > 0 ? (
@@ -283,9 +341,7 @@ export function DashboardOverview() {
             <Card>
               <CardHeader>
                 <CardTitle>Top States</CardTitle>
-                <CardDescription>
-                  Geographic call distribution
-                </CardDescription>
+                <CardDescription>Geographic call distribution</CardDescription>
               </CardHeader>
               <CardContent>
                 {topStates.length > 0 ? (
@@ -307,19 +363,20 @@ export function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card className="col-span-2">
               <CardHeader>
                 <CardTitle>Recent Calls</CardTitle>
-                <CardDescription>
-                  Latest call activities with detailed information
-                </CardDescription>
+                <CardDescription>Latest call activities with detailed information</CardDescription>
               </CardHeader>
               <CardContent>
                 {recentCalls.length > 0 ? (
                   <div className="space-y-4 max-h-[400px] overflow-y-auto">
                     {recentCalls.map((call) => (
-                      <div key={call.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={call.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                             <Phone className="h-4 w-4 text-primary" />
@@ -334,9 +391,14 @@ export function DashboardOverview() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <Badge 
-                            variant={call.status?.toLowerCase().includes('success') ? 'default' : 
-                                    call.status?.toLowerCase().includes('pending') ? 'secondary' : 'outline'}
+                          <Badge
+                            variant={
+                              call.status?.toLowerCase().includes('success')
+                                ? 'default'
+                                : call.status?.toLowerCase().includes('pending')
+                                  ? 'secondary'
+                                  : 'outline'
+                            }
                           >
                             {call.status}
                           </Badge>
@@ -363,9 +425,7 @@ export function DashboardOverview() {
             <Card>
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
-                <CardDescription>
-                  How customers are reaching us
-                </CardDescription>
+                <CardDescription>How customers are reaching us</CardDescription>
               </CardHeader>
               <CardContent>
                 {channelChartData.length > 0 ? (
@@ -394,13 +454,11 @@ export function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Call Categories</CardTitle>
-                <CardDescription>
-                  Types of customer interactions
-                </CardDescription>
+                <CardDescription>Types of customer interactions</CardDescription>
               </CardHeader>
               <CardContent>
                 {callCategoryData.length > 0 ? (
@@ -454,9 +512,7 @@ export function DashboardOverview() {
             <Card>
               <CardHeader>
                 <CardTitle>Top Performers</CardTitle>
-                <CardDescription>
-                  Agents with highest call volumes
-                </CardDescription>
+                <CardDescription>Agents with highest call volumes</CardDescription>
               </CardHeader>
               <CardContent>
                 {topAgents.length > 0 ? (
@@ -483,13 +539,11 @@ export function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Performance Metrics</CardTitle>
-                <CardDescription>
-                  Key performance indicators
-                </CardDescription>
+                <CardDescription>Key performance indicators</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -500,28 +554,33 @@ export function DashboardOverview() {
                     </div>
                     <span className="text-lg font-bold">{conversionRate}%</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Activity className="h-4 w-4 text-blue-500" />
                       <span className="text-sm">Active Calls</span>
                     </div>
                     <span className="text-lg font-bold">
-                      {calls.filter(call => 
-                        call.callStatus?.name?.toLowerCase().includes('active') ||
-                        call.callStatus?.name?.toLowerCase().includes('progress')
-                      ).length}
+                      {
+                        calls.filter(
+                          (call) =>
+                            call.callStatus?.name?.toLowerCase().includes('active') ||
+                            call.callStatus?.name?.toLowerCase().includes('progress')
+                        ).length
+                      }
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4 text-purple-500" />
                       <span className="text-sm">Total Agents</span>
                     </div>
-                    <span className="text-lg font-bold">{Object.keys(agentPerformance).length}</span>
+                    <span className="text-lg font-bold">
+                      {Object.keys(agentPerformance).length}
+                    </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <MapPin className="h-4 w-4 text-orange-500" />
@@ -547,18 +606,20 @@ export function DashboardOverview() {
                 {callStatusData.map((status, index) => (
                   <div key={status.name} className="p-4 border rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
+                      <div
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       ></div>
                       <span className="font-medium text-sm">{status.name}</span>
                     </div>
                     <div className="text-2xl font-bold">{status.value}</div>
-                    <div className="text-xs text-muted-foreground">{status.percentage}% of total</div>
+                    <div className="text-xs text-muted-foreground">
+                      {status.percentage}% of total
+                    </div>
                   </div>
                 ))}
               </div>
-              
+
               {callStatusData.length > 0 && (
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={callStatusData}>

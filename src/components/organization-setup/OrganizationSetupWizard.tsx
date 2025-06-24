@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Building2, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Building2,
+  CheckCircle,
+  AlertCircle,
   Loader2,
   Coffee,
   ArrowRight,
   Database,
-  LogOut
+  LogOut,
 } from 'lucide-react';
 import { OrganizationSetupForm } from './OrganizationSetupForm';
 import { OrganizationWelcomePage } from './OrganizationWelcomePage';
@@ -36,22 +36,30 @@ export function OrganizationSetupWizard() {
 
   // Redirect to organization-select if user has organizations (but not during setup)
   useEffect(() => {
-    if (!isLoading && organizations && organizations.length > 0 && 
-        !state.isSetupInProgress && !state.isSyncInProgress && !state.showWelcome) {
+    if (
+      !isLoading &&
+      organizations &&
+      organizations.length > 0 &&
+      !state.isSetupInProgress &&
+      !state.isSyncInProgress &&
+      !state.showWelcome
+    ) {
       router.push('/organization-select');
     }
-  }, [organizations, isLoading, router, state.isSetupInProgress, state.isSyncInProgress, state.showWelcome]);
+  }, [
+    organizations,
+    isLoading,
+    router,
+    state.isSetupInProgress,
+    state.isSyncInProgress,
+    state.showWelcome,
+  ]);
 
   // Header with logout button
   const Header = () => (
     <div className="absolute top-4 right-4 z-10">
       <form action={logoutAction}>
-        <Button 
-          type="submit" 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2"
-        >
+        <Button type="submit" variant="outline" size="sm" className="flex items-center gap-2">
           <LogOut className="h-4 w-4" />
           Logout
         </Button>
@@ -96,15 +104,11 @@ export function OrganizationSetupWizard() {
               <CheckCircle className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold text-green-700">Setup Complete!</h1>
-            <p className="text-muted-foreground">
-              Your organization is ready to use CRM Cup.
-            </p>
+            <p className="text-muted-foreground">Your organization is ready to use CRM Cup.</p>
           </div>
           <Card className="border-green-200 bg-green-50">
             <CardContent className="p-4 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                Redirecting to dashboard...
-              </p>
+              <p className="text-sm text-muted-foreground mb-2">Redirecting to dashboard...</p>
               <div className="w-6 h-6 animate-spin rounded-full border-2 border-green-500 border-t-transparent mx-auto"></div>
             </CardContent>
           </Card>
@@ -116,7 +120,7 @@ export function OrganizationSetupWizard() {
   // Setup/Sync in progress
   if (state.isSetupInProgress || state.isSyncInProgress) {
     const isSync = state.isSyncInProgress;
-    
+
     // If we have an organization name, show the modern progress component
     if (state.organizationName) {
       return (
@@ -149,7 +153,7 @@ export function OrganizationSetupWizard() {
               {isSync ? 'Syncing Organization Data' : 'Setting Up Organization'}
             </h1>
             <p className="text-muted-foreground">
-              {state.organizationName && 
+              {state.organizationName &&
                 `${isSync ? 'Syncing' : 'Creating'} workspace for ${state.organizationName}`}
             </p>
           </div>
@@ -191,7 +195,7 @@ export function OrganizationSetupWizard() {
                   </div>
                 </>
               )}
-              
+
               <div className="text-center p-3 bg-muted/50 rounded-lg">
                 <p className="text-xs text-muted-foreground">
                   This usually takes {isSync ? '15-30' : '30-60'} seconds...
@@ -224,20 +228,16 @@ export function OrganizationSetupWizard() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{state.error}</AlertDescription>
           </Alert>
-          
+
           <div className="flex space-x-2">
-            <Button 
-              onClick={() => setShowForm(true)} 
+            <Button
+              onClick={() => setShowForm(true)}
               disabled={state.isSetupInProgress}
               className="flex-1"
             >
               Try Again
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={actions.clearError}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={actions.clearError} className="flex-1">
               Start Over
             </Button>
           </div>
@@ -258,12 +258,11 @@ export function OrganizationSetupWizard() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
                 <Database className="w-8 h-8" />
               </div>
-              <h1 className="text-2xl font-bold">
-                Sync Organization Data
-              </h1>
+              <h1 className="text-2xl font-bold">Sync Organization Data</h1>
               <p className="text-muted-foreground">
-                We found your organization <span className="font-semibold">{state.organizationName}</span> in Keycloak.
-                Let's sync it to your CRM workspace.
+                We found your organization{' '}
+                <span className="font-semibold">{state.organizationName}</span> in Keycloak. Let's
+                sync it to your CRM workspace.
               </p>
             </div>
 
@@ -276,11 +275,11 @@ export function OrganizationSetupWizard() {
                   <div>
                     <h3 className="font-semibold text-blue-900 mb-1">Sync Required</h3>
                     <p className="text-blue-700 text-sm">
-                      Your organization exists in Keycloak but needs to be synced with the CRM database.
-                      This will create your user profile and organization workspace.
+                      Your organization exists in Keycloak but needs to be synced with the CRM
+                      database. This will create your user profile and organization workspace.
                     </p>
                   </div>
-                  <Button 
+                  <Button
                     onClick={actions.syncExistingData}
                     disabled={state.isSyncInProgress}
                     size="lg"
@@ -324,13 +323,11 @@ export function OrganizationSetupWizard() {
             <Building2 className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-bold">Welcome to CRM Cup</h1>
-          <p className="text-muted-foreground">
-            Let's set up your organization to get started
-          </p>
+          <p className="text-muted-foreground">Let's set up your organization to get started</p>
         </div>
         <Card className="border-primary/20">
           <CardContent className="p-4 text-center">
-            <Button 
+            <Button
               onClick={() => setShowForm(true)}
               size="lg"
               className="inline-flex items-center"

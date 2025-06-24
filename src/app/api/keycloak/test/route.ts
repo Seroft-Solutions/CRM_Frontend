@@ -5,13 +5,13 @@ export async function GET(request: NextRequest) {
   try {
     // Test admin authentication
     const authTest = await keycloakService.testAdminAuth();
-    
+
     if (!authTest.success) {
       return NextResponse.json(
-        { 
-          error: 'Admin authentication failed', 
+        {
+          error: 'Admin authentication failed',
           details: authTest.error,
-          debugInfo: keycloakService.getDebugInfo()
+          debugInfo: keycloakService.getDebugInfo(),
         },
         { status: 401 }
       );
@@ -21,26 +21,26 @@ export async function GET(request: NextRequest) {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json(
-        { 
-          error: 'Permission verification failed', 
-          details: permissionCheck.error 
+        {
+          error: 'Permission verification failed',
+          details: permissionCheck.error,
         },
         { status: 403 }
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Authentication and permissions working',
-      debugInfo: keycloakService.getDebugInfo()
+      debugInfo: keycloakService.getDebugInfo(),
     });
   } catch (error: any) {
     console.error('Auth test error:', error);
     return NextResponse.json(
-      { 
-        error: 'Authentication test failed', 
+      {
+        error: 'Authentication test failed',
         details: error.message,
-        debugInfo: keycloakService.getDebugInfo()
+        debugInfo: keycloakService.getDebugInfo(),
       },
       { status: 500 }
     );

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const realm = keycloakService.getRealm();
-    
+
     const params = {
       search: searchParams.get('search') || undefined,
       first: searchParams.get('first') ? parseInt(searchParams.get('first')!) : 0,

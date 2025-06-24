@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { format, addMinutes } from 'date-fns';
 
@@ -55,7 +55,9 @@ class CalendarService {
   /**
    * Create a Google Calendar event
    */
-  async createCalendarEvent(eventData: CalendarEvent): Promise<{ eventId: string; meetingUrl?: string }> {
+  async createCalendarEvent(
+    eventData: CalendarEvent
+  ): Promise<{ eventId: string; meetingUrl?: string }> {
     try {
       const response = await fetch(`${this.baseApiUrl}/calendar/events`, {
         method: 'POST',
@@ -194,7 +196,11 @@ class CalendarService {
   /**
    * Convert meeting data to Google Calendar event format
    */
-  createCalendarEventFromMeeting(meetingData: any, organizerEmail: string, timeZone = 'UTC'): CalendarEvent {
+  createCalendarEventFromMeeting(
+    meetingData: any,
+    organizerEmail: string,
+    timeZone = 'UTC'
+  ): CalendarEvent {
     const startDateTime = new Date(meetingData.meetingDateTime);
     const endDateTime = addMinutes(startDateTime, meetingData.duration);
 
@@ -225,7 +231,7 @@ class CalendarService {
         useDefault: false,
         overrides: [
           { method: 'email', minutes: 120 }, // 2 hours before
-          { method: 'popup', minutes: 30 },  // 30 minutes before
+          { method: 'popup', minutes: 30 }, // 30 minutes before
         ],
       },
     };
@@ -263,7 +269,11 @@ class CalendarService {
   ): Promise<{ meetingId: string; googleEventId: string; meetingUrl?: string }> {
     try {
       // 1. Create calendar event
-      const calendarEvent = this.createCalendarEventFromMeeting(meetingData, organizerEmail, timeZone);
+      const calendarEvent = this.createCalendarEventFromMeeting(
+        meetingData,
+        organizerEmail,
+        timeZone
+      );
       const { eventId, meetingUrl } = await this.createCalendarEvent(calendarEvent);
 
       // 2. Create meeting in database (this would be handled by backend API)
@@ -304,7 +314,7 @@ class CalendarService {
       // 4. Schedule reminders
       await this.scheduleMeetingReminders(meeting.id, [
         { type: 'EMAIL', minutesBefore: 120 }, // 2 hours before
-        { type: 'EMAIL', minutesBefore: 30 },  // 30 minutes before
+        { type: 'EMAIL', minutesBefore: 30 }, // 30 minutes before
       ]);
 
       return {

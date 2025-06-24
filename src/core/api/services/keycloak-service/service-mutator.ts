@@ -29,7 +29,7 @@ const getAdminToken = async (baseURL: string): Promise<string | null> => {
     if (response.ok) {
       const data = await response.json();
       adminToken = data.access_token;
-      tokenExpiry = Date.now() + (data.expires_in * 1000);
+      tokenExpiry = Date.now() + data.expires_in * 1000;
       return adminToken;
     }
   } catch (error) {
@@ -43,9 +43,9 @@ export const keycloakServiceMutator = async <T>(
   options?: AxiosRequestConfig
 ): Promise<T> => {
   const { url, method = 'GET', data, params, headers } = requestConfig;
-  
+
   const instance = axios.create(KEYCLOAK_SERVICE_CONFIG);
-  
+
   // Add auth interceptor
   instance.interceptors.request.use(async (config) => {
     const token = await getAdminToken(instance.defaults.baseURL as string);

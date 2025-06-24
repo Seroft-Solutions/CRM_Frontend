@@ -3,7 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
@@ -36,14 +43,16 @@ export default function AuthErrorPage() {
       case 'AccessDenied':
         return {
           title: 'Access Denied',
-          message: 'You do not have permission to access this application. Please contact your administrator.',
+          message:
+            'You do not have permission to access this application. Please contact your administrator.',
           action: 'Go to Login',
           autoRedirect: false,
         };
       case 'Configuration':
         return {
           title: 'Configuration Error',
-          message: 'There is a problem with the authentication configuration. Please contact support.',
+          message:
+            'There is a problem with the authentication configuration. Please contact support.',
           action: 'Go to Login',
           autoRedirect: false,
         };
@@ -88,14 +97,10 @@ export default function AuthErrorPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
             <AlertCircle className="h-6 w-6 text-red-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-red-600">
-            {errorDetails.title}
-          </CardTitle>
-          <CardDescription className="text-base">
-            {errorDetails.message}
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold text-red-600">{errorDetails.title}</CardTitle>
+          <CardDescription className="text-base">{errorDetails.message}</CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {errorDetails.autoRedirect && (
             <div className="p-4 text-sm bg-blue-50 rounded-md border border-blue-200">
@@ -107,28 +112,20 @@ export default function AuthErrorPage() {
               </div>
             </div>
           )}
-          
+
           {error && (
             <details className="text-xs text-gray-500">
-              <summary className="cursor-pointer hover:text-gray-700">
-                Technical Details
-              </summary>
-              <p className="mt-2 p-2 bg-gray-100 rounded">
-                Error Code: {error}
-              </p>
+              <summary className="cursor-pointer hover:text-gray-700">Technical Details</summary>
+              <p className="mt-2 p-2 bg-gray-100 rounded">Error Code: {error}</p>
             </details>
           )}
         </CardContent>
-        
+
         <CardFooter className="flex gap-2">
           <Button onClick={handleAction} className="flex-1">
             {errorDetails.action}
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => router.push('/')}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={() => router.push('/')} className="flex-1">
             Go Home
           </Button>
         </CardFooter>

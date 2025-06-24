@@ -1,20 +1,26 @@
 # User Management Feature
 
-A comprehensive user management system for organization-based user administration with role and group assignments.
+A comprehensive user management system for organization-based user
+administration with role and group assignments.
 
 ## Overview
 
-This feature provides a complete user management solution for organizations, including:
+This feature provides a complete user management solution for organizations,
+including:
 
-- **Organization Users Management**: View and manage all users within an organization
-- **User Invitations**: Invite new users via email with single and bulk invitation workflows
+- **Organization Users Management**: View and manage all users within an
+  organization
+- **User Invitations**: Invite new users via email with single and bulk
+  invitation workflows
 - **Role Assignment**: Assign and unassign realm roles to organization users
 - **Group Assignment**: Assign and unassign groups to organization users
-- **User Details**: Comprehensive user management interface with role/group management
+- **User Details**: Comprehensive user management interface with role/group
+  management
 
 ## Architecture
 
 ### Components Structure
+
 ```
 src/features/user-management/
 ├── components/
@@ -36,6 +42,7 @@ src/features/user-management/
 ```
 
 ### Pages Structure
+
 ```
 src/app/(protected)/user-management/
 ├── organization-users/
@@ -50,6 +57,7 @@ src/app/(protected)/user-management/
 ## Key Features
 
 ### 1. Organization Users Management
+
 - List all users in the organization with pagination
 - Search and filter users
 - Bulk user selection and operations
@@ -57,12 +65,14 @@ src/app/(protected)/user-management/
 - Real-time status indicators
 
 ### 2. User Invitation System
+
 - **Single User Invitation**: Invite individual users with form validation
 - **Bulk Invitations**: Invite multiple users simultaneously
 - **Email Integration**: Automatic welcome emails
 - **Invitation Status Tracking**: Track sent/failed invitations
 
 ### 3. Role Assignment
+
 - View user's assigned realm roles
 - Assign new roles with search and filtering
 - Remove roles with confirmation
@@ -70,6 +80,7 @@ src/app/(protected)/user-management/
 - Available roles filtering
 
 ### 4. Group Assignment
+
 - View user's group memberships
 - Assign users to groups
 - Remove group memberships
@@ -79,6 +90,7 @@ src/app/(protected)/user-management/
 ## API Integration
 
 ### Keycloak Integration
+
 The feature integrates with Keycloak Admin REST API:
 
 - **Organization APIs**: Manage organization membership
@@ -87,6 +99,7 @@ The feature integrates with Keycloak Admin REST API:
 - **User Management APIs**: Core user operations
 
 ### Service Layer
+
 ```typescript
 // Get organization users
 const users = await userManagementService.getOrganizationUsers(orgId, filters);
@@ -103,7 +116,8 @@ await userManagementService.assignGroups(assignment);
 
 ## Permission System
 
-All components are protected by `PermissionGuard` with the `"manage-users"` permission:
+All components are protected by `PermissionGuard` with the `"manage-users"`
+permission:
 
 ```typescript
 <PermissionGuard requiredPermission="manage-users">
@@ -114,6 +128,7 @@ All components are protected by `PermissionGuard` with the `"manage-users"` perm
 ## Usage Examples
 
 ### Basic Organization Users List
+
 ```typescript
 import { OrganizationUsers } from '@/features/user-management';
 
@@ -123,6 +138,7 @@ export default function UsersPage() {
 ```
 
 ### User Invitation Page
+
 ```typescript
 import { InviteUsers } from '@/features/user-management';
 
@@ -132,6 +148,7 @@ export default function InvitePage() {
 ```
 
 ### User Details Management
+
 ```typescript
 import { UserDetails } from '@/features/user-management';
 
@@ -141,16 +158,17 @@ export default function UserPage({ params }: { params: { userId: string } }) {
 ```
 
 ### Using Utility Components
+
 ```typescript
-import { 
-  UserCard, 
-  UserAvatar, 
+import {
+  UserCard,
+  UserAvatar,
   RolesBadgesList,
-  GroupsBadgesList 
+  GroupsBadgesList
 } from '@/features/user-management';
 
 // User card with actions
-<UserCard 
+<UserCard
   user={user}
   onManage={(user) => navigate(`/users/${user.id}`)}
   onRemove={(user) => handleRemove(user)}
@@ -163,16 +181,22 @@ import {
 ## Hooks Usage
 
 ### Organization Users Hook
+
 ```typescript
 import { useOrganizationUsers } from '@/features/user-management';
 
 const { users, totalCount, isLoading, refetch } = useOrganizationUsers(
   organizationId,
-  { search: 'john', page: 1, size: 20 }
+  {
+    search: 'john',
+    page: 1,
+    size: 20,
+  }
 );
 ```
 
 ### Role Assignment Hook
+
 ```typescript
 import { useRoleAssignment } from '@/features/user-management';
 
@@ -183,7 +207,7 @@ const handleAssignRoles = () => {
     userId,
     organizationId,
     roles: selectedRoles,
-    action: 'assign'
+    action: 'assign',
   });
 };
 ```
@@ -219,21 +243,25 @@ const handleAssignRoles = () => {
 ## Testing Considerations
 
 ### Unit Tests
+
 - Component rendering with various props
 - Hook behavior with mock data
 - Service method functionality
 - Form validation logic
 
 ### Integration Tests
+
 - User invitation workflow
 - Role assignment process
 - Group management flow
 - Error handling scenarios
 
 ### E2E Tests
+
 - Complete user management workflows
 - Navigation between pages
 - Bulk operations
 - Permission-based access control
 
-This feature provides a complete, production-ready user management system that can be easily integrated into any organization-based application.
+This feature provides a complete, production-ready user management system that
+can be easily integrated into any organization-based application.

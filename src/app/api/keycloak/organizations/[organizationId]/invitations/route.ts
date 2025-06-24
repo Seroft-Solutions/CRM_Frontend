@@ -5,32 +5,32 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
+import {
   getAdminRealmsRealmUsers,
   getAdminRealmsRealmGroups,
   putAdminRealmsRealmUsersUserId,
-  putAdminRealmsRealmUsersUserIdGroupsGroupId
+  putAdminRealmsRealmUsersUserIdGroupsGroupId,
 } from '@/core/api/generated/keycloak';
-import type { 
-  UserRepresentation,
-  GroupRepresentation
-} from '@/core/api/generated/keycloak';
-import type { 
-  PendingInvitation, 
+import type { UserRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
+import type {
+  PendingInvitation,
   InvitationListResponse,
   InvitationFilters,
-  InvitationStatus
+  InvitationStatus,
 } from '@/features/user-management/types';
 
 // Helper function to parse invitation metadata from user attributes
-function parseInvitationFromUserAttributes(user: UserRepresentation, groups: GroupRepresentation[]): PendingInvitation | null {
+function parseInvitationFromUserAttributes(
+  user: UserRepresentation,
+  groups: GroupRepresentation[]
+): PendingInvitation | null {
   const attributes = user.attributes;
   if (!attributes?.invitation_id?.[0]) return null;
 
   try {
     const selectedGroupIds = JSON.parse(attributes.invitation_selected_groups?.[0] || '[]');
-    const selectedGroups = groups.filter(g => selectedGroupIds.includes(g.id));
-    
+    const selectedGroups = groups.filter((g) => selectedGroupIds.includes(g.id));
+
     return {
       id: attributes.invitation_id[0],
       email: user.email || '',
@@ -40,9 +40,11 @@ function parseInvitationFromUserAttributes(user: UserRepresentation, groups: Gro
       status: (attributes.invitation_status?.[0] as InvitationStatus) || 'pending',
       invitedBy: attributes.invitation_invited_by?.[0] || '',
       invitedAt: parseInt(attributes.invitation_invited_at?.[0] || '0'),
-      expiresAt: attributes.invitation_expires_at?.[0] ? parseInt(attributes.invitation_expires_at[0]) : undefined,
+      expiresAt: attributes.invitation_expires_at?.[0]
+        ? parseInt(attributes.invitation_expires_at[0])
+        : undefined,
       selectedGroups,
-      invitationNote: attributes.invitation_note?.[0] || ''
+      invitationNote: attributes.invitation_note?.[0] || '',
     };
   } catch (error) {
     console.error('Failed to parse invitation metadata:', error);
@@ -57,10 +59,7 @@ export async function GET(
   try {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { organizationId } = await params;
@@ -69,16 +68,16 @@ export async function GET(
 
     // Parse query parameters
     const filters: InvitationFilters = {
-      status: searchParams.get('status')?.split(',') as InvitationStatus[] || ['pending'],
+      status: (searchParams.get('status')?.split(',') as InvitationStatus[]) || ['pending'],
       search: searchParams.get('search') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
-      size: parseInt(searchParams.get('size') || '20')
+      size: parseInt(searchParams.get('size') || '20'),
     };
 
     // Get all users with invitation metadata from Keycloak
     const allUsers = await getAdminRealmsRealmUsers(realm, {
       first: 0,
-      max: 1000
+      max: 1000,
     });
 
     console.log(`Found ${allUsers.length} total users`);
@@ -88,30 +87,32 @@ export async function GET(
 
     // Filter users with invitation metadata for this organization
     const pendingInvitations: PendingInvitation[] = allUsers
-      .map(user => {
+      .map((user) => {
         const invitation = parseInvitationFromUserAttributes(user, allGroups);
         if (invitation && invitation.organizationId === organizationId) {
           console.log('Found invitation:', {
             email: invitation.email,
             status: invitation.status,
-            orgId: invitation.organizationId
+            orgId: invitation.organizationId,
           });
         }
         return invitation;
       })
-      .filter((invitation): invitation is PendingInvitation => 
-        invitation !== null && 
-        invitation.organizationId === organizationId &&
-        filters.status!.includes(invitation.status)
+      .filter(
+        (invitation): invitation is PendingInvitation =>
+          invitation !== null &&
+          invitation.organizationId === organizationId &&
+          filters.status!.includes(invitation.status)
       );
 
     console.log(`Found ${pendingInvitations.length} pending invitations for org ${organizationId}`);
 
     // Apply search filter
-    const filteredInvitations = filters.search 
-      ? pendingInvitations.filter(inv => 
-          inv.email.toLowerCase().includes(filters.search!.toLowerCase()) ||
-          `${inv.firstName} ${inv.lastName}`.toLowerCase().includes(filters.search!.toLowerCase())
+    const filteredInvitations = filters.search
+      ? pendingInvitations.filter(
+          (inv) =>
+            inv.email.toLowerCase().includes(filters.search!.toLowerCase()) ||
+            `${inv.firstName} ${inv.lastName}`.toLowerCase().includes(filters.search!.toLowerCase())
         )
       : pendingInvitations;
 
@@ -125,7 +126,7 @@ export async function GET(
       invitations: paginatedInvitations,
       totalCount,
       currentPage: filters.page!,
-      totalPages
+      totalPages,
     };
 
     return NextResponse.json(response);
@@ -146,10 +147,7 @@ export async function POST(
   try {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { organizationId } = await params;
@@ -162,19 +160,16 @@ export async function POST(
       // Find user and their invitation metadata
       const user = await getAdminRealmsRealmUsers(realm, {
         search: userId,
-        exact: true
+        exact: true,
       });
 
       if (user.length === 0) {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
 
       const userData = user[0];
       const invitation = parseInvitationFromUserAttributes(userData, []);
-      
+
       if (!invitation || invitation.organizationId !== organizationId) {
         return NextResponse.json(
           { error: 'No valid invitation found for this user' },
@@ -185,11 +180,7 @@ export async function POST(
       // Assign groups from invitation
       for (const group of invitation.selectedGroups) {
         try {
-          await putAdminRealmsRealmUsersUserIdGroupsGroupId(
-            realm,
-            userId,
-            group.id!
-          );
+          await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, group.id!);
         } catch (groupError) {
           console.warn(`Failed to assign group ${group.id} to user ${userId}:`, groupError);
         }
@@ -198,25 +189,22 @@ export async function POST(
       // Update invitation status to accepted
       const updatedAttributes = {
         ...userData.attributes,
-        invitation_status: ['accepted']
+        invitation_status: ['accepted'],
       };
 
       await putAdminRealmsRealmUsersUserId(realm, userId, {
         ...userData,
-        attributes: updatedAttributes
+        attributes: updatedAttributes,
       });
 
       return NextResponse.json({
         success: true,
         message: 'Groups assigned successfully',
-        assignedGroups: invitation.selectedGroups.length
+        assignedGroups: invitation.selectedGroups.length,
       });
     }
 
-    return NextResponse.json(
-      { error: 'Invalid action' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     console.error('Invitation assignment API error:', error);
     return NextResponse.json(

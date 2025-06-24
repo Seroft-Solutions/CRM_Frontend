@@ -10,7 +10,13 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useInviteUser, useInviteUserWithGroups, useOrganizationContext, useAvailableGroups, useUserManagementRefresh } from '../hooks';
+import {
+  useInviteUser,
+  useInviteUserWithGroups,
+  useOrganizationContext,
+  useAvailableGroups,
+  useUserManagementRefresh,
+} from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,11 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -50,20 +52,25 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { 
-  UserPlus, 
-  Mail, 
-  Plus, 
-  Trash2, 
-  Upload, 
+import {
+  UserPlus,
+  Mail,
+  Plus,
+  Trash2,
+  Upload,
   FileText,
   ArrowLeft,
   Send,
   Users,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
-import type { InviteUserFormData, BulkInviteFormData, InviteUserFormDataWithGroups, BulkInviteFormDataWithGroups } from '../types';
+import type {
+  InviteUserFormData,
+  BulkInviteFormData,
+  InviteUserFormDataWithGroups,
+  BulkInviteFormDataWithGroups,
+} from '../types';
 import { toast } from 'sonner';
 
 // Form validation schemas
@@ -84,7 +91,9 @@ const inviteUserWithGroupsSchema = z.object({
 });
 
 const bulkInviteSchema = z.object({
-  manualInvitations: z.array(inviteUserWithGroupsSchema).min(1, 'At least one invitation is required'),
+  manualInvitations: z
+    .array(inviteUserWithGroupsSchema)
+    .min(1, 'At least one invitation is required'),
   defaultGroups: z.array(z.string()).default([]),
 });
 
@@ -95,7 +104,12 @@ interface InviteUsersProps {
 export function InviteUsers({ className }: InviteUsersProps) {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
-  const { inviteUserWithGroups, inviteUserWithGroupsAsync, isInviting: isInvitingWithGroups, isSuccess } = useInviteUserWithGroups();
+  const {
+    inviteUserWithGroups,
+    inviteUserWithGroupsAsync,
+    isInviting: isInvitingWithGroups,
+    isSuccess,
+  } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
   const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
 
@@ -108,7 +122,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   // Group options for MultiSelect
-  const groupOptions = groups.map(group => ({
+  const groupOptions = groups.map((group) => ({
     value: group.id!,
     label: group.name || '',
   }));
@@ -130,7 +144,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
     resolver: zodResolver(bulkInviteSchema),
     defaultValues: {
       manualInvitations: [
-        { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' }
+        { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' },
       ],
       defaultGroups: [],
     },
@@ -143,8 +157,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
   // Handle single user invitation with groups
   const handleSingleInvite = async (data: InviteUserFormDataWithGroups) => {
-    const selectedGroups = groups.filter(g => data.selectedGroups.includes(g.id!));
-    
+    const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
+
     try {
       await inviteUserWithGroupsAsync({
         ...data,
@@ -154,7 +168,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
       // Reset form on success
       singleForm.reset();
-      setInvitationStatus(prev => ({
+      setInvitationStatus((prev) => ({
         ...prev,
         sent: [...prev.sent, data],
       }));
@@ -168,15 +182,17 @@ export function InviteUsers({ className }: InviteUsersProps) {
         setShowSuccessDialog(false);
         router.push('/user-management/organization-users');
       }, 2000);
-
     } catch (error) {
       // Error handling is done by the hook, just update local status
-      setInvitationStatus(prev => ({
+      setInvitationStatus((prev) => ({
         ...prev,
-        failed: [...prev.failed, { 
-          invitation: data, 
-          error: error instanceof Error ? error.message : 'Failed to send invitation' 
-        }],
+        failed: [
+          ...prev.failed,
+          {
+            invitation: data,
+            error: error instanceof Error ? error.message : 'Failed to send invitation',
+          },
+        ],
       }));
     }
   };
@@ -188,20 +204,20 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
     // Process invitations sequentially for better error handling
     for (const invitation of data.manualInvitations) {
-      const selectedGroups = groups.filter(g => invitation.selectedGroups.includes(g.id!));
-      
+      const selectedGroups = groups.filter((g) => invitation.selectedGroups.includes(g.id!));
+
       try {
         await inviteUserWithGroupsAsync({
           ...invitation,
           organizationId,
           selectedGroups,
         });
-        
+
         sent.push(invitation);
       } catch (error) {
         failed.push({
           invitation,
-          error: error instanceof Error ? error.message : 'Failed to send invitation'
+          error: error instanceof Error ? error.message : 'Failed to send invitation',
         });
       }
     }
@@ -212,7 +228,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
     if (failed.length === 0) {
       bulkForm.reset({
         manualInvitations: [
-          { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' }
+          { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' },
         ],
         defaultGroups: [],
       });
@@ -257,9 +273,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Invite Users</h1>
-            <p className="text-muted-foreground">
-              Add new users to {organizationName}
-            </p>
+            <p className="text-muted-foreground">Add new users to {organizationName}</p>
           </div>
         </div>
 
@@ -283,7 +297,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
               </CardHeader>
               <CardContent>
                 <Form {...singleForm}>
-                  <form onSubmit={singleForm.handleSubmit(handleSingleInvite)} className="space-y-4">
+                  <form
+                    onSubmit={singleForm.handleSubmit(handleSingleInvite)}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={singleForm.control}
@@ -292,10 +309,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           <FormItem>
                             <FormLabel>First Name</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="John" 
+                              <Input
+                                placeholder="John"
                                 disabled={isInvitingWithGroups}
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -309,11 +326,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           <FormItem>
                             <FormLabel>Last Name</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="Doe" 
-                                disabled={isInvitingWithGroups}
-                                {...field} 
-                              />
+                              <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -328,11 +341,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="email" 
-                              placeholder="john.doe@example.com" 
+                            <Input
+                              type="email"
+                              placeholder="john.doe@example.com"
                               disabled={isInvitingWithGroups}
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -341,8 +354,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     />
 
                     <div className="flex gap-2">
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         disabled={isInvitingWithGroups}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
@@ -358,9 +371,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           </>
                         )}
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => singleForm.reset()}
                         disabled={isInvitingWithGroups}
                       >
@@ -391,9 +404,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label className="text-base font-medium">User Invitations</Label>
-                        <Button 
+                        <Button
                           type="button"
-                          variant="outline" 
+                          variant="outline"
                           size="sm"
                           onClick={addInvitationRow}
                           disabled={isInvitingWithGroups}
@@ -424,10 +437,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input 
-                                            placeholder="First name" 
+                                          <Input
+                                            placeholder="First name"
                                             disabled={isInvitingWithGroups}
-                                            {...field} 
+                                            {...field}
                                           />
                                         </FormControl>
                                         <FormMessage />
@@ -442,10 +455,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input 
-                                            placeholder="Last name" 
+                                          <Input
+                                            placeholder="Last name"
                                             disabled={isInvitingWithGroups}
-                                            {...field} 
+                                            {...field}
                                           />
                                         </FormControl>
                                         <FormMessage />
@@ -460,11 +473,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input 
-                                            type="email" 
-                                            placeholder="email@example.com" 
+                                          <Input
+                                            type="email"
+                                            placeholder="email@example.com"
                                             disabled={isInvitingWithGroups}
-                                            {...field} 
+                                            {...field}
                                           />
                                         </FormControl>
                                         <FormMessage />
@@ -491,8 +504,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         disabled={isInvitingWithGroups}
                         className="bg-green-600 hover:bg-green-700"
                       >
@@ -508,14 +521,16 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           </>
                         )}
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => bulkForm.reset({
-                          manualInvitations: [
-                            { email: '', firstName: '', lastName: '', selectedGroups: [] }
-                          ],
-                        })}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          bulkForm.reset({
+                            manualInvitations: [
+                              { email: '', firstName: '', lastName: '', selectedGroups: [] },
+                            ],
+                          })
+                        }
                         disabled={isInvitingWithGroups}
                       >
                         Clear All
@@ -533,9 +548,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
           <Card>
             <CardHeader>
               <CardTitle>Invitation Status</CardTitle>
-              <CardDescription>
-                Review the status of your recent invitations
-              </CardDescription>
+              <CardDescription>Review the status of your recent invitations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {invitationStatus.sent.length > 0 && (
@@ -547,7 +560,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
                   <AlertDescription className="text-green-700">
                     <div className="space-y-2 mt-2">
                       {invitationStatus.sent.map((invitation, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-green-100 rounded-md">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-green-100 rounded-md"
+                        >
                           <span className="text-sm font-medium">
                             {invitation.firstName} {invitation.lastName} ({invitation.email})
                           </span>
@@ -571,7 +587,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                         <div key={index} className="p-2 bg-red-100 rounded-md">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
-                              {failure.invitation.firstName} {failure.invitation.lastName} ({failure.invitation.email})
+                              {failure.invitation.firstName} {failure.invitation.lastName} (
+                              {failure.invitation.email})
                             </span>
                             <Badge variant="destructive">Failed</Badge>
                           </div>
@@ -595,7 +612,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 Invitation Sent Successfully!
               </DialogTitle>
               <DialogDescription>
-                The user invitation has been sent successfully. Data is being refreshed automatically. You will be redirected to the organization users page.
+                The user invitation has been sent successfully. Data is being refreshed
+                automatically. You will be redirected to the organization users page.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-between">
@@ -603,7 +621,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
                 Refreshing user data...
               </div>
-              <Button 
+              <Button
                 onClick={async () => {
                   setShowSuccessDialog(false);
                   // Force one more refresh before navigation

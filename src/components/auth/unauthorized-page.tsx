@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ShieldX, ArrowLeft, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from 'next/link';
+import { ShieldX, ArrowLeft, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface UnauthorizedPageProps {
   title?: string;
@@ -12,11 +12,11 @@ interface UnauthorizedPageProps {
 }
 
 export function UnauthorizedPage({
-  title = "Access Denied",
+  title = 'Access Denied',
   description = "You don't have permission to access this resource.",
   requiredPermission,
   showBackButton = true,
-  backUrl = "/",
+  backUrl = '/',
 }: UnauthorizedPageProps) {
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
@@ -26,13 +26,14 @@ export function UnauthorizedPage({
             <ShieldX className="h-6 w-6 text-destructive" />
           </div>
           <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-          <CardDescription className="text-base">
-            {description}
-          </CardDescription>
+          <CardDescription className="text-base">{description}</CardDescription>
           {requiredPermission && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                Required permission: <code className="bg-background px-2 py-1 rounded text-xs font-mono">{requiredPermission}</code>
+                Required permission:{' '}
+                <code className="bg-background px-2 py-1 rounded text-xs font-mono">
+                  {requiredPermission}
+                </code>
               </p>
             </div>
           )}

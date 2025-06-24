@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { ChevronsUpDown, Plus, Check, Building2 } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useUserOrganizations } from "@/hooks/useUserOrganizations"
+import * as React from 'react';
+import { ChevronsUpDown, Plus, Check, Building2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 
 import {
   DropdownMenu,
@@ -13,55 +13,55 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 export function OrganizationSwitcher() {
-  const { isMobile } = useSidebar()
-  const router = useRouter()
-  const { data: organizations, isLoading } = useUserOrganizations()
-  
+  const { isMobile } = useSidebar();
+  const router = useRouter();
+  const { data: organizations, isLoading } = useUserOrganizations();
+
   // Get the selected organization from localStorage
   const getSelectedOrganization = React.useCallback(() => {
-    if (!organizations?.length) return null
-    
-    const selectedOrgId = localStorage.getItem('selectedOrganizationId')
-    if (selectedOrgId) {
-      const selectedOrg = organizations.find(org => org.id === selectedOrgId)
-      if (selectedOrg) return selectedOrg
-    }
-    
-    // Fallback to first organization if no selection found
-    return organizations[0]
-  }, [organizations])
+    if (!organizations?.length) return null;
 
-  const [activeOrganization, setActiveOrganization] = React.useState(getSelectedOrganization)
+    const selectedOrgId = localStorage.getItem('selectedOrganizationId');
+    if (selectedOrgId) {
+      const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
+      if (selectedOrg) return selectedOrg;
+    }
+
+    // Fallback to first organization if no selection found
+    return organizations[0];
+  }, [organizations]);
+
+  const [activeOrganization, setActiveOrganization] = React.useState(getSelectedOrganization);
 
   React.useEffect(() => {
-    const selectedOrg = getSelectedOrganization()
+    const selectedOrg = getSelectedOrganization();
     if (selectedOrg) {
-      setActiveOrganization(selectedOrg)
+      setActiveOrganization(selectedOrg);
     }
-  }, [getSelectedOrganization])
+  }, [getSelectedOrganization]);
 
-  const displayOrg = activeOrganization
+  const displayOrg = activeOrganization;
 
   if (isLoading || !organizations?.length || !displayOrg) {
-    return null
+    return null;
   }
 
-  const handleOrganizationSwitch = (org: typeof organizations[0]) => {
-    setActiveOrganization(org)
-    localStorage.setItem('selectedOrganizationId', org.id)
-    localStorage.setItem('selectedOrganizationName', org.name)
-    console.log('Switching to organization:', org)
-    window.location.reload()
-  }
+  const handleOrganizationSwitch = (org: (typeof organizations)[0]) => {
+    setActiveOrganization(org);
+    localStorage.setItem('selectedOrganizationId', org.id);
+    localStorage.setItem('selectedOrganizationName', org.name);
+    console.log('Switching to organization:', org);
+    window.location.reload();
+  };
 
   return (
     <SidebarMenu>
@@ -85,7 +85,7 @@ export function OrganizationSwitcher() {
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             align="start"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-muted-foreground text-xs">
@@ -103,9 +103,7 @@ export function OrganizationSwitcher() {
                 <div className="flex flex-col flex-1">
                   <span className="font-medium">{org.name}</span>
                 </div>
-                {displayOrg.id === org.id && (
-                  <Check className="size-4" />
-                )}
+                {displayOrg.id === org.id && <Check className="size-4" />}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
@@ -120,5 +118,5 @@ export function OrganizationSwitcher() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

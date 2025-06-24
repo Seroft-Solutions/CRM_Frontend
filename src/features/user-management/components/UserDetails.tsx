@@ -7,13 +7,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  useUserDetails, 
-  useRoleAssignment, 
+import {
+  useUserDetails,
+  useRoleAssignment,
   useGroupAssignment,
   useOrganizationContext,
   useAvailableRoles,
-  useAvailableGroups
+  useAvailableGroups,
 } from '../hooks';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,18 +49,18 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { 
-  ArrowLeft, 
-  User, 
-  Mail, 
-  Calendar, 
-  Shield, 
-  Users, 
-  Plus, 
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Calendar,
+  Shield,
+  Users,
+  Plus,
   Minus,
   Search,
   UserCheck,
-  Settings
+  Settings,
 } from 'lucide-react';
 import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 
@@ -152,9 +152,9 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
 
   const handleRoleSelection = (role: RoleRepresentation, checked: boolean) => {
     if (checked) {
-      setSelectedRoles(prev => [...prev, role]);
+      setSelectedRoles((prev) => [...prev, role]);
     } else {
-      setSelectedRoles(prev => prev.filter(r => r.id !== role.id));
+      setSelectedRoles((prev) => prev.filter((r) => r.id !== role.id));
     }
   };
 
@@ -183,9 +183,9 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
 
   const handleGroupSelection = (group: GroupRepresentation, checked: boolean) => {
     if (checked) {
-      setSelectedGroups(prev => [...prev, group]);
+      setSelectedGroups((prev) => [...prev, group]);
     } else {
-      setSelectedGroups(prev => prev.filter(g => g.id !== group.id));
+      setSelectedGroups((prev) => prev.filter((g) => g.id !== group.id));
     }
   };
 
@@ -229,14 +229,16 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
   };
 
   // Filter functions
-  const filteredAvailableRoles = availableRoles.filter(role => 
-    !userDetails.assignedRealmRoles.some(assigned => assigned.id === role.id) &&
-    role.name?.toLowerCase().includes(roleSearchTerm.toLowerCase())
+  const filteredAvailableRoles = availableRoles.filter(
+    (role) =>
+      !userDetails.assignedRealmRoles.some((assigned) => assigned.id === role.id) &&
+      role.name?.toLowerCase().includes(roleSearchTerm.toLowerCase())
   );
 
-  const filteredAvailableGroups = availableGroups.filter(group => 
-    !userDetails.assignedGroups.some(assigned => assigned.id === group.id) &&
-    group.name?.toLowerCase().includes(groupSearchTerm.toLowerCase())
+  const filteredAvailableGroups = availableGroups.filter(
+    (group) =>
+      !userDetails.assignedGroups.some((assigned) => assigned.id === group.id) &&
+      group.name?.toLowerCase().includes(groupSearchTerm.toLowerCase())
   );
 
   // Format date
@@ -257,9 +259,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
             <h1 className="text-3xl font-bold tracking-tight">
               {user.firstName} {user.lastName}
             </h1>
-            <p className="text-muted-foreground">
-              User management in {organizationName}
-            </p>
+            <p className="text-muted-foreground">User management in {organizationName}</p>
           </div>
         </div>
 
@@ -293,12 +293,14 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{user.email}</span>
                     {user.emailVerified && (
-                      <Badge variant="outline" className="text-xs">Verified</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        Verified
+                      </Badge>
                     )}
                   </div>
 
@@ -319,9 +321,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                       <Shield className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Roles</span>
                     </div>
-                    <Badge variant="secondary">
-                      {userDetails.assignedRealmRoles.length}
-                    </Badge>
+                    <Badge variant="secondary">{userDetails.assignedRealmRoles.length}</Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -329,26 +329,24 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Groups</span>
                     </div>
-                    <Badge variant="secondary">
-                      {userDetails.assignedGroups.length}
-                    </Badge>
+                    <Badge variant="secondary">{userDetails.assignedGroups.length}</Badge>
                   </div>
 
                   <Separator />
 
                   <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => setActiveTab('roles')}
                     >
                       <Shield className="h-4 w-4" />
                       Manage Roles
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => setActiveTab('groups')}
                     >
@@ -375,9 +373,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                     Assign Roles
                   </Button>
                 </CardTitle>
-                <CardDescription>
-                  Manage roles assigned to this user
-                </CardDescription>
+                <CardDescription>Manage roles assigned to this user</CardDescription>
               </CardHeader>
               <CardContent>
                 {userDetails.assignedRealmRoles.length === 0 ? (
@@ -441,9 +437,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                     Assign Groups
                   </Button>
                 </CardTitle>
-                <CardDescription>
-                  Manage groups this user belongs to
-                </CardDescription>
+                <CardDescription>Manage groups this user belongs to</CardDescription>
               </CardHeader>
               <CardContent>
                 {userDetails.assignedGroups.length === 0 ? (
@@ -503,7 +497,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                 Select roles to assign to {user.firstName} {user.lastName}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -523,10 +517,15 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                 ) : (
                   <div className="p-2">
                     {filteredAvailableRoles.map((role) => (
-                      <div key={role.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded">
+                      <div
+                        key={role.id}
+                        className="flex items-center space-x-2 p-2 hover:bg-muted rounded"
+                      >
                         <Checkbox
-                          checked={selectedRoles.some(r => r.id === role.id)}
-                          onCheckedChange={(checked) => handleRoleSelection(role, checked as boolean)}
+                          checked={selectedRoles.some((r) => r.id === role.id)}
+                          onCheckedChange={(checked) =>
+                            handleRoleSelection(role, checked as boolean)
+                          }
                         />
                         <div className="flex-1">
                           <div className="font-medium">{role.name}</div>
@@ -545,11 +544,13 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
               <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleConfirmRoleAssignment} 
+              <Button
+                onClick={handleConfirmRoleAssignment}
                 disabled={selectedRoles.length === 0 || isAssigningRoles}
               >
-                {isAssigningRoles ? 'Assigning...' : `Assign ${selectedRoles.length} Role${selectedRoles.length > 1 ? 's' : ''}`}
+                {isAssigningRoles
+                  ? 'Assigning...'
+                  : `Assign ${selectedRoles.length} Role${selectedRoles.length > 1 ? 's' : ''}`}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -564,7 +565,7 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                 Select groups to assign to {user.firstName} {user.lastName}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -584,10 +585,15 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                 ) : (
                   <div className="p-2">
                     {filteredAvailableGroups.map((group) => (
-                      <div key={group.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded">
+                      <div
+                        key={group.id}
+                        className="flex items-center space-x-2 p-2 hover:bg-muted rounded"
+                      >
                         <Checkbox
-                          checked={selectedGroups.some(g => g.id === group.id)}
-                          onCheckedChange={(checked) => handleGroupSelection(group, checked as boolean)}
+                          checked={selectedGroups.some((g) => g.id === group.id)}
+                          onCheckedChange={(checked) =>
+                            handleGroupSelection(group, checked as boolean)
+                          }
                         />
                         <div className="flex-1">
                           <div className="font-medium">{group.name}</div>
@@ -604,11 +610,13 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
               <Button variant="outline" onClick={() => setGroupDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleConfirmGroupAssignment} 
+              <Button
+                onClick={handleConfirmGroupAssignment}
                 disabled={selectedGroups.length === 0 || isAssigningGroups}
               >
-                {isAssigningGroups ? 'Assigning...' : `Assign ${selectedGroups.length} Group${selectedGroups.length > 1 ? 's' : ''}`}
+                {isAssigningGroups
+                  ? 'Assigning...'
+                  : `Assign ${selectedGroups.length} Group${selectedGroups.length > 1 ? 's' : ''}`}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -622,8 +630,8 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                 Remove {itemToRemove?.type === 'role' ? 'Role' : 'Group'}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove <strong>{itemToRemove?.item.name}</strong> from this user? 
-                This action cannot be undone.
+                Are you sure you want to remove <strong>{itemToRemove?.item.name}</strong> from this
+                user? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

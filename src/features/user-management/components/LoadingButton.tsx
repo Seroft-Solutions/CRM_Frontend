@@ -5,20 +5,20 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Loader2, 
-  Send, 
-  Mail, 
-  Save, 
-  Trash2, 
-  UserPlus, 
-  Users, 
+import {
+  Loader2,
+  Send,
+  Mail,
+  Save,
+  Trash2,
+  UserPlus,
+  Users,
   RefreshCw,
   Download,
   Upload,
   Eye,
   Edit,
-  Plus
+  Plus,
 } from 'lucide-react';
 
 interface LoadingButtonProps extends React.ComponentProps<typeof Button> {
@@ -28,7 +28,7 @@ interface LoadingButtonProps extends React.ComponentProps<typeof Button> {
   loadingIcon?: React.ReactNode;
 }
 
-export function LoadingButton({ 
+export function LoadingButton({
   isLoading = false,
   loadingText = 'Loading...',
   icon,
@@ -36,16 +36,12 @@ export function LoadingButton({
   children,
   disabled,
   className,
-  ...props 
+  ...props
 }: LoadingButtonProps) {
   const defaultLoadingIcon = <Loader2 className="h-4 w-4 animate-spin" />;
 
   return (
-    <Button
-      disabled={disabled || isLoading}
-      className={`gap-2 ${className}`}
-      {...props}
-    >
+    <Button disabled={disabled || isLoading} className={`gap-2 ${className}`} {...props}>
       {isLoading ? (
         <>
           {loadingIcon || defaultLoadingIcon}
@@ -62,7 +58,10 @@ export function LoadingButton({
 }
 
 // Predefined button variants for common actions
-export function SendInviteButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function SendInviteButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<Send className="h-4 w-4" />}
@@ -75,7 +74,10 @@ export function SendInviteButton({ isLoading, ...props }: Omit<LoadingButtonProp
   );
 }
 
-export function BulkInviteButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function BulkInviteButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<Mail className="h-4 w-4" />}
@@ -88,7 +90,10 @@ export function BulkInviteButton({ isLoading, ...props }: Omit<LoadingButtonProp
   );
 }
 
-export function SaveButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function SaveButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<Save className="h-4 w-4" />}
@@ -101,7 +106,10 @@ export function SaveButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'ic
   );
 }
 
-export function DeleteButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function DeleteButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<Trash2 className="h-4 w-4" />}
@@ -115,7 +123,10 @@ export function DeleteButton({ isLoading, ...props }: Omit<LoadingButtonProps, '
   );
 }
 
-export function RefreshButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function RefreshButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<RefreshCw className="h-4 w-4" />}
@@ -129,7 +140,10 @@ export function RefreshButton({ isLoading, ...props }: Omit<LoadingButtonProps, 
   );
 }
 
-export function AddRowButton({ isLoading, ...props }: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
+export function AddRowButton({
+  isLoading,
+  ...props
+}: Omit<LoadingButtonProps, 'icon' | 'loadingText'>) {
   return (
     <LoadingButton
       icon={<Plus className="h-4 w-4" />}

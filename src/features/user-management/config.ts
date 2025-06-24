@@ -7,24 +7,24 @@ export const USER_MANAGEMENT_CONFIG = {
   // Pagination settings
   DEFAULT_PAGE_SIZE: 20,
   MAX_PAGE_SIZE: 100,
-  
+
   // Search settings
   SEARCH_DEBOUNCE_MS: 300,
   MIN_SEARCH_LENGTH: 2,
-  
+
   // Invitation settings
   MAX_BULK_INVITATIONS: 50,
   INVITATION_TIMEOUT_MS: 30000,
-  
+
   // Role and group settings
   MAX_VISIBLE_BADGES: 3,
   MAX_ROLES_PER_USER: 100,
   MAX_GROUPS_PER_USER: 50,
-  
+
   // UI settings
   CARD_HOVER_DELAY: 200,
   TOAST_DURATION: 5000,
-  
+
   // Avatar settings
   AVATAR_SIZES: {
     sm: 'h-6 w-6',
@@ -32,15 +32,15 @@ export const USER_MANAGEMENT_CONFIG = {
     lg: 'h-12 w-12',
     xl: 'h-16 w-16',
   },
-  
+
   // Query stale times (in milliseconds)
   STALE_TIME: {
-    USERS: 5 * 60 * 1000,          // 5 minutes
-    USER_DETAILS: 2 * 60 * 1000,   // 2 minutes
-    ROLES: 10 * 60 * 1000,         // 10 minutes
-    GROUPS: 10 * 60 * 1000,        // 10 minutes
+    USERS: 5 * 60 * 1000, // 5 minutes
+    USER_DETAILS: 2 * 60 * 1000, // 2 minutes
+    ROLES: 10 * 60 * 1000, // 10 minutes
+    GROUPS: 10 * 60 * 1000, // 10 minutes
   },
-  
+
   // Error messages
   ERROR_MESSAGES: {
     FETCH_USERS_FAILED: 'Failed to load organization users',
@@ -50,7 +50,7 @@ export const USER_MANAGEMENT_CONFIG = {
     ASSIGN_GROUPS_FAILED: 'Failed to assign groups',
     REMOVE_USER_FAILED: 'Failed to remove user from organization',
   },
-  
+
   // Success messages
   SUCCESS_MESSAGES: {
     USER_INVITED: 'User invitation sent successfully',
@@ -58,7 +58,7 @@ export const USER_MANAGEMENT_CONFIG = {
     GROUPS_ASSIGNED: 'Groups assigned successfully',
     USER_REMOVED: 'User removed from organization',
   },
-  
+
   // Validation rules
   VALIDATION: {
     EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -67,7 +67,7 @@ export const USER_MANAGEMENT_CONFIG = {
     USERNAME_MIN_LENGTH: 3,
     USERNAME_MAX_LENGTH: 30,
   },
-  
+
   // Feature flags
   FEATURES: {
     BULK_OPERATIONS: true,

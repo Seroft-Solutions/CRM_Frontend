@@ -7,14 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Building2, 
-  Loader2, 
-  User, 
-  Mail,
-  CheckCircle2,
-  AlertCircle
-} from 'lucide-react';
+import { Building2, Loader2, User, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { OrganizationSetupRequest } from '@/services/organization/organization-setup.service';
 
 interface OrganizationSetupFormProps {
@@ -26,7 +19,7 @@ interface OrganizationSetupFormProps {
 export function OrganizationSetupForm({
   onSubmit,
   isLoading = false,
-  error
+  error,
 }: OrganizationSetupFormProps) {
   const { data: session } = useSession();
   const [formData, setFormData] = useState<OrganizationSetupRequest>({
@@ -38,28 +31,31 @@ export function OrganizationSetupForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError('');
-    
+
     if (!formData.organizationName.trim()) return;
-    
+
     // Validate organization name - no spaces allowed
     if (formData.organizationName.includes(' ')) {
       setValidationError('Organization name cannot contain spaces');
       return;
     }
-    
+
     // Auto-generate domain from organization name
-    const orgName = formData.organizationName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const orgName = formData.organizationName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
     const domain = `${orgName}.crmcup.com`;
-    
+
     await onSubmit({
       organizationName: formData.organizationName.trim(),
       domain: domain,
     });
   };
 
-  const handleChange = (field: keyof OrganizationSetupRequest) => 
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData(prev => ({ ...prev, [field]: e.target.value }));
+  const handleChange =
+    (field: keyof OrganizationSetupRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
       // Clear validation error when user starts typing
       if (validationError && field === 'organizationName') {
         setValidationError('');
@@ -73,12 +69,8 @@ export function OrganizationSetupForm({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
           <Building2 className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold">
-          Setup Your Organization
-        </h1>
-        <p className="text-muted-foreground">
-          Create your workspace to get started with CRM Cup
-        </p>
+        <h1 className="text-2xl font-bold">Setup Your Organization</h1>
+        <p className="text-muted-foreground">Create your workspace to get started with CRM Cup</p>
       </div>
 
       {error && (

@@ -3,12 +3,12 @@
  * These types define the data structures used in the user management feature
  */
 
-import type { 
-  UserRepresentation, 
-  RoleRepresentation, 
+import type {
+  UserRepresentation,
+  RoleRepresentation,
   GroupRepresentation,
   OrganizationRepresentation,
-  MemberRepresentation 
+  MemberRepresentation,
 } from '@/core/api/generated/keycloak';
 
 // Extended user representation with organization context
@@ -22,12 +22,12 @@ export interface OrganizationUser extends MemberRepresentation {
   enabled?: boolean;
   emailVerified?: boolean;
   createdTimestamp?: number;
-  
+
   // Organization context
   organizationId: string;
   organizationName?: string;
   membershipId?: string;
-  
+
   // Role and group assignments (loaded separately)
   assignedRoles?: RoleRepresentation[];
   assignedGroups?: GroupRepresentation[];
@@ -56,7 +56,7 @@ export interface RoleAssignment {
   action: 'assign' | 'unassign';
 }
 
-// Group assignment data  
+// Group assignment data
 export interface GroupAssignment {
   userId: string;
   organizationId: string;
@@ -126,7 +126,7 @@ export interface PendingInvitation {
   lastName?: string;
   organizationId: string;
   organizationName?: string;
-  
+
   // Invitation tracking
   status: InvitationStatus;
   invitedBy: string;
@@ -134,11 +134,11 @@ export interface PendingInvitation {
   invitedAt: number; // timestamp
   expiresAt?: number; // timestamp
   lastSentAt?: number; // timestamp
-  
+
   // Group assignment
   selectedGroups: GroupRepresentation[];
   selectedRoles?: RoleRepresentation[];
-  
+
   // Metadata
   sendWelcomeEmail?: boolean;
   invitationNote?: string;
@@ -152,12 +152,12 @@ export interface UserInvitationWithGroups {
   organizationId: string;
   sendWelcomeEmail?: boolean;
   sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email instead of org invite
-  
+
   // Group and role assignment
   selectedGroups?: GroupRepresentation[];
   selectedRoles?: RoleRepresentation[];
   invitationNote?: string;
-  
+
   // Optional redirect after password setup
   redirectUri?: string;
 }

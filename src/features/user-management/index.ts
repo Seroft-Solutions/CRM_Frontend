@@ -32,10 +32,10 @@ export {
 
 // Services
 export { UserManagementService, userManagementService } from './services/user-management.service';
-export { 
-  UserOnboardingService, 
-  userOnboardingService, 
-  createOnboardingService 
+export {
+  UserOnboardingService,
+  userOnboardingService,
+  createOnboardingService,
 } from './services/user-onboarding.service';
 
 // Configuration
@@ -64,5 +64,5 @@ export type {
   InvitationStatus,
   InvitationActionResult,
   InvitationListResponse,
-  OrganizationWithInvitations
+  OrganizationWithInvitations,
 } from './types';

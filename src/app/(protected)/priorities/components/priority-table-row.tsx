@@ -1,17 +1,15 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { InlinePermissionGuard } from "@/components/auth/permission-guard";
-import { RelationshipCell } from "./relationship-cell";
-import type { PriorityDTO } from "@/core/api/generated/spring/schemas/PriorityDTO";
-
-
+import Link from 'next/link';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { InlinePermissionGuard } from '@/components/auth/permission-guard';
+import { RelationshipCell } from './relationship-cell';
+import type { PriorityDTO } from '@/core/api/generated/spring/schemas/PriorityDTO';
 
 interface RelationshipConfig {
   name: string;
@@ -28,15 +26,19 @@ interface PriorityTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
+  onRelationshipUpdate?: (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null
+  ) => Promise<void>;
   isUpdating?: boolean;
 }
 
-export function PriorityTableRow({ 
-  priority, 
-  onDelete, 
-  isDeleting, 
-  isSelected, 
+export function PriorityTableRow({
+  priority,
+  onDelete,
+  isDeleting,
+  isSelected,
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
@@ -50,36 +52,17 @@ export function PriorityTableRow({
           onCheckedChange={() => priority.id && onSelect(priority.id)}
         />
       </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {priority.name}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {priority.description}
-        
-      </TableCell>
-      
-      <TableCell className="whitespace-nowrap px-3 py-2">
-        
-        {priority.remark}
-        
-      </TableCell>
-      
 
-      
+      <TableCell className="whitespace-nowrap px-3 py-2">{priority.name}</TableCell>
+
+      <TableCell className="whitespace-nowrap px-3 py-2">{priority.description}</TableCell>
+
+      <TableCell className="whitespace-nowrap px-3 py-2">{priority.remark}</TableCell>
+
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">
           <InlinePermissionGuard requiredPermission="priority:read">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="h-7 w-7 p-0"
-            >
+            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
               <Link href={`/priorities/${priority.id}`}>
                 <Eye className="h-3.5 w-3.5" />
                 <span className="sr-only">View</span>
@@ -87,12 +70,7 @@ export function PriorityTableRow({
             </Button>
           </InlinePermissionGuard>
           <InlinePermissionGuard requiredPermission="priority:update">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="h-7 w-7 p-0"
-            >
+            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
               <Link href={`/priorities/${priority.id}/edit`}>
                 <Pencil className="h-3.5 w-3.5" />
                 <span className="sr-only">Edit</span>

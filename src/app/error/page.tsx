@@ -52,11 +52,7 @@ export default function AuthError() {
           >
             Try Again
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = '/'}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={() => (window.location.href = '/')} className="w-full">
             Return to Home
           </Button>
         </div>

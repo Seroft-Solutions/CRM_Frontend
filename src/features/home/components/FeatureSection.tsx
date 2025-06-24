@@ -1,7 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Users, Calendar, BarChart, Phone, MessageSquare, 
-  Target, Coffee, Award, Zap 
+import {
+  Users,
+  Calendar,
+  BarChart,
+  Phone,
+  MessageSquare,
+  Target,
+  Coffee,
+  Award,
+  Zap,
 } from 'lucide-react';
 
 // Map of icon names to actual icon components
@@ -14,11 +21,11 @@ const iconMap = {
   Target,
   Coffee,
   Award,
-  Zap
+  Zap,
 };
 
 interface Feature {
-  icon: string;  // The name of the icon from the iconMap
+  icon: string; // The name of the icon from the iconMap
   title: string;
   description: string;
 }
@@ -30,7 +37,7 @@ interface FeatureSectionProps {
 // Feature Card Component
 function FeatureCard({ icon, title, description }: Feature) {
   const IconComponent = iconMap[icon as keyof typeof iconMap];
-  
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardHeader className="pb-2">
@@ -59,7 +66,7 @@ export default function FeatureSection({ features }: FeatureSectionProps) {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <FeatureCard 
+            <FeatureCard
               key={index}
               icon={feature.icon}
               title={feature.title}

@@ -13,36 +13,26 @@ export async function DELETE(
   try {
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
-      return NextResponse.json(
-        { error: permissionCheck.error },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const { organizationId, partnerId } = await params;
     const realm = keycloakService.getRealm();
 
     // Remove partner from organization
-    await deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId(
-      realm,
-      organizationId,
-      partnerId
-    );
+    await deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId(realm, organizationId, partnerId);
 
     return NextResponse.json({
       success: true,
-      message: 'Business partner removed from organization successfully'
+      message: 'Business partner removed from organization successfully',
     });
   } catch (error: any) {
     console.error('Remove partner from organization error:', error);
-    
+
     if (error.status === 404) {
-      return NextResponse.json(
-        { error: 'Partner not found in organization' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Partner not found in organization' }, { status: 404 });
     }
-    
+
     return NextResponse.json(
       { error: error.message || 'Failed to remove partner from organization' },
       { status: error.status || 500 }

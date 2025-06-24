@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -33,21 +27,21 @@ interface OrganizationTableHeaderProps {
   onSelectAll: () => void;
 }
 
-export function OrganizationTableHeader({ 
-  onSort, 
+export function OrganizationTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
-  onSelectAll
+  onSelectAll,
 }: OrganizationTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -67,60 +61,51 @@ export function OrganizationTableHeader({
             }}
           />
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("keycloakOrgId")}
+            onClick={() => onSort('keycloakOrgId')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Keycloak Org Id
-            <div className="text-gray-400">
-              {renderSortIcon("keycloakOrgId")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('keycloakOrgId')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("name")}
+            onClick={() => onSort('name')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Name
-            <div className="text-gray-400">
-              {renderSortIcon("name")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('name')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("displayName")}
+            onClick={() => onSort('displayName')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Display Name
-            <div className="text-gray-400">
-              {renderSortIcon("displayName")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('displayName')}</div>
           </Button>
         </TableHead>
-        
+
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort("domain")}
+            onClick={() => onSort('domain')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Domain
-            <div className="text-gray-400">
-              {renderSortIcon("domain")}
-            </div>
+            <div className="text-gray-400">{renderSortIcon('domain')}</div>
           </Button>
         </TableHead>
-        
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -128,60 +113,47 @@ export function OrganizationTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">
-          {/* Empty cell for checkbox column */}
-        </TableHead>
-        
+        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["keycloakOrgId"] as string || ""}
-            onChange={(e) => onFilterChange("keycloakOrgId", e.target.value || undefined)}
+            value={(filters['keycloakOrgId'] as string) || ''}
+            onChange={(e) => onFilterChange('keycloakOrgId', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["name"] as string || ""}
-            onChange={(e) => onFilterChange("name", e.target.value || undefined)}
+            value={(filters['name'] as string) || ''}
+            onChange={(e) => onFilterChange('name', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["displayName"] as string || ""}
-            onChange={(e) => onFilterChange("displayName", e.target.value || undefined)}
+            value={(filters['displayName'] as string) || ''}
+            onChange={(e) => onFilterChange('displayName', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
+
         <TableHead className="px-3 py-2">
-          
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["domain"] as string || ""}
-            onChange={(e) => onFilterChange("domain", e.target.value || undefined)}
+            value={(filters['domain'] as string) || ''}
+            onChange={(e) => onFilterChange('domain', e.target.value || undefined)}
           />
-          
         </TableHead>
-        
-        
-        
-        
+
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

@@ -50,12 +50,12 @@ export function useUserRoleGroupCounts(organizationId: string, userId: string, e
 
 // Hook to fetch counts for multiple users (batched)
 export function useBatchUserRoleGroupCounts(
-  organizationId: string, 
-  userIds: string[], 
+  organizationId: string,
+  userIds: string[],
   enabled = true
 ) {
   // Create individual queries for each user but with shared cache
-  const queries = userIds.map(userId => ({
+  const queries = userIds.map((userId) => ({
     queryKey: ['userRoleGroupCounts', organizationId, userId],
     queryFn: () => userManagementService.getUserDetails(organizationId, userId),
     enabled: !!organizationId && !!userId && enabled,
@@ -65,23 +65,24 @@ export function useBatchUserRoleGroupCounts(
 
   // For now, we'll use individual queries
   // In the future, this could be optimized with a batch API endpoint
-  const results = userIds.map(userId => 
-    useUserRoleGroupCounts(organizationId, userId, enabled)
+  const results = userIds.map((userId) => useUserRoleGroupCounts(organizationId, userId, enabled));
+
+  const isLoading = results.some((result) => result.isLoading);
+  const hasErrors = results.some((result) => result.error);
+
+  const userCounts = results.reduce(
+    (acc, result) => {
+      acc[result.userId] = {
+        roleCount: result.roleCount,
+        groupCount: result.groupCount,
+        roles: result.roles,
+        groups: result.groups,
+        hasData: result.hasData,
+      };
+      return acc;
+    },
+    {} as Record<string, Omit<UserRoleGroupCounts, 'userId'>>
   );
-
-  const isLoading = results.some(result => result.isLoading);
-  const hasErrors = results.some(result => result.error);
-
-  const userCounts = results.reduce((acc, result) => {
-    acc[result.userId] = {
-      roleCount: result.roleCount,
-      groupCount: result.groupCount,
-      roles: result.roles,
-      groups: result.groups,
-      hasData: result.hasData,
-    };
-    return acc;
-  }, {} as Record<string, Omit<UserRoleGroupCounts, 'userId'>>);
 
   return {
     userCounts,

@@ -45,7 +45,11 @@ export interface UseOrganizationSetupResult {
  */
 export function useOrganizationSetup(): UseOrganizationSetupResult {
   const { data: session, status } = useSession();
-  const { data: organizations, isLoading: orgLoading, refetch: refetchOrganizations } = useUserOrganizations();
+  const {
+    data: organizations,
+    isLoading: orgLoading,
+    refetch: refetchOrganizations,
+  } = useUserOrganizations();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -70,11 +74,11 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       return setupService.setupOrganization(request, session);
     },
     onMutate: () => {
-      setState(prev => ({ ...prev, isSetupInProgress: true, error: null }));
+      setState((prev) => ({ ...prev, isSetupInProgress: true, error: null }));
     },
     onSuccess: (result, variables) => {
       // Keep setup in progress to show progress tracking component
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSetupInProgress: true, // Keep true to trigger progress tracking
         error: null,
@@ -86,15 +90,16 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       // Check if it's a 409 conflict error (organization already exists)
       if (error.message === 'ORGANIZATION_EXISTS') {
         toast.error('Organization already exists', {
-          description: 'An organization with this name already exists. Please choose a different name.',
+          description:
+            'An organization with this name already exists. Please choose a different name.',
         });
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isSetupInProgress: false,
           error: 'Organization already exists',
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isSetupInProgress: false,
           error: error.message,
@@ -110,18 +115,18 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       return syncService.syncUserData(session);
     },
     onMutate: () => {
-      setState(prev => ({ ...prev, isSyncInProgress: true, error: null }));
+      setState((prev) => ({ ...prev, isSyncInProgress: true, error: null }));
     },
     onSuccess: (result) => {
       if (result.errors.length > 0) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isSyncInProgress: false,
           error: `Sync completed with warnings: ${result.errors.join(', ')}`,
         }));
       } else {
         // Keep sync in progress to show progress tracking component
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isSyncInProgress: true, // Keep true to trigger progress tracking
           error: null,
@@ -132,7 +137,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       }
     },
     onError: (error: Error) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSyncInProgress: false,
         error: error.message,
@@ -143,7 +148,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
   // Check if setup is required based on API organizations
   const checkSetupStatus = useCallback(() => {
     if (status === 'loading' || orgLoading) return;
-    
+
     // Don't update state if setup/sync is in progress
     if (state.isSetupInProgress || state.isSyncInProgress) return;
 
@@ -158,7 +163,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     console.log('Primary organization:', primaryOrg);
     console.log('=== END SETUP CHECK ===');
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isSetupRequired: !userHasOrganization,
       isSetupCompleted: userHasOrganization,
@@ -175,42 +180,39 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
   );
 
   // Sync existing data
-  const syncExistingData = useCallback(
-    async () => {
-      await syncMutation.mutateAsync();
-    },
-    [syncMutation]
-  );
+  const syncExistingData = useCallback(async () => {
+    await syncMutation.mutateAsync();
+  }, [syncMutation]);
 
   // Clear error
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   // Set error
   const setError = useCallback((error: string) => {
-    setState(prev => ({ ...prev, error, isSetupInProgress: false, isSyncInProgress: false }));
+    setState((prev) => ({ ...prev, error, isSetupInProgress: false, isSyncInProgress: false }));
   }, []);
 
   // Set show welcome
   const setShowWelcome = useCallback((show: boolean) => {
-    setState(prev => ({ ...prev, showWelcome: show }));
+    setState((prev) => ({ ...prev, showWelcome: show }));
   }, []);
 
   // Complete setup - mark as complete but don't refetch yet
   const completeSetup = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      isSetupInProgress: false, 
+    setState((prev) => ({
+      ...prev,
+      isSetupInProgress: false,
       isSyncInProgress: false,
-      isSetupCompleted: true 
+      isSetupCompleted: true,
     }));
     // Don't refetch organizations here - wait for welcome page dismissal
   }, []);
 
   // Finish welcome and refetch organizations
   const finishWelcome = useCallback(() => {
-    setState(prev => ({ ...prev, showWelcome: false }));
+    setState((prev) => ({ ...prev, showWelcome: false }));
     refetchOrganizations();
   }, [refetchOrganizations]);
 
