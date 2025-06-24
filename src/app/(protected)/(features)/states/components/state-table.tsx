@@ -37,7 +37,7 @@ import {
   useDeleteState,
   useCountStates,
   usePartialUpdateState,
-  useSearchStates,
+  
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
 
 
@@ -136,34 +136,19 @@ export function StateTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchStates(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllStates(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllStates(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -251,12 +236,6 @@ export function StateTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

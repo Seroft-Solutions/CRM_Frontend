@@ -14,7 +14,6 @@ import type { CustomerDTO } from './CustomerDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { UserDTO } from './UserDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
-import type { PartyDTO } from './PartyDTO';
 
 export interface CallDTO {
   id?: number;
@@ -29,5 +28,4 @@ export interface CallDTO {
   channelCustomer?: UserDTO;
   assignedTo?: UserDTO;
   callStatus: CallStatusDTO;
-  party?: PartyDTO;
 }

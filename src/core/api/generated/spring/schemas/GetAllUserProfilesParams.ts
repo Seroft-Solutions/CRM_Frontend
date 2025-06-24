@@ -107,15 +107,6 @@ export type GetAllUserProfilesParams = {
 'channelTypeId.specified'?: boolean;
 'channelTypeId.in'?: number[];
 'channelTypeId.notIn'?: number[];
-'rolesId.greaterThan'?: number;
-'rolesId.lessThan'?: number;
-'rolesId.greaterThanOrEqual'?: number;
-'rolesId.lessThanOrEqual'?: number;
-'rolesId.equals'?: number;
-'rolesId.notEquals'?: number;
-'rolesId.specified'?: boolean;
-'rolesId.in'?: number[];
-'rolesId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

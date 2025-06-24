@@ -1,0 +1,39 @@
+{
+  "annotations": {
+    "changelogDate": "20250624170817"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "fieldName": "pincode",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "6",
+      "fieldValidateRulesMinlength": "6",
+      "fieldValidateRulesPattern": "^[0-9]{6}$"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Area",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "city",
+      "otherEntityRelationshipName": "areas",
+      "relationshipName": "city",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}

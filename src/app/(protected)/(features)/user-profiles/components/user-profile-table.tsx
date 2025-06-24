@@ -37,7 +37,7 @@ import {
   useDeleteUserProfile,
   useCountUserProfiles,
   usePartialUpdateUserProfile,
-  useSearchUserProfiles,
+  
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 
@@ -227,34 +227,19 @@ export function UserProfileTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchUserProfiles(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllUserProfiles(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllUserProfiles(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -342,12 +327,6 @@ export function UserProfileTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

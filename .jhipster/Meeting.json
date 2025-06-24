@@ -1,0 +1,126 @@
+{
+  "annotations": {
+    "changelogDate": "20250624170821"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "meetingDateTime",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "duration",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min", "max"],
+      "fieldValidateRulesMax": "480",
+      "fieldValidateRulesMin": "15"
+    },
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "200",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
+    },
+    {
+      "fieldName": "meetingUrl",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "googleCalendarEventId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "notes",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "isRecurring",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "timeZone",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "meetingStatus",
+      "fieldType": "MeetingStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "SCHEDULED,CONFIRMED,CANCELLED,COMPLETED,NO_SHOW"
+    },
+    {
+      "fieldName": "meetingType",
+      "fieldType": "MeetingType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "VIRTUAL,IN_PERSON,PHONE_CALL"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Meeting",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "meetingReminder",
+      "otherEntityRelationshipName": "meeting",
+      "relationshipName": "reminders",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "meetingParticipant",
+      "otherEntityRelationshipName": "meeting",
+      "relationshipName": "participants",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "organizer",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityField": "customerBusinessName",
+      "otherEntityName": "customer",
+      "relationshipName": "assignedCustomer",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "call",
+      "otherEntityRelationshipName": "meetings",
+      "relationshipName": "call",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "elasticsearch",
+  "service": "serviceImpl"
+}

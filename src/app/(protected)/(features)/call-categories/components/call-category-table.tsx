@@ -37,7 +37,7 @@ import {
   useDeleteCallCategory,
   useCountCallCategories,
   usePartialUpdateCallCategory,
-  useSearchCallCategories,
+  
 } from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
 
 
@@ -143,34 +143,19 @@ export function CallCategoryTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchCallCategories(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllCallCategories(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllCallCategories(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -258,12 +243,6 @@ export function CallCategoryTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

@@ -1,0 +1,44 @@
+{
+  "annotations": {
+    "changelogDate": "20250624170825"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "slotDateTime",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "duration",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min", "max"],
+      "fieldValidateRulesMax": "480",
+      "fieldValidateRulesMin": "15"
+    },
+    {
+      "fieldName": "isBooked",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "bookedAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "AvailableTimeSlot",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "displayName",
+      "otherEntityName": "userProfile",
+      "otherEntityRelationshipName": "availableTimeSlots",
+      "relationshipName": "user",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}

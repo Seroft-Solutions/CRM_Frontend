@@ -37,7 +37,7 @@ import {
   useDeleteSource,
   useCountSources,
   usePartialUpdateSource,
-  useSearchSources,
+  
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
 
 
@@ -143,34 +143,19 @@ export function SourceTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchSources(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllSources(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllSources(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -258,12 +243,6 @@ export function SourceTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

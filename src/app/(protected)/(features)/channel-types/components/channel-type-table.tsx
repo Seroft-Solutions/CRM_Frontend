@@ -37,7 +37,7 @@ import {
   useDeleteChannelType,
   useCountChannelTypes,
   usePartialUpdateChannelType,
-  useSearchChannelTypes,
+  
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 
 
@@ -143,34 +143,19 @@ export function ChannelTypeTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = searchTerm 
-    ? useSearchChannelTypes(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      )
-    : useGetAllChannelTypes(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: `${sort},${order}`,
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllChannelTypes(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: `${sort},${order}`,
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
   
 
   // Get total count for pagination
@@ -258,12 +243,6 @@ export function ChannelTypeTable() {
     setPage(1);
   };
 
-  
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
   
 
   // Calculate total pages

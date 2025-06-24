@@ -1,0 +1,50 @@
+{
+  "annotations": {
+    "changelogDate": "20250624170823"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "reminderType",
+      "fieldType": "ReminderType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "EMAIL,SMS,PUSH_NOTIFICATION"
+    },
+    {
+      "fieldName": "reminderMinutesBefore",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min", "max"],
+      "fieldValidateRulesMax": "43200",
+      "fieldValidateRulesMin": "5"
+    },
+    {
+      "fieldName": "isTriggered",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "triggeredAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "failureReason",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "MeetingReminder",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "meeting",
+      "otherEntityRelationshipName": "reminders",
+      "relationshipName": "meeting",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}
