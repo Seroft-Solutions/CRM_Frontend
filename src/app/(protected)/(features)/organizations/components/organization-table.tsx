@@ -37,7 +37,7 @@ import {
   useDeleteOrganization,
   useCountOrganizations,
   usePartialUpdateOrganization,
-  
+  useSearchOrganizations,
 } from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
 
 
@@ -98,32 +98,55 @@ export function OrganizationTable() {
       if (value !== undefined && value !== "" && value !== null) {
         
         
+        // Handle isActive boolean filter
+        if (key === 'isActive') {
+          params['isActive.equals'] = value === 'true';
+        }
         
+        
+        
+        // Handle createdAt date filter
+        else if (key === 'createdAt') {
+          if (value instanceof Date) {
+            params['createdAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['createdAt.equals'] = value;
+          }
+        }
+        
+        // Handle updatedAt date filter
+        else if (key === 'updatedAt') {
+          if (value instanceof Date) {
+            params['updatedAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['updatedAt.equals'] = value;
+          }
+        }
         
         
         // Handle keycloakOrgId text filter with contains
-        if (key === 'keycloakOrgId') {
+        else if (key === 'keycloakOrgId') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['keycloakOrgId.contains'] = value;
           }
         }
         
         // Handle name text filter with contains
-        if (key === 'name') {
+        else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
         }
         
         // Handle displayName text filter with contains
-        if (key === 'displayName') {
+        else if (key === 'displayName') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['displayName.contains'] = value;
           }
         }
         
         // Handle domain text filter with contains
-        if (key === 'domain') {
+        else if (key === 'domain') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['domain.contains'] = value;
           }
@@ -142,6 +165,20 @@ export function OrganizationTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params['createdAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['createdAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+    if (dateRange.from) {
+      params['updatedAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['updatedAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
 
     return params;
   };
@@ -150,19 +187,34 @@ export function OrganizationTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllOrganizations(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchOrganizations(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllOrganizations(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -250,6 +302,12 @@ export function OrganizationTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages
@@ -430,7 +488,7 @@ export function OrganizationTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={8}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -453,7 +511,7 @@ export function OrganizationTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={8}
                   className="h-24 text-center"
                 >
                   No organizations found

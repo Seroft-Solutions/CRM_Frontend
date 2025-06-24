@@ -133,11 +133,73 @@ export function GroupDetails({ id }: GroupDetailsProps) {
                   </dd>
                 </div>
                 
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
+                      {entity.isActive ? "Yes" : "No"}
+                    </Badge>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created At</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground">
+                      {entity.createdAt ? format(new Date(entity.createdAt), "PPP") : "—"}
+                    </span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Updated At</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground">
+                      {entity.updatedAt ? format(new Date(entity.updatedAt), "PPP") : "—"}
+                    </span>
+                    
+                  </dd>
+                </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
+        {/* Relationships */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
+                Related Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Organization</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.organization ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.organization as any).name || entity.organization.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
+                
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
       </div>
 

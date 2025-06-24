@@ -3,7 +3,6 @@
     "changelogDate": "20250624105856"
   },
   "applications": ["crmBackend"],
-  "documentation": "Call remark entity for detailed call notes",
   "dto": "mapstruct",
   "fields": [
     {
@@ -31,5 +30,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

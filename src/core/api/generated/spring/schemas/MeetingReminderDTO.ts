@@ -8,9 +8,6 @@
 import type { MeetingReminderDTOReminderType } from './MeetingReminderDTOReminderType';
 import type { MeetingDTO } from './MeetingDTO';
 
-/**
- * Meeting reminder configuration
- */
 export interface MeetingReminderDTO {
   id?: number;
   reminderType: MeetingReminderDTOReminderType;

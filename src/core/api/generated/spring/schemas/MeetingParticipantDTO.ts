@@ -7,9 +7,6 @@
  */
 import type { MeetingDTO } from './MeetingDTO';
 
-/**
- * Meeting participant entity
- */
 export interface MeetingParticipantDTO {
   id?: number;
   /**

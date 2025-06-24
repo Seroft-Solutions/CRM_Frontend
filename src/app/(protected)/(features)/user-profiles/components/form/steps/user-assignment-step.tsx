@@ -16,19 +16,20 @@ import {
   useCountGroups
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 import { 
-  useGetAllRoles,
-  useSearchRoles,
-  useCountRoles
-} from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
-import { 
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+import { 
+  useGetAllPublicUsers,
+  useSearchPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
+  'useGetAllPublicUsers': useGetAllPublicUsers,
+  'useSearchPublicUsers': useSearchPublicUsers,
   // Other entities
   'useGetAllOrganizations': useGetAllOrganizations,
   'useSearchOrganizations': useSearchOrganizations,
@@ -36,9 +37,6 @@ const hookMapping = {
   'useGetAllGroups': useGetAllGroups,
   'useSearchGroups': useSearchGroups,
   'useCountGroups': useCountGroups,
-  'useGetAllRoles': useGetAllRoles,
-  'useSearchRoles': useSearchRoles,
-  'useCountRoles': useCountRoles,
   'useGetAllChannelTypes': useGetAllChannelTypes,
   'useSearchChannelTypes': useSearchChannelTypes,
   'useCountChannelTypes': useCountChannelTypes,

@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Source master entity for lead sources
- */
 export interface SourceDTO {
   id?: number;
   /**

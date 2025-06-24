@@ -37,7 +37,7 @@ import {
   useDeleteCallType,
   useCountCallTypes,
   usePartialUpdateCallType,
-  
+  useSearchCallTypes,
 } from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
 
 
@@ -143,19 +143,34 @@ export function CallTypeTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllCallTypes(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchCallTypes(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllCallTypes(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -243,6 +258,12 @@ export function CallTypeTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

@@ -37,13 +37,17 @@ import {
   useDeleteUserProfile,
   useCountUserProfiles,
   usePartialUpdateUserProfile,
-  
+  useSearchUserProfiles,
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 
 
 
 // Relationship data imports
+
+import {
+  useGetAllPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 
 
 
@@ -91,6 +95,11 @@ export function UserProfileTable() {
   
   // Fetch relationship data for dropdowns
   
+  const { data: userOptions = [] } = useGetAllPublicUsers(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
   const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -111,6 +120,12 @@ export function UserProfileTable() {
     
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
+      
+      'user.login': { 
+        apiParam: 'userId.equals', 
+        options: userOptions, 
+        displayField: 'login' 
+      },
       
       'channelType.name': { 
         apiParam: 'channelTypeId.equals', 
@@ -137,6 +152,24 @@ export function UserProfileTable() {
         
         
         
+        // Handle createdAt date filter
+        else if (key === 'createdAt') {
+          if (value instanceof Date) {
+            params['createdAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['createdAt.equals'] = value;
+          }
+        }
+        
+        // Handle updatedAt date filter
+        else if (key === 'updatedAt') {
+          if (value instanceof Date) {
+            params['updatedAt.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['updatedAt.equals'] = value;
+          }
+        }
+        
         
         // Handle keycloakId text filter with contains
         else if (key === 'keycloakId') {
@@ -145,24 +178,17 @@ export function UserProfileTable() {
           }
         }
         
-        // Handle email text filter with contains
-        else if (key === 'email') {
+        // Handle phone text filter with contains
+        else if (key === 'phone') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['email.contains'] = value;
+            params['phone.contains'] = value;
           }
         }
         
-        // Handle firstName text filter with contains
-        else if (key === 'firstName') {
+        // Handle displayName text filter with contains
+        else if (key === 'displayName') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['firstName.contains'] = value;
-          }
-        }
-        
-        // Handle lastName text filter with contains
-        else if (key === 'lastName') {
-          if (typeof value === 'string' && value.trim() !== '') {
-            params['lastName.contains'] = value;
+            params['displayName.contains'] = value;
           }
         }
         
@@ -179,6 +205,20 @@ export function UserProfileTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params['createdAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['createdAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+    if (dateRange.from) {
+      params['updatedAt.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['updatedAt.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
 
     return params;
   };
@@ -187,19 +227,34 @@ export function UserProfileTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllUserProfiles(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchUserProfiles(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllUserProfiles(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: `${sort},${order}`,
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -287,6 +342,12 @@ export function UserProfileTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages
@@ -400,6 +461,14 @@ export function UserProfileTable() {
   const relationshipConfigs = [
     
     {
+      name: "user",
+      displayName: "User",
+      options: userOptions || [],
+      displayField: "login",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
       name: "channelType",
       displayName: "ChannelType",
       options: channeltypeOptions || [],
@@ -475,7 +544,7 @@ export function UserProfileTable() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={8}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -498,7 +567,7 @@ export function UserProfileTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={8}
                   className="h-24 text-center"
                 >
                   No user profiles found

@@ -107,28 +107,41 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Phone</dt>
                   <dd className="text-sm font-medium">
                     
-                    <span className="text-foreground break-words">{entity.email || "—"}</span>
+                    <span className="text-foreground break-words">{entity.phone || "—"}</span>
                     
                   </dd>
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">First Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Display Name</dt>
                   <dd className="text-sm font-medium">
                     
-                    <span className="text-foreground break-words">{entity.firstName || "—"}</span>
+                    <span className="text-foreground break-words">{entity.displayName || "—"}</span>
                     
                   </dd>
                 </div>
                 
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Last Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created At</dt>
                   <dd className="text-sm font-medium">
                     
-                    <span className="text-foreground break-words">{entity.lastName || "—"}</span>
+                    <span className="text-foreground">
+                      {entity.createdAt ? format(new Date(entity.createdAt), "PPP") : "—"}
+                    </span>
+                    
+                  </dd>
+                </div>
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Updated At</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    <span className="text-foreground">
+                      {entity.updatedAt ? format(new Date(entity.updatedAt), "PPP") : "—"}
+                    </span>
                     
                   </dd>
                 </div>
@@ -149,6 +162,19 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
+                <div className="space-y-2">
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">User</dt>
+                  <dd className="text-sm font-medium">
+                    
+                    {entity.user ? (
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {(entity.user as any).login || entity.user.id}
+                      </Badge>
+                    ) : "—"}
+                    
+                  </dd>
+                </div>
                 
                 <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>

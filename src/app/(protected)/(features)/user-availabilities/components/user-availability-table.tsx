@@ -112,10 +112,10 @@ export function UserAvailabilityTable() {
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
       
-      'user.email': { 
+      'user.displayName': { 
         apiParam: 'userId.equals', 
         options: userprofileOptions, 
-        displayField: 'email' 
+        displayField: 'displayName' 
       },
       
     };
@@ -461,7 +461,7 @@ export function UserAvailabilityTable() {
       name: "user",
       displayName: "User",
       options: userprofileOptions || [],
-      displayField: "email",
+      displayField: "displayName",
       isEditable: false, // Disabled by default
     },
     

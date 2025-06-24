@@ -293,22 +293,19 @@ export const meetingFormConfig: FormConfig = {
     {
       name: 'organizer',
       type: 'many-to-one',
-      targetEntity: 'userProfile',
-      displayField: 'email',
+      targetEntity: 'user',
+      displayField: 'login',
       primaryKey: 'id',
       required: true,
       multiple: false,
       category: 'user',
       api: {
-        useGetAllHook: 'useGetAllUserProfiles',
-        useSearchHook: 'useSearchUserProfiles',
-        useCountHook: 'useCountUserProfiles',
-        entityName: 'UserProfiles',
+        useGetAllHook: 'useGetAllPublicUsers',
+        useSearchHook: 'useSearchPublicUsers',
+        entityName: 'PublicUsers',
       },
       creation: {
-        canCreate: true,
-        createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        canCreate: false,
       },
       ui: {
         label: 'Organizer',

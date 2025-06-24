@@ -7,13 +7,10 @@
  */
 import type { MeetingDTOMeetingStatus } from './MeetingDTOMeetingStatus';
 import type { MeetingDTOMeetingType } from './MeetingDTOMeetingType';
-import type { UserProfileDTO } from './UserProfileDTO';
+import type { UserDTO } from './UserDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { CallDTO } from './CallDTO';
 
-/**
- * Meeting entity for scheduled appointments
- */
 export interface MeetingDTO {
   id?: number;
   meetingDateTime: string;
@@ -57,7 +54,7 @@ export interface MeetingDTO {
   meetingType: MeetingDTOMeetingType;
   createdAt?: string;
   updatedAt?: string;
-  organizer: UserProfileDTO;
+  organizer: UserDTO;
   assignedCustomer?: CustomerDTO;
   call?: CallDTO;
 }

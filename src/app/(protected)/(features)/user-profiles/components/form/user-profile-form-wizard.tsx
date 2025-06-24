@@ -82,12 +82,13 @@ function UserProfileFormContent({ id }: UserProfileFormProps) {
         errors={state.errors}
         fieldLabels={{
           'keycloakId': '',
-          'email': '',
-          'firstName': '',
-          'lastName': '',
-          'organization': 'Organization',
+          'phone': '',
+          'displayName': '',
+          'createdAt': '',
+          'updatedAt': '',
+          'user': 'User',
+          'organizations': 'Organizations',
           'groups': 'Groups',
-          'roles': 'Roles',
           'channelType': 'Channel Type',
         }}
       />

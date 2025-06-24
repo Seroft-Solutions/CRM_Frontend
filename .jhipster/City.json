@@ -3,7 +3,6 @@
     "changelogDate": "20250624105852"
   },
   "applications": ["crmBackend"],
-  "documentation": "City master entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -35,5 +34,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

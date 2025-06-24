@@ -7,9 +7,6 @@
  */
 import type { CallDTO } from './CallDTO';
 
-/**
- * Call remark entity for detailed call notes
- */
 export interface CallRemarkDTO {
   id?: number;
   /**

@@ -3,7 +3,6 @@
     "changelogDate": "20250624110647"
   },
   "applications": ["crmBackend"],
-  "documentation": "Customer entity - represents customers/leads/contacts",
   "dto": "mapstruct",
   "fields": [
     {

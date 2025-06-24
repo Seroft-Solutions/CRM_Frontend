@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Call type master entity
- */
 export interface CallTypeDTO {
   id?: number;
   /**

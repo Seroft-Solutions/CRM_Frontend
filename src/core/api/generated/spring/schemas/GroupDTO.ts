@@ -5,22 +5,32 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { OrganizationDTO } from './OrganizationDTO';
 
 /**
- * Keycloak Group representation.
+ * Keycloak Group mapping
  */
 export interface GroupDTO {
   id?: number;
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ */
   keycloakGroupId: string;
   /**
    * @minLength 2
    * @maxLength 100
    */
   name: string;
+  /**
+   * @minLength 0
+   * @maxLength 500
+   */
   path: string;
   /**
    * @minLength 0
    * @maxLength 255
    */
   description?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  organization: OrganizationDTO;
 }

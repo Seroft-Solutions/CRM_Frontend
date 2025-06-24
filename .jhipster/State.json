@@ -3,7 +3,6 @@
     "changelogDate": "20250624105850"
   },
   "applications": ["crmBackend"],
-  "documentation": "State master entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -33,5 +32,6 @@
       "relationshipType": "one-to-many"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

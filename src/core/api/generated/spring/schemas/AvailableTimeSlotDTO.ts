@@ -7,9 +7,6 @@
  */
 import type { UserProfileDTO } from './UserProfileDTO';
 
-/**
- * Available time slot entity
- */
 export interface AvailableTimeSlotDTO {
   id?: number;
   slotDateTime: string;

@@ -8,10 +8,11 @@
 import type { UserProfileDTO } from './UserProfileDTO';
 
 /**
- * Represents a Keycloak Organization.
+ * Keycloak Organization mapping
  */
 export interface OrganizationDTO {
   id?: number;
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ */
   keycloakOrgId: string;
   /**
    * @minLength 2
@@ -26,7 +27,11 @@ export interface OrganizationDTO {
   /**
    * @minLength 0
    * @maxLength 100
+   * @pattern ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$
    */
   domain?: string;
-  userProfiles?: UserProfileDTO[];
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  members?: UserProfileDTO[];
 }

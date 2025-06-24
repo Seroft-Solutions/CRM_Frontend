@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Priority master entity for calls and leads
- */
 export interface PriorityDTO {
   id?: number;
   /**

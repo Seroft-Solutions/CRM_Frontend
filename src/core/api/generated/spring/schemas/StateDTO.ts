@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * State master entity
- */
 export interface StateDTO {
   id?: number;
   /**

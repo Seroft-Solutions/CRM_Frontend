@@ -12,13 +12,10 @@ import type { CallCategoryDTO } from './CallCategoryDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
-import type { UserProfileDTO } from './UserProfileDTO';
+import type { UserDTO } from './UserDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
 import type { PartyDTO } from './PartyDTO';
 
-/**
- * Call entity - core CRM activity
- */
 export interface CallDTO {
   id?: number;
   callDateTime: string;
@@ -29,8 +26,8 @@ export interface CallDTO {
   source: SourceDTO;
   customer: CustomerDTO;
   channelType: ChannelTypeDTO;
-  channelCustomer?: UserProfileDTO;
-  assignedTo?: UserProfileDTO;
+  channelCustomer?: UserDTO;
+  assignedTo?: UserDTO;
   callStatus: CallStatusDTO;
   party?: PartyDTO;
 }

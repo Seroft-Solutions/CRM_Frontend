@@ -3,7 +3,6 @@
     "changelogDate": "20250624105855"
   },
   "applications": ["crmBackend"],
-  "documentation": "Call entity - core CRM activity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -26,7 +25,7 @@
     {
       "otherEntityName": "meeting",
       "otherEntityRelationshipName": "call",
-      "relationshipName": "meeting",
+      "relationshipName": "meetings",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     },
@@ -87,18 +86,20 @@
       "relationshipValidateRules": "required"
     },
     {
-      "otherEntityField": "email",
-      "otherEntityName": "userProfile",
+      "otherEntityField": "login",
+      "otherEntityName": "user",
       "relationshipName": "channelCustomer",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
     },
     {
-      "otherEntityField": "email",
-      "otherEntityName": "userProfile",
+      "otherEntityField": "login",
+      "otherEntityName": "user",
       "relationshipName": "assignedTo",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
     },
     {
       "otherEntityField": "name",

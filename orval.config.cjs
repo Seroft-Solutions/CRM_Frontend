@@ -32,30 +32,30 @@ module.exports = {
       afterAllFilesWrite: 'prettier --write',
     },
   },
-
-  // Keycloak Admin API Configuration
-  keycloakService: {
-    output: {
-      mode: 'tags-split',
-      namingConvention: 'PascalCase',
-      fileExtension: '.gen.ts',
-      workspace: 'src/core/api/generated/keycloak',
-      target: './endpoints',
-      schemas: './schemas',
-      clean: true,
-      mock: false,
-      override: {
-        mutator: {
-          path: '../../services/keycloak-service/service-mutator.ts',
-          name: 'keycloakServiceMutator',
-        },
-      },
-    },
-    input: {
-      target: './openapi/keycloak_openapi.json',
-    },
-    hooks: {
-      afterAllFilesWrite: 'prettier --write',
-    },
-  },
+  //
+  // // Keycloak Admin API Configuration
+  // keycloakService: {
+  //   output: {
+  //     mode: 'tags-split',
+  //     namingConvention: 'PascalCase',
+  //     fileExtension: '.gen.ts',
+  //     workspace: 'src/core/api/generated/keycloak',
+  //     target: './endpoints',
+  //     schemas: './schemas',
+  //     clean: true,
+  //     mock: false,
+  //     override: {
+  //       mutator: {
+  //         path: '../../services/keycloak-service/service-mutator.ts',
+  //         name: 'keycloakServiceMutator',
+  //       },
+  //     },
+  //   },
+  //   input: {
+  //     target: './openapi/keycloak_openapi.json',
+  //   },
+  //   hooks: {
+  //     afterAllFilesWrite: 'prettier --write',
+  //   },
+  // },
 };

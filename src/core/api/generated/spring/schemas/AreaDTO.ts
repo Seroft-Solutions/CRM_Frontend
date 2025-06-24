@@ -7,9 +7,6 @@
  */
 import type { CityDTO } from './CityDTO';
 
-/**
- * Area master entity with pincode
- */
 export interface AreaDTO {
   id?: number;
   /**

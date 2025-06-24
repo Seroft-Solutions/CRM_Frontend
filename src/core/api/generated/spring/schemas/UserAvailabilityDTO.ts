@@ -8,9 +8,6 @@
 import type { UserAvailabilityDTODayOfWeek } from './UserAvailabilityDTODayOfWeek';
 import type { UserProfileDTO } from './UserProfileDTO';
 
-/**
- * User availability for scheduling
- */
 export interface UserAvailabilityDTO {
   id?: number;
   dayOfWeek: UserAvailabilityDTODayOfWeek;

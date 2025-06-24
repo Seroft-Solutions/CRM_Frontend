@@ -3,7 +3,6 @@
     "changelogDate": "20250624105847"
   },
   "applications": ["crmBackend"],
-  "documentation": "Call status master entity",
   "dto": "mapstruct",
   "fields": [
     {
@@ -30,5 +29,6 @@
   "name": "CallStatus",
   "pagination": "pagination",
   "relationships": [],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

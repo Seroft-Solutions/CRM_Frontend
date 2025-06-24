@@ -5,11 +5,19 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { PaginatedRelationshipCombobox } from "../../paginated-relationship-combobox";
 import type { StepComponentProps } from "../form-types";
 import { useEntityForm } from "../organization-form-provider";
+import { 
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useCountUserProfiles
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
   // Other entities
+  'useGetAllUserProfiles': useGetAllUserProfiles,
+  'useSearchUserProfiles': useSearchUserProfiles,
+  'useCountUserProfiles': useCountUserProfiles,
 };
 
 export function UserAssignmentStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {

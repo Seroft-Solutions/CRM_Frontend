@@ -181,7 +181,7 @@ export const userAvailabilityFormConfig: FormConfig = {
       name: 'user',
       type: 'many-to-one',
       targetEntity: 'userProfile',
-      displayField: 'email',
+      displayField: 'displayName',
       primaryKey: 'id',
       required: true,
       multiple: false,

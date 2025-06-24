@@ -5,20 +5,48 @@ import { z } from "zod";
  * This file is auto-generated. To modify validation rules, update the generator templates.
  */
 export const organizationFormSchema = z.object({
-  keycloakOrgId: z.string(),
+  keycloakOrgId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
   displayName: z.string().max(150).optional(),
-  domain: z.string().max(100).optional(),
+  domain: z.string().max(100).regex(/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/).optional(),
+  isActive: z.boolean(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  members: z.array(z.number()).optional(),
 });
 
 export type OrganizationFormValues = z.infer<typeof organizationFormSchema>;
 
 // Individual field schemas for granular validation
 export const organizationFieldSchemas = {
-  keycloakOrgId: z.string(),
+  keycloakOrgId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
   name: z.string().min(2).max(100),
   displayName: z.string().max(150).optional(),
-  domain: z.string().max(100).optional(),
+  domain: z.string().max(100).regex(/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/).optional(),
+  isActive: z.boolean(),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Invalid date format"
+  }).optional(),
+  members: z.array(z.number()).optional(),
 };
 
 // Step-specific validation schemas
@@ -30,8 +58,18 @@ export const organizationStepSchemas = {
     domain: organizationFieldSchemas.domain,
   }),
   
+  dates: z.object({
+    createdAt: organizationFieldSchemas.createdAt,
+    updatedAt: organizationFieldSchemas.updatedAt,
+  }),
   
+  settings: z.object({
+    isActive: organizationFieldSchemas.isActive,
+  }),
   
+  user: z.object({
+    members: organizationFieldSchemas.members,
+  }),
   
   review: organizationFormSchema
 };
@@ -66,6 +104,7 @@ export const organizationValidationHelpers = {
     if (fieldName === 'keycloakOrgId') {
       return {
         required: true,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       };
     }
     if (fieldName === 'name') {
@@ -85,6 +124,12 @@ export const organizationValidationHelpers = {
       return {
         required: false,
         maxLength: 100,
+        pattern: /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
+      };
+    }
+    if (fieldName === 'isActive') {
+      return {
+        required: true,
       };
     }
     

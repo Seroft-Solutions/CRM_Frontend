@@ -41,19 +41,20 @@ import {
   useCountChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 import { 
-  useGetAllUserProfiles,
-  useSearchUserProfiles,
-  useCountUserProfiles
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
-import { 
   useGetAllCallStatuses,
   useSearchCallStatuses,
   useCountCallStatuses
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+import { 
+  useGetAllPublicUsers,
+  useSearchPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
+  'useGetAllPublicUsers': useGetAllPublicUsers,
+  'useSearchPublicUsers': useSearchPublicUsers,
   // Other entities
   'useGetAllPriorities': useGetAllPriorities,
   'useSearchPriorities': useSearchPriorities,
@@ -76,9 +77,6 @@ const hookMapping = {
   'useGetAllChannelTypes': useGetAllChannelTypes,
   'useSearchChannelTypes': useSearchChannelTypes,
   'useCountChannelTypes': useCountChannelTypes,
-  'useGetAllUserProfiles': useGetAllUserProfiles,
-  'useSearchUserProfiles': useSearchUserProfiles,
-  'useCountUserProfiles': useCountUserProfiles,
   'useGetAllCallStatuses': useGetAllCallStatuses,
   'useSearchCallStatuses': useSearchCallStatuses,
   'useCountCallStatuses': useCountCallStatuses,

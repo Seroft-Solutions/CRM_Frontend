@@ -18,8 +18,8 @@ export const callFormSchema = z.object({
   source: z.number(),
   customer: z.number(),
   channelType: z.number(),
-  channelCustomer: z.number().optional(),
-  assignedTo: z.number().optional(),
+  channelCustomer: z.string().optional(),
+  assignedTo: z.string().optional(),
   callStatus: z.number(),
 });
 
@@ -40,8 +40,8 @@ export const callFieldSchemas = {
   source: z.number(),
   customer: z.number(),
   channelType: z.number(),
-  channelCustomer: z.number().optional(),
-  assignedTo: z.number().optional(),
+  channelCustomer: z.string().optional(),
+  assignedTo: z.string().optional(),
   callStatus: z.number(),
 };
 
