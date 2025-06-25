@@ -704,7 +704,7 @@ export function AreaTable() {
       {/* Data Table */}
       <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
         <div className="table-scroll overflow-x-auto">
-          <Table className="w-full min-w-[600px]">.
+          <Table className="w-full min-w-[600px]">
             
             <AreaTableHeader 
               onSort={handleSort}
