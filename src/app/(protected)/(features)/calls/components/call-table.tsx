@@ -120,10 +120,10 @@ import {
 
 
 
-import { CallSearchAndFilters } from "./call-search-filters";
-import { CallTableHeader } from "./call-table-header";
-import { CallTableRow } from "./call-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CallSearchAndFilters } from "./table/call-search-filters";
+import { CallTableHeader } from "./table/call-table-header";
+import { CallTableRow } from "./table/call-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -845,7 +845,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {
@@ -909,7 +909,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {

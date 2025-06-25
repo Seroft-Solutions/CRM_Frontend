@@ -88,10 +88,10 @@ import {
 
 
 
-import { AvailableTimeSlotSearchAndFilters } from "./available-time-slot-search-filters";
-import { AvailableTimeSlotTableHeader } from "./available-time-slot-table-header";
-import { AvailableTimeSlotTableRow } from "./available-time-slot-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { AvailableTimeSlotSearchAndFilters } from "./table/available-time-slot-search-filters";
+import { AvailableTimeSlotTableHeader } from "./table/available-time-slot-table-header";
+import { AvailableTimeSlotTableRow } from "./table/available-time-slot-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

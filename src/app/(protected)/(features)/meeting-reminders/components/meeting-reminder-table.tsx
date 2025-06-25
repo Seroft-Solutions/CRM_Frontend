@@ -88,10 +88,10 @@ import {
 
 
 
-import { MeetingReminderSearchAndFilters } from "./meeting-reminder-search-filters";
-import { MeetingReminderTableHeader } from "./meeting-reminder-table-header";
-import { MeetingReminderTableRow } from "./meeting-reminder-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { MeetingReminderSearchAndFilters } from "./table/meeting-reminder-search-filters";
+import { MeetingReminderTableHeader } from "./table/meeting-reminder-table-header";
+import { MeetingReminderTableRow } from "./table/meeting-reminder-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

@@ -88,10 +88,10 @@ import {
 
 
 
-import { AreaSearchAndFilters } from "./area-search-filters";
-import { AreaTableHeader } from "./area-table-header";
-import { AreaTableRow } from "./area-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { AreaSearchAndFilters } from "./table/area-search-filters";
+import { AreaTableHeader } from "./table/area-table-header";
+import { AreaTableRow } from "./table/area-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

@@ -92,10 +92,10 @@ import {
 
 
 
-import { UserProfileSearchAndFilters } from "./user-profile-search-filters";
-import { UserProfileTableHeader } from "./user-profile-table-header";
-import { UserProfileTableRow } from "./user-profile-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { UserProfileSearchAndFilters } from "./table/user-profile-search-filters";
+import { UserProfileTableHeader } from "./table/user-profile-table-header";
+import { UserProfileTableRow } from "./table/user-profile-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

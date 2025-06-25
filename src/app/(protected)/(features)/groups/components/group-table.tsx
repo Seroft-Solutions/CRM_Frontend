@@ -88,10 +88,10 @@ import {
 
 
 
-import { GroupSearchAndFilters } from "./group-search-filters";
-import { GroupTableHeader } from "./group-table-header";
-import { GroupTableRow } from "./group-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { GroupSearchAndFilters } from "./table/group-search-filters";
+import { GroupTableHeader } from "./table/group-table-header";
+import { GroupTableRow } from "./table/group-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

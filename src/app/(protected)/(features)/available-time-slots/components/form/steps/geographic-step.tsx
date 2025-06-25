@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "../../paginated-relationship-combobox";
+import { PaginatedRelationshipCombobox } from "../paginated-relationship-combobox";
 import type { StepComponentProps } from "../form-types";
 import { useEntityForm } from "../available-time-slot-form-provider";
 

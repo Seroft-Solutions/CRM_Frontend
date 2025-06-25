@@ -88,10 +88,10 @@ import {
 
 
 
-import { MeetingParticipantSearchAndFilters } from "./meeting-participant-search-filters";
-import { MeetingParticipantTableHeader } from "./meeting-participant-table-header";
-import { MeetingParticipantTableRow } from "./meeting-participant-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { MeetingParticipantSearchAndFilters } from "./table/meeting-participant-search-filters";
+import { MeetingParticipantTableHeader } from "./table/meeting-participant-table-header";
+import { MeetingParticipantTableRow } from "./table/meeting-participant-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

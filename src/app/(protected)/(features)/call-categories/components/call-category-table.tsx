@@ -79,10 +79,10 @@ import {
 
 
 
-import { CallCategorySearchAndFilters } from "./call-category-search-filters";
-import { CallCategoryTableHeader } from "./call-category-table-header";
-import { CallCategoryTableRow } from "./call-category-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CallCategorySearchAndFilters } from "./table/call-category-search-filters";
+import { CallCategoryTableHeader } from "./table/call-category-table-header";
+import { CallCategoryTableRow } from "./table/call-category-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

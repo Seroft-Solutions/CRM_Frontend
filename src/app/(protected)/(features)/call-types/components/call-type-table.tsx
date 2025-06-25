@@ -79,10 +79,10 @@ import {
 
 
 
-import { CallTypeSearchAndFilters } from "./call-type-search-filters";
-import { CallTypeTableHeader } from "./call-type-table-header";
-import { CallTypeTableRow } from "./call-type-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CallTypeSearchAndFilters } from "./table/call-type-search-filters";
+import { CallTypeTableHeader } from "./table/call-type-table-header";
+import { CallTypeTableRow } from "./table/call-type-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

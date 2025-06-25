@@ -79,10 +79,10 @@ import {
 
 
 
-import { SourceSearchAndFilters } from "./source-search-filters";
-import { SourceTableHeader } from "./source-table-header";
-import { SourceTableRow } from "./source-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { SourceSearchAndFilters } from "./table/source-search-filters";
+import { SourceTableHeader } from "./table/source-table-header";
+import { SourceTableRow } from "./table/source-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

@@ -88,10 +88,10 @@ import {
 
 
 
-import { UserAvailabilitySearchAndFilters } from "./user-availability-search-filters";
-import { UserAvailabilityTableHeader } from "./user-availability-table-header";
-import { UserAvailabilityTableRow } from "./user-availability-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { UserAvailabilitySearchAndFilters } from "./table/user-availability-search-filters";
+import { UserAvailabilityTableHeader } from "./table/user-availability-table-header";
+import { UserAvailabilityTableRow } from "./table/user-availability-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
