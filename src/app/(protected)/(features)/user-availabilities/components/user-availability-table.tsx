@@ -40,6 +40,32 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Add custom scrollbar styles
+const tableScrollStyles = `
+  .table-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+  .table-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  .table-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  .table-container {
+    max-width: calc(100vw - 2rem);
+  }
+  @media (min-width: 1024px) {
+    .table-container {
+      max-width: calc(100vw - 20rem);
+    }
+  }
+`;
+
 import {
   useGetAllUserAvailabilities,
   useDeleteUserAvailability,
@@ -669,27 +695,33 @@ export function UserAvailabilityTable() {
   // Don't render the table until column visibility is loaded to prevent flash
   if (!isColumnVisibilityLoaded) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-center h-32">
-          <div className="text-center">
-            <div className="text-muted-foreground">Loading table configuration...</div>
+      <>
+        <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
+        <div className="w-full space-y-4">
+          <div className="flex items-center justify-center h-32">
+            <div className="text-center">
+              <div className="text-muted-foreground">Loading table configuration...</div>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
+      <div className="w-full space-y-4">
       {/* Table Controls */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Column Visibility Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Settings2 className="h-4 w-4" />
-                Columns
+              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Columns</span>
+                <span className="sm:hidden">Cols</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
@@ -719,11 +751,12 @@ export function UserAvailabilityTable() {
             variant="outline"
             size="sm"
             onClick={exportToCSV}
-            className="gap-2"
+            className="gap-2 text-xs sm:text-sm"
             disabled={!data || data.length === 0}
           >
-            <Download className="h-4 w-4" />
-            Export CSV
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
         </div>
 
@@ -743,11 +776,11 @@ export function UserAvailabilityTable() {
 
       {/* Bulk Actions */}
       {selectedRows.size > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
           <span className="text-sm text-muted-foreground">
             {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
           </span>
-          <div className="ml-auto flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
             {relationshipConfigs.some(config => config.isEditable) && (
               <Button
                 variant="outline"
@@ -770,19 +803,21 @@ export function UserAvailabilityTable() {
       )}
 
       {/* Data Table */}
-      <div className="overflow-x-auto rounded-md border">
-        <Table className="min-w-full">
-          <UserAvailabilityTableHeader 
-            onSort={handleSort}
-            getSortIcon={getSortIcon}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            isAllSelected={isAllSelected}
-            isIndeterminate={isIndeterminate}
-            onSelectAll={handleSelectAll}
-            visibleColumns={visibleColumns}
-          />
-          <TableBody>
+      <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
+        <div className="table-scroll overflow-x-auto">
+          <Table className="w-full min-w-[600px]">.
+            
+            <UserAvailabilityTableHeader 
+              onSort={handleSort}
+              getSortIcon={getSortIcon}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              isAllSelected={isAllSelected}
+              isIndeterminate={isIndeterminate}
+              onSelectAll={handleSelectAll}
+              visibleColumns={visibleColumns}
+            />
+            <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
@@ -824,11 +859,13 @@ export function UserAvailabilityTable() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Pagination>
+        <div className="table-container">
+          <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -876,6 +913,7 @@ export function UserAvailabilityTable() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
+        </div>
       )}
 
       {/* Bulk Delete Dialog */}
@@ -930,6 +968,7 @@ export function UserAvailabilityTable() {
         relationshipConfigs={relationshipConfigs}
         onBulkUpdate={handleBulkRelationshipUpdate}
       />
-    </div>
+      </div>
+    </>
   );
 }
