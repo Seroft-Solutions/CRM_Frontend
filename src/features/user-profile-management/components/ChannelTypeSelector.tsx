@@ -1,7 +1,7 @@
 /**
  * Channel Type Selector with Channel Party cascading
  */
-import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/calls/components/paginated-relationship-combobox';
+import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/calls/components/form/paginated-relationship-combobox';
 import {
   useGetAllChannelTypes,
   useCountChannelTypes,
