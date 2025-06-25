@@ -52,15 +52,22 @@ export function UserProfileTableRow({
   visibleColumns,
 }: UserProfileTableRowProps) {
   return (
-    <TableRow>
-      <TableCell className="w-12 px-3 py-2">
+    <TableRow className="hover:bg-gray-50 transition-colors">
+      <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => userProfile.id && onSelect(userProfile.id)}
         />
       </TableCell>
-      {visibleColumns.map((column) => (
-        <TableCell key={column.id} className="whitespace-nowrap px-3 py-2">
+      {visibleColumns.map((column, index) => (
+        <TableCell 
+          key={column.id} 
+          className={`
+            px-2 sm:px-3 py-2 
+            ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
+            whitespace-nowrap overflow-hidden text-ellipsis
+          `}
+        >
           {column.type === 'field' ? (
             // Render field column
             (() => {
@@ -143,17 +150,17 @@ export function UserProfileTableRow({
           )}
         </TableCell>
       ))}
-      <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
-        <div className="flex items-center gap-1">
+      <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[100px] sm:w-[120px]">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="userProfile:read">
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="h-7 w-7 p-0"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
             >
               <Link href={`/user-profiles/${userProfile.id}`}>
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">View</span>
               </Link>
             </Button>
@@ -163,10 +170,10 @@ export function UserProfileTableRow({
               variant="ghost"
               size="sm"
               asChild
-              className="h-7 w-7 p-0"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
             >
               <Link href={`/user-profiles/${userProfile.id}/edit`}>
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">Edit</span>
               </Link>
             </Button>
@@ -175,11 +182,11 @@ export function UserProfileTableRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0 text-destructive"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive"
               onClick={() => userProfile.id && onDelete(userProfile.id)}
               disabled={isDeleting || !userProfile.id}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="sr-only">Delete</span>
             </Button>
           </InlinePermissionGuard>
