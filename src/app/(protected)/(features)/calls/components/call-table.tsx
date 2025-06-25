@@ -141,6 +141,14 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    id: 'id',
+    label: 'ID',
+    accessor: 'id',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
   
   {
     id: 'callDateTime',
@@ -334,7 +342,8 @@ export function CallTable() {
         return visibleColumns.map(col => {
           let value = '';
           if (col.type === 'field') {
-            value = item[col.accessor as keyof typeof item] || '';
+            const fieldValue = item[col.accessor as keyof typeof item];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
           } else if (col.type === 'relationship') {
             const relationship = item[col.accessor as keyof typeof item] as any;
             
@@ -602,7 +611,7 @@ export function CallTable() {
           query: searchTerm,
           page: apiPage,
           size: pageSize,
-          sort: `${sort},${order}`,
+          sort: [`${sort},${order}`],
           ...filterParams,
         },
         {
@@ -615,7 +624,7 @@ export function CallTable() {
         {
           page: apiPage,
           size: pageSize,
-          sort: `${sort},${order}`,
+          sort: [`${sort},${order}`],
           ...filterParams,
         },
         {
@@ -739,7 +748,7 @@ export function CallTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
     }
   };
 
@@ -847,7 +856,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {
@@ -911,7 +920,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {

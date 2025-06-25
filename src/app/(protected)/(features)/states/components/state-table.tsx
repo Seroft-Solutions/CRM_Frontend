@@ -100,6 +100,14 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    id: 'id',
+    label: 'ID',
+    accessor: 'id',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
   
   {
     id: 'name',
@@ -212,7 +220,8 @@ export function StateTable() {
         return visibleColumns.map(col => {
           let value = '';
           if (col.type === 'field') {
-            value = item[col.accessor as keyof typeof item] || '';
+            const fieldValue = item[col.accessor as keyof typeof item];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
           } else if (col.type === 'relationship') {
             const relationship = item[col.accessor as keyof typeof item] as any;
             
@@ -422,7 +431,7 @@ export function StateTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
     }
   };
 
