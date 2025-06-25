@@ -70,6 +70,7 @@ import {
   useGetAllOrganizations,
   useDeleteOrganization,
   useCountOrganizations,
+  useUpdateOrganization,
   usePartialUpdateOrganization,
   
 } from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
@@ -418,8 +419,8 @@ export function OrganizationTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateOrganization({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateOrganization({
     mutation: {
       onSuccess: () => {
         organizationToast.updated();
@@ -548,16 +549,27 @@ export function OrganizationTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('Organization not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for Organization ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -565,9 +577,11 @@ export function OrganizationTable() {
       }, {
         onSuccess: () => {
           organizationToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleOrganizationError(error);
           reject(error);
         }

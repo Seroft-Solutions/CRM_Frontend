@@ -70,6 +70,7 @@ import {
   useGetAllCallStatuses,
   useDeleteCallStatus,
   useCountCallStatuses,
+  useUpdateCallStatus,
   usePartialUpdateCallStatus,
   
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
@@ -338,8 +339,8 @@ export function CallStatusTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCallStatus({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateCallStatus({
     mutation: {
       onSuccess: () => {
         callStatusToast.updated();
@@ -468,16 +469,27 @@ export function CallStatusTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('CallStatus not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for CallStatus ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -485,9 +497,11 @@ export function CallStatusTable() {
       }, {
         onSuccess: () => {
           callStatusToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleCallStatusError(error);
           reject(error);
         }

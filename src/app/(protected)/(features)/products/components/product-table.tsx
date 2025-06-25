@@ -70,6 +70,7 @@ import {
   useGetAllProducts,
   useDeleteProduct,
   useCountProducts,
+  useUpdateProduct,
   usePartialUpdateProduct,
   useSearchProducts,
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
@@ -433,8 +434,8 @@ export function ProductTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateProduct({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateProduct({
     mutation: {
       onSuccess: () => {
         productToast.updated();
@@ -569,16 +570,27 @@ export function ProductTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('Product not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for Product ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -586,9 +598,11 @@ export function ProductTable() {
       }, {
         onSuccess: () => {
           productToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleProductError(error);
           reject(error);
         }

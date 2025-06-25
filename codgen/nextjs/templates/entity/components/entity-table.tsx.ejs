@@ -86,6 +86,7 @@ import {
   useGetAll<%= entityClassPlural %>,
   useDelete<%= entityClass %>,
   useCount<%= entityClassPlural %>,
+  useUpdate<%= entityClass %>,
   usePartialUpdate<%= entityClass %>,
   <% if (searchEngineAny) { %>useSearch<%= entityClassPlural %>,<% } %>
 } from "@/core/api/generated/spring/endpoints/<%= entityFileName %>-resource/<%= entityFileName %>-resource.gen";
@@ -502,8 +503,8 @@ export function <%= entityClass %>Table() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdate<%= entityClass %>({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdate<%= entityClass %>({
     mutation: {
       onSuccess: () => {
         <%= entityInstance %>Toast.updated();
@@ -638,16 +639,27 @@ export function <%= entityClass %>Table() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.<%= primaryKey.name %> === entityId);
+      if (!currentEntity) {
+        reject(new Error('<%= entityClass %> not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         <%= primaryKey.name %>: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { <%= primaryKey.name %>: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for <%= entityClass %> ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -655,9 +667,11 @@ export function <%= entityClass %>Table() {
       }, {
         onSuccess: () => {
           <%= entityInstance %>Toast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handle<%= entityClass %>Error(error);
           reject(error);
         }
