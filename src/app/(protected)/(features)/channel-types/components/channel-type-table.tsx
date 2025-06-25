@@ -79,10 +79,10 @@ import {
 
 
 
-import { ChannelTypeSearchAndFilters } from "./channel-type-search-filters";
-import { ChannelTypeTableHeader } from "./channel-type-table-header";
-import { ChannelTypeTableRow } from "./channel-type-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { ChannelTypeSearchAndFilters } from "./table/channel-type-search-filters";
+import { ChannelTypeTableHeader } from "./table/channel-type-table-header";
+import { ChannelTypeTableRow } from "./table/channel-type-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

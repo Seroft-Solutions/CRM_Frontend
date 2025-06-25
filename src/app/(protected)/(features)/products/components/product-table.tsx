@@ -79,10 +79,10 @@ import {
 
 
 
-import { ProductSearchAndFilters } from "./product-search-filters";
-import { ProductTableHeader } from "./product-table-header";
-import { ProductTableRow } from "./product-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { ProductSearchAndFilters } from "./table/product-search-filters";
+import { ProductTableHeader } from "./table/product-table-header";
+import { ProductTableRow } from "./table/product-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

@@ -88,10 +88,10 @@ import {
 
 
 
-import { CitySearchAndFilters } from "./city-search-filters";
-import { CityTableHeader } from "./city-table-header";
-import { CityTableRow } from "./city-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CitySearchAndFilters } from "./table/city-search-filters";
+import { CityTableHeader } from "./table/city-table-header";
+import { CityTableRow } from "./table/city-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

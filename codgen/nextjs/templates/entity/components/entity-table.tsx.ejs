@@ -153,10 +153,10 @@ import {
 <% }); %>
 <% } %>
 
-import { <%= entityClass %>SearchAndFilters } from "./<%= entityFileName %>-search-filters";
-import { <%= entityClass %>TableHeader } from "./<%= entityFileName %>-table-header";
-import { <%= entityClass %>TableRow } from "./<%= entityFileName %>-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { <%= entityClass %>SearchAndFilters } from "./table/<%= entityFileName %>-search-filters";
+import { <%= entityClass %>TableHeader } from "./table/<%= entityFileName %>-table-header";
+import { <%= entityClass %>TableRow } from "./table/<%= entityFileName %>-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

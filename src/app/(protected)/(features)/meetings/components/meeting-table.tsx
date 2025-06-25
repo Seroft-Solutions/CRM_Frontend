@@ -96,10 +96,10 @@ import {
 
 
 
-import { MeetingSearchAndFilters } from "./meeting-search-filters";
-import { MeetingTableHeader } from "./meeting-table-header";
-import { MeetingTableRow } from "./meeting-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { MeetingSearchAndFilters } from "./table/meeting-search-filters";
+import { MeetingTableHeader } from "./table/meeting-table-header";
+import { MeetingTableRow } from "./table/meeting-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

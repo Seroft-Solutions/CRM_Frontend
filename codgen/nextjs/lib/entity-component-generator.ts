@@ -40,6 +40,7 @@ export class EntityComponentGenerator {
       path.join(entityDir, 'components'),
       path.join(entityDir, 'components', 'form'),
       path.join(entityDir, 'components', 'form', 'steps'),
+      path.join(entityDir, 'components', 'table'),
       path.join(entityDir, 'actions'),
     ];
 
@@ -97,8 +98,8 @@ export class EntityComponentGenerator {
         variables: vars,
       },
       {
-        templatePath: 'entity/components/paginated-relationship-combobox.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'paginated-relationship-combobox.tsx'),
+        templatePath: 'entity/components/form/paginated-relationship-combobox.tsx.ejs',
+        outputPath: path.join(entityDir, 'components', 'form', 'paginated-relationship-combobox.tsx'),
         variables: vars,
       },
 
@@ -227,29 +228,27 @@ export class EntityComponentGenerator {
       // Table sub-components
       {
         templatePath: 'entity/components/table/entity-search-filters.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-search-filters.tsx`),
+        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-search-filters.tsx`),
         variables: vars,
       },
       {
         templatePath: 'entity/components/table/entity-table-header.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-table-header.tsx`),
+        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-table-header.tsx`),
         variables: vars,
       },
       {
         templatePath: 'entity/components/table/entity-table-row.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', `${vars.entityFileName}-table-row.tsx`),
-        variables: vars,
-      },
-
-      // Relationship components
-      {
-        templatePath: 'entity/components/bulk-relationship-assignment.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'bulk-relationship-assignment.tsx'),
+        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-table-row.tsx`),
         variables: vars,
       },
       {
-        templatePath: 'entity/components/relationship-cell.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'relationship-cell.tsx'),
+        templatePath: 'entity/components/table/bulk-relationship-assignment.tsx.ejs',
+        outputPath: path.join(entityDir, 'components', 'table', 'bulk-relationship-assignment.tsx'),
+        variables: vars,
+      },
+      {
+        templatePath: 'entity/components/table/relationship-cell.tsx.ejs',
+        outputPath: path.join(entityDir, 'components', 'table', 'relationship-cell.tsx'),
         variables: vars,
       },
 

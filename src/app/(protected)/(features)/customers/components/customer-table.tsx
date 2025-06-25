@@ -100,10 +100,10 @@ import {
 
 
 
-import { CustomerSearchAndFilters } from "./customer-search-filters";
-import { CustomerTableHeader } from "./customer-table-header";
-import { CustomerTableRow } from "./customer-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CustomerSearchAndFilters } from "./table/customer-search-filters";
+import { CustomerTableHeader } from "./table/customer-table-header";
+import { CustomerTableRow } from "./table/customer-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

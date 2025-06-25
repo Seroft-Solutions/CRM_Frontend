@@ -88,10 +88,10 @@ import {
 
 
 
-import { DistrictSearchAndFilters } from "./district-search-filters";
-import { DistrictTableHeader } from "./district-table-header";
-import { DistrictTableRow } from "./district-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { DistrictSearchAndFilters } from "./table/district-search-filters";
+import { DistrictTableHeader } from "./table/district-table-header";
+import { DistrictTableRow } from "./table/district-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

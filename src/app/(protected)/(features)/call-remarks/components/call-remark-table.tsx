@@ -88,10 +88,10 @@ import {
 
 
 
-import { CallRemarkSearchAndFilters } from "./call-remark-search-filters";
-import { CallRemarkTableHeader } from "./call-remark-table-header";
-import { CallRemarkTableRow } from "./call-remark-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { CallRemarkSearchAndFilters } from "./table/call-remark-search-filters";
+import { CallRemarkTableHeader } from "./table/call-remark-table-header";
+import { CallRemarkTableRow } from "./table/call-remark-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

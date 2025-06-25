@@ -79,10 +79,10 @@ import {
 
 
 
-import { OrganizationSearchAndFilters } from "./organization-search-filters";
-import { OrganizationTableHeader } from "./organization-table-header";
-import { OrganizationTableRow } from "./organization-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { OrganizationSearchAndFilters } from "./table/organization-search-filters";
+import { OrganizationTableHeader } from "./table/organization-table-header";
+import { OrganizationTableRow } from "./table/organization-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

@@ -79,10 +79,10 @@ import {
 
 
 
-import { StateSearchAndFilters } from "./state-search-filters";
-import { StateTableHeader } from "./state-table-header";
-import { StateTableRow } from "./state-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { StateSearchAndFilters } from "./table/state-search-filters";
+import { StateTableHeader } from "./table/state-table-header";
+import { StateTableRow } from "./table/state-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

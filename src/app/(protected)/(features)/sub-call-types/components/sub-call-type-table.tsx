@@ -88,10 +88,10 @@ import {
 
 
 
-import { SubCallTypeSearchAndFilters } from "./sub-call-type-search-filters";
-import { SubCallTypeTableHeader } from "./sub-call-type-table-header";
-import { SubCallTypeTableRow } from "./sub-call-type-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { SubCallTypeSearchAndFilters } from "./table/sub-call-type-search-filters";
+import { SubCallTypeTableHeader } from "./table/sub-call-type-table-header";
+import { SubCallTypeTableRow } from "./table/sub-call-type-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

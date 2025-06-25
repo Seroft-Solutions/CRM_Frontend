@@ -79,10 +79,10 @@ import {
 
 
 
-import { PrioritySearchAndFilters } from "./priority-search-filters";
-import { PriorityTableHeader } from "./priority-table-header";
-import { PriorityTableRow } from "./priority-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { PrioritySearchAndFilters } from "./table/priority-search-filters";
+import { PriorityTableHeader } from "./table/priority-table-header";
+import { PriorityTableRow } from "./table/priority-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
