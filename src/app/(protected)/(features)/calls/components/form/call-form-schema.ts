@@ -17,8 +17,8 @@ export const callFormSchema = z.object({
   source: z.number(),
   customer: z.number(),
   channelType: z.number(),
-  channelCustomer: z.string().optional(),
-  assignedTo: z.string().optional(),
+  channelParties: z.number().optional(),
+  assignedTo: z.number().optional(),
   callStatus: z.number(),
 });
 
@@ -38,8 +38,8 @@ export const callFieldSchemas = {
   source: z.number(),
   customer: z.number(),
   channelType: z.number(),
-  channelCustomer: z.string().optional(),
-  assignedTo: z.string().optional(),
+  channelParties: z.number().optional(),
+  assignedTo: z.number().optional(),
   callStatus: z.number(),
 };
 
@@ -50,7 +50,7 @@ export const callStepSchemas = {
   }),
 
   user: z.object({
-    channelCustomer: callFieldSchemas.channelCustomer,
+    channelParties: callFieldSchemas.channelParties,
     assignedTo: callFieldSchemas.assignedTo,
   }),
   classification: z.object({

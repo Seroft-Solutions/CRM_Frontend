@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250624194233"
+    "changelogDate": "20250625070818"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -86,20 +86,18 @@
       "relationshipValidateRules": "required"
     },
     {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "channelCustomer",
+      "otherEntityField": "displayName",
+      "otherEntityName": "userProfile",
+      "relationshipName": "channelParties",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
+      "relationshipType": "many-to-one"
     },
     {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
+      "otherEntityField": "displayName",
+      "otherEntityName": "userProfile",
       "relationshipName": "assignedTo",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipWithBuiltInEntity": true
+      "relationshipType": "many-to-one"
     },
     {
       "otherEntityField": "name",

@@ -190,20 +190,20 @@ export function CallTableRow({
       <TableCell className="whitespace-nowrap px-1 py-2">
         <RelationshipCell
           entityId={call.id || 0}
-          relationshipName="channelCustomer"
-          currentValue={call.channelCustomer}
+          relationshipName="channelParties"
+          currentValue={call.channelParties}
           options={
-            relationshipConfigs.find((config) => config.name === 'channelCustomer')?.options || []
+            relationshipConfigs.find((config) => config.name === 'channelParties')?.options || []
           }
-          displayField="login"
+          displayField="displayName"
           onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
           isEditable={
-            relationshipConfigs.find((config) => config.name === 'channelCustomer')?.isEditable ||
+            relationshipConfigs.find((config) => config.name === 'channelParties')?.isEditable ||
             false
           }
           isLoading={isUpdating}
           className="min-w-[150px]"
-          relatedEntityRoute="users"
+          relatedEntityRoute="user-profiles"
           showNavigationIcon={true}
         />
       </TableCell>
@@ -216,14 +216,14 @@ export function CallTableRow({
           options={
             relationshipConfigs.find((config) => config.name === 'assignedTo')?.options || []
           }
-          displayField="login"
+          displayField="displayName"
           onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
           isEditable={
             relationshipConfigs.find((config) => config.name === 'assignedTo')?.isEditable || false
           }
           isLoading={isUpdating}
           className="min-w-[150px]"
-          relatedEntityRoute="users"
+          relatedEntityRoute="user-profiles"
           showNavigationIcon={true}
         />
       </TableCell>

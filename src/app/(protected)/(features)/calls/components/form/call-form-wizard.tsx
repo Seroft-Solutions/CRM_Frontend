@@ -89,7 +89,7 @@ function CallFormContent({ id }: CallFormProps) {
           source: 'Source',
           customer: 'Customer',
           channelType: 'Channel Type',
-          channelCustomer: 'Channel Customer',
+          channelParties: 'Channel Parties',
           assignedTo: 'Assigned To',
           callStatus: 'Call Status',
         }}

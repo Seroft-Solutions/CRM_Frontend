@@ -220,12 +220,12 @@ export function CallDetails({ id }: CallDetailsProps) {
 
                 <div className="space-y-2">
                   <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Channel Customer
+                    Channel Parties
                   </dt>
                   <dd className="text-sm font-medium">
-                    {entity.channelCustomer ? (
+                    {entity.channelParties ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelCustomer as any).login || entity.channelCustomer.id}
+                        {(entity.channelParties as any).displayName || entity.channelParties.id}
                       </Badge>
                     ) : (
                       '—'
@@ -240,7 +240,7 @@ export function CallDetails({ id }: CallDetailsProps) {
                   <dd className="text-sm font-medium">
                     {entity.assignedTo ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedTo as any).login || entity.assignedTo.id}
+                        {(entity.assignedTo as any).displayName || entity.assignedTo.id}
                       </Badge>
                     ) : (
                       '—'

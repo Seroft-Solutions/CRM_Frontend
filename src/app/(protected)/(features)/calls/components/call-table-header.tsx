@@ -153,22 +153,22 @@ export function CallTableHeader({
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort('channelCustomer.login')}
+            onClick={() => onSort('channelParties.displayName')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
-            Channel Customer
-            <div className="text-gray-400">{renderSortIcon('channelCustomer.login')}</div>
+            Channel Parties
+            <div className="text-gray-400">{renderSortIcon('channelParties.displayName')}</div>
           </Button>
         </TableHead>
 
         <TableHead className="whitespace-nowrap px-3 py-2">
           <Button
             variant="ghost"
-            onClick={() => onSort('assignedTo.login')}
+            onClick={() => onSort('assignedTo.displayName')}
             className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
           >
             Assigned To
-            <div className="text-gray-400">{renderSortIcon('assignedTo.login')}</div>
+            <div className="text-gray-400">{renderSortIcon('assignedTo.displayName')}</div>
           </Button>
         </TableHead>
 
@@ -273,8 +273,10 @@ export function CallTableHeader({
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['channelCustomer.login'] as string) || ''}
-            onChange={(e) => onFilterChange('channelCustomer.login', e.target.value || undefined)}
+            value={(filters['channelParties.displayName'] as string) || ''}
+            onChange={(e) =>
+              onFilterChange('channelParties.displayName', e.target.value || undefined)
+            }
           />
         </TableHead>
 
@@ -282,8 +284,8 @@ export function CallTableHeader({
           <Input
             placeholder="Filter..."
             className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['assignedTo.login'] as string) || ''}
-            onChange={(e) => onFilterChange('assignedTo.login', e.target.value || undefined)}
+            value={(filters['assignedTo.displayName'] as string) || ''}
+            onChange={(e) => onFilterChange('assignedTo.displayName', e.target.value || undefined)}
           />
         </TableHead>
 

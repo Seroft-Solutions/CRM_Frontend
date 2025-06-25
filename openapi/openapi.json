@@ -6778,44 +6778,103 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
-          { "name": "channelCustomerId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           {
-            "name": "channelCustomerId.doesNotContain",
+            "name": "channelPartiesId.greaterThan",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" }
-          },
-          { "name": "channelCustomerId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "channelCustomerId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "channelCustomerId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "channelCustomerId.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "integer", "format": "int64" }
           },
           {
-            "name": "channelCustomerId.notIn",
+            "name": "channelPartiesId.lessThan",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "integer", "format": "int64" }
           },
-          { "name": "assignedToId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "channelPartiesId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "channelPartiesId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "channelPartiesId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "channelPartiesId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "assignedToId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
           { "name": "assignedToId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
           {
             "name": "assignedToId.in",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
           {
             "name": "assignedToId.notIn",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
           {
             "name": "callStatusId.greaterThan",
@@ -13529,44 +13588,103 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
-          { "name": "channelCustomerId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           {
-            "name": "channelCustomerId.doesNotContain",
+            "name": "channelPartiesId.greaterThan",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" }
-          },
-          { "name": "channelCustomerId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "channelCustomerId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "channelCustomerId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "channelCustomerId.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "integer", "format": "int64" }
           },
           {
-            "name": "channelCustomerId.notIn",
+            "name": "channelPartiesId.lessThan",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "integer", "format": "int64" }
           },
-          { "name": "assignedToId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "assignedToId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "channelPartiesId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "channelPartiesId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "channelPartiesId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "channelPartiesId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "channelPartiesId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "assignedToId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "assignedToId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
           { "name": "assignedToId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
           {
             "name": "assignedToId.in",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
           {
             "name": "assignedToId.notIn",
             "in": "query",
             "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
           },
           {
             "name": "callStatusId.greaterThan",
@@ -15082,8 +15200,8 @@
           "source": { "$ref": "#/components/schemas/SourceDTO" },
           "customer": { "$ref": "#/components/schemas/CustomerDTO" },
           "channelType": { "$ref": "#/components/schemas/ChannelTypeDTO" },
-          "channelCustomer": { "$ref": "#/components/schemas/UserDTO" },
-          "assignedTo": { "$ref": "#/components/schemas/UserDTO" },
+          "channelParties": { "$ref": "#/components/schemas/UserProfileDTO" },
+          "assignedTo": { "$ref": "#/components/schemas/UserProfileDTO" },
           "callStatus": { "$ref": "#/components/schemas/CallStatusDTO" }
         },
         "required": [
