@@ -24,14 +24,28 @@ export const availableTimeSlotFormConfig: FormConfig = {
       }
     },
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
       fields: [
         'slotDateTime',
         'bookedAt',
       ],
       relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'users',
+      title: 'People & Users',
+      description: 'Assign users and responsibilities',
+      fields: [
+      ],
+      relationships: [
+        'user',
       ],
       validation: {
         mode: 'onBlur',
@@ -46,20 +60,6 @@ export const availableTimeSlotFormConfig: FormConfig = {
         'isBooked',
       ],
       relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Assignment',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'user',
       ],
       validation: {
         mode: 'onBlur',

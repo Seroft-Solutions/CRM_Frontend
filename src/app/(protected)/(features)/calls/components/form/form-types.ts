@@ -43,7 +43,7 @@ export interface RelationshipConfig {
   primaryKey: string;
   required: boolean;
   multiple: boolean;
-  category: 'geographic' | 'user' | 'classification' | 'business' | 'channel' | 'assignment' | 'other';
+  category: 'geographic' | 'user' | 'classification' | 'business' | 'other';
   cascadingFilter?: CascadingFilter;
   api: RelationshipAPI;
   creation: CreationConfig;

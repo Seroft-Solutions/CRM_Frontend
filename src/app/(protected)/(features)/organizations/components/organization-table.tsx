@@ -200,6 +200,8 @@ export function OrganizationTable() {
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       if (saved) {
@@ -219,7 +221,7 @@ export function OrganizationTable() {
 
   // Save column visibility to localStorage whenever it changes
   useEffect(() => {
-    if (isColumnVisibilityLoaded) {
+    if (isColumnVisibilityLoaded && typeof window !== 'undefined') {
       try {
         localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
       } catch (error) {
