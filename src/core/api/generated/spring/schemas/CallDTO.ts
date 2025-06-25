@@ -12,7 +12,7 @@ import type { CallCategoryDTO } from './CallCategoryDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
-import type { UserDTO } from './UserDTO';
+import type { UserProfileDTO } from './UserProfileDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
 
 export interface CallDTO {
@@ -25,7 +25,7 @@ export interface CallDTO {
   source: SourceDTO;
   customer: CustomerDTO;
   channelType: ChannelTypeDTO;
-  channelCustomer?: UserDTO;
-  assignedTo?: UserDTO;
+  channelParties?: UserProfileDTO;
+  assignedTo?: UserProfileDTO;
   callStatus: CallStatusDTO;
 }

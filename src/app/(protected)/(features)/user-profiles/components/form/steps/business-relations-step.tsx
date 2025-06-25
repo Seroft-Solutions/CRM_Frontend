@@ -22,7 +22,7 @@ import {
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import {
   useGetAllPublicUsers,
-  useSearchPublicUsers,
+  useSearch as useSearchPublicUsers,
 } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 
 // Create hook mapping for dynamic resolution
@@ -30,6 +30,7 @@ const hookMapping = {
   // Public Users (built-in user entity)
   useGetAllPublicUsers: useGetAllPublicUsers,
   useSearchPublicUsers: useSearchPublicUsers,
+  // User Profiles (UserProfile entity)
   // Other entities
   useGetAllOrganizations: useGetAllOrganizations,
   useSearchOrganizations: useSearchOrganizations,

@@ -101,8 +101,8 @@ export function CallSearchAndFilters({
       if (relationName === 'channelType') {
         return 'Channel Type';
       }
-      if (relationName === 'channelCustomer') {
-        return 'Channel Customer';
+      if (relationName === 'channelParties') {
+        return 'Channel Parties';
       }
       if (relationName === 'assignedTo') {
         return 'Assigned To';
@@ -243,13 +243,13 @@ export function CallSearchAndFilters({
 
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      Channel Customer
+                      Channel Parties
                     </label>
                     <Input
-                      placeholder="Filter by channel customer..."
-                      value={(filters['channelCustomer.login'] as string) || ''}
+                      placeholder="Filter by channel parties..."
+                      value={(filters['channelParties.displayName'] as string) || ''}
                       onChange={(e) =>
-                        onFilterChange('channelCustomer.login', e.target.value || undefined)
+                        onFilterChange('channelParties.displayName', e.target.value || undefined)
                       }
                       className="h-8"
                     />
@@ -259,9 +259,9 @@ export function CallSearchAndFilters({
                     <label className="text-xs text-muted-foreground mb-1 block">Assigned To</label>
                     <Input
                       placeholder="Filter by assigned to..."
-                      value={(filters['assignedTo.login'] as string) || ''}
+                      value={(filters['assignedTo.displayName'] as string) || ''}
                       onChange={(e) =>
-                        onFilterChange('assignedTo.login', e.target.value || undefined)
+                        onFilterChange('assignedTo.displayName', e.target.value || undefined)
                       }
                       className="h-8"
                     />

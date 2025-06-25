@@ -18,8 +18,14 @@ import {
 <%_ if (otherEntitiesWithPersistableRelationship.some(e => e.builtInUser)) { _%>
 import { 
   useGetAllPublicUsers,
-  useSearchPublicUsers
+  useSearch as useSearchPublicUsers
 } from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+<%_ } _%>
+<%_ if (otherEntitiesWithPersistableRelationship.some(e => e.entityName === 'UserProfile')) { _%>
+import { 
+  useGetAllUserProfiles,
+  useSearchUserProfiles
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 <%_ } _%>
 
 // Create hook mapping for dynamic resolution
@@ -28,6 +34,11 @@ const hookMapping = {
   <%_ if (otherEntitiesWithPersistableRelationship.some(e => e.builtInUser)) { _%>
   'useGetAllPublicUsers': useGetAllPublicUsers,
   'useSearchPublicUsers': useSearchPublicUsers,
+  <%_ } _%>
+  // User Profiles (UserProfile entity)
+  <%_ if (otherEntitiesWithPersistableRelationship.some(e => e.entityName === 'UserProfile')) { _%>
+  'useGetAllUserProfiles': useGetAllUserProfiles,
+  'useSearchUserProfiles': useSearchUserProfiles,
   <%_ } _%>
   // Other entities
   <%_ for (const otherEntity of otherEntitiesWithPersistableRelationship.filter(e => !e.builtInUser)) { _%>

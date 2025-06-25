@@ -9,6 +9,7 @@ import { useEntityForm } from '../channel-type-form-provider';
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
+  // User Profiles (UserProfile entity)
   // Other entities
 };
 

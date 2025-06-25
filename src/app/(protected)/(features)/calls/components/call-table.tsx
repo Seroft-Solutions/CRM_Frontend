@@ -36,8 +36,6 @@ import {
 
 // Relationship data imports
 
-import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
-
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
@@ -51,6 +49,8 @@ import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-r
 import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
@@ -126,7 +126,7 @@ export function CallTable() {
     { query: { enabled: true } }
   );
 
-  const { data: userOptions = [] } = useGetAllPublicUsers(
+  const { data: userprofileOptions = [] } = useGetAllUserProfiles(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
@@ -192,16 +192,16 @@ export function CallTable() {
         displayField: 'name',
       },
 
-      'channelCustomer.login': {
-        apiParam: 'channelCustomerId.equals',
-        options: userOptions,
-        displayField: 'login',
+      'channelParties.displayName': {
+        apiParam: 'channelPartiesId.equals',
+        options: userprofileOptions,
+        displayField: 'displayName',
       },
 
-      'assignedTo.login': {
+      'assignedTo.displayName': {
         apiParam: 'assignedToId.equals',
-        options: userOptions,
-        displayField: 'login',
+        options: userprofileOptions,
+        displayField: 'displayName',
       },
 
       'callStatus.name': {
@@ -561,18 +561,18 @@ export function CallTable() {
     },
 
     {
-      name: 'channelCustomer',
-      displayName: 'ChannelCustomer',
-      options: userOptions || [],
-      displayField: 'login',
+      name: 'channelParties',
+      displayName: 'ChannelParties',
+      options: userprofileOptions || [],
+      displayField: 'displayName',
       isEditable: false, // Disabled by default
     },
 
     {
       name: 'assignedTo',
       displayName: 'AssignedTo',
-      options: userOptions || [],
-      displayField: 'login',
+      options: userprofileOptions || [],
+      displayField: 'displayName',
       isEditable: false, // Disabled by default
     },
 

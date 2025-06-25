@@ -14,6 +14,7 @@ import {
 // Create hook mapping for dynamic resolution
 const hookMapping = {
   // Public Users (built-in user entity)
+  // User Profiles (UserProfile entity)
   // Other entities
   useGetAllCallTypes: useGetAllCallTypes,
   useSearchCallTypes: useSearchCallTypes,
