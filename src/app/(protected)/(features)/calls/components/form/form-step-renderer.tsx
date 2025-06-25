@@ -13,6 +13,7 @@ import { ClassificationStep } from "./steps/classification-step";
 import { BusinessRelationsStep } from "./steps/business-relations-step";
 import { OtherRelationsStep } from "./steps/other-relations-step";
 import { ReviewStep } from "./steps/review-step";
+import {MeetingScheduleStep} from "@/app/(protected)/(features)/calls/components/form/steps/meeting-schedule-step";
 
 interface FormStepRendererProps {
   entity?: any;
@@ -75,6 +76,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         return <GeographicStep {...stepProps} />;
       case 'users':
         return <UserAssignmentStep {...stepProps} />;
+      case 'meeting-scheduling':
+        return <MeetingScheduleStep {...stepProps}/>
       case 'classification':
         return <ClassificationStep {...stepProps} />;
       case 'business':

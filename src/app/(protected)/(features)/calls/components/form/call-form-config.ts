@@ -73,6 +73,19 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
+      id: 'meeting-scheduling',
+        title: 'Meeting Details',
+        description: 'Enter Meeting Information',
+        fields: [
+        ],
+        relationships: [
+        ],
+        validation: {
+          mode: 'onBlur',
+          validateOnNext: true
+        }
+    },
+    {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
