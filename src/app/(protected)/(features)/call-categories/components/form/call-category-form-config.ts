@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for CallCategory form
@@ -6,30 +6,37 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const callCategoryFormConfig: FormConfig = {
   entity: 'CallCategory',
-
+  
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'remark'],
-      relationships: [],
+      fields: [
+        'name',
+        'description',
+        'remark',
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -46,7 +53,8 @@ export const callCategoryFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 50,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'description',
@@ -58,7 +66,8 @@ export const callCategoryFormConfig: FormConfig = {
         required: false,
         maxLength: 255,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'remark',
@@ -70,12 +79,14 @@ export const callCategoryFormConfig: FormConfig = {
         required: false,
         maxLength: 1000,
       },
-      ui: {},
+      ui: {
+      }
     },
   ],
 
   // Relationship definitions
-  relationships: [],
+  relationships: [
+  ],
 
   // Global form configuration
   validation: {
@@ -98,7 +109,7 @@ export const callCategoryFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -121,19 +132,17 @@ export const callCategoryFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    },
-  },
+    }
+  }
 };
 
 // Export utility functions for external use
 export const callCategoryFormHelpers = {
-  getStepById: (stepId: string) => callCategoryFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    callCategoryFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    callCategoryFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => callCategoryFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => callCategoryFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => callCategoryFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = callCategoryFormConfig.steps.find((s) => s.id === stepId);
+    const step = callCategoryFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

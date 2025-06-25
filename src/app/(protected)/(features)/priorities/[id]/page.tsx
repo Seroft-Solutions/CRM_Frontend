@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { PriorityDetails } from '../components/priority-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { PriorityDetails } from "../components/priority-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface PriorityPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface PriorityPageProps {
 }
 
 export const metadata = {
-  title: 'Priority Details',
+  title: "Priority Details",
 };
 
 export default async function PriorityPage({ params }: PriorityPageProps) {
@@ -23,7 +23,7 @@ export default async function PriorityPage({ params }: PriorityPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="priority:read"
       unauthorizedTitle="Access Denied to Priority Details"
       unauthorizedDescription="You don't have permission to view this priority."
@@ -31,7 +31,7 @@ export default async function PriorityPage({ params }: PriorityPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/priorities"
               defaultLabel="Back to Priorities"
               entityName="Priority"
@@ -44,12 +44,10 @@ export default async function PriorityPage({ params }: PriorityPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Priority Details</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                View detailed information for this priority
-              </p>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this priority</p>
             </div>
           </div>
-
+          
           <PriorityDetails id={id} />
         </div>
       </div>

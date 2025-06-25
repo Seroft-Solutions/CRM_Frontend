@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { MeetingParticipantForm } from './form/meeting-participant-form-wizard';
+import React from "react";
+import { MeetingParticipantForm } from "./form/meeting-participant-form-wizard";
 
 interface MeetingParticipantFormProps {
   id?: number;

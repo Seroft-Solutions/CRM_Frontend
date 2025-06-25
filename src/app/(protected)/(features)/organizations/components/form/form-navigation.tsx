@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useEntityForm } from './organization-form-provider';
+import React, { useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEntityForm } from "./organization-form-provider";
 
 interface FormNavigationProps {
   onCancel: () => void;
@@ -12,7 +12,12 @@ interface FormNavigationProps {
   isNew: boolean;
 }
 
-export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: FormNavigationProps) {
+export function FormNavigation({ 
+  onCancel, 
+  onSubmit, 
+  isSubmitting, 
+  isNew 
+}: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
   const [confirmSubmission, setConfirmSubmission] = useState(false);
   const isLastStep = state.currentStep === config.steps.length - 1;
@@ -61,30 +66,30 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
         disabled={isSubmitting}
       >
         <ArrowLeft className="h-4 w-4" />
-        {state.currentStep === 0 ? 'Cancel' : 'Previous'}
+        {state.currentStep === 0 ? "Cancel" : "Previous"}
       </Button>
 
       {/* Next/Submit Button */}
       {isLastStep ? (
         !confirmSubmission ? (
-          <Button
+          <Button 
             type="button"
             onClick={handleConfirmSubmit}
             className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 justify-center"
             disabled={isSubmitting}
           >
             <Check className="h-4 w-4" />
-            Confirm {isNew ? 'Create' : 'Update'}
+            Confirm {isNew ? "Create" : "Update"}
           </Button>
         ) : (
-          <Button
+          <Button 
             type="button"
             onClick={handleFinalSubmit}
             disabled={isSubmitting}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
           >
             <Save className="h-4 w-4" />
-            {isSubmitting ? 'Submitting...' : `${isNew ? 'Create' : 'Update'} Organization`}
+            {isSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} Organization`}
           </Button>
         )
       ) : (

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DistrictFormProvider, useEntityForm } from './district-form-provider';
-import { FormProgressIndicator } from './form-progress-indicator';
-import { FormStepRenderer } from './form-step-renderer';
-import { FormNavigation } from './form-navigation';
-import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
-import {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { DistrictFormProvider, useEntityForm } from "./district-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
+import { FormErrorsDisplay } from "@/components/form-errors-display";
+import { 
   useCreateDistrict,
   useUpdateDistrict,
   useGetDistrict,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import { districtToast, handleDistrictError } from '../district-toast';
-import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+import { districtToast, handleDistrictError } from "../district-toast";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface DistrictFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetDistrict(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-district', id],
+      queryKey: ["get-district", id]
     },
   });
 
@@ -42,13 +42,13 @@ function DistrictFormContent({ id }: DistrictFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || '/districts';
-
+      const backRoute = returnUrl || "/districts";
+      
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-
+      
       router.push(backRoute);
     }
   };
@@ -78,11 +78,11 @@ function DistrictFormContent({ id }: DistrictFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
+      <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          name: '',
-          state: 'State',
+          'name': '',
+          'state': 'State',
         }}
       />
 
@@ -90,7 +90,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation
+      <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -114,7 +114,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -122,7 +122,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
         } else {
           setIsRedirecting(true);
           districtToast.created();
-          router.push('/districts');
+          router.push("/districts");
         }
       },
       onError: (error) => {
@@ -136,7 +136,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         districtToast.updated();
-        router.push('/districts');
+        router.push("/districts");
       },
       onError: (error) => {
         handleDistrictError(error);
@@ -157,11 +157,11 @@ export function DistrictForm({ id }: DistrictFormProps) {
   }
 
   return (
-    <DistrictFormProvider
+    <DistrictFormProvider 
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

@@ -1,22 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import type { StepComponentProps } from '../form-types';
-import { useEntityForm } from '../user-availability-form-provider';
+import React from "react";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { StepComponentProps } from "../form-types";
+import { useEntityForm } from "../user-availability-form-provider";
 
 export function BasicInfoStep({ stepConfig, isActive, isCompleted }: StepComponentProps) {
   const { config, form } = useEntityForm();
 
-  const fieldsForThisStep = config.fields.filter((field) => stepConfig.fields.includes(field.name));
+  const fieldsForThisStep = config.fields.filter(field => 
+    stepConfig.fields.includes(field.name)
+  );
 
   if (fieldsForThisStep.length === 0) {
     return (
@@ -28,9 +24,7 @@ export function BasicInfoStep({ stepConfig, isActive, isCompleted }: StepCompone
 
   return (
     <div className="space-y-6">
-      <div
-        className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
-      >
+      <div className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}>
         {fieldsForThisStep.map((fieldConfig) => (
           <FormField
             key={fieldConfig.name}
@@ -40,7 +34,7 @@ export function BasicInfoStep({ stepConfig, isActive, isCompleted }: StepCompone
               <FormItem>
                 <FormLabel className="text-sm font-medium">
                   {fieldConfig.label}
-                  {fieldConfig.required && ' *'}
+                  {fieldConfig.required && " *"}
                 </FormLabel>
                 <FormControl>
                   {fieldConfig.type === 'enum' ? (
@@ -57,13 +51,9 @@ export function BasicInfoStep({ stepConfig, isActive, isCompleted }: StepCompone
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Input
+                    <Input 
                       {...field}
-                      type={
-                        fieldConfig.ui?.inputType || fieldConfig.type === 'number'
-                          ? 'number'
-                          : 'text'
-                      }
+                      type={fieldConfig.ui?.inputType || fieldConfig.type === 'number' ? 'number' : 'text'}
                       placeholder={fieldConfig.placeholder}
                       className={`${config.ui.animations.fieldFocus} ${fieldConfig.ui?.className || ''}`}
                       disabled={fieldConfig.ui?.disabled}

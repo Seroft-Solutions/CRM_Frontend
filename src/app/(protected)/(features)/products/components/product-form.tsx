@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ProductForm } from './form/product-form-wizard';
+import React from "react";
+import { ProductForm } from "./form/product-form-wizard";
 
 interface ProductFormProps {
   id?: number;

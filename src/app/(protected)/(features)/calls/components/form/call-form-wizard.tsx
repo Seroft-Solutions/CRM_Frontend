@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CallFormProvider, useEntityForm } from './call-form-provider';
-import { FormProgressIndicator } from './form-progress-indicator';
-import { FormStepRenderer } from './form-step-renderer';
-import { FormNavigation } from './form-navigation';
-import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
-import {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CallFormProvider, useEntityForm } from "./call-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
+import { FormErrorsDisplay } from "@/components/form-errors-display";
+import { 
   useCreateCall,
   useUpdateCall,
   useGetCall,
-} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import { callToast, handleCallError } from '../call-toast';
-import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
+import { callToast, handleCallError } from "../call-toast";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface CallFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CallFormContent({ id }: CallFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCall(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-call', id],
+      queryKey: ["get-call", id]
     },
   });
 
@@ -42,13 +42,13 @@ function CallFormContent({ id }: CallFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || '/calls';
-
+      const backRoute = returnUrl || "/calls";
+      
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-
+      
       router.push(backRoute);
     }
   };
@@ -78,20 +78,20 @@ function CallFormContent({ id }: CallFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
+      <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          callDateTime: '',
-          priority: 'Priority',
-          callType: 'Call Type',
-          subCallType: 'Sub Call Type',
-          callCategory: 'Call Category',
-          source: 'Source',
-          customer: 'Customer',
-          channelType: 'Channel Type',
-          channelParties: 'Channel Parties',
-          assignedTo: 'Assigned To',
-          callStatus: 'Call Status',
+          'callDateTime': '',
+          'priority': 'Priority',
+          'callType': 'Call Type',
+          'subCallType': 'Sub Call Type',
+          'callCategory': 'Call Category',
+          'source': 'Source',
+          'customer': 'Customer',
+          'channelType': 'Channel Type',
+          'channelParties': 'Channel Parties',
+          'assignedTo': 'Assigned To',
+          'callStatus': 'Call Status',
         }}
       />
 
@@ -99,7 +99,7 @@ function CallFormContent({ id }: CallFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation
+      <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -123,7 +123,7 @@ export function CallForm({ id }: CallFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -131,7 +131,7 @@ export function CallForm({ id }: CallFormProps) {
         } else {
           setIsRedirecting(true);
           callToast.created();
-          router.push('/calls');
+          router.push("/calls");
         }
       },
       onError: (error) => {
@@ -145,7 +145,7 @@ export function CallForm({ id }: CallFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         callToast.updated();
-        router.push('/calls');
+        router.push("/calls");
       },
       onError: (error) => {
         handleCallError(error);
@@ -166,11 +166,11 @@ export function CallForm({ id }: CallFormProps) {
   }
 
   return (
-    <CallFormProvider
+    <CallFormProvider 
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

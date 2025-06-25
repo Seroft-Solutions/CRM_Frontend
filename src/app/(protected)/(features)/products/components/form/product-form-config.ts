@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for Product form
@@ -6,7 +6,7 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const productFormConfig: FormConfig = {
   entity: 'Product',
-
+  
   // Form steps configuration
   steps: [
     {
@@ -23,22 +23,25 @@ export const productFormConfig: FormConfig = {
         'minPrice',
         'maxPrice',
       ],
-      relationships: [],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -55,7 +58,8 @@ export const productFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'code',
@@ -69,7 +73,8 @@ export const productFormConfig: FormConfig = {
         maxLength: 20,
         pattern: /^[A-Za-z0-9_-]+$/,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'description',
@@ -81,7 +86,8 @@ export const productFormConfig: FormConfig = {
         required: false,
         maxLength: 500,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'category',
@@ -93,7 +99,8 @@ export const productFormConfig: FormConfig = {
         required: false,
         maxLength: 50,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'basePrice',
@@ -108,7 +115,7 @@ export const productFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
-      },
+      }
     },
     {
       name: 'minPrice',
@@ -123,7 +130,7 @@ export const productFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
-      },
+      }
     },
     {
       name: 'maxPrice',
@@ -138,7 +145,7 @@ export const productFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
-      },
+      }
     },
     {
       name: 'remark',
@@ -150,12 +157,14 @@ export const productFormConfig: FormConfig = {
         required: false,
         maxLength: 1000,
       },
-      ui: {},
+      ui: {
+      }
     },
   ],
 
   // Relationship definitions
-  relationships: [],
+  relationships: [
+  ],
 
   // Global form configuration
   validation: {
@@ -178,7 +187,7 @@ export const productFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -201,19 +210,17 @@ export const productFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    },
-  },
+    }
+  }
 };
 
 // Export utility functions for external use
 export const productFormHelpers = {
-  getStepById: (stepId: string) => productFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    productFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    productFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => productFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => productFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => productFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = productFormConfig.steps.find((s) => s.id === stepId);
+    const step = productFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

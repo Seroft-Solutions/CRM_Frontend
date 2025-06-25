@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallForm } from '../../components/call-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallForm } from "../../components/call-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditCallPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditCallPageProps {
 }
 
 export const metadata = {
-  title: 'Edit Call',
+  title: "Edit Call",
 };
 
 export default async function EditCallPage({ params }: EditCallPageProps) {
@@ -23,7 +23,7 @@ export default async function EditCallPage({ params }: EditCallPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="call:update"
       unauthorizedTitle="Access Denied to Edit Call"
       unauthorizedDescription="You don't have permission to edit call records."
@@ -31,7 +31,7 @@ export default async function EditCallPage({ params }: EditCallPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/calls"
               defaultLabel="Back to Calls"
               entityName="Call"
@@ -47,7 +47,7 @@ export default async function EditCallPage({ params }: EditCallPageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this call</p>
             </div>
           </div>
-
+          
           <CallForm id={id} />
         </div>
       </div>

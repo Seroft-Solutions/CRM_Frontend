@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { RelationshipCell } from './relationship-cell';
-import type { CallTypeDTO } from '@/core/api/generated/spring/schemas/CallTypeDTO';
+import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { RelationshipCell } from "./relationship-cell";
+import type { CallTypeDTO } from "@/core/api/generated/spring/schemas/CallTypeDTO";
+
+
 
 interface RelationshipConfig {
   name: string;
@@ -26,23 +28,28 @@ interface CallTypeTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (
-    entityId: number,
-    relationshipName: string,
-    newValue: number | null
-  ) => Promise<void>;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
   isUpdating?: boolean;
+  visibleColumns: Array<{
+    id: string;
+    label: string;
+    accessor: string;
+    type: 'field' | 'relationship';
+    visible: boolean;
+    sortable: boolean;
+  }>;
 }
 
-export function CallTypeTableRow({
-  callType,
-  onDelete,
-  isDeleting,
-  isSelected,
+export function CallTypeTableRow({ 
+  callType, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
   isUpdating = false,
+  visibleColumns,
 }: CallTypeTableRowProps) {
   return (
     <TableRow>
@@ -52,17 +59,51 @@ export function CallTypeTableRow({
           onCheckedChange={() => callType.id && onSelect(callType.id)}
         />
       </TableCell>
-
-      <TableCell className="whitespace-nowrap px-3 py-2">{callType.name}</TableCell>
-
-      <TableCell className="whitespace-nowrap px-3 py-2">{callType.description}</TableCell>
-
-      <TableCell className="whitespace-nowrap px-3 py-2">{callType.remark}</TableCell>
-
+      {visibleColumns.map((column) => (
+        <TableCell key={column.id} className="whitespace-nowrap px-3 py-2">
+          {column.type === 'field' ? (
+            // Render field column
+            (() => {
+              const field = callType[column.accessor as keyof typeof callType];
+              
+              if (column.id === 'name') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'description') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'remark') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              return field?.toString() || "";
+            })()
+          ) : (
+            // Render relationship column
+            (() => {
+              
+              return null;
+            })()
+          )}
+        </TableCell>
+      ))}
       <TableCell className="sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
         <div className="flex items-center gap-1">
           <InlinePermissionGuard requiredPermission="callType:read">
-            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-7 w-7 p-0"
+            >
               <Link href={`/call-types/${callType.id}`}>
                 <Eye className="h-3.5 w-3.5" />
                 <span className="sr-only">View</span>
@@ -70,7 +111,12 @@ export function CallTypeTableRow({
             </Button>
           </InlinePermissionGuard>
           <InlinePermissionGuard requiredPermission="callType:update">
-            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-7 w-7 p-0"
+            >
               <Link href={`/call-types/${callType.id}/edit`}>
                 <Pencil className="h-3.5 w-3.5" />
                 <span className="sr-only">Edit</span>

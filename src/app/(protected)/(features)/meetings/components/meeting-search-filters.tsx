@@ -1,27 +1,39 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Filter, X, Search, CalendarIcon, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import {
+  Filter,
+  X,
+  Search,
+  CalendarIcon,
+  ChevronDown
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/dropdown-menu";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+
+
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -51,14 +63,13 @@ export function MeetingSearchAndFilters({
   dateRange,
   onDateRangeChange,
   onClearAll,
-  hasActiveFilters,
+  hasActiveFilters
 }: MeetingSearchAndFiltersProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   // Count active filters for badge
-  const activeFiltersCount =
-    Object.values(filters).filter((v) => v !== undefined && v !== '').length +
-    (searchTerm ? 1 : 0) +
+  const activeFiltersCount = Object.values(filters).filter(v => v !== undefined && v !== "").length + 
+    (searchTerm ? 1 : 0) + 
     (dateRange.from || dateRange.to ? 1 : 0);
 
   // Remove specific filter
@@ -91,7 +102,7 @@ export function MeetingSearchAndFilters({
       }
       return relationName;
     }
-
+    
     // Handle regular field filters
     if (key === 'isRecurring') {
       return 'isRecurring';
@@ -166,19 +177,24 @@ export function MeetingSearchAndFilters({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80 p-4" align="end">
             <div className="space-y-4">
-              <DropdownMenuSeparator />
+              
+              
 
+              
+              <DropdownMenuSeparator />
+              
               {/* Boolean Fields Section */}
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">isRecurring</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      isRecurring
+                    </label>
                     <Select
-                      value={(filters['isRecurring'] as string) || '__all__'}
-                      onValueChange={(value) =>
-                        onFilterChange('isRecurring', value === '__all__' ? undefined : value)
-                      }
+                      value={filters["isRecurring"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("isRecurring", value === "__all__" ? undefined : value)}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="All" />
@@ -190,60 +206,62 @@ export function MeetingSearchAndFilters({
                       </SelectContent>
                     </Select>
                   </div>
+                  
                 </div>
               </div>
+              
 
+              
               <DropdownMenuSeparator />
-
+              
               {/* People Section */}
               <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">
-                  People & Relationships
-                </DropdownMenuLabel>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">People & Relationships</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Organizer</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Organizer
+                    </label>
                     <Input
                       placeholder="Filter by organizer..."
-                      value={(filters['organizer.displayName'] as string) || ''}
-                      onChange={(e) =>
-                        onFilterChange('organizer.displayName', e.target.value || undefined)
-                      }
+                      value={filters["organizer.displayName"] as string || ""}
+                      onChange={(e) => onFilterChange("organizer.displayName", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-
+                  
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
                       Assigned Customer
                     </label>
                     <Input
                       placeholder="Filter by assigned customer..."
-                      value={(filters['assignedCustomer.customerBusinessName'] as string) || ''}
-                      onChange={(e) =>
-                        onFilterChange(
-                          'assignedCustomer.customerBusinessName',
-                          e.target.value || undefined
-                        )
-                      }
+                      value={filters["assignedCustomer.customerBusinessName"] as string || ""}
+                      onChange={(e) => onFilterChange("assignedCustomer.customerBusinessName", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Call</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Call
+                    </label>
                     <Input
                       placeholder="Filter by call..."
-                      value={(filters['call.name'] as string) || ''}
-                      onChange={(e) => onFilterChange('call.name', e.target.value || undefined)}
+                      value={filters["call.name"] as string || ""}
+                      onChange={(e) => onFilterChange("call.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
+                  
                 </div>
               </div>
+              
 
+              
               <DropdownMenuSeparator />
-
+              
               {/* Dates Section */}
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
@@ -261,13 +279,13 @@ export function MeetingSearchAndFilters({
                         {dateRange.from ? (
                           dateRange.to ? (
                             <>
-                              {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd')}
+                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
                             </>
                           ) : (
-                            format(dateRange.from, 'MMM dd, yyyy')
+                            format(dateRange.from, "MMM dd, yyyy")
                           )
                         ) : (
-                          'Pick date range'
+                          "Pick date range"
                         )}
                       </Button>
                     </PopoverTrigger>
@@ -277,9 +295,7 @@ export function MeetingSearchAndFilters({
                         mode="range"
                         defaultMonth={dateRange.from}
                         selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) =>
-                          onDateRangeChange({ from: range?.from, to: range?.to })
-                        }
+                        onSelect={(range) => onDateRangeChange({ from: range?.from, to: range?.to })}
                         numberOfMonths={2}
                       />
                       <div className="p-3 border-t">
@@ -296,46 +312,56 @@ export function MeetingSearchAndFilters({
                   </Popover>
                 </div>
               </div>
+              
 
+              
               <DropdownMenuSeparator />
-
+              
               {/* Other Fields Section */}
               <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">
-                  Other Fields
-                </DropdownMenuLabel>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">duration</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      duration
+                    </label>
                     <Input
                       placeholder="Filter by duration..."
-                      value={(filters['duration'] as string) || ''}
-                      onChange={(e) => onFilterChange('duration', e.target.value || undefined)}
+                      value={filters["duration"] as string || ""}
+                      onChange={(e) => onFilterChange("duration", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">title</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      title
+                    </label>
                     <Input
                       placeholder="Filter by title..."
-                      value={(filters['title'] as string) || ''}
-                      onChange={(e) => onFilterChange('title', e.target.value || undefined)}
+                      value={filters["title"] as string || ""}
+                      onChange={(e) => onFilterChange("title", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-
+                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">description</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      description
+                    </label>
                     <Input
                       placeholder="Filter by description..."
-                      value={(filters['description'] as string) || ''}
-                      onChange={(e) => onFilterChange('description', e.target.value || undefined)}
+                      value={filters["description"] as string || ""}
+                      onChange={(e) => onFilterChange("description", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
+                  
                 </div>
               </div>
+              
+
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -361,35 +387,33 @@ export function MeetingSearchAndFilters({
             <Badge variant="secondary" className="gap-1">
               Search: {searchTerm}
               <button
-                onClick={() => onSearchChange({ target: { value: '' } } as any)}
+                onClick={() => onSearchChange({ target: { value: "" } } as any)}
                 className="ml-1 rounded-full hover:bg-secondary-foreground/20"
               >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
-
-          {Object.entries(filters).map(
-            ([key, value]) =>
-              value !== undefined &&
-              value !== '' && (
-                <Badge key={key} variant="secondary" className="gap-1">
-                  {getFilterDisplayName(key)}: {getFilterDisplayValue(key, value)}
-                  <button
-                    onClick={() => removeFilter(key)}
-                    className="ml-1 rounded-full hover:bg-secondary-foreground/20"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )
-          )}
-
+          
+          {Object.entries(filters).map(([key, value]) => (
+            value !== undefined && value !== "" && (
+              <Badge key={key} variant="secondary" className="gap-1">
+                {getFilterDisplayName(key)}: {getFilterDisplayValue(key, value)}
+                <button
+                  onClick={() => removeFilter(key)}
+                  className="ml-1 rounded-full hover:bg-secondary-foreground/20"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )
+          ))}
+          
           {(dateRange.from || dateRange.to) && (
             <Badge variant="secondary" className="gap-1">
-              Date: {dateRange.from && format(dateRange.from, 'MMM dd')}
-              {dateRange.from && dateRange.to && ' - '}
-              {dateRange.to && format(dateRange.to, 'MMM dd')}
+              Date: {dateRange.from && format(dateRange.from, "MMM dd")}
+              {dateRange.from && dateRange.to && " - "}
+              {dateRange.to && format(dateRange.to, "MMM dd")}
               <button
                 onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
                 className="ml-1 rounded-full hover:bg-secondary-foreground/20"

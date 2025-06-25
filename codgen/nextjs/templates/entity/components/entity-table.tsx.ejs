@@ -17,10 +17,10 @@ const textFields = fields.filter(f => !f.fieldIsEnum && !f.fieldTypeBoolean && !
 %>
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { <%= entityInstance %>Toast, handle<%= entityClass %>Error } from "./<%= entityFileName %>-toast";
-import { Search, X } from "lucide-react";
+import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,14 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Pagination, 
   PaginationContent, 
@@ -127,6 +135,43 @@ import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
 const ASC = "asc";
 const DESC = "desc";
 
+// Define column configuration
+interface ColumnConfig {
+  id: string;
+  label: string;
+  accessor: string;
+  type: 'field' | 'relationship';
+  visible: boolean;
+  sortable: boolean;
+}
+
+// Define all available columns
+const ALL_COLUMNS: ColumnConfig[] = [
+  <% for (field of fields) { %>
+  {
+    id: '<%= field.fieldName %>',
+    label: '<%= field.fieldName.charAt(0).toUpperCase() + field.fieldName.slice(1).replace(/([A-Z])/g, ' $1').trim() %>',
+    accessor: '<%= field.fieldName %>',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+  <% } %>
+  <% for (const rel of displayableRelationships) { %>
+  {
+    id: '<%= rel.relationshipName %>',
+    label: '<%= rel.relationshipName.charAt(0).toUpperCase() + rel.relationshipName.slice(1).replace(/([A-Z])/g, ' $1').trim() %>',
+    accessor: '<%= rel.relationshipName %>',
+    type: 'relationship',
+    visible: true,
+    sortable: false,
+  },
+  <% } %>
+];
+
+// Local storage key for column visibility
+const COLUMN_VISIBILITY_KEY = '<%= entityFileName %>-table-columns';
+
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
 }
@@ -148,6 +193,101 @@ export function <%= entityClass %>Table() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
+  
+  // Track whether column visibility has been loaded from localStorage
+  const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
+  
+  // Column visibility state
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+
+  // Load column visibility from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
+      if (saved) {
+        setColumnVisibility(JSON.parse(saved));
+      } else {
+        // Default visibility - all columns visible
+        setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+      }
+    } catch (error) {
+      console.warn('Failed to load column visibility from localStorage:', error);
+      // Fallback to default visibility
+      setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+    } finally {
+      setIsColumnVisibilityLoaded(true);
+    }
+  }, []);
+
+  // Save column visibility to localStorage whenever it changes
+  useEffect(() => {
+    if (isColumnVisibilityLoaded) {
+      try {
+        localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
+      } catch (error) {
+        console.warn('Failed to save column visibility to localStorage:', error);
+      }
+    }
+  }, [columnVisibility, isColumnVisibilityLoaded]);
+
+  // Get visible columns
+  const visibleColumns = useMemo(() => {
+    return ALL_COLUMNS.filter(col => columnVisibility[col.id] !== false);
+  }, [columnVisibility]);
+
+  // Toggle column visibility
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [columnId]: !prev[columnId]
+    }));
+  };
+
+  // Export functionality
+  const exportToCSV = () => {
+    if (!data || data.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = visibleColumns.map(col => col.label);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(item => {
+        return visibleColumns.map(col => {
+          let value = '';
+          if (col.type === 'field') {
+            value = item[col.accessor as keyof typeof item] || '';
+          } else if (col.type === 'relationship') {
+            const relationship = item[col.accessor as keyof typeof item] as any;
+            <% for (const rel of displayableRelationships) { %>
+            <% const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField; %>
+            if (col.id === '<%= rel.relationshipName %>' && relationship) {
+              value = relationship.<%= displayField %> || '';
+            }
+            <% } %>
+          }
+          // Escape CSV values
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        }).join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `<%= entityFileName %>-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('Data exported successfully');
+  };
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
@@ -547,8 +687,81 @@ export function <%= entityClass %>Table() {
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
+  // Don't render the table until column visibility is loaded to prevent flash
+  if (!isColumnVisibilityLoaded) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center h-32">
+          <div className="text-center">
+            <div className="text-muted-foreground">Loading table configuration...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* Table Controls */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          {/* Column Visibility Toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ALL_COLUMNS.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={columnVisibility[column.id] !== false}
+                  onCheckedChange={() => toggleColumnVisibility(column.id)}
+                  onSelect={(e) => e.preventDefault()}
+                  className="flex items-center gap-2"
+                >
+                  {columnVisibility[column.id] !== false ? (
+                    <Eye className="h-4 w-4" />
+                  ) : (
+                    <EyeOff className="h-4 w-4" />
+                  )}
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Export Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToCSV}
+            className="gap-2"
+            disabled={!data || data.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+
+        {/* Clear Filters Button */}
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+            Clear All Filters
+          </Button>
+        )}
+      </div>
+
       {/* Bulk Actions */}
       {selectedRows.size > 0 && (
         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
@@ -577,21 +790,6 @@ export function <%= entityClass %>Table() {
         </div>
       )}
 
-      {/* Clear Filters Button */}
-      {hasActiveFilters && (
-        <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearAllFilters}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-            Clear All Filters
-          </Button>
-        </div>
-      )}
-
       {/* Data Table */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-full">
@@ -603,12 +801,13 @@ export function <%= entityClass %>Table() {
             isAllSelected={isAllSelected}
             isIndeterminate={isIndeterminate}
             onSelectAll={handleSelectAll}
+            visibleColumns={visibleColumns}
           />
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={<%= fields.length + displayableRelationships.length + 1 %>}
+                  colSpan={visibleColumns.length + 2}
                   className="h-24 text-center"
                 >
                   Loading...
@@ -626,12 +825,13 @@ export function <%= entityClass %>Table() {
                   relationshipConfigs={relationshipConfigs}
                   onRelationshipUpdate={handleRelationshipUpdate}
                   isUpdating={isUpdating}
+                  visibleColumns={visibleColumns}
                 />
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={<%= fields.length + displayableRelationships.length + 1 %>}
+                  colSpan={visibleColumns.length + 2}
                   className="h-24 text-center"
                 >
                   No <%= entityClassPluralHumanized.toLowerCase() %> found

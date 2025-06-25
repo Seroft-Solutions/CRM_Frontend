@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallStatusDetails } from '../components/call-status-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallStatusDetails } from "../components/call-status-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallStatusPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface CallStatusPageProps {
 }
 
 export const metadata = {
-  title: 'CallStatus Details',
+  title: "CallStatus Details",
 };
 
 export default async function CallStatusPage({ params }: CallStatusPageProps) {
@@ -23,7 +23,7 @@ export default async function CallStatusPage({ params }: CallStatusPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="callStatus:read"
       unauthorizedTitle="Access Denied to Call Status Details"
       unauthorizedDescription="You don't have permission to view this call status."
@@ -31,7 +31,7 @@ export default async function CallStatusPage({ params }: CallStatusPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/call-statuses"
               defaultLabel="Back to Call Statuses"
               entityName="CallStatus"
@@ -44,12 +44,10 @@ export default async function CallStatusPage({ params }: CallStatusPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Call Status Details</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                View detailed information for this call status
-              </p>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this call status</p>
             </div>
           </div>
-
+          
           <CallStatusDetails id={id} />
         </div>
       </div>

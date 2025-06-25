@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CallTypeFormProvider, useEntityForm } from './call-type-form-provider';
-import { FormProgressIndicator } from './form-progress-indicator';
-import { FormStepRenderer } from './form-step-renderer';
-import { FormNavigation } from './form-navigation';
-import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
-import {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CallTypeFormProvider, useEntityForm } from "./call-type-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
+import { FormErrorsDisplay } from "@/components/form-errors-display";
+import { 
   useCreateCallType,
   useUpdateCallType,
   useGetCallType,
-} from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
-import { callTypeToast, handleCallTypeError } from '../call-type-toast';
-import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+import { callTypeToast, handleCallTypeError } from "../call-type-toast";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface CallTypeFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CallTypeFormContent({ id }: CallTypeFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCallType(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-call-type', id],
+      queryKey: ["get-call-type", id]
     },
   });
 
@@ -42,13 +42,13 @@ function CallTypeFormContent({ id }: CallTypeFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || '/call-types';
-
+      const backRoute = returnUrl || "/call-types";
+      
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-
+      
       router.push(backRoute);
     }
   };
@@ -78,12 +78,12 @@ function CallTypeFormContent({ id }: CallTypeFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
+      <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          name: '',
-          description: '',
-          remark: '',
+          'name': '',
+          'description': '',
+          'remark': '',
         }}
       />
 
@@ -91,7 +91,7 @@ function CallTypeFormContent({ id }: CallTypeFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation
+      <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -115,7 +115,7 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -123,7 +123,7 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
         } else {
           setIsRedirecting(true);
           callTypeToast.created();
-          router.push('/call-types');
+          router.push("/call-types");
         }
       },
       onError: (error) => {
@@ -137,7 +137,7 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         callTypeToast.updated();
-        router.push('/call-types');
+        router.push("/call-types");
       },
       onError: (error) => {
         handleCallTypeError(error);
@@ -158,11 +158,11 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
   }
 
   return (
-    <CallTypeFormProvider
+    <CallTypeFormProvider 
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

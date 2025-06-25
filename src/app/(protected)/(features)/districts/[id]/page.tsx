@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { DistrictDetails } from '../components/district-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { DistrictDetails } from "../components/district-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface DistrictPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface DistrictPageProps {
 }
 
 export const metadata = {
-  title: 'District Details',
+  title: "District Details",
 };
 
 export default async function DistrictPage({ params }: DistrictPageProps) {
@@ -23,7 +23,7 @@ export default async function DistrictPage({ params }: DistrictPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="district:read"
       unauthorizedTitle="Access Denied to District Details"
       unauthorizedDescription="You don't have permission to view this district."
@@ -31,7 +31,7 @@ export default async function DistrictPage({ params }: DistrictPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/districts"
               defaultLabel="Back to Districts"
               entityName="District"
@@ -44,12 +44,10 @@ export default async function DistrictPage({ params }: DistrictPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">District Details</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                View detailed information for this district
-              </p>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this district</p>
             </div>
           </div>
-
+          
           <DistrictDetails id={id} />
         </div>
       </div>

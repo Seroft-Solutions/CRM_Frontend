@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallDetails } from '../components/call-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallDetails } from "../components/call-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface CallPageProps {
 }
 
 export const metadata = {
-  title: 'Call Details',
+  title: "Call Details",
 };
 
 export default async function CallPage({ params }: CallPageProps) {
@@ -23,7 +23,7 @@ export default async function CallPage({ params }: CallPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="call:read"
       unauthorizedTitle="Access Denied to Call Details"
       unauthorizedDescription="You don't have permission to view this call."
@@ -31,7 +31,7 @@ export default async function CallPage({ params }: CallPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/calls"
               defaultLabel="Back to Calls"
               entityName="Call"
@@ -47,7 +47,7 @@ export default async function CallPage({ params }: CallPageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this call</p>
             </div>
           </div>
-
+          
           <CallDetails id={id} />
         </div>
       </div>

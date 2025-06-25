@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+} from "@/components/ui/select";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -25,23 +31,32 @@ interface MeetingTableHeaderProps {
   isAllSelected: boolean;
   isIndeterminate: boolean;
   onSelectAll: () => void;
+  visibleColumns: Array<{
+    id: string;
+    label: string;
+    accessor: string;
+    type: 'field' | 'relationship';
+    visible: boolean;
+    sortable: boolean;
+  }>;
 }
 
-export function MeetingTableHeader({
-  onSort,
+export function MeetingTableHeader({ 
+  onSort, 
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
+  visibleColumns
 }: MeetingTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case 'ChevronUp':
+      case "ChevronUp":
         return <ChevronUp className="h-4 w-4" />;
-      case 'ChevronDown':
+      case "ChevronDown":
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -61,185 +76,26 @@ export function MeetingTableHeader({
             }}
           />
         </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('meetingDateTime')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Meeting Date Time
-            <div className="text-gray-400">{renderSortIcon('meetingDateTime')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('duration')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Duration
-            <div className="text-gray-400">{renderSortIcon('duration')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('title')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Title
-            <div className="text-gray-400">{renderSortIcon('title')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('description')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Description
-            <div className="text-gray-400">{renderSortIcon('description')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('meetingUrl')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Meeting Url
-            <div className="text-gray-400">{renderSortIcon('meetingUrl')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('googleCalendarEventId')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Google Calendar Event Id
-            <div className="text-gray-400">{renderSortIcon('googleCalendarEventId')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('notes')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Notes
-            <div className="text-gray-400">{renderSortIcon('notes')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('isRecurring')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Is Recurring
-            <div className="text-gray-400">{renderSortIcon('isRecurring')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('timeZone')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Time Zone
-            <div className="text-gray-400">{renderSortIcon('timeZone')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('meetingStatus')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Meeting Status
-            <div className="text-gray-400">{renderSortIcon('meetingStatus')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('meetingType')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Meeting Type
-            <div className="text-gray-400">{renderSortIcon('meetingType')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('createdAt')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Created At
-            <div className="text-gray-400">{renderSortIcon('createdAt')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('updatedAt')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Updated At
-            <div className="text-gray-400">{renderSortIcon('updatedAt')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('organizer.displayName')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Organizer
-            <div className="text-gray-400">{renderSortIcon('organizer.displayName')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('assignedCustomer.customerBusinessName')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Assigned Customer
-            <div className="text-gray-400">
-              {renderSortIcon('assignedCustomer.customerBusinessName')}
-            </div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('call.name')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Call
-            <div className="text-gray-400">{renderSortIcon('call.name')}</div>
-          </Button>
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={column.id} className="whitespace-nowrap px-3 py-2">
+            {column.sortable ? (
+              <Button
+                variant="ghost"
+                onClick={() => onSort(column.accessor)}
+                className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+              >
+                {column.label}
+                <div className="text-gray-400">
+                  {renderSortIcon(column.accessor)}
+                </div>
+              </Button>
+            ) : (
+              <span className="font-medium text-gray-700 text-sm">
+                {column.label}
+              </span>
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -247,166 +103,236 @@ export function MeetingTableHeader({
           </div>
         </TableHead>
       </TableRow>
-
+      
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={(filters['meetingDateTime'] as string) || ''}
-            onChange={(e) => onFilterChange('meetingDateTime', e.target.value || undefined)}
-          />
+        <TableHead className="w-12 px-3 py-2">
+          {/* Empty cell for checkbox column */}
         </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['duration'] as string) || ''}
-            onChange={(e) => onFilterChange('duration', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['title'] as string) || ''}
-            onChange={(e) => onFilterChange('title', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['description'] as string) || ''}
-            onChange={(e) => onFilterChange('description', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['meetingUrl'] as string) || ''}
-            onChange={(e) => onFilterChange('meetingUrl', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['googleCalendarEventId'] as string) || ''}
-            onChange={(e) => onFilterChange('googleCalendarEventId', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['notes'] as string) || ''}
-            onChange={(e) => onFilterChange('notes', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Select
-            value={(filters['isRecurring'] as string) || '__all__'}
-            onValueChange={(value) =>
-              onFilterChange('isRecurring', value === '__all__' ? undefined : value)
-            }
-          >
-            <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All</SelectItem>
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['timeZone'] as string) || ''}
-            onChange={(e) => onFilterChange('timeZone', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['meetingStatus'] as string) || ''}
-            onChange={(e) => onFilterChange('meetingStatus', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['meetingType'] as string) || ''}
-            onChange={(e) => onFilterChange('meetingType', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={(filters['createdAt'] as string) || ''}
-            onChange={(e) => onFilterChange('createdAt', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={(filters['updatedAt'] as string) || ''}
-            onChange={(e) => onFilterChange('updatedAt', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['organizer.displayName'] as string) || ''}
-            onChange={(e) => onFilterChange('organizer.displayName', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['assignedCustomer.customerBusinessName'] as string) || ''}
-            onChange={(e) =>
-              onFilterChange('assignedCustomer.customerBusinessName', e.target.value || undefined)
-            }
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['call.name'] as string) || ''}
-            onChange={(e) => onFilterChange('call.name', e.target.value || undefined)}
-          />
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={`filter-${column.id}`} className="px-3 py-2">
+            {column.type === 'field' ? (
+              (() => {
+                
+                if (column.accessor === 'meetingDateTime') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["meetingDateTime"] as string || ""}
+                      onChange={(e) => onFilterChange("meetingDateTime", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'duration') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["duration"] as string || ""}
+                      onChange={(e) => onFilterChange("duration", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'title') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["title"] as string || ""}
+                      onChange={(e) => onFilterChange("title", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'description') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["description"] as string || ""}
+                      onChange={(e) => onFilterChange("description", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'meetingUrl') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["meetingUrl"] as string || ""}
+                      onChange={(e) => onFilterChange("meetingUrl", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'googleCalendarEventId') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["googleCalendarEventId"] as string || ""}
+                      onChange={(e) => onFilterChange("googleCalendarEventId", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'notes') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["notes"] as string || ""}
+                      onChange={(e) => onFilterChange("notes", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'isRecurring') {
+                  
+                  return (
+                    <Select
+                      value={filters["isRecurring"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("isRecurring", value === "__all__" ? undefined : value)}
+                    >
+                      <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <SelectValue placeholder="All" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All</SelectItem>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                  
+                }
+                
+                if (column.accessor === 'timeZone') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["timeZone"] as string || ""}
+                      onChange={(e) => onFilterChange("timeZone", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'meetingStatus') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["meetingStatus"] as string || ""}
+                      onChange={(e) => onFilterChange("meetingStatus", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'meetingType') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["meetingType"] as string || ""}
+                      onChange={(e) => onFilterChange("meetingType", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'createdAt') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["createdAt"] as string || ""}
+                      onChange={(e) => onFilterChange("createdAt", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'updatedAt') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["updatedAt"] as string || ""}
+                      onChange={(e) => onFilterChange("updatedAt", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                return null;
+              })()
+            ) : (
+              (() => {
+                
+                if (column.accessor === 'organizer') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["organizer.displayName"] as string || ""}
+                      onChange={(e) => onFilterChange("organizer.displayName", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                if (column.accessor === 'assignedCustomer') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["assignedCustomer.customerBusinessName"] as string || ""}
+                      onChange={(e) => onFilterChange("assignedCustomer.customerBusinessName", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                if (column.accessor === 'call') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["call.name"] as string || ""}
+                      onChange={(e) => onFilterChange("call.name", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                return null;
+              })()
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
