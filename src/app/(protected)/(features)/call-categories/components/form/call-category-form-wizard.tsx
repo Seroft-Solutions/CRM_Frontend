@@ -41,13 +41,15 @@ function CallCategoryFormContent({ id }: CallCategoryFormProps) {
       navigateBackToReferrer();
     } else {
       // Fallback to traditional navigation
-      const returnUrl = localStorage.getItem('returnUrl');
+      const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
       const backRoute = returnUrl || "/call-categories";
       
-      // Clean up navigation localStorage
-      localStorage.removeItem('entityCreationContext');
-      localStorage.removeItem('referrerInfo');
-      localStorage.removeItem('returnUrl');
+      // Clean up navigation localStorage (only on client side)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('entityCreationContext');
+        localStorage.removeItem('referrerInfo');
+        localStorage.removeItem('returnUrl');
+      }
       
       router.push(backRoute);
     }

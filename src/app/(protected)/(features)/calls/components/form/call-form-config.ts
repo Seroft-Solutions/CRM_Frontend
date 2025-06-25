@@ -11,8 +11,8 @@ export const callFormConfig: FormConfig = {
   steps: [
     {
       id: 'classification',
-      title: 'Call Classification',
-      description: 'Set priority, type, and category',
+      title: 'Classification',
+      description: 'Set priority, status, and categories',
       fields: [
       ],
       relationships: [
@@ -20,6 +20,7 @@ export const callFormConfig: FormConfig = {
         'callType',
         'subCallType',
         'callCategory',
+        'callStatus',
       ],
       validation: {
         mode: 'onBlur',
@@ -28,8 +29,8 @@ export const callFormConfig: FormConfig = {
     },
     {
       id: 'business',
-      title: 'Source & Customer',
-      description: 'Select source and customer',
+      title: 'Business Relations',
+      description: 'Connect with customers and sources',
       fields: [
       ],
       relationships: [
@@ -44,7 +45,7 @@ export const callFormConfig: FormConfig = {
     {
       id: 'channel',
       title: 'Channel Details',
-      description: 'Channel type and party',
+      description: 'Channel type and parties',
       fields: [
       ],
       relationships: [
@@ -59,13 +60,12 @@ export const callFormConfig: FormConfig = {
     {
       id: 'assignment',
       title: 'Assignment & Date',
-      description: 'Assign user, set date and status',
+      description: 'Assign users, set dates and status',
       fields: [
         'callDateTime',
       ],
       relationships: [
         'assignedTo',
-        'callStatus',
       ],
       validation: {
         mode: 'onBlur',
@@ -314,7 +314,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Parties',
         placeholder: 'Select channel parties',
-        icon: '👥',
+        icon: '📞',
       }
     },
     {
@@ -340,7 +340,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Assigned To',
         placeholder: 'Select assigned to',
-        icon: '�',
+        icon: '👤',
       }
     },
     {
@@ -351,7 +351,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: true,
       multiple: false,
-      category: 'assignment',
+      category: 'classification',
       api: {
         useGetAllHook: 'useGetAllCallStatuses',
         useSearchHook: 'useSearchCallStatuses',
@@ -366,7 +366,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Call Status',
         placeholder: 'Select call status',
-        icon: '📋',
+        icon: '🏷️',
       }
     },
   ],

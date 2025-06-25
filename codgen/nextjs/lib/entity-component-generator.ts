@@ -162,6 +162,11 @@ export class EntityComponentGenerator {
         variables: vars,
       },
       {
+        templatePath: 'entity/components/form/relationship-renderer.tsx.ejs',
+        outputPath: path.join(entityDir, 'components', 'form', 'relationship-renderer.tsx'),
+        variables: vars,
+      },
+      {
         templatePath: 'entity/components/form/form-navigation.tsx.ejs',
         outputPath: path.join(entityDir, 'components', 'form', 'form-navigation.tsx'),
         variables: vars,

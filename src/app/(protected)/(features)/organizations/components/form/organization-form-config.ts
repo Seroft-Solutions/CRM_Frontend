@@ -27,14 +27,28 @@ export const organizationFormConfig: FormConfig = {
       }
     },
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
       fields: [
         'createdAt',
         'updatedAt',
       ],
       relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'users',
+      title: 'People & Users',
+      description: 'Assign users and responsibilities',
+      fields: [
+      ],
+      relationships: [
+        'members',
       ],
       validation: {
         mode: 'onBlur',
@@ -49,20 +63,6 @@ export const organizationFormConfig: FormConfig = {
         'isActive',
       ],
       relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Assignment',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'members',
       ],
       validation: {
         mode: 'onBlur',
