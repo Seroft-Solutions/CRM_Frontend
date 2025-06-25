@@ -11,6 +11,8 @@ import { GeographicStep } from "./steps/geographic-step";
 import { UserAssignmentStep } from "./steps/user-assignment-step";
 import { ClassificationStep } from "./steps/classification-step";
 import { BusinessRelationsStep } from "./steps/business-relations-step";
+import { ChannelDetailsStep } from "./steps/channel-details-step";
+import { AssignmentDateStep } from "./steps/assignment-date-step";
 import { OtherRelationsStep } from "./steps/other-relations-step";
 import { ReviewStep } from "./steps/review-step";
 
@@ -79,6 +81,10 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         return <ClassificationStep {...stepProps} />;
       case 'business':
         return <BusinessRelationsStep {...stepProps} />;
+      case 'channel':
+        return <ChannelDetailsStep {...stepProps} />;
+      case 'assignment':
+        return <AssignmentDateStep {...stepProps} />;
       case 'other':
         return <OtherRelationsStep {...stepProps} />;
       case 'review':

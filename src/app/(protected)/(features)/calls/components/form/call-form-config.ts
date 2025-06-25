@@ -10,38 +10,9 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
-      fields: [
-        'callDateTime',
-      ],
-      relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Assignment',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'channelParties',
-        'assignedTo',
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
       id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
+      title: 'Call Classification',
+      description: 'Set priority, type, and category',
       fields: [
       ],
       relationships: [
@@ -49,8 +20,6 @@ export const callFormConfig: FormConfig = {
         'callType',
         'subCallType',
         'callCategory',
-        'channelType',
-        'callStatus',
       ],
       validation: {
         mode: 'onBlur',
@@ -59,13 +28,44 @@ export const callFormConfig: FormConfig = {
     },
     {
       id: 'business',
-      title: 'Business Relations',
-      description: 'Connect with customers and products',
+      title: 'Source & Customer',
+      description: 'Select source and customer',
       fields: [
       ],
       relationships: [
         'source',
         'customer',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'channel',
+      title: 'Channel Details',
+      description: 'Channel type and party',
+      fields: [
+      ],
+      relationships: [
+        'channelType',
+        'channelParties',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign user, set date and status',
+      fields: [
+        'callDateTime',
+      ],
+      relationships: [
+        'assignedTo',
+        'callStatus',
       ],
       validation: {
         mode: 'onBlur',
@@ -273,7 +273,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: true,
       multiple: false,
-      category: 'classification',
+      category: 'channel',
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
@@ -288,7 +288,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Type',
         placeholder: 'Select channel type',
-        icon: '🏷️',
+        icon: '📞',
       }
     },
     {
@@ -299,7 +299,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'user',
+      category: 'channel',
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
@@ -325,7 +325,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'user',
+      category: 'assignment',
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
@@ -340,7 +340,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Assigned To',
         placeholder: 'Select assigned to',
-        icon: '👥',
+        icon: '�',
       }
     },
     {
@@ -351,7 +351,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: true,
       multiple: false,
-      category: 'classification',
+      category: 'assignment',
       api: {
         useGetAllHook: 'useGetAllCallStatuses',
         useSearchHook: 'useSearchCallStatuses',
@@ -366,7 +366,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Call Status',
         placeholder: 'Select call status',
-        icon: '🏷️',
+        icon: '📋',
       }
     },
   ],

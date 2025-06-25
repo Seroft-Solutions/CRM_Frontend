@@ -47,29 +47,25 @@ export const callFieldSchemas = {
 
 // Step-specific validation schemas
 export const callStepSchemas = {
-  
-  dates: z.object({
-    callDateTime: callFieldSchemas.callDateTime,
-  }),
-  
-  
-  user: z.object({
-    channelParties: callFieldSchemas.channelParties,
-    assignedTo: callFieldSchemas.assignedTo,
-  }),
   classification: z.object({
     priority: callFieldSchemas.priority,
     callType: callFieldSchemas.callType,
     subCallType: callFieldSchemas.subCallType,
     callCategory: callFieldSchemas.callCategory,
-    channelType: callFieldSchemas.channelType,
-    callStatus: callFieldSchemas.callStatus,
   }),
   business: z.object({
     source: callFieldSchemas.source,
     customer: callFieldSchemas.customer,
   }),
-  
+  channel: z.object({
+    channelType: callFieldSchemas.channelType,
+    channelParties: callFieldSchemas.channelParties,
+  }),
+  assignment: z.object({
+    callDateTime: callFieldSchemas.callDateTime,
+    assignedTo: callFieldSchemas.assignedTo,
+    callStatus: callFieldSchemas.callStatus,
+  }),
   review: callFormSchema
 };
 
