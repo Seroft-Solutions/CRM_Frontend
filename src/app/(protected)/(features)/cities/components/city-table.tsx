@@ -70,6 +70,7 @@ import {
   useGetAllCities,
   useDeleteCity,
   useCountCities,
+  useUpdateCity,
   usePartialUpdateCity,
   
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
@@ -357,8 +358,8 @@ export function CityTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateCity({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateCity({
     mutation: {
       onSuccess: () => {
         cityToast.updated();
@@ -487,16 +488,27 @@ export function CityTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('City not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for City ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -504,9 +516,11 @@ export function CityTable() {
       }, {
         onSuccess: () => {
           cityToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleCityError(error);
           reject(error);
         }

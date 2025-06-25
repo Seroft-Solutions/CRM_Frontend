@@ -70,6 +70,7 @@ import {
   useGetAllAvailableTimeSlots,
   useDeleteAvailableTimeSlot,
   useCountAvailableTimeSlots,
+  useUpdateAvailableTimeSlot,
   usePartialUpdateAvailableTimeSlot,
   
 } from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
@@ -421,8 +422,8 @@ export function AvailableTimeSlotTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateAvailableTimeSlot({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateAvailableTimeSlot({
     mutation: {
       onSuccess: () => {
         availableTimeSlotToast.updated();
@@ -551,16 +552,27 @@ export function AvailableTimeSlotTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('AvailableTimeSlot not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for AvailableTimeSlot ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -568,9 +580,11 @@ export function AvailableTimeSlotTable() {
       }, {
         onSuccess: () => {
           availableTimeSlotToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleAvailableTimeSlotError(error);
           reject(error);
         }

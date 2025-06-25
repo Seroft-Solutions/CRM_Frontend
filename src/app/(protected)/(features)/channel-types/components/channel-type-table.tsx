@@ -70,6 +70,7 @@ import {
   useGetAllChannelTypes,
   useDeleteChannelType,
   useCountChannelTypes,
+  useUpdateChannelType,
   usePartialUpdateChannelType,
   
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
@@ -338,8 +339,8 @@ export function ChannelTypeTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateChannelType({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateChannelType({
     mutation: {
       onSuccess: () => {
         channelTypeToast.updated();
@@ -468,16 +469,27 @@ export function ChannelTypeTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('ChannelType not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for ChannelType ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -485,9 +497,11 @@ export function ChannelTypeTable() {
       }, {
         onSuccess: () => {
           channelTypeToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleChannelTypeError(error);
           reject(error);
         }

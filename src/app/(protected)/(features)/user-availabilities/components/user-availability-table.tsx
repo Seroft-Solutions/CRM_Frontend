@@ -70,6 +70,7 @@ import {
   useGetAllUserAvailabilities,
   useDeleteUserAvailability,
   useCountUserAvailabilities,
+  useUpdateUserAvailability,
   usePartialUpdateUserAvailability,
   useSearchUserAvailabilities,
 } from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
@@ -484,8 +485,8 @@ export function UserAvailabilityTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateUserAvailability({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateUserAvailability({
     mutation: {
       onSuccess: () => {
         userAvailabilityToast.updated();
@@ -620,16 +621,27 @@ export function UserAvailabilityTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('UserAvailability not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for UserAvailability ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -637,9 +649,11 @@ export function UserAvailabilityTable() {
       }, {
         onSuccess: () => {
           userAvailabilityToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleUserAvailabilityError(error);
           reject(error);
         }
