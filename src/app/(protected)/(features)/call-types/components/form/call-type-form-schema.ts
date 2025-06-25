@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod validation schema for CallType form
@@ -26,8 +26,11 @@ export const callTypeStepSchemas = {
     description: callTypeFieldSchemas.description,
     remark: callTypeFieldSchemas.remark,
   }),
-
-  review: callTypeFormSchema,
+  
+  
+  
+  
+  review: callTypeFormSchema
 };
 
 // Validation helper functions
@@ -35,7 +38,7 @@ export const callTypeValidationHelpers = {
   validateStep: (stepId: string, data: Partial<CallTypeFormValues>) => {
     const stepSchema = callTypeStepSchemas[stepId as keyof typeof callTypeStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-
+    
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -43,11 +46,11 @@ export const callTypeValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = callTypeFieldSchemas[fieldName as keyof typeof callTypeFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-
+    
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -55,7 +58,7 @@ export const callTypeValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -76,7 +79,7 @@ export const callTypeValidationHelpers = {
         maxLength: 1000,
       };
     }
-
+    
     return {};
-  },
+  }
 };

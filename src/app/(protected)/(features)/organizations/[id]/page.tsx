@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { OrganizationDetails } from '../components/organization-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { OrganizationDetails } from "../components/organization-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface OrganizationPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface OrganizationPageProps {
 }
 
 export const metadata = {
-  title: 'Organization Details',
+  title: "Organization Details",
 };
 
 export default async function OrganizationPage({ params }: OrganizationPageProps) {
@@ -23,7 +23,7 @@ export default async function OrganizationPage({ params }: OrganizationPageProps
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="organization:read"
       unauthorizedTitle="Access Denied to Organization Details"
       unauthorizedDescription="You don't have permission to view this organization."
@@ -31,7 +31,7 @@ export default async function OrganizationPage({ params }: OrganizationPageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/organizations"
               defaultLabel="Back to Organizations"
               entityName="Organization"
@@ -44,12 +44,10 @@ export default async function OrganizationPage({ params }: OrganizationPageProps
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Organization Details</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                View detailed information for this organization
-              </p>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this organization</p>
             </div>
           </div>
-
+          
           <OrganizationDetails id={id} />
         </div>
       </div>

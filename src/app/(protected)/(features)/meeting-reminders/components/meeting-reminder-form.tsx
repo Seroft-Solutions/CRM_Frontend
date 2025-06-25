@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { MeetingReminderForm } from './form/meeting-reminder-form-wizard';
+import React from "react";
+import { MeetingReminderForm } from "./form/meeting-reminder-form-wizard";
 
 interface MeetingReminderFormProps {
   id?: number;

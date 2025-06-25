@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for Customer form
@@ -6,41 +6,56 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const customerFormConfig: FormConfig = {
   entity: 'Customer',
-
+  
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson'],
-      relationships: [],
+      fields: [
+        'customerBusinessName',
+        'email',
+        'mobile',
+        'whatsApp',
+        'contactPerson',
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'geographic',
       title: 'Location Details',
       description: 'Select geographic information',
-      fields: [],
-      relationships: ['state', 'district', 'city', 'area'],
+      fields: [
+      ],
+      relationships: [
+        'state',
+        'district',
+        'city',
+        'area',
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -57,7 +72,8 @@ export const customerFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'email',
@@ -70,7 +86,8 @@ export const customerFormConfig: FormConfig = {
         maxLength: 254,
         pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'mobile',
@@ -82,7 +99,8 @@ export const customerFormConfig: FormConfig = {
         required: true,
         pattern: /^[+]?[0-9]{10,15}$/,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'whatsApp',
@@ -94,7 +112,8 @@ export const customerFormConfig: FormConfig = {
         required: false,
         pattern: /^[+]?[0-9]{10,15}$/,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'contactPerson',
@@ -107,7 +126,8 @@ export const customerFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {},
+      ui: {
+      }
     },
   ],
 
@@ -137,7 +157,7 @@ export const customerFormConfig: FormConfig = {
         label: 'State',
         placeholder: 'Select state',
         icon: '📍',
-      },
+      }
     },
     {
       name: 'district',
@@ -167,7 +187,7 @@ export const customerFormConfig: FormConfig = {
         label: 'District',
         placeholder: 'Select district',
         icon: '📍',
-      },
+      }
     },
     {
       name: 'city',
@@ -197,7 +217,7 @@ export const customerFormConfig: FormConfig = {
         label: 'City',
         placeholder: 'Select city',
         icon: '📍',
-      },
+      }
     },
     {
       name: 'area',
@@ -227,7 +247,7 @@ export const customerFormConfig: FormConfig = {
         label: 'Area',
         placeholder: 'Select area',
         icon: '📍',
-      },
+      }
     },
   ],
 
@@ -252,7 +272,7 @@ export const customerFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -275,19 +295,17 @@ export const customerFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    },
-  },
+    }
+  }
 };
 
 // Export utility functions for external use
 export const customerFormHelpers = {
-  getStepById: (stepId: string) => customerFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    customerFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    customerFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => customerFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => customerFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => customerFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = customerFormConfig.steps.find((s) => s.id === stepId);
+    const step = customerFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { OrganizationFormProvider, useEntityForm } from './organization-form-provider';
-import { FormProgressIndicator } from './form-progress-indicator';
-import { FormStepRenderer } from './form-step-renderer';
-import { FormNavigation } from './form-navigation';
-import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
-import {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { OrganizationFormProvider, useEntityForm } from "./organization-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
+import { FormErrorsDisplay } from "@/components/form-errors-display";
+import { 
   useCreateOrganization,
   useUpdateOrganization,
   useGetOrganization,
-} from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
-import { organizationToast, handleOrganizationError } from '../organization-toast';
-import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
+import { organizationToast, handleOrganizationError } from "../organization-toast";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface OrganizationFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function OrganizationFormContent({ id }: OrganizationFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetOrganization(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-organization', id],
+      queryKey: ["get-organization", id]
     },
   });
 
@@ -42,13 +42,13 @@ function OrganizationFormContent({ id }: OrganizationFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || '/organizations';
-
+      const backRoute = returnUrl || "/organizations";
+      
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-
+      
       router.push(backRoute);
     }
   };
@@ -78,17 +78,17 @@ function OrganizationFormContent({ id }: OrganizationFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
+      <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          keycloakOrgId: '',
-          name: '',
-          displayName: '',
-          domain: '',
-          isActive: '',
-          createdAt: '',
-          updatedAt: '',
-          members: 'Members',
+          'keycloakOrgId': '',
+          'name': '',
+          'displayName': '',
+          'domain': '',
+          'isActive': '',
+          'createdAt': '',
+          'updatedAt': '',
+          'members': 'Members',
         }}
       />
 
@@ -96,7 +96,7 @@ function OrganizationFormContent({ id }: OrganizationFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation
+      <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -120,7 +120,7 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -128,7 +128,7 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
         } else {
           setIsRedirecting(true);
           organizationToast.created();
-          router.push('/organizations');
+          router.push("/organizations");
         }
       },
       onError: (error) => {
@@ -142,7 +142,7 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         organizationToast.updated();
-        router.push('/organizations');
+        router.push("/organizations");
       },
       onError: (error) => {
         handleOrganizationError(error);
@@ -163,11 +163,11 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
   }
 
   return (
-    <OrganizationFormProvider
+    <OrganizationFormProvider 
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

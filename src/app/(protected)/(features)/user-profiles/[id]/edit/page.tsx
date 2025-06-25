@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { UserProfileForm } from '../../components/user-profile-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { UserProfileForm } from "../../components/user-profile-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditUserProfilePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditUserProfilePageProps {
 }
 
 export const metadata = {
-  title: 'Edit UserProfile',
+  title: "Edit UserProfile",
 };
 
 export default async function EditUserProfilePage({ params }: EditUserProfilePageProps) {
@@ -23,7 +23,7 @@ export default async function EditUserProfilePage({ params }: EditUserProfilePag
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="userProfile:update"
       unauthorizedTitle="Access Denied to Edit User Profile"
       unauthorizedDescription="You don't have permission to edit user profile records."
@@ -31,7 +31,7 @@ export default async function EditUserProfilePage({ params }: EditUserProfilePag
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/user-profiles"
               defaultLabel="Back to User Profiles"
               entityName="UserProfile"
@@ -44,12 +44,10 @@ export default async function EditUserProfilePage({ params }: EditUserProfilePag
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Edit User Profile</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Update the information for this user profile
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Update the information for this user profile</p>
             </div>
           </div>
-
+          
           <UserProfileForm id={id} />
         </div>
       </div>

@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { userProfileToast, handleUserProfileError } from './user-profile-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { userProfileToast, handleUserProfileError } from "./user-profile-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetUserProfile,
   useDeleteUserProfile,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+
+
 
 interface UserProfileDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
     mutation: {
       onSuccess: () => {
         userProfileToast.deleted();
-        router.push('/user-profiles');
+        router.push("/user-profiles");
       },
       onError: (error) => {
         handleUserProfileError(error);
@@ -88,59 +96,62 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Keycloak Id
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Keycloak Id</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.keycloakId || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.keycloakId || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Phone
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Phone</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.phone || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.phone || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Display Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Display Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.displayName || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.displayName || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Created At
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created At</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.createdAt ? format(new Date(entity.createdAt), 'PPP') : '—'}
+                      {entity.createdAt ? format(new Date(entity.createdAt), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Updated At
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Updated At</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.updatedAt ? format(new Date(entity.updatedAt), 'PPP') : '—'}
+                      {entity.updatedAt ? format(new Date(entity.updatedAt), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -151,39 +162,38 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    User
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">User</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.user ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.user as any).login || entity.user.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Channel Type
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.channelType ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.channelType as any).name || entity.channelType.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -195,7 +205,7 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -211,8 +221,8 @@ export function UserProfileDetails({ id }: UserProfileDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the userprofile and remove
-              its data from the server.
+              This action cannot be undone. This will permanently delete the
+              userprofile and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

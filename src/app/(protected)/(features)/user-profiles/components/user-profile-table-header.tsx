@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+} from "@/components/ui/select";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -25,23 +31,32 @@ interface UserProfileTableHeaderProps {
   isAllSelected: boolean;
   isIndeterminate: boolean;
   onSelectAll: () => void;
+  visibleColumns: Array<{
+    id: string;
+    label: string;
+    accessor: string;
+    type: 'field' | 'relationship';
+    visible: boolean;
+    sortable: boolean;
+  }>;
 }
 
-export function UserProfileTableHeader({
-  onSort,
+export function UserProfileTableHeader({ 
+  onSort, 
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
+  visibleColumns
 }: UserProfileTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case 'ChevronUp':
+      case "ChevronUp":
         return <ChevronUp className="h-4 w-4" />;
-      case 'ChevronDown':
+      case "ChevronDown":
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -61,84 +76,26 @@ export function UserProfileTableHeader({
             }}
           />
         </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('keycloakId')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Keycloak Id
-            <div className="text-gray-400">{renderSortIcon('keycloakId')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('phone')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Phone
-            <div className="text-gray-400">{renderSortIcon('phone')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('displayName')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Display Name
-            <div className="text-gray-400">{renderSortIcon('displayName')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('createdAt')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Created At
-            <div className="text-gray-400">{renderSortIcon('createdAt')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('updatedAt')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Updated At
-            <div className="text-gray-400">{renderSortIcon('updatedAt')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('user.login')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            User
-            <div className="text-gray-400">{renderSortIcon('user.login')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('channelType.name')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Channel Type
-            <div className="text-gray-400">{renderSortIcon('channelType.name')}</div>
-          </Button>
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={column.id} className="whitespace-nowrap px-3 py-2">
+            {column.sortable ? (
+              <Button
+                variant="ghost"
+                onClick={() => onSort(column.accessor)}
+                className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+              >
+                {column.label}
+                <div className="text-gray-400">
+                  {renderSortIcon(column.accessor)}
+                </div>
+              </Button>
+            ) : (
+              <span className="font-medium text-gray-700 text-sm">
+                {column.label}
+              </span>
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -146,74 +103,114 @@ export function UserProfileTableHeader({
           </div>
         </TableHead>
       </TableRow>
-
+      
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['keycloakId'] as string) || ''}
-            onChange={(e) => onFilterChange('keycloakId', e.target.value || undefined)}
-          />
+        <TableHead className="w-12 px-3 py-2">
+          {/* Empty cell for checkbox column */}
         </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['phone'] as string) || ''}
-            onChange={(e) => onFilterChange('phone', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['displayName'] as string) || ''}
-            onChange={(e) => onFilterChange('displayName', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={(filters['createdAt'] as string) || ''}
-            onChange={(e) => onFilterChange('createdAt', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={(filters['updatedAt'] as string) || ''}
-            onChange={(e) => onFilterChange('updatedAt', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['user.login'] as string) || ''}
-            onChange={(e) => onFilterChange('user.login', e.target.value || undefined)}
-          />
-        </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['channelType.name'] as string) || ''}
-            onChange={(e) => onFilterChange('channelType.name', e.target.value || undefined)}
-          />
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={`filter-${column.id}`} className="px-3 py-2">
+            {column.type === 'field' ? (
+              (() => {
+                
+                if (column.accessor === 'keycloakId') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["keycloakId"] as string || ""}
+                      onChange={(e) => onFilterChange("keycloakId", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'phone') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["phone"] as string || ""}
+                      onChange={(e) => onFilterChange("phone", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'displayName') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["displayName"] as string || ""}
+                      onChange={(e) => onFilterChange("displayName", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'createdAt') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["createdAt"] as string || ""}
+                      onChange={(e) => onFilterChange("createdAt", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'updatedAt') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["updatedAt"] as string || ""}
+                      onChange={(e) => onFilterChange("updatedAt", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                return null;
+              })()
+            ) : (
+              (() => {
+                
+                if (column.accessor === 'user') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["user.login"] as string || ""}
+                      onChange={(e) => onFilterChange("user.login", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                if (column.accessor === 'channelType') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["channelType.name"] as string || ""}
+                      onChange={(e) => onFilterChange("channelType.name", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                return null;
+              })()
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

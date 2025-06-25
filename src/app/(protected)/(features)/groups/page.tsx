@@ -1,20 +1,20 @@
-import { Suspense } from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
+import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import { Plus, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
-import { GroupTable } from './components/group-table';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/components/auth/permission-guard';
+import { GroupTable } from "./components/group-table";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
 
 export const metadata = {
-  title: 'Groups',
+  title: "Groups",
 };
 
 export default function GroupPage() {
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="group:read"
       unauthorizedTitle="Access Denied to Groups"
       unauthorizedDescription="You don't have permission to view groups."
@@ -40,11 +40,7 @@ export default function GroupPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="group:create">
-                <Button
-                  asChild
-                  size="sm"
-                  className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs"
-                >
+                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
                   <Link href="/groups/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

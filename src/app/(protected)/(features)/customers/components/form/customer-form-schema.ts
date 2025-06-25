@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod validation schema for Customer form
@@ -6,16 +6,9 @@ import { z } from 'zod';
  */
 export const customerFormSchema = z.object({
   customerBusinessName: z.string().min(2).max(100),
-  email: z
-    .string()
-    .max(254)
-    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-    .optional(),
+  email: z.string().max(254).regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).optional(),
   mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  whatsApp: z
-    .string()
-    .regex(/^[+]?[0-9]{10,15}$/)
-    .optional(),
+  whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/).optional(),
   contactPerson: z.string().min(2).max(100).optional(),
   state: z.number(),
   district: z.number().optional(),
@@ -28,16 +21,9 @@ export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 // Individual field schemas for granular validation
 export const customerFieldSchemas = {
   customerBusinessName: z.string().min(2).max(100),
-  email: z
-    .string()
-    .max(254)
-    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-    .optional(),
+  email: z.string().max(254).regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).optional(),
   mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  whatsApp: z
-    .string()
-    .regex(/^[+]?[0-9]{10,15}$/)
-    .optional(),
+  whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/).optional(),
   contactPerson: z.string().min(2).max(100).optional(),
   state: z.number(),
   district: z.number().optional(),
@@ -54,15 +40,17 @@ export const customerStepSchemas = {
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
   }),
-
+  
+  
+  
   geographic: z.object({
     state: customerFieldSchemas.state,
     district: customerFieldSchemas.district,
     city: customerFieldSchemas.city,
     area: customerFieldSchemas.area,
   }),
-
-  review: customerFormSchema,
+  
+  review: customerFormSchema
 };
 
 // Validation helper functions
@@ -70,7 +58,7 @@ export const customerValidationHelpers = {
   validateStep: (stepId: string, data: Partial<CustomerFormValues>) => {
     const stepSchema = customerStepSchemas[stepId as keyof typeof customerStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-
+    
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -78,11 +66,11 @@ export const customerValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = customerFieldSchemas[fieldName as keyof typeof customerFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-
+    
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -90,7 +78,7 @@ export const customerValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'customerBusinessName') {
       return {
@@ -125,7 +113,7 @@ export const customerValidationHelpers = {
         maxLength: 100,
       };
     }
-
+    
     return {};
-  },
+  }
 };

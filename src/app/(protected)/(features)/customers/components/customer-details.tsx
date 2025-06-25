@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { customerToast, handleCustomerError } from './customer-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { customerToast, handleCustomerError } from "./customer-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetCustomer,
   useDeleteCustomer,
-} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
+
+
 
 interface CustomerDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
     mutation: {
       onSuccess: () => {
         customerToast.deleted();
-        router.push('/customers');
+        router.push("/customers");
       },
       onError: (error) => {
         handleCustomerError(error);
@@ -88,59 +96,58 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Customer Business Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Customer Business Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">
-                      {entity.customerBusinessName || '—'}
-                    </span>
+                    
+                    <span className="text-foreground break-words">{entity.customerBusinessName || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Email
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.email || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.email || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Mobile
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mobile</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.mobile || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.mobile || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Whats App
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Whats App</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.whatsApp || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.whatsApp || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Contact Person
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Person</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">
-                      {entity.contactPerson || '—'}
-                    </span>
+                    
+                    <span className="text-foreground break-words">{entity.contactPerson || "—"}</span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -151,69 +158,64 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    State
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.state ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.state as any).name || entity.state.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    District
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.district ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.district as any).name || entity.district.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    City
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.city ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.city as any).name || entity.city.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Area
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.area ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.area as any).name || entity.area.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -225,7 +227,7 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -241,8 +243,8 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the customer and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              customer and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,20 +1,20 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallStatusForm } from '../components/call-status-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallStatusForm } from "../components/call-status-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 export const metadata = {
-  title: 'Create CallStatus',
+  title: "Create CallStatus",
 };
 
 export default function CreateCallStatusPage() {
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="callStatus:create"
       unauthorizedTitle="Access Denied to Create Call Status"
       unauthorizedDescription="You don't have permission to create new call status records."
@@ -22,7 +22,7 @@ export default function CreateCallStatusPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/call-statuses"
               defaultLabel="Back to Call Statuses"
               entityName="CallStatus"
@@ -35,12 +35,10 @@ export default function CreateCallStatusPage() {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Create Call Status</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Enter the details below to create a new call status
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Enter the details below to create a new call status</p>
             </div>
           </div>
-
+          
           <CallStatusForm />
         </div>
       </div>

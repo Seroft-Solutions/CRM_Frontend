@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { districtToast, handleDistrictError } from './district-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { districtToast, handleDistrictError } from "./district-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetDistrict,
   useDeleteDistrict,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+
+
 
 interface DistrictDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
     mutation: {
       onSuccess: () => {
         districtToast.deleted();
-        router.push('/districts');
+        router.push("/districts");
       },
       onError: (error) => {
         handleDistrictError(error);
@@ -88,19 +96,22 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -111,24 +122,25 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    State
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.state ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.state as any).name || entity.state.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -140,7 +152,7 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -156,8 +168,8 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the district and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              district and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

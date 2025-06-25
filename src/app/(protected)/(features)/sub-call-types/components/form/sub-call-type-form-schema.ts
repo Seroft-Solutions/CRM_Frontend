@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod validation schema for SubCallType form
@@ -28,12 +28,14 @@ export const subCallTypeStepSchemas = {
     description: subCallTypeFieldSchemas.description,
     remark: subCallTypeFieldSchemas.remark,
   }),
-
+  
+  
+  
   classification: z.object({
     callType: subCallTypeFieldSchemas.callType,
   }),
-
-  review: subCallTypeFormSchema,
+  
+  review: subCallTypeFormSchema
 };
 
 // Validation helper functions
@@ -41,7 +43,7 @@ export const subCallTypeValidationHelpers = {
   validateStep: (stepId: string, data: Partial<SubCallTypeFormValues>) => {
     const stepSchema = subCallTypeStepSchemas[stepId as keyof typeof subCallTypeStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-
+    
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -49,11 +51,11 @@ export const subCallTypeValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = subCallTypeFieldSchemas[fieldName as keyof typeof subCallTypeFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-
+    
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -61,7 +63,7 @@ export const subCallTypeValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -82,7 +84,7 @@ export const subCallTypeValidationHelpers = {
         maxLength: 1000,
       };
     }
-
+    
     return {};
-  },
+  }
 };

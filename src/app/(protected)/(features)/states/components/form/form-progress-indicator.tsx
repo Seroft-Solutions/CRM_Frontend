@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Check, ChevronRight } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
-import { useEntityForm } from './state-form-provider';
+import React from "react";
+import { Check, ChevronRight } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { useEntityForm } from "./state-form-provider";
 
 export function FormProgressIndicator() {
   const { config, state, actions } = useEntityForm();
-
+  
   const progress = ((state.currentStep + 1) / config.steps.length) * 100;
 
   const handleStepClick = async (stepIndex: number) => {
@@ -22,9 +22,7 @@ export function FormProgressIndicator() {
       {/* Progress Bar */}
       <div className="space-y-4">
         <div className="flex justify-between text-sm font-medium">
-          <span>
-            Step {state.currentStep + 1} of {config.steps.length}
-          </span>
+          <span>Step {state.currentStep + 1} of {config.steps.length}</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
         <Progress value={progress} className="h-2" />
@@ -35,16 +33,15 @@ export function FormProgressIndicator() {
         <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
           {config.steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <div
+              <div 
                 className={cn(
-                  'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0',
-                  index < state.currentStep
-                    ? 'bg-primary border-primary text-primary-foreground'
-                    : index === state.currentStep
-                      ? 'border-primary text-primary bg-primary/10'
-                      : 'border-muted-foreground/30 text-muted-foreground',
-                  config.behavior.navigation.allowStepSkipping &&
-                    'cursor-pointer hover:border-primary'
+                  "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0",
+                  index < state.currentStep 
+                    ? "bg-primary border-primary text-primary-foreground" 
+                    : index === state.currentStep 
+                    ? "border-primary text-primary bg-primary/10" 
+                    : "border-muted-foreground/30 text-muted-foreground",
+                  config.behavior.navigation.allowStepSkipping && "cursor-pointer hover:border-primary"
                 )}
                 onClick={() => handleStepClick(index)}
               >

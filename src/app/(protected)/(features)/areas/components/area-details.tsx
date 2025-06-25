@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { areaToast, handleAreaError } from './area-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { areaToast, handleAreaError } from "./area-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetArea,
   useDeleteArea,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+
+
 
 interface AreaDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function AreaDetails({ id }: AreaDetailsProps) {
     mutation: {
       onSuccess: () => {
         areaToast.deleted();
-        router.push('/areas');
+        router.push("/areas");
       },
       onError: (error) => {
         handleAreaError(error);
@@ -88,28 +96,31 @@ export function AreaDetails({ id }: AreaDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Pincode
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pincode</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.pincode || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.pincode || "—"}</span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -120,24 +131,25 @@ export function AreaDetails({ id }: AreaDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    City
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.city ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.city as any).name || entity.city.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -149,7 +161,7 @@ export function AreaDetails({ id }: AreaDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -165,8 +177,8 @@ export function AreaDetails({ id }: AreaDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the area and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              area and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

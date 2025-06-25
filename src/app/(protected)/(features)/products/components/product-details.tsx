@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { productToast, handleProductError } from './product-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { productToast, handleProductError } from "./product-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetProduct,
   useDeleteProduct,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+
+
 
 interface ProductDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
     mutation: {
       onSuccess: () => {
         productToast.deleted();
-        router.push('/products');
+        router.push("/products");
       },
       onError: (error) => {
         handleProductError(error);
@@ -88,81 +96,85 @@ export function ProductDetails({ id }: ProductDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Code
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Code</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.code || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.code || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Description
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.description || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.description || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Category
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Category</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.category || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.category || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Base Price
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Base Price</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.basePrice || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.basePrice || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Min Price
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Min Price</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.minPrice || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.minPrice || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Max Price
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Max Price</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.maxPrice || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.maxPrice || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Remark
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.remark || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.remark || "—"}</span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+
+        
       </div>
 
       {/* Action Buttons */}
@@ -174,7 +186,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -190,8 +202,8 @@ export function ProductDetails({ id }: ProductDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              product and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

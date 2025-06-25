@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { meetingToast, handleMeetingError } from './meeting-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { meetingToast, handleMeetingError } from "./meeting-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetMeeting,
   useDeleteMeeting,
-} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+} from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
+
+
 
 interface MeetingDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
     mutation: {
       onSuccess: () => {
         meetingToast.deleted();
-        router.push('/meetings');
+        router.push("/meetings");
       },
       onError: (error) => {
         handleMeetingError(error);
@@ -88,144 +96,138 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Meeting Date Time
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting Date Time</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.meetingDateTime
-                        ? format(new Date(entity.meetingDateTime), 'PPP')
-                        : '—'}
+                      {entity.meetingDateTime ? format(new Date(entity.meetingDateTime), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Duration
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Duration</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.duration || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.duration || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Title
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Title</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.title || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.title || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Description
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.description || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.description || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Meeting Url
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting Url</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.meetingUrl || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.meetingUrl || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Google Calendar Event Id
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Google Calendar Event Id</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">
-                      {entity.googleCalendarEventId || '—'}
-                    </span>
+                    
+                    <span className="text-foreground break-words">{entity.googleCalendarEventId || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Notes
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notes</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.notes || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.notes || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Is Recurring
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Recurring</dt>
                   <dd className="text-sm font-medium">
-                    <Badge
-                      variant={entity.isRecurring ? 'default' : 'secondary'}
-                      className="text-sm"
-                    >
-                      {entity.isRecurring ? 'Yes' : 'No'}
+                    
+                    <Badge variant={entity.isRecurring ? "default" : "secondary"} className="text-sm">
+                      {entity.isRecurring ? "Yes" : "No"}
                     </Badge>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Time Zone
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Time Zone</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.timeZone || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.timeZone || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Meeting Status
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting Status</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">
-                      {entity.meetingStatus || '—'}
-                    </span>
+                    
+                    <span className="text-foreground break-words">{entity.meetingStatus || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Meeting Type
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting Type</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.meetingType || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.meetingType || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Created At
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created At</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.createdAt ? format(new Date(entity.createdAt), 'PPP') : '—'}
+                      {entity.createdAt ? format(new Date(entity.createdAt), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Updated At
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Updated At</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.updatedAt ? format(new Date(entity.updatedAt), 'PPP') : '—'}
+                      {entity.updatedAt ? format(new Date(entity.updatedAt), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -236,55 +238,51 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Organizer
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Organizer</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.organizer ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.organizer as any).displayName || entity.organizer.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Assigned Customer
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned Customer</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.assignedCustomer ? (
                       <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedCustomer as any).customerBusinessName ||
-                          entity.assignedCustomer.id}
+                        {(entity.assignedCustomer as any).customerBusinessName || entity.assignedCustomer.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Call
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.call ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.call as any).name || entity.call.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -296,7 +294,7 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -312,8 +310,8 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the meeting and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              meeting and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

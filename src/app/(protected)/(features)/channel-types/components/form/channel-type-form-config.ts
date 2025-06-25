@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for ChannelType form
@@ -6,30 +6,37 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const channelTypeFormConfig: FormConfig = {
   entity: 'ChannelType',
-
+  
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'commissionRate'],
-      relationships: [],
+      fields: [
+        'name',
+        'description',
+        'commissionRate',
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -46,7 +53,8 @@ export const channelTypeFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 50,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'description',
@@ -58,7 +66,8 @@ export const channelTypeFormConfig: FormConfig = {
         required: false,
         maxLength: 255,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'commissionRate',
@@ -73,12 +82,13 @@ export const channelTypeFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
-      },
+      }
     },
   ],
 
   // Relationship definitions
-  relationships: [],
+  relationships: [
+  ],
 
   // Global form configuration
   validation: {
@@ -101,7 +111,7 @@ export const channelTypeFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -124,19 +134,17 @@ export const channelTypeFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    },
-  },
+    }
+  }
 };
 
 // Export utility functions for external use
 export const channelTypeFormHelpers = {
-  getStepById: (stepId: string) => channelTypeFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    channelTypeFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    channelTypeFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => channelTypeFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => channelTypeFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => channelTypeFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = channelTypeFormConfig.steps.find((s) => s.id === stepId);
+    const step = channelTypeFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

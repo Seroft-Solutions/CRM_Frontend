@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallTypeForm } from '../../components/call-type-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallTypeForm } from "../../components/call-type-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditCallTypePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditCallTypePageProps {
 }
 
 export const metadata = {
-  title: 'Edit CallType',
+  title: "Edit CallType",
 };
 
 export default async function EditCallTypePage({ params }: EditCallTypePageProps) {
@@ -23,7 +23,7 @@ export default async function EditCallTypePage({ params }: EditCallTypePageProps
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="callType:update"
       unauthorizedTitle="Access Denied to Edit Call Type"
       unauthorizedDescription="You don't have permission to edit call type records."
@@ -31,7 +31,7 @@ export default async function EditCallTypePage({ params }: EditCallTypePageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/call-types"
               defaultLabel="Back to Call Types"
               entityName="CallType"
@@ -44,12 +44,10 @@ export default async function EditCallTypePage({ params }: EditCallTypePageProps
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Edit Call Type</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Update the information for this call type
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Update the information for this call type</p>
             </div>
           </div>
-
+          
           <CallTypeForm id={id} />
         </div>
       </div>

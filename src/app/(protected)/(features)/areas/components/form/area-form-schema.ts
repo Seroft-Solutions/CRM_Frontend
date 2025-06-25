@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod validation schema for Area form
@@ -6,11 +6,7 @@ import { z } from 'zod';
  */
 export const areaFormSchema = z.object({
   name: z.string().min(2).max(100),
-  pincode: z
-    .string()
-    .min(6)
-    .max(6)
-    .regex(/^[0-9]{6}$/),
+  pincode: z.string().min(6).max(6).regex(/^[0-9]{6}$/),
   city: z.number().optional(),
 });
 
@@ -19,11 +15,7 @@ export type AreaFormValues = z.infer<typeof areaFormSchema>;
 // Individual field schemas for granular validation
 export const areaFieldSchemas = {
   name: z.string().min(2).max(100),
-  pincode: z
-    .string()
-    .min(6)
-    .max(6)
-    .regex(/^[0-9]{6}$/),
+  pincode: z.string().min(6).max(6).regex(/^[0-9]{6}$/),
   city: z.number().optional(),
 };
 
@@ -33,12 +25,14 @@ export const areaStepSchemas = {
     name: areaFieldSchemas.name,
     pincode: areaFieldSchemas.pincode,
   }),
-
+  
+  
+  
   geographic: z.object({
     city: areaFieldSchemas.city,
   }),
-
-  review: areaFormSchema,
+  
+  review: areaFormSchema
 };
 
 // Validation helper functions
@@ -46,7 +40,7 @@ export const areaValidationHelpers = {
   validateStep: (stepId: string, data: Partial<AreaFormValues>) => {
     const stepSchema = areaStepSchemas[stepId as keyof typeof areaStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-
+    
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -54,11 +48,11 @@ export const areaValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = areaFieldSchemas[fieldName as keyof typeof areaFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-
+    
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -66,7 +60,7 @@ export const areaValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -83,7 +77,7 @@ export const areaValidationHelpers = {
         pattern: /^[0-9]{6}$/,
       };
     }
-
+    
     return {};
-  },
+  }
 };

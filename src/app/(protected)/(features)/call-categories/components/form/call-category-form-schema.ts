@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod validation schema for CallCategory form
@@ -26,8 +26,11 @@ export const callCategoryStepSchemas = {
     description: callCategoryFieldSchemas.description,
     remark: callCategoryFieldSchemas.remark,
   }),
-
-  review: callCategoryFormSchema,
+  
+  
+  
+  
+  review: callCategoryFormSchema
 };
 
 // Validation helper functions
@@ -35,7 +38,7 @@ export const callCategoryValidationHelpers = {
   validateStep: (stepId: string, data: Partial<CallCategoryFormValues>) => {
     const stepSchema = callCategoryStepSchemas[stepId as keyof typeof callCategoryStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-
+    
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -43,12 +46,11 @@ export const callCategoryValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   validateField: (fieldName: string, value: any) => {
-    const fieldSchema =
-      callCategoryFieldSchemas[fieldName as keyof typeof callCategoryFieldSchemas];
+    const fieldSchema = callCategoryFieldSchemas[fieldName as keyof typeof callCategoryFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-
+    
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -56,7 +58,7 @@ export const callCategoryValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-
+  
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -77,7 +79,7 @@ export const callCategoryValidationHelpers = {
         maxLength: 1000,
       };
     }
-
+    
     return {};
-  },
+  }
 };

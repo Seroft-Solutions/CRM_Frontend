@@ -1,20 +1,20 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CityForm } from '../components/city-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CityForm } from "../components/city-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 export const metadata = {
-  title: 'Create City',
+  title: "Create City",
 };
 
 export default function CreateCityPage() {
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="city:create"
       unauthorizedTitle="Access Denied to Create City"
       unauthorizedDescription="You don't have permission to create new city records."
@@ -22,7 +22,7 @@ export default function CreateCityPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/cities"
               defaultLabel="Back to Cities"
               entityName="City"
@@ -35,12 +35,10 @@ export default function CreateCityPage() {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Create City</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Enter the details below to create a new city
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Enter the details below to create a new city</p>
             </div>
           </div>
-
+          
           <CityForm />
         </div>
       </div>

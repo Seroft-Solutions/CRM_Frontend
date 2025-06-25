@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { StateFormProvider, useEntityForm } from './state-form-provider';
-import { FormProgressIndicator } from './form-progress-indicator';
-import { FormStepRenderer } from './form-step-renderer';
-import { FormNavigation } from './form-navigation';
-import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
-import {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { StateFormProvider, useEntityForm } from "./state-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
+import { FormErrorsDisplay } from "@/components/form-errors-display";
+import { 
   useCreateState,
   useUpdateState,
   useGetState,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-import { stateToast, handleStateError } from '../state-toast';
-import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+import { stateToast, handleStateError } from "../state-toast";
+import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface StateFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function StateFormContent({ id }: StateFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetState(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-state', id],
+      queryKey: ["get-state", id]
     },
   });
 
@@ -42,13 +42,13 @@ function StateFormContent({ id }: StateFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = localStorage.getItem('returnUrl');
-      const backRoute = returnUrl || '/states';
-
+      const backRoute = returnUrl || "/states";
+      
       // Clean up navigation localStorage
       localStorage.removeItem('entityCreationContext');
       localStorage.removeItem('referrerInfo');
       localStorage.removeItem('returnUrl');
-
+      
       router.push(backRoute);
     }
   };
@@ -78,11 +78,11 @@ function StateFormContent({ id }: StateFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
+      <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          name: '',
-          country: '',
+          'name': '',
+          'country': '',
         }}
       />
 
@@ -90,7 +90,7 @@ function StateFormContent({ id }: StateFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation
+      <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -114,7 +114,7 @@ export function StateForm({ id }: StateFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -122,7 +122,7 @@ export function StateForm({ id }: StateFormProps) {
         } else {
           setIsRedirecting(true);
           stateToast.created();
-          router.push('/states');
+          router.push("/states");
         }
       },
       onError: (error) => {
@@ -136,7 +136,7 @@ export function StateForm({ id }: StateFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         stateToast.updated();
-        router.push('/states');
+        router.push("/states");
       },
       onError: (error) => {
         handleStateError(error);
@@ -157,11 +157,11 @@ export function StateForm({ id }: StateFormProps) {
   }
 
   return (
-    <StateFormProvider
+    <StateFormProvider 
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

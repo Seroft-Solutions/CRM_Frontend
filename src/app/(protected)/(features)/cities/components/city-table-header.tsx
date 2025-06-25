@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+} from "@/components/ui/select";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -25,23 +31,32 @@ interface CityTableHeaderProps {
   isAllSelected: boolean;
   isIndeterminate: boolean;
   onSelectAll: () => void;
+  visibleColumns: Array<{
+    id: string;
+    label: string;
+    accessor: string;
+    type: 'field' | 'relationship';
+    visible: boolean;
+    sortable: boolean;
+  }>;
 }
 
-export function CityTableHeader({
-  onSort,
+export function CityTableHeader({ 
+  onSort, 
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
+  visibleColumns
 }: CityTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case 'ChevronUp':
+      case "ChevronUp":
         return <ChevronUp className="h-4 w-4" />;
-      case 'ChevronDown':
+      case "ChevronDown":
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -61,29 +76,26 @@ export function CityTableHeader({
             }}
           />
         </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('name')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            Name
-            <div className="text-gray-400">{renderSortIcon('name')}</div>
-          </Button>
-        </TableHead>
-
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort('district.name')}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            District
-            <div className="text-gray-400">{renderSortIcon('district.name')}</div>
-          </Button>
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={column.id} className="whitespace-nowrap px-3 py-2">
+            {column.sortable ? (
+              <Button
+                variant="ghost"
+                onClick={() => onSort(column.accessor)}
+                className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+              >
+                {column.label}
+                <div className="text-gray-400">
+                  {renderSortIcon(column.accessor)}
+                </div>
+              </Button>
+            ) : (
+              <span className="font-medium text-gray-700 text-sm">
+                {column.label}
+              </span>
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -91,29 +103,51 @@ export function CityTableHeader({
           </div>
         </TableHead>
       </TableRow>
-
+      
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
-        <TableHead className="w-12 px-3 py-2">{/* Empty cell for checkbox column */}</TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['name'] as string) || ''}
-            onChange={(e) => onFilterChange('name', e.target.value || undefined)}
-          />
+        <TableHead className="w-12 px-3 py-2">
+          {/* Empty cell for checkbox column */}
         </TableHead>
-
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={(filters['district.name'] as string) || ''}
-            onChange={(e) => onFilterChange('district.name', e.target.value || undefined)}
-          />
-        </TableHead>
-
+        {visibleColumns.map((column) => (
+          <TableHead key={`filter-${column.id}`} className="px-3 py-2">
+            {column.type === 'field' ? (
+              (() => {
+                
+                if (column.accessor === 'name') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["name"] as string || ""}
+                      onChange={(e) => onFilterChange("name", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                return null;
+              })()
+            ) : (
+              (() => {
+                
+                if (column.accessor === 'district') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["district.name"] as string || ""}
+                      onChange={(e) => onFilterChange("district.name", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                return null;
+              })()
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />

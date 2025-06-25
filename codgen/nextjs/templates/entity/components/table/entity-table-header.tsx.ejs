@@ -51,6 +51,14 @@ interface <%= entityClass %>TableHeaderProps {
   isAllSelected: boolean;
   isIndeterminate: boolean;
   onSelectAll: () => void;
+  visibleColumns: Array<{
+    id: string;
+    label: string;
+    accessor: string;
+    type: 'field' | 'relationship';
+    visible: boolean;
+    sortable: boolean;
+  }>;
 }
 
 export function <%= entityClass %>TableHeader({ 
@@ -60,7 +68,8 @@ export function <%= entityClass %>TableHeader({
   onFilterChange,
   isAllSelected,
   isIndeterminate,
-  onSelectAll
+  onSelectAll,
+  visibleColumns
 }: <%= entityClass %>TableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
@@ -87,37 +96,26 @@ export function <%= entityClass %>TableHeader({
             }}
           />
         </TableHead>
-        <% for (field of fields) { %>
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("<%= field.fieldName %>")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            <%= camelToTitleCase(field.fieldName) %>
-            <div className="text-gray-400">
-              {renderSortIcon("<%= field.fieldName %>")}
-            </div>
-          </Button>
-        </TableHead>
-        <% } %>
-        <% 
-        for (const rel of displayableRelationships) { 
-          const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
-        %>
-        <TableHead className="whitespace-nowrap px-3 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => onSort("<%= rel.relationshipName %>.<%=displayField%>")}
-            className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-          >
-            <%= camelToTitleCase(rel.relationshipName) %>
-            <div className="text-gray-400">
-              {renderSortIcon("<%= rel.relationshipName %>.<%=displayField%>")}
-            </div>
-          </Button>
-        </TableHead>
-        <% } %>
+        {visibleColumns.map((column) => (
+          <TableHead key={column.id} className="whitespace-nowrap px-3 py-2">
+            {column.sortable ? (
+              <Button
+                variant="ghost"
+                onClick={() => onSort(column.accessor)}
+                className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+              >
+                {column.label}
+                <div className="text-gray-400">
+                  {renderSortIcon(column.accessor)}
+                </div>
+              </Button>
+            ) : (
+              <span className="font-medium text-gray-700 text-sm">
+                {column.label}
+              </span>
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-gray-50 px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-700 text-sm">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
@@ -131,70 +129,91 @@ export function <%= entityClass %>TableHeader({
         <TableHead className="w-12 px-3 py-2">
           {/* Empty cell for checkbox column */}
         </TableHead>
-        <% for (field of fields) { %>
-        <TableHead className="px-3 py-2">
-          <% if (field.fieldIsEnum) { %>
-          <Select
-            value={filters["<%= field.fieldName %>"] as string || "__all__"}
-            onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
-          >
-            <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All</SelectItem>
-              <% for (const enumValue of field.enumValues || []) { %>
-              <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>">
-                <%= enumValue.name || enumValue.value || 'Empty' %>
-              </SelectItem>
-              <% } %>
-            </SelectContent>
-          </Select>
-          <% } else if (field.fieldTypeBoolean) { %>
-          <Select
-            value={filters["<%= field.fieldName %>"] as string || "__all__"}
-            onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
-          >
-            <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All</SelectItem>
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
-          <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
-          <Input
-            type="date"
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            value={filters["<%= field.fieldName %>"] as string || ""}
-            onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
-          />
-          <% } else { %>
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["<%= field.fieldName %>"] as string || ""}
-            onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
-          />
-          <% } %>
-        </TableHead>
-        <% } %>
-        
-        <% for (const rel of displayableRelationships) { 
-          const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
-        %>
-        <TableHead className="px-3 py-2">
-          <Input
-            placeholder="Filter..."
-            className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-            value={filters["<%= rel.relationshipName %>.<%=displayField%>"] as string || ""}
-            onChange={(e) => onFilterChange("<%= rel.relationshipName %>.<%=displayField%>", e.target.value || undefined)}
-          />
-        </TableHead>
-        <% } %>
-        
+        {visibleColumns.map((column) => (
+          <TableHead key={`filter-${column.id}`} className="px-3 py-2">
+            {column.type === 'field' ? (
+              (() => {
+                <% for (field of fields) { %>
+                if (column.accessor === '<%= field.fieldName %>') {
+                  <% if (field.fieldIsEnum) { %>
+                  return (
+                    <Select
+                      value={filters["<%= field.fieldName %>"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
+                    >
+                      <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <SelectValue placeholder="All" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All</SelectItem>
+                        <% for (const enumValue of field.enumValues || []) { %>
+                        <SelectItem value="<%= enumValue.name || enumValue.value || 'EMPTY_VALUE' %>">
+                          <%= enumValue.name || enumValue.value || 'Empty' %>
+                        </SelectItem>
+                        <% } %>
+                      </SelectContent>
+                    </Select>
+                  );
+                  <% } else if (field.fieldTypeBoolean) { %>
+                  return (
+                    <Select
+                      value={filters["<%= field.fieldName %>"] as string || "__all__"}
+                      onValueChange={(value) => onFilterChange("<%= field.fieldName %>", value === "__all__" ? undefined : value)}
+                    >
+                      <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <SelectValue placeholder="All" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All</SelectItem>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                  <% } else if (field.fieldTypeLocalDate || field.fieldTypeTimed) { %>
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["<%= field.fieldName %>"] as string || ""}
+                      onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
+                    />
+                  );
+                  <% } else { %>
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["<%= field.fieldName %>"] as string || ""}
+                      onChange={(e) => onFilterChange("<%= field.fieldName %>", e.target.value || undefined)}
+                    />
+                  );
+                  <% } %>
+                }
+                <% } %>
+                return null;
+              })()
+            ) : (
+              (() => {
+                <% for (const rel of displayableRelationships) { 
+                  const displayField = rel.otherEntity.builtInUser ? 'login' : rel.otherEntityField;
+                %>
+                if (column.accessor === '<%= rel.relationshipName %>') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["<%= rel.relationshipName %>.<%=displayField%>"] as string || ""}
+                      onChange={(e) => onFilterChange("<%= rel.relationshipName %>.<%=displayField%>", e.target.value || undefined)}
+                    />
+                  );
+                }
+                <% } %>
+                return null;
+              })()
+            )}
+          </TableHead>
+        ))}
         <TableHead className="w-[120px] sticky right-0 bg-white px-3 py-2 border-l border-gray-200">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-gray-500" />
