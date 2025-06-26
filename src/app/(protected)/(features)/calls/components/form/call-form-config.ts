@@ -10,35 +10,6 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
-      fields: [
-        'callDateTime',
-      ],
-      relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Assignment',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'channelParties',
-        'assignedTo',
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
@@ -49,7 +20,6 @@ export const callFormConfig: FormConfig = {
         'callType',
         'subCallType',
         'callCategory',
-        'channelType',
         'callStatus',
       ],
       validation: {
@@ -60,7 +30,7 @@ export const callFormConfig: FormConfig = {
     {
       id: 'business',
       title: 'Business Relations',
-      description: 'Connect with customers and products',
+      description: 'Connect with customers and sources',
       fields: [
       ],
       relationships: [
@@ -73,17 +43,34 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
-      id: 'meeting-scheduling',
-        title: 'Meeting Details',
-        description: 'Enter Meeting Information',
-        fields: [
-        ],
-        relationships: [
-        ],
-        validation: {
-          mode: 'onBlur',
-          validateOnNext: true
-        }
+      id: 'channel',
+      title: 'Channel Details',
+      description: 'Channel type and parties',
+      fields: [
+      ],
+      relationships: [
+        'channelType',
+        'channelParties',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
+      fields: [
+        'callDateTime',
+      ],
+      relationships: [
+        'assignedTo',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
@@ -286,7 +273,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: true,
       multiple: false,
-      category: 'classification',
+      category: 'channel',
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
@@ -301,7 +288,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Type',
         placeholder: 'Select channel type',
-        icon: '🏷️',
+        icon: '📞',
       }
     },
     {
@@ -312,7 +299,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'user',
+      category: 'channel',
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
@@ -327,7 +314,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Parties',
         placeholder: 'Select channel parties',
-        icon: '👥',
+        icon: '📞',
       }
     },
     {
@@ -338,7 +325,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'user',
+      category: 'assignment',
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
@@ -353,7 +340,7 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Assigned To',
         placeholder: 'Select assigned to',
-        icon: '👥',
+        icon: '👤',
       }
     },
     {

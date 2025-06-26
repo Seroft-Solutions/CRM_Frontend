@@ -70,11 +70,13 @@ function buildRelationshipDependencyMap(relationships) {
   return reverseMap;
 }
 
-// Intelligent relationship grouping with dependency detection (same logic as original)
+// Intelligent relationship grouping with dependency detection (enhanced for specific entity types)
 const geographicKeywords = ['state', 'district', 'city', 'area', 'country', 'region', 'location'];
 const userKeywords = ['user', 'assignedTo', 'createdBy', 'updatedBy', 'channelParty', 'owner'];
 const classificationKeywords = ['priority', 'status', 'type', 'category', 'level', 'grade'];
-const businessKeywords = ['party', 'customer', 'supplier', 'vendor', 'product', 'source', 'channel'];
+const businessKeywords = ['customer', 'supplier', 'vendor', 'product', 'source'];
+const channelKeywords = ['channel'];
+const assignmentKeywords = ['assignedTo', 'assignee'];
 
 function categorizeRelationship(rel) {
   const name = rel.relationshipName.toLowerCase();
@@ -82,6 +84,12 @@ function categorizeRelationship(rel) {
   
   if (geographicKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
     return 'geographic';
+  }
+  if (channelKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw))) {
+    return 'channel';
+  }
+  if (assignmentKeywords.some(kw => name.includes(kw)) || name === 'assignedto') {
+    return 'assignment';
   }
   if (userKeywords.some(kw => name.includes(kw) || otherEntity.includes(kw)) || rel.otherEntity.builtInUser) {
     return 'user';
@@ -140,6 +148,8 @@ const relationshipGroups = {
   user: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'user'),
   classification: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'classification'),
   business: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'business'),
+  channel: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'channel'),
+  assignment: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'assignment'),
   other: persistableRelationships.filter(rel => categorizeRelationship(rel) === 'other')
 };
 
@@ -158,15 +168,16 @@ dependencyMap.forEach((parentRel, childRel) => {
   });
 });
 
-// Define wizard steps dynamically based on available fields (same logic as original)
+// Define wizard steps dynamically based on available fields and relationships
 const steps = [
   ...(textFields.length > 0 || numberFields.length > 0 || enumFields.length > 0 ? [{ id: 'basic', title: 'Basic Information', description: 'Enter essential details' }] : []),
-  ...(dateFields.length > 0 ? [{ id: 'dates', title: 'Date & Time', description: 'Set relevant dates' }] : []),
-  ...(booleanFields.length > 0 || binaryFields.length > 0 ? [{ id: 'settings', title: 'Settings & Files', description: 'Configure options' }] : []),
-  ...(relationshipGroups.geographic.length > 0 ? [{ id: 'geographic', title: 'Location Details', description: 'Select geographic information' }] : []),
-  ...(relationshipGroups.user.length > 0 ? [{ id: 'users', title: 'People & Assignment', description: 'Assign users and responsibilities' }] : []),
   ...(relationshipGroups.classification.length > 0 ? [{ id: 'classification', title: 'Classification', description: 'Set priority, status, and categories' }] : []),
-  ...(relationshipGroups.business.length > 0 ? [{ id: 'business', title: 'Business Relations', description: 'Connect with customers and products' }] : []),
+  ...(relationshipGroups.business.length > 0 ? [{ id: 'business', title: 'Business Relations', description: 'Connect with customers and sources' }] : []),
+  ...(relationshipGroups.channel.length > 0 ? [{ id: 'channel', title: 'Channel Details', description: 'Channel type and parties' }] : []),
+  ...(relationshipGroups.assignment.length > 0 || dateFields.length > 0 ? [{ id: 'assignment', title: 'Assignment & Date', description: 'Assign users, set dates and status' }] : []),
+  ...(relationshipGroups.geographic.length > 0 ? [{ id: 'geographic', title: 'Location Details', description: 'Select geographic information' }] : []),
+  ...(relationshipGroups.user.length > 0 ? [{ id: 'users', title: 'People & Users', description: 'Assign users and responsibilities' }] : []),
+  ...(booleanFields.length > 0 || binaryFields.length > 0 ? [{ id: 'settings', title: 'Settings & Files', description: 'Configure options' }] : []),
   ...(relationshipGroups.other.length > 0 ? [{ id: 'other', title: 'Additional Relations', description: 'Other connections and references' }] : []),
   { id: 'review', title: 'Review', description: 'Confirm your details' }
 ];
@@ -192,7 +203,7 @@ export const <%= entityInstance %>FormConfig: FormConfig = {
         <%_ for (const field of [...textFields, ...numberFields, ...enumFields]) { _%>
         '<%= field.fieldName %>',
         <%_ } _%>
-        <%_ } else if (step.id === 'dates') { _%>
+        <%_ } else if (step.id === 'assignment') { _%>
         <%_ for (const field of dateFields) { _%>
         '<%= field.fieldName %>',
         <%_ } _%>
@@ -217,6 +228,14 @@ export const <%= entityInstance %>FormConfig: FormConfig = {
         <%_ } _%>
         <%_ } else if (step.id === 'business' && relationshipGroups.business) { _%>
         <%_ for (const rel of relationshipGroups.business) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'channel' && relationshipGroups.channel) { _%>
+        <%_ for (const rel of relationshipGroups.channel) { _%>
+        '<%= rel.relationshipFieldName %>',
+        <%_ } _%>
+        <%_ } else if (step.id === 'assignment' && relationshipGroups.assignment) { _%>
+        <%_ for (const rel of relationshipGroups.assignment) { _%>
         '<%= rel.relationshipFieldName %>',
         <%_ } _%>
         <%_ } else if (step.id === 'other' && relationshipGroups.other) { _%>
@@ -346,6 +365,10 @@ export const <%= entityInstance %>FormConfig: FormConfig = {
         icon: '🏷️',
         <%_ } else if (category === 'business') { _%>
         icon: '🏢',
+        <%_ } else if (category === 'channel') { _%>
+        icon: '📞',
+        <%_ } else if (category === 'assignment') { _%>
+        icon: '👤',
         <%_ } else { _%>
         icon: '🔗',
         <%_ } _%>

@@ -53,6 +53,10 @@ export function <%= entityClass %>FormProvider({
 
   // Generate unique session ID for this form instance
   const [formSessionId] = useState(() => {
+    if (typeof window === 'undefined') {
+      return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
     const existingSession = sessionStorage.getItem(`${config.entity}_FormSession`);
     if (existingSession && isNew) {
       return existingSession;
@@ -105,6 +109,7 @@ export function <%= entityClass %>FormProvider({
   const saveFormState = useCallback((forCrossNavigation = false) => {
     // Only save form state for cross-form navigation scenarios
     if (!isNew || !config.behavior.persistence.enabled || !forCrossNavigation) return;
+    if (typeof window === 'undefined') return;
     
     const formData = form.getValues();
     const formState = {
@@ -121,6 +126,8 @@ export function <%= entityClass %>FormProvider({
 
   const restoreFormState = useCallback((suppressToast = false): boolean => {
     if (!isNew || !config.behavior.persistence.enabled) return false;
+    
+    if (typeof window === 'undefined') return false;
     
     const currentSessionId = sessionStorage.getItem(`${config.entity}_FormSession`);
     if (!currentSessionId || currentSessionId !== formSessionId) {
@@ -381,6 +388,8 @@ export function <%= entityClass %>FormProvider({
 
   // Form cleanup
   const cleanupFormState = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    
     const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
     localStorage.removeItem(storageKey);
     sessionStorage.removeItem(`${config.entity}_FormSession`);

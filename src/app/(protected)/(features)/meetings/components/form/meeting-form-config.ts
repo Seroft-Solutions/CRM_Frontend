@@ -32,15 +32,43 @@ export const meetingFormConfig: FormConfig = {
       }
     },
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
+      id: 'business',
+      title: 'Business Relations',
+      description: 'Connect with customers and sources',
+      fields: [
+      ],
+      relationships: [
+        'assignedCustomer',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
       fields: [
         'meetingDateTime',
         'createdAt',
         'updatedAt',
       ],
       relationships: [
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'users',
+      title: 'People & Users',
+      description: 'Assign users and responsibilities',
+      fields: [
+      ],
+      relationships: [
+        'organizer',
       ],
       validation: {
         mode: 'onBlur',
@@ -55,34 +83,6 @@ export const meetingFormConfig: FormConfig = {
         'isRecurring',
       ],
       relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Assignment',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'organizer',
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'business',
-      title: 'Business Relations',
-      description: 'Connect with customers and products',
-      fields: [
-      ],
-      relationships: [
-        'assignedCustomer',
       ],
       validation: {
         mode: 'onBlur',

@@ -70,6 +70,7 @@ import {
   useGetAllMeetingReminders,
   useDeleteMeetingReminder,
   useCountMeetingReminders,
+  useUpdateMeetingReminder,
   usePartialUpdateMeetingReminder,
   
 } from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
@@ -87,10 +88,10 @@ import {
 
 
 
-import { MeetingReminderSearchAndFilters } from "./meeting-reminder-search-filters";
-import { MeetingReminderTableHeader } from "./meeting-reminder-table-header";
-import { MeetingReminderTableRow } from "./meeting-reminder-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { MeetingReminderSearchAndFilters } from "./table/meeting-reminder-search-filters";
+import { MeetingReminderTableHeader } from "./table/meeting-reminder-table-header";
+import { MeetingReminderTableRow } from "./table/meeting-reminder-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -108,6 +109,14 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    id: 'id',
+    label: 'ID',
+    accessor: 'id',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
   
   {
     id: 'reminderType',
@@ -199,6 +208,8 @@ export function MeetingReminderTable() {
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       if (saved) {
@@ -218,7 +229,7 @@ export function MeetingReminderTable() {
 
   // Save column visibility to localStorage whenever it changes
   useEffect(() => {
-    if (isColumnVisibilityLoaded) {
+    if (isColumnVisibilityLoaded && typeof window !== 'undefined') {
       try {
         localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
       } catch (error) {
@@ -254,7 +265,8 @@ export function MeetingReminderTable() {
         return visibleColumns.map(col => {
           let value = '';
           if (col.type === 'field') {
-            value = item[col.accessor as keyof typeof item] || '';
+            const fieldValue = item[col.accessor as keyof typeof item];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
           } else if (col.type === 'relationship') {
             const relationship = item[col.accessor as keyof typeof item] as any;
             
@@ -428,8 +440,8 @@ export function MeetingReminderTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateMeetingReminder({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateMeetingReminder({
     mutation: {
       onSuccess: () => {
         meetingReminderToast.updated();
@@ -525,7 +537,7 @@ export function MeetingReminderTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
     }
   };
 
@@ -558,16 +570,27 @@ export function MeetingReminderTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('MeetingReminder not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for MeetingReminder ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -575,9 +598,11 @@ export function MeetingReminderTable() {
       }, {
         onSuccess: () => {
           meetingReminderToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleMeetingReminderError(error);
           reject(error);
         }
@@ -743,7 +768,7 @@ export function MeetingReminderTable() {
       {/* Data Table */}
       <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
         <div className="table-scroll overflow-x-auto">
-          <Table className="w-full min-w-[600px]">.
+          <Table className="w-full min-w-[600px]">
             
             <MeetingReminderTableHeader 
               onSort={handleSort}

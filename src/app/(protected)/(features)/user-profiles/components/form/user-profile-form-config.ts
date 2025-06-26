@@ -26,9 +26,23 @@ export const userProfileFormConfig: FormConfig = {
       }
     },
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
+      id: 'channel',
+      title: 'Channel Details',
+      description: 'Channel type and parties',
+      fields: [
+      ],
+      relationships: [
+        'channelType',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
       fields: [
         'createdAt',
         'updatedAt',
@@ -42,26 +56,12 @@ export const userProfileFormConfig: FormConfig = {
     },
     {
       id: 'users',
-      title: 'People & Assignment',
+      title: 'People & Users',
       description: 'Assign users and responsibilities',
       fields: [
       ],
       relationships: [
         'user',
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [
-      ],
-      relationships: [
-        'channelType',
       ],
       validation: {
         mode: 'onBlur',
@@ -251,7 +251,7 @@ export const userProfileFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'classification',
+      category: 'channel',
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
@@ -266,7 +266,7 @@ export const userProfileFormConfig: FormConfig = {
       ui: {
         label: 'Channel Type',
         placeholder: 'Select channel type',
-        icon: '🏷️',
+        icon: '📞',
       }
     },
   ],
