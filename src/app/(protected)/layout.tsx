@@ -16,7 +16,10 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   }
 
   return (
-    <SessionManagerProvider>
+    <SessionManagerProvider 
+      idleTimeoutMinutes={2}
+      warningBeforeLogoutMinutes={1}
+    >
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>

@@ -123,6 +123,25 @@
 }
 
 @layer utilities {
+  /* Session modal blur and interaction lock */
+  .session-locked {
+    overflow: hidden !important;
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+
+  /* Ensure modal content stays interactive */
+  [data-session-modal="true"] {
+    pointer-events: all !important;
+    user-select: auto !important;
+  }
+
+  /* Enhance blur overlay */
+  #session-blur-overlay {
+    will-change: backdrop-filter;
+    transition: backdrop-filter 0.2s ease-in-out;
+  }
+
   /* Responsive table scrolling utilities */
   .table-scroll-container {
     @apply overflow-x-auto rounded-md border;

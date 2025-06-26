@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { useAuth } from '@/providers/session-provider';
+import { useAuth } from '@/core/auth';
 import { UnauthorizedPage } from './unauthorized-page';
 
 interface PermissionGuardProps {

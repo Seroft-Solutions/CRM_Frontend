@@ -1,6 +1,6 @@
 /**
  * Session Manager Provider
- * Minimal session management to avoid React hooks issues
+ * Session management with idle timeout feature
  */
 
 'use client';
@@ -11,7 +11,11 @@ import {
   useState,
   useCallback,
   ReactNode,
+  useEffect,
+  useRef,
 } from 'react';
+import { signOut } from 'next-auth/react';
+import { SessionExpiredModal } from '../components/session-expired-modal';
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -20,23 +24,47 @@ interface SessionManagerContextType {
   refreshSession: () => Promise<boolean>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  resetIdleTimer: () => void;
+  isIdle: boolean;
+  minutesIdle: number;
 }
 
 const SessionManagerContext = createContext<SessionManagerContextType | undefined>(undefined);
 
 interface SessionManagerProviderProps {
   children: ReactNode;
+  idleTimeoutMinutes?: number; // Default to 10 minutes
+  warningBeforeLogoutMinutes?: number; // Default to 2 minutes warning
 }
 
-export function SessionManagerProvider({ children }: SessionManagerProviderProps) {
+export function SessionManagerProvider({ 
+  children, 
+  idleTimeoutMinutes = 10,
+  warningBeforeLogoutMinutes = 2 
+}: SessionManagerProviderProps) {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
-    type: 'expired' | 'warning';
+    type: 'expired' | 'warning' | 'idle';
     minutesLeft?: number;
   }>({
     isOpen: false,
     type: 'expired',
   });
+
+  const [isIdle, setIsIdle] = useState(false);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [minutesIdle, setMinutesIdle] = useState(0);
+  
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const activityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Events to track for user activity
+  const activityEvents = [
+    'mousedown', 'mousemove', 'keypress', 'scroll', 
+    'touchstart', 'click', 'keydown', 'resize'
+  ];
 
   const showSessionExpiredModal = useCallback(() => {
     setModalState({
@@ -53,17 +81,25 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
     });
   }, []);
 
+  const showIdleTimeoutModal = useCallback(() => {
+    setModalState({
+      isOpen: true,
+      type: 'idle',
+    });
+  }, []);
+
   const hideSessionModal = useCallback(() => {
-    setModalState((prev) => ({
-      ...prev,
+    setModalState({
       isOpen: false,
-    }));
+      type: 'expired',
+    });
   }, []);
 
   const refreshSession = useCallback(async (): Promise<boolean> => {
     try {
-      // Simple refresh without complex token logic
-      window.location.reload();
+      // Reset activity and hide modal
+      resetIdleTimer();
+      hideSessionModal();
       return true;
     } catch (error) {
       console.error('Session refresh failed:', error);
@@ -71,10 +107,91 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
     }
   }, []);
 
-  const handleRetryAuth = useCallback(() => {
-    // Force a hard reload to clear any stale state
-    window.location.href = '/';
+  const handleManualLogout = useCallback(async () => {
+    try {
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback: force redirect
+      window.location.href = '/';
+    }
   }, []);
+
+  const resetIdleTimer = useCallback(() => {
+    const now = Date.now();
+    setLastActivity(now);
+    setIsIdle(false);
+    setMinutesIdle(0);
+    hideSessionModal();
+
+    // Clear existing timers
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+
+    // Set warning timer (8 minutes for 10-minute timeout with 2-minute warning)
+    const warningTime = (idleTimeoutMinutes - warningBeforeLogoutMinutes) * 60 * 1000;
+    warningTimerRef.current = setTimeout(() => {
+      setIsIdle(true);
+      showSessionWarningModal(warningBeforeLogoutMinutes);
+    }, warningTime);
+
+    // Set logout timer (full timeout duration)
+    const logoutTime = idleTimeoutMinutes * 60 * 1000;
+    logoutTimerRef.current = setTimeout(() => {
+      showIdleTimeoutModal();
+      // Don't force logout - just show modal and let user decide
+    }, logoutTime);
+  }, [idleTimeoutMinutes, warningBeforeLogoutMinutes, hideSessionModal, showSessionWarningModal, showIdleTimeoutModal]);
+
+  const handleActivity = useCallback(() => {
+    resetIdleTimer();
+  }, [resetIdleTimer]);
+
+  // Update minutes idle counter
+  useEffect(() => {
+    if (!activityCheckIntervalRef.current) {
+      activityCheckIntervalRef.current = setInterval(() => {
+        const now = Date.now();
+        const minutesSinceActivity = Math.floor((now - lastActivity) / 60000);
+        setMinutesIdle(minutesSinceActivity);
+      }, 30000); // Update every 30 seconds
+    }
+
+    return () => {
+      if (activityCheckIntervalRef.current) {
+        clearInterval(activityCheckIntervalRef.current);
+        activityCheckIntervalRef.current = null;
+      }
+    };
+  }, [lastActivity]);
+
+  // Set up activity listeners
+  useEffect(() => {
+    // Initialize timer
+    resetIdleTimer();
+
+    // Add event listeners for activity tracking
+    activityEvents.forEach((event) => {
+      document.addEventListener(event, handleActivity, true);
+    });
+
+    return () => {
+      // Cleanup timers
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+      if (activityCheckIntervalRef.current) clearInterval(activityCheckIntervalRef.current);
+
+      // Remove event listeners
+      activityEvents.forEach((event) => {
+        document.removeEventListener(event, handleActivity, true);
+      });
+    };
+  }, [handleActivity, resetIdleTimer]);
 
   const contextValue: SessionManagerContextType = {
     showSessionExpiredModal,
@@ -83,12 +200,24 @@ export function SessionManagerProvider({ children }: SessionManagerProviderProps
     refreshSession,
     isAuthenticated: true,
     isLoading: false,
+    resetIdleTimer,
+    isIdle,
+    minutesIdle,
   };
 
   return (
     <SessionManagerContext.Provider value={contextValue}>
       {children}
-      {/* Removed SessionExpiredModal temporarily to avoid hooks issues */}
+      <SessionExpiredModal
+        isOpen={modalState.isOpen}
+        onClose={hideSessionModal}
+        onRetryAuth={handleManualLogout}
+        type={modalState.type}
+        minutesLeft={modalState.minutesLeft}
+        refreshSession={refreshSession}
+        onLogout={handleManualLogout}
+        isIdleTimeout={modalState.type === 'idle'}
+      />
     </SessionManagerContext.Provider>
   );
 }
