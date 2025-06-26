@@ -1,4 +1,8 @@
-// Client-side token storage utility
+/**
+ * Token Storage Utilities
+ * Client-side token storage and management
+ */
+
 export const tokenStorage = {
   // Save token to localStorage (persists across browser sessions)
   saveToken: (token: string) => {
@@ -38,6 +42,14 @@ export const tokenStorage = {
 
   removeTokenSession: () => {
     if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('access_token');
+    }
+  },
+
+  // Clear all tokens
+  clearAll: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
       sessionStorage.removeItem('access_token');
     }
   },

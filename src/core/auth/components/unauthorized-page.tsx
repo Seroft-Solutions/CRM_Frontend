@@ -1,3 +1,8 @@
+/**
+ * Unauthorized Page Component
+ * Displays when user lacks required permissions
+ */
+
 import Link from 'next/link';
 import { ShieldX, ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';

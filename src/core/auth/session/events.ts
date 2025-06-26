@@ -1,4 +1,8 @@
-// Global event system for session management
+/**
+ * Session Events System
+ * Global event system for session state management
+ */
+
 type SessionEventType = 'session-expired' | 'session-invalid' | 'auth-error';
 
 interface SessionEvent {

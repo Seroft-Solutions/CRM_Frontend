@@ -3,7 +3,9 @@
  * Stores user roles in a Map to avoid overloading the session
  */
 
-class RolesManager {
+import type { RoleManagerInterface } from '../types';
+
+class RolesManager implements RoleManagerInterface {
   private userRoles = new Map<string, string[]>();
 
   /**

@@ -1,8 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '../base/types';
 import { SPRING_SERVICE_CONFIG } from './config';
-import { TokenCache } from '@/lib/token-cache';
-import { fetchAccessToken } from '@/lib/auth-token';
+import { TokenCache } from '@/core/auth';
+import { fetchAccessToken } from '@/core/auth';
 
 const tokenCache = new TokenCache();
 

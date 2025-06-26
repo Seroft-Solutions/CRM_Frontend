@@ -5,7 +5,7 @@ import { DynamicBreadcrumbs } from '@/components/breadcrumbs/dynamic-breadcrumbs
 import { TenantHeader } from '@/components/layout/tenant-header';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { SessionManagerProvider } from '@/providers/session-manager';
+import { SessionManagerProvider } from '@/core/auth/providers/session-manager-simple';
 import { hasOrganization } from '@/lib/organization-utils';
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {

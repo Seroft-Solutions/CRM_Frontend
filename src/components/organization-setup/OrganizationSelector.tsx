@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, ArrowRight, LogOut } from 'lucide-react';
 import type { UserOrganization } from '@/services/organization/organization-api.service';
-import { logoutAction } from '@/lib/auth-actions';
+import { logoutAction } from '@/core/auth';
 
 interface OrganizationSelectorProps {
   organizations: UserOrganization[];

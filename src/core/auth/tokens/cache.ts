@@ -1,3 +1,8 @@
+/**
+ * Token Cache Implementation
+ * In-memory token caching with automatic refresh
+ */
+
 export class TokenCache {
   private token: string | null = null;
   private expiry = 0;
@@ -39,3 +44,6 @@ export class TokenCache {
     this.refreshPromise = null;
   }
 }
+
+// Export singleton instance
+export const tokenCache = new TokenCache();

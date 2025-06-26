@@ -1,20 +1,14 @@
+/**
+ * Session Monitor Hook
+ * Monitors session state and token expiry
+ */
+
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useCallback, useRef } from 'react';
 import { useActivityTracker } from './use-activity-tracker';
-import { refreshSession } from '@/lib/token-refresh';
-
-interface SessionMonitorOptions {
-  checkInterval?: number; // in milliseconds
-  onSessionExpired?: () => void;
-  onSessionRestored?: () => void;
-  warningThreshold?: number; // minutes before expiry to show warning
-  onSessionWarning?: (minutesLeft: number) => void;
-  gracePeriod?: number; // minutes to wait after login before starting checks
-  idleTimeout?: number; // minutes of inactivity before warnings can show
-  autoRefreshOnActivity?: boolean; // auto-refresh session when user is active
-}
+import type { SessionMonitorOptions } from '../types';
 
 export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   const { data: session, status, update } = useSession();
@@ -36,8 +30,18 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   const lastSessionState = useRef<boolean>(false);
   const warningShown = useRef<boolean>(false);
   const lastTokenExpiry = useRef<number>(0);
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const debounceTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const loginTime = useRef<number>(0);
+
+  const refreshSession = useCallback(async (): Promise<boolean> => {
+    try {
+      const result = await update();
+      return !!result;
+    } catch (error) {
+      console.error('Session refresh error:', error);
+      return false;
+    }
+  }, [update]);
 
   const checkSessionValidity = useCallback(async () => {
     if (status === 'loading') return;
@@ -54,6 +58,7 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     const timeSinceLogin = Date.now() - loginTime.current;
     const isInGracePeriod = timeSinceLogin < gracePeriod * 60 * 1000;
 
+    // Skip further checks if in grace period but still update state
     if (isInGracePeriod && hasValidSession) {
       lastSessionState.current = hasValidSession;
       return;
@@ -81,11 +86,16 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
 
         // Auto-refresh session if user is active and token is about to expire
         if (autoRefreshOnActivity && !isIdle && minutesUntilExpiry <= warningThreshold) {
-          const refreshSuccess = await refreshSession();
-          if (refreshSuccess) {
-            return;
-          } else {
-            console.error('Auto-refresh failed, will show warning');
+          try {
+            const refreshSuccess = await refreshSession();
+            if (refreshSuccess) {
+              lastSessionState.current = hasValidSession;
+              return;
+            } else {
+              console.error('Auto-refresh failed, will show warning');
+            }
+          } catch (refreshError) {
+            console.error('Auto-refresh error:', refreshError);
           }
         }
 
@@ -136,7 +146,7 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     isIdle,
     minutesIdle,
     autoRefreshOnActivity,
-    update,
+    refreshSession,
   ]);
 
   useEffect(() => {
@@ -162,5 +172,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     isLoading: status === 'loading',
     isIdle,
     minutesIdle,
+    refreshSession,
   };
 }

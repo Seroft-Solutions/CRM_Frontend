@@ -6,7 +6,7 @@ import Link from "next/link";
 import { DistrictTable } from "./components/district-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/components/auth/permission-guard";
+import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 
 export const metadata = {
   title: "Districts",
