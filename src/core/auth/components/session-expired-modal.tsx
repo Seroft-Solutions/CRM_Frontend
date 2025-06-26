@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { signIn } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import {
@@ -41,6 +41,15 @@ export function SessionExpiredModal({
   isIdleTimeout = false,
 }: SessionExpiredModalProps) {
   const [isReauthorizing, setIsReauthorizing] = useState(false);
+
+  // Safety wrapper to prevent closing expired/idle modals
+  const safeOnClose = useCallback(() => {
+    // Only allow closing for warning modals
+    if (type === 'warning') {
+      onClose();
+    }
+    // For expired/idle modals, do nothing - they can only be closed via logout
+  }, [type, onClose]);
 
   // Apply blur and prevent interactions when session expired or idle
   useEffect(() => {
@@ -222,7 +231,7 @@ export function SessionExpiredModal({
   // Warning modal (dismissible)
   if (type === 'warning') {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={safeOnClose}>
         <DialogContent data-session-modal="true" className="sm:max-w-md bg-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -235,7 +244,7 @@ export function SessionExpiredModal({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isReauthorizing}>
+            <Button variant="outline" onClick={safeOnClose} disabled={isReauthorizing}>
               Dismiss
             </Button>
             <Button onClick={handleRefreshSession} disabled={isReauthorizing} autoFocus>

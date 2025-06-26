@@ -89,9 +89,12 @@ export function SessionManagerProvider({
   }, []);
 
   const hideSessionModal = useCallback(() => {
-    setModalState({
-      isOpen: false,
-      type: 'expired',
+    // Only allow hiding if it's a warning modal, not expired or idle
+    setModalState(prev => {
+      if (prev.type === 'warning') {
+        return { isOpen: false, type: 'expired' };
+      }
+      return prev; // Don't hide expired or idle modals
     });
   }, []);
 
@@ -125,7 +128,14 @@ export function SessionManagerProvider({
     setLastActivity(now);
     setIsIdle(false);
     setMinutesIdle(0);
-    hideSessionModal();
+    
+    // Only hide the modal if it's a warning modal, not if it's expired or idle
+    setModalState(prev => {
+      if (prev.isOpen && prev.type === 'warning') {
+        return { isOpen: false, type: 'expired' };
+      }
+      return prev;
+    });
 
     // Clear existing timers
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
