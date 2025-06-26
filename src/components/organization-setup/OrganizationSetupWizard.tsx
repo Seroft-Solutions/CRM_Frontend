@@ -20,7 +20,7 @@ import { OrganizationWelcomePage } from './OrganizationWelcomePage';
 import { OrganizationSetupProgress } from './OrganizationSetupProgress';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { useOrganizationSetup } from '@/hooks/useOrganizationSetup';
-import { logoutAction } from '@/lib/auth-actions';
+import { logoutAction } from '@/core/auth';
 
 export function OrganizationSetupWizard() {
   const { data: organizations, isLoading } = useUserOrganizations();

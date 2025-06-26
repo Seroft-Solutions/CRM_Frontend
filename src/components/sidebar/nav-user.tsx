@@ -2,7 +2,7 @@
 
 import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { logoutAction } from '@/lib/auth-actions';
+import { logoutAction } from '@/core/auth';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {

@@ -1,14 +1,15 @@
+/**
+ * Session Provider
+ * Enhanced session provider with auth utilities
+ */
+
 'use client';
 
 import { SessionProvider, useSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
+import type { SessionProviderProps } from '../types';
 
-interface AppSessionProviderProps {
-  children: React.ReactNode;
-  session?: Session | null;
-}
-
-export function AppSessionProvider({ children, session }: AppSessionProviderProps) {
+export function AppSessionProvider({ children, session }: SessionProviderProps) {
   return <SessionProvider session={session}>{children}</SessionProvider>;
 }
 

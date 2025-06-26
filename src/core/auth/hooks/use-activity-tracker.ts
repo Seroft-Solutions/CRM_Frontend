@@ -1,21 +1,23 @@
+/**
+ * Activity Tracker Hook
+ * Tracks user activity to determine idle state
+ */
+
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import type { ActivityTrackerOptions } from '../types';
 
-interface UseActivityTrackerOptions {
-  timeout?: number; // ms of inactivity before considered idle
-  events?: string[]; // DOM events to track
-}
-
-export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
+export function useActivityTracker(options: ActivityTrackerOptions = {}) {
   const {
     timeout = 5 * 60 * 1000, // 5 minutes default
     events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'],
+    immediate = true,
   } = options;
 
   const [isIdle, setIsIdle] = useState(false);
   const [lastActivity, setLastActivity] = useState(Date.now());
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Memoize events array to prevent re-renders
   const memoizedEvents = useMemo(() => events, [events.join(',')]);
@@ -41,6 +43,8 @@ export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
   }, [resetIdleTimer]);
 
   useEffect(() => {
+    if (!immediate) return;
+
     // Initial setup
     resetIdleTimer();
 
@@ -58,7 +62,7 @@ export function useActivityTracker(options: UseActivityTrackerOptions = {}) {
         document.removeEventListener(event, handleActivity, true);
       });
     };
-  }, [memoizedEvents, handleActivity]); // Removed resetIdleTimer from deps
+  }, [memoizedEvents, handleActivity, immediate, resetIdleTimer]);
 
   return {
     isIdle,

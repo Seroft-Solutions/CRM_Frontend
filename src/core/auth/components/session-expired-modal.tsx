@@ -1,3 +1,8 @@
+/**
+ * Session Expired Modal Component
+ * Handles session expiry and warning notifications
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSessionManager } from '@/providers/session-manager';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -21,6 +25,7 @@ interface SessionExpiredModalProps {
   onRetryAuth: () => void;
   type?: 'expired' | 'warning';
   minutesLeft?: number;
+  refreshSession?: () => Promise<boolean>;
 }
 
 export function SessionExpiredModal({
@@ -29,9 +34,9 @@ export function SessionExpiredModal({
   onRetryAuth,
   type = 'expired',
   minutesLeft,
+  refreshSession,
 }: SessionExpiredModalProps) {
   const [isReauthorizing, setIsReauthorizing] = useState(false);
-  const { refreshSession } = useSessionManager();
 
   const handleContinue = async () => {
     setIsReauthorizing(true);
@@ -49,6 +54,11 @@ export function SessionExpiredModal({
   };
 
   const handleRefreshSession = async () => {
+    if (!refreshSession) {
+      await handleContinue();
+      return;
+    }
+
     setIsReauthorizing(true);
     try {
       const success = await refreshSession();

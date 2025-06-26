@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useAuth } from '@/providers/session-provider';
+import { useAuth } from '@/core/auth';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Building2, Briefcase } from 'lucide-react';
 

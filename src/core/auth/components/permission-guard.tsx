@@ -1,17 +1,14 @@
+/**
+ * Permission Guard Component
+ * Controls access to UI components based on user permissions
+ */
+
 'use client';
 
 import { ReactNode } from 'react';
-import { useAuth } from '@/providers/session-provider';
+import { useAuth } from '../providers/session-provider';
 import { UnauthorizedPage } from './unauthorized-page';
-
-interface PermissionGuardProps {
-  children: ReactNode;
-  requiredPermission: string;
-  fallback?: ReactNode;
-  showUnauthorizedPage?: boolean;
-  unauthorizedTitle?: string;
-  unauthorizedDescription?: string;
-}
+import type { PermissionGuardProps } from '../types';
 
 /**
  * Permission Guard Component
@@ -24,13 +21,6 @@ interface PermissionGuardProps {
  * - {entityName}:read   - Can view entities
  * - {entityName}:update - Can edit entities
  * - {entityName}:delete - Can delete entities
- *
- * @param children - Content to render if permission is granted
- * @param requiredPermission - Permission string to check (e.g., "user:create", "party:read")
- * @param fallback - Optional fallback content to render if permission is denied
- * @param showUnauthorizedPage - Whether to show full unauthorized page (default: true for page-level guards)
- * @param unauthorizedTitle - Custom title for unauthorized page
- * @param unauthorizedDescription - Custom description for unauthorized page
  */
 export function PermissionGuard({
   children,
@@ -114,9 +104,6 @@ export function InlinePermissionGuard({
 /**
  * Hook to check if user has a specific permission
  * Uses the auth provider for better performance
- *
- * @param permission - Permission string to check
- * @returns boolean indicating if user has the permission
  */
 export function usePermission(permission: string): boolean {
   const { session, status } = useAuth();
@@ -131,10 +118,6 @@ export function usePermission(permission: string): boolean {
 
 /**
  * Hook to check if user has any of the specified roles
- * Uses the auth provider for better performance
- *
- * @param roles - Array of permission strings to check
- * @returns boolean indicating if user has at least one of the roles
  */
 export function useAnyPermission(roles: string[]): boolean {
   const { session, status } = useAuth();
@@ -149,10 +132,6 @@ export function useAnyPermission(roles: string[]): boolean {
 
 /**
  * Hook to check if user has all of the specified roles
- * Uses the auth provider for better performance
- *
- * @param roles - Array of permission strings to check
- * @returns boolean indicating if user has all of the roles
  */
 export function useAllRoles(roles: string[]): boolean {
   const { session, status } = useAuth();

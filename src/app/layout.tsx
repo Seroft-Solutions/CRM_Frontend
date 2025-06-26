@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { QueryClientProvider } from '@/core';
-import { AppSessionProvider } from '@/providers/session-provider';
+import { AppSessionProvider } from '@/core/auth';
 import { CrossFormNavigationProvider } from '@/context/cross-form-navigation';
 import { auth } from '@/auth';
 

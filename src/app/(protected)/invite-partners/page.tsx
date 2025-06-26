@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
 import { useUserProfilePersistence } from '@/features/user-profile-management/hooks/useUserProfilePersistence';
-import { PermissionGuard } from '@/components/auth/permission-guard';
+import { PermissionGuard } from '@/core/auth';
 
 interface PartnerInvitation {
   email: string;

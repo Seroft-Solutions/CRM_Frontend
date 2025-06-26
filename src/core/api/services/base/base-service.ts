@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { sessionEventEmitter } from '@/lib/session-events';
-import { TokenCache } from '@/lib/token-cache';
+import { sessionEventEmitter } from '@/core/auth';
+import { TokenCache } from '@/core/auth';
 
 export interface BaseServiceConfig {
   baseURL: string;
@@ -65,7 +65,7 @@ export class BaseService {
 
           if (typeof window !== 'undefined' && !error.config?._retry) {
             try {
-              const { refreshSession } = await import('@/lib/token-refresh');
+              const { refreshSession } = await import('@/core/auth');
               const refreshed = await refreshSession();
               if (refreshed) {
                 error.config._retry = true;
@@ -96,7 +96,7 @@ export class BaseService {
     try {
       switch (this.config.authType) {
         case 'bearer':
-          const { fetchAccessToken } = await import('@/lib/auth-token');
+          const { fetchAccessToken } = await import('@/core/auth');
           return await fetchAccessToken();
         case 'api-key':
           return process.env[this.config.authTokenKey || ''] || null;
