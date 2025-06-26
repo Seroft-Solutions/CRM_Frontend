@@ -70,6 +70,7 @@ import {
   useGetAllStates,
   useDeleteState,
   useCountStates,
+  useUpdateState,
   usePartialUpdateState,
   
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
@@ -78,10 +79,10 @@ import {
 
 
 
-import { StateSearchAndFilters } from "./state-search-filters";
-import { StateTableHeader } from "./state-table-header";
-import { StateTableRow } from "./state-table-row";
-import { BulkRelationshipAssignment } from "./bulk-relationship-assignment";
+import { StateSearchAndFilters } from "./table/state-search-filters";
+import { StateTableHeader } from "./table/state-table-header";
+import { StateTableRow } from "./table/state-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -99,6 +100,14 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
+  {
+    id: 'id',
+    label: 'ID',
+    accessor: 'id',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
   
   {
     id: 'name',
@@ -154,6 +163,8 @@ export function StateTable() {
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       if (saved) {
@@ -173,7 +184,7 @@ export function StateTable() {
 
   // Save column visibility to localStorage whenever it changes
   useEffect(() => {
-    if (isColumnVisibilityLoaded) {
+    if (isColumnVisibilityLoaded && typeof window !== 'undefined') {
       try {
         localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
       } catch (error) {
@@ -209,7 +220,8 @@ export function StateTable() {
         return visibleColumns.map(col => {
           let value = '';
           if (col.type === 'field') {
-            value = item[col.accessor as keyof typeof item] || '';
+            const fieldValue = item[col.accessor as keyof typeof item];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
           } else if (col.type === 'relationship') {
             const relationship = item[col.accessor as keyof typeof item] as any;
             
@@ -322,8 +334,8 @@ export function StateTable() {
     }
   );
 
-  // Partial update mutation for relationship editing
-  const { mutate: updateEntity, isPending: isUpdating } = usePartialUpdateState({
+  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  const { mutate: updateEntity, isPending: isUpdating } = useUpdateState({
     mutation: {
       onSuccess: () => {
         stateToast.updated();
@@ -419,7 +431,7 @@ export function StateTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id)));
+      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
     }
   };
 
@@ -452,16 +464,27 @@ export function StateTable() {
   // Handle relationship updates
   const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
-      // For JHipster partial updates, need entity ID and relationship structure
+      // Get the current entity data first
+      const currentEntity = data?.find(item => item.id === entityId);
+      if (!currentEntity) {
+        reject(new Error('State not found in current data'));
+        return;
+      }
+
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
+        ...currentEntity,
         id: entityId
       };
       
+      // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
+
+      console.log(`Updating ${relationshipName} for State ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
@@ -469,9 +492,11 @@ export function StateTable() {
       }, {
         onSuccess: () => {
           stateToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
           resolve();
         },
-        onError: (error) => {
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
           handleStateError(error);
           reject(error);
         }
@@ -629,7 +654,7 @@ export function StateTable() {
       {/* Data Table */}
       <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
         <div className="table-scroll overflow-x-auto">
-          <Table className="w-full min-w-[600px]">.
+          <Table className="w-full min-w-[600px]">
             
             <StateTableHeader 
               onSort={handleSort}

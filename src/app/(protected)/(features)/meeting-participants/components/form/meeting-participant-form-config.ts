@@ -25,9 +25,9 @@ export const meetingParticipantFormConfig: FormConfig = {
       }
     },
     {
-      id: 'dates',
-      title: 'Date & Time',
-      description: 'Set relevant dates',
+      id: 'assignment',
+      title: 'Assignment & Date',
+      description: 'Assign users, set dates and status',
       fields: [
         'responseDateTime',
       ],

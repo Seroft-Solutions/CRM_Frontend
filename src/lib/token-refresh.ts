@@ -9,7 +9,7 @@ export interface TokenRefreshResult {
 
 export async function refreshKeycloakToken(refreshToken: string): Promise<TokenRefreshResult> {
   try {
-    const tokenUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
+    const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
 
     const response = await fetch(tokenUrl, {
       method: 'POST',
@@ -18,8 +18,8 @@ export async function refreshKeycloakToken(refreshToken: string): Promise<TokenR
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
-        client_id: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID!,
-        client_secret: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET!,
+        client_id: process.env.AUTH_KEYCLOAK_ID!,
+        client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
         refresh_token: refreshToken,
       }),
     });
