@@ -9,11 +9,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarDays, Video, Phone, MapPin, Users, Bell } from "lucide-react";
-import { format } from "date-fns";
 import Calendar20 from "@/components/calendar-20";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { 
+  CalendarDays, 
+  Video, 
+  Phone, 
+  MapPin, 
+  Users, 
+  Bell, 
+  Clock,
+  CheckCircle2,
+  ChevronRight,
+  Settings,
+  Sparkles,
+  ArrowRight,
+  Plus,
+  X
+} from "lucide-react";
+import { format, addMinutes } from "date-fns";
+import { cn } from "@/lib/utils";
+import './meeting-scheduler.css';
 
-// Import backend hooks
+// Backend imports
 import { 
   useCreateMeeting,
   useGetAllMeetings 
@@ -65,25 +84,31 @@ interface ReminderDetails {
 interface MeetingSchedulerProps {
   customerId?: number;
   assignedUserId?: number;
-  onMeetingScheduled: (meetingData: any) => void;
+  callId?: number;
+  onMeetingScheduledAction: (meetingData: any) => void;
   disabled?: boolean;
 }
 
+type Step = 'datetime' | 'details' | 'participants' | 'confirmation';
+
 export function MeetingScheduler({
-                                   customerId,
+  customerId,
   assignedUserId,
-  onMeetingScheduled,
+  callId,
+  onMeetingScheduledAction,
   disabled = false
 }: MeetingSchedulerProps) {
+  const [currentStep, setCurrentStep] = useState<Step>('datetime');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const [meetingDetails, setMeetingDetails] = useState<MeetingDetails>({
     title: '',
     description: '',
     duration: 30,
     meetingType: 'VIRTUAL',
-    meetingUrl: '',
+    meetingUrl: 'https://meet.google.com/',
     location: ''
   });
-  const [selectedDateTime, setSelectedDateTime] = useState<{ date: Date; time: string } | null>(null);
   const [participants, setParticipants] = useState<ParticipantDetails[]>([]);
   const [reminders, setReminders] = useState<ReminderDetails[]>([
     { enabled: true, type: 'EMAIL', minutesBefore: 15 }
@@ -91,25 +116,14 @@ export function MeetingScheduler({
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
-  // Fetch customer details
   const { data: customerData } = useGetCustomer(customerId || 0, {
     query: { enabled: !!customerId }
   });
-
-  const titleSuggestions = [
-    `Catchup Meeting with ${customerData?.customerBusinessName || 'Party'}`,
-    `Follow-up Discussion with ${customerData?.customerBusinessName || 'Party'}`,
-    `Strategy Meeting with ${customerData?.customerBusinessName || 'Party'}`,
-    `Project Review with ${customerData?.customerBusinessName || 'Party'}`,
-    `Business Discussion with ${customerData?.customerBusinessName || 'Party'}`,
-    `Consultation with ${customerData?.customerBusinessName || 'Party'}`,
-  ];
 
   // Backend hooks
   const { mutate: createMeeting, isPending: isCreating } = useCreateMeeting({
     mutation: {
       onSuccess: async (meetingData) => {
-        // Create participants after meeting is created
         if (participants.length > 0) {
           await Promise.all(
             participants.map(participant =>
@@ -127,7 +141,6 @@ export function MeetingScheduler({
           );
         }
 
-        // Create reminders if enabled
         const enabledReminders = reminders.filter(r => r.enabled);
         if (enabledReminders.length > 0) {
           await Promise.all(
@@ -143,8 +156,7 @@ export function MeetingScheduler({
           );
         }
 
-        onMeetingScheduled(meetingData);
-        resetForm();
+        onMeetingScheduledAction(meetingData);
       },
       onError: (error) => {
         console.error('Failed to create meeting:', error);
@@ -155,31 +167,23 @@ export function MeetingScheduler({
   const { mutate: createMeetingParticipant } = useCreateMeetingParticipant();
   const { mutate: createMeetingReminder } = useCreateMeetingReminder();
 
-  // Get available time slots
+  // Get data from backend
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
     assignedUserId ? { 'userId.equals': assignedUserId, 'isBooked.equals': false } : undefined,
-    {
-      query: { enabled: !!assignedUserId }
-    }
+    { query: { enabled: !!assignedUserId } }
   );
 
-  // Get user availability
   const { data: userAvailabilities } = useGetAllUserAvailabilities(
     assignedUserId ? { 'userId.equals': assignedUserId } : undefined,
-    {
-      query: { enabled: !!assignedUserId }
-    }
+    { query: { enabled: !!assignedUserId } }
   );
 
-  // Get existing meetings to determine booked slots
   const { data: existingMeetings } = useGetAllMeetings(
     assignedUserId ? { 'organizerId.equals': assignedUserId } : undefined,
-    {
-      query: { enabled: !!assignedUserId }
-    }
+    { query: { enabled: !!assignedUserId } }
   );
 
-  // Initialize default participant if customer data is available
+  // Initialize default participant
   useEffect(() => {
     if (customerData && participants.length === 0) {
       setParticipants([{
@@ -188,14 +192,20 @@ export function MeetingScheduler({
         isRequired: true
       }]);
     }
-  }, [customerData, participants.length]);
 
-  // Process available time slots and user availability
+    if (customerData && !meetingDetails.title) {
+      setMeetingDetails(prev => ({
+        ...prev,
+        title: `Follow-up Meeting with ${customerData.customerBusinessName || 'Customer'}`
+      }));
+    }
+  }, [customerData, participants.length, meetingDetails.title]);
+
+  // Process available time slots
   useEffect(() => {
+    const slots: string[] = [];
+    
     if (timeSlots && userAvailabilities) {
-      const slots: string[] = [];
-      
-      // Combine time slots from both sources
       timeSlots.forEach(slot => {
         if (!slot.isBooked) {
           const slotTime = new Date(slot.slotDateTime);
@@ -206,7 +216,6 @@ export function MeetingScheduler({
         }
       });
 
-      // Add availability-based slots
       userAvailabilities.forEach(availability => {
         if (availability.isAvailable) {
           const [startHour, startMin] = availability.startTime.split(':').map(Number);
@@ -229,12 +238,23 @@ export function MeetingScheduler({
           }
         }
       });
-      
-      setAvailableTimeSlots(slots.sort());
     }
+    
+    // Default time slots if none from backend
+    if (slots.length === 0) {
+      for (let hour = 9; hour <= 17; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+          if (hour === 17 && minute > 0) break;
+          const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          slots.push(timeSlot);
+        }
+      }
+    }
+    
+    setAvailableTimeSlots(slots.sort());
   }, [timeSlots, userAvailabilities]);
 
-  // Process booked dates from existing meetings
+  // Process booked dates
   useEffect(() => {
     if (existingMeetings) {
       const booked = existingMeetings
@@ -248,61 +268,17 @@ export function MeetingScheduler({
     }
   }, [existingMeetings]);
 
-  const handleDateTimeSelection = (date: Date, time: string) => {
-    console.log("handle Date Time Selection function call:", { date, time });
-    setSelectedDateTime({ date: new Date(date), time }); // Create a new Date instance to avoid reference issues
-    console.log("Updated selectedDateTime:", { date: new Date(date), time });
-  };
-
-  const addParticipant = () => {
-    setParticipants(prev => [...prev, { email: '', name: '', isRequired: false }]);
-  };
-
-  const updateParticipant = (index: number, field: keyof ParticipantDetails, value: any) => {
-    setParticipants(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
-  };
-
-  const removeParticipant = (index: number) => {
-    setParticipants(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const updateReminder = (index: number, field: keyof ReminderDetails, value: any) => {
-    setReminders(prev => prev.map((r, i) => i === index ? { ...r, [field]: value } : r));
-  };
-
-  const addReminder = () => {
-    setReminders(prev => [...prev, { enabled: true, type: 'EMAIL', minutesBefore: 60 }]);
-  };
-
-  const resetForm = () => {
-    setSelectedDateTime(null);
-    setMeetingDetails({
-      title: '',
-      description: '',
-      duration: 30,
-      meetingType: 'VIRTUAL',
-      meetingUrl: '',
-      location: ''
-    });
-    setParticipants(customerData ? [{
-      email: customerData.email || '',
-      name: customerData.customerBusinessName || '',
-      isRequired: true
-    }] : []);
-    setReminders([{ enabled: true, type: 'EMAIL', minutesBefore: 15 }]);
-  };
-
   const scheduleMeeting = async () => {
-    // if (!selectedDateTime || !assignedUserId) return;
+    if (!selectedDate || !selectedTime || !assignedUserId || !callId) return;
 
-    const meetingDateTime = new Date(selectedDateTime.date);
-    const [hours, minutes] = selectedDateTime.time.split(':').map(Number);
+    const meetingDateTime = new Date(selectedDate);
+    const [hours, minutes] = selectedTime.split(':').map(Number);
     meetingDateTime.setHours(hours, minutes, 0, 0);
 
     const meetingData: MeetingDTO = {
       meetingDateTime: meetingDateTime.toISOString(),
       duration: meetingDetails.duration,
-      title: meetingDetails.title || titleSuggestions[0],
+      title: meetingDetails.title,
       description: meetingDetails.description,
       meetingType: meetingDetails.meetingType as keyof typeof MeetingDTOMeetingType,
       meetingUrl: meetingDetails.meetingUrl,
@@ -310,24 +286,37 @@ export function MeetingScheduler({
       isRecurring: false,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       meetingStatus: MeetingDTOMeetingStatus.SCHEDULED,
-      organizer: { id: assignedUserId },
-      assignedParty: customerId ? { id: customerId } : undefined,
+      organizer: { id: assignedUserId } as any,
+      assignedCustomer: customerId ? ({ id: customerId } as any) : undefined,
+      call: { id: callId } as any,
     };
 
     createMeeting({ data: meetingData });
   };
 
+  const canProceedToNext = () => {
+    switch (currentStep) {
+      case 'datetime':
+        return selectedDate && selectedTime;
+      case 'details':
+        return meetingDetails.title.trim().length > 0;
+      case 'participants':
+        return participants.every(p => p.email && p.name);
+      default:
+        return true;
+    }
+  };
+
+  const getStepProgress = () => {
+    const steps = ['datetime', 'details', 'participants', 'confirmation'];
+    return ((steps.indexOf(currentStep) + 1) / steps.length) * 100;
+  };
+
   if (disabled || !assignedUserId) {
     return (
       <Card className="opacity-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />
-            Meeting Scheduler
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground">
             Please select a customer and assigned user to enable meeting scheduling
           </p>
         </CardContent>
@@ -337,296 +326,432 @@ export function MeetingScheduler({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header with Party Info */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 text-lg font-semibold">
-          <CalendarDays className="h-5 w-5 text-primary" />
-          Schedule Meeting
-        </div>
-        <div className="text-muted-foreground text-sm space-y-1">
-          <p>Schedule a follow-up meeting with</p>
-          <div className="flex items-center justify-center gap-2">
-            <Badge variant="outline" className="font-medium">
-              {customerData?.customerBusinessName || 'Selected Party'}
-            </Badge>
-            {customerData?.email && (
-              <Badge variant="secondary" className="text-xs">
-                {customerData.email}
-              </Badge>
-            )}
+      {/* Progress Header */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>Step {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1} of 4</span>
+          </div>
+          <div className="text-sm text-gray-500">
+            {currentStep === 'datetime' && 'Select Date & Time'}
+            {currentStep === 'details' && 'Meeting Details'}
+            {currentStep === 'participants' && 'Add Participants'}
+            {currentStep === 'confirmation' && 'Review & Schedule'}
           </div>
         </div>
+        <Progress value={getStepProgress()} className="h-2" />
       </div>
 
-      {/* Calendar Section */}
-      <Calendar20
-        onDateTimeSelected={handleDateTimeSelection}
-        bookedDates={bookedDates}
-        availableTimeSlots={availableTimeSlots}
-        showContinueButton={false}
-        disabled={disabled}
-      />
-
-      {/* Meeting Details Form */}
-      {selectedDateTime && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Meeting Details</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Selected: {format(selectedDateTime.date, "EEEE, MMMM d, yyyy")} at {selectedDateTime.time}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Meeting Title</Label>
-                  <Input
-                    id="title"
-                    placeholder={titleSuggestions[0]}
-                    value={meetingDetails.title}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, title: e.target.value }))}
-                  />
-                  {/* Title Suggestions */}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {titleSuggestions.slice(0, 3).map((suggestion, index) => (
-                      <Button
-                        key={index}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => setMeetingDetails(prev => ({ ...prev, title: suggestion }))}
-                      >
-                        {suggestion.length > 25 ? `${suggestion.substring(0, 25)}...` : suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (minutes)</Label>
-                  <Select
-                    value={meetingDetails.duration.toString()}
-                    onValueChange={(value) => setMeetingDetails(prev => ({ ...prev, duration: parseInt(value) }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="45">45 minutes</SelectItem>
-                      <SelectItem value="60">1 hour</SelectItem>
-                      <SelectItem value="90">1.5 hours</SelectItem>
-                      <SelectItem value="120">2 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+      {/* Step Content */}
+      {currentStep === 'datetime' && (
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <CalendarDays className="h-5 w-5 text-white" />
               </div>
+              Select Date & Time
+            </CardTitle>
+            <p className="text-gray-600 mt-2">Choose when you'd like to meet with {customerData?.customerBusinessName}</p>
+          </CardHeader>
+          <CardContent className="p-8 flex justify-center">
+            <div className="max-w-2xl w-full">
+              <Calendar20
+                onDateTimeSelected={(date: Date, time: string) => {
+                  setSelectedDate(date);
+                  setSelectedTime(time);
+                }}
+                bookedDates={bookedDates}
+                availableTimeSlots={availableTimeSlots}
+                initialDate={selectedDate}
+                initialTime={selectedTime}
+                showContinueButton={false}
+                disabled={false}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="bg-gray-50 px-8 py-6">
+            <Button 
+              onClick={() => setCurrentStep('details')}
+              disabled={!canProceedToNext()}
+              className="ml-auto h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
+              size="lg"
+            >
+              Next: Meeting Details
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
+      {currentStep === 'details' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-blue-600" />
+              Meeting Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="type">Meeting Type</Label>
+                <Label htmlFor="title">Meeting Title *</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter meeting title"
+                  value={meetingDetails.title}
+                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration</Label>
                 <Select
-                  value={meetingDetails.meetingType}
-                  onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') => 
-                    setMeetingDetails(prev => ({ ...prev, meetingType: value }))
-                  }
+                  value={meetingDetails.duration.toString()}
+                  onValueChange={(value) => setMeetingDetails(prev => ({ ...prev, duration: parseInt(value) }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="VIRTUAL">
-                      <div className="flex items-center gap-2">
-                        <Video className="h-4 w-4" />
-                        Virtual Meeting
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="PHONE_CALL">
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        Phone Call
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="IN_PERSON">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        In Person
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="15">15 minutes</SelectItem>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              {meetingDetails.meetingType === 'VIRTUAL' && (
-                <div className="space-y-2">
-                  <Label htmlFor="meetingUrl">Meeting URL (optional)</Label>
-                  <Input
-                    id="meetingUrl"
-                    placeholder="https://meet.google.com/..."
-                    value={meetingDetails.meetingUrl}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, meetingUrl: e.target.value }))}
-                  />
-                </div>
-              )}
+            <div className="space-y-2">
+              <Label htmlFor="type">Meeting Type</Label>
+              <Select
+                value={meetingDetails.meetingType}
+                onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') => 
+                  setMeetingDetails(prev => ({ ...prev, meetingType: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VIRTUAL">
+                    <div className="flex items-center gap-2">
+                      <Video className="h-4 w-4" />
+                      Virtual Meeting
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="PHONE_CALL">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Phone Call
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="IN_PERSON">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      In Person
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {meetingDetails.meetingType === 'IN_PERSON' && (
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="Enter meeting location"
-                    value={meetingDetails.location}
-                    onChange={(e) => setMeetingDetails(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                </div>
-              )}
-
+            {meetingDetails.meetingType === 'VIRTUAL' && (
               <div className="space-y-2">
-                <Label htmlFor="description">Description (optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Add meeting agenda or notes..."
-                  value={meetingDetails.description}
-                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
+                <Label htmlFor="meetingUrl">Meeting URL</Label>
+                <Input
+                  id="meetingUrl"
+                  placeholder="https://meet.google.com/..."
+                  value={meetingDetails.meetingUrl}
+                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, meetingUrl: e.target.value }))}
                 />
               </div>
-            </CardContent>
-          </Card>
+            )}
 
-          {/* Participants */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Participants
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {participants.map((participant, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-5">
-                    <Label>Email</Label>
-                    <Input
-                      placeholder="email@example.com"
-                      value={participant.email}
-                      onChange={(e) => updateParticipant(index, 'email', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-4">
-                    <Label>Name</Label>
-                    <Input
-                      placeholder="Full Name"
-                      value={participant.name}
-                      onChange={(e) => updateParticipant(index, 'name', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2 flex items-center space-x-2">
-                    <Checkbox
-                      checked={participant.isRequired}
-                      onCheckedChange={(checked) => updateParticipant(index, 'isRequired', checked)}
-                    />
-                    <Label className="text-xs">Required</Label>
-                  </div>
-                  <div className="col-span-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeParticipant(index)}
-                      disabled={index === 0 && customerData?.email === participant.email}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              <Button variant="outline" onClick={addParticipant} className="w-full">
-                Add Participant
-              </Button>
-            </CardContent>
-          </Card>
+            {meetingDetails.meetingType === 'IN_PERSON' && (
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Enter meeting location"
+                  value={meetingDetails.location}
+                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, location: e.target.value }))}
+                />
+              </div>
+            )}
 
-          {/* Reminders */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Reminders
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {reminders.map((reminder, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-1 flex items-center">
-                    <Checkbox
-                      checked={reminder.enabled}
-                      onCheckedChange={(checked) => updateReminder(index, 'enabled', checked)}
-                    />
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="Add meeting agenda or notes..."
+                value={meetingDetails.description}
+                onChange={(e) => setMeetingDetails(prev => ({ ...prev, description: e.target.value }))}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setCurrentStep('datetime')}>
+              Back
+            </Button>
+            <Button 
+              onClick={() => setCurrentStep('participants')}
+              disabled={!canProceedToNext()}
+            >
+              Next: Participants
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {currentStep === 'participants' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Participants & Reminders
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Participants */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">Meeting Participants</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setParticipants(prev => [...prev, { email: '', name: '', isRequired: false }])}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Participant
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {participants.map((participant, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg">
+                    <div className="col-span-5">
+                      <Label>Email</Label>
+                      <Input
+                        placeholder="email@example.com"
+                        value={participant.email}
+                        onChange={(e) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].email = e.target.value;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <Label>Name</Label>
+                      <Input
+                        placeholder="Full Name"
+                        value={participant.name}
+                        onChange={(e) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].name = e.target.value;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-2 flex items-center space-x-2">
+                      <Checkbox
+                        checked={participant.isRequired}
+                        onCheckedChange={(checked) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].isRequired = checked as boolean;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                      <Label className="text-xs">Required</Label>
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setParticipants(prev => prev.filter((_, i) => i !== index))}
+                        disabled={index === 0 && customerData?.email === participant.email}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="col-span-4">
-                    <Label>Type</Label>
-                    <Select
-                      value={reminder.type}
-                      onValueChange={(value: 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION') => 
-                        updateReminder(index, 'type', value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="EMAIL">Email</SelectItem>
-                        <SelectItem value="SMS">SMS</SelectItem>
-                        <SelectItem value="PUSH_NOTIFICATION">Push Notification</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-4">
-                    <Label>Minutes Before</Label>
+                ))}
+              </div>
+            </div>
+
+            {/* Reminders */}
+            <Separator />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Email Reminders
+                </h4>
+              </div>
+              
+              <div className="space-y-3">
+                {reminders.map((reminder, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        checked={reminder.enabled}
+                        onCheckedChange={(checked) => {
+                          const newReminders = [...reminders];
+                          newReminders[index].enabled = checked as boolean;
+                          setReminders(newReminders);
+                        }}
+                      />
+                      <span className="text-sm">Send email reminder</span>
+                    </div>
                     <Select
                       value={reminder.minutesBefore.toString()}
-                      onValueChange={(value) => updateReminder(index, 'minutesBefore', parseInt(value))}
+                      onValueChange={(value) => {
+                        const newReminders = [...reminders];
+                        newReminders[index].minutesBefore = parseInt(value);
+                        setReminders(newReminders);
+                      }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="5">5 minutes</SelectItem>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                        <SelectItem value="1440">1 day</SelectItem>
+                        <SelectItem value="5">5 minutes before</SelectItem>
+                        <SelectItem value="15">15 minutes before</SelectItem>
+                        <SelectItem value="30">30 minutes before</SelectItem>
+                        <SelectItem value="60">1 hour before</SelectItem>
+                        <SelectItem value="1440">1 day before</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="col-span-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setReminders(prev => prev.filter((_, i) => i !== index))}
-                      disabled={reminders.length === 1}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              <Button variant="outline" onClick={addReminder} className="w-full">
-                Add Reminder
-              </Button>
-            </CardContent>
-          </Card>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setCurrentStep('details')}>
+              Back
+            </Button>
+            <Button 
+              onClick={() => setCurrentStep('confirmation')}
+              disabled={!canProceedToNext()}
+            >
+              Review Meeting
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
-          <Button
-            onClick={scheduleMeeting}
-            disabled={isCreating || participants.some(p => !p.email)}
-            className="w-full"
-            size="lg"
-          >
-            {isCreating ? 'Scheduling...' : 'Schedule Meeting with Participants & Reminders'}
-          </Button>
-        </div>
+      {currentStep === 'confirmation' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              Review & Schedule Meeting
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Meeting Summary */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 space-y-4">
+              <h3 className="font-semibold text-lg">{meetingDetails.title}</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-blue-600" />
+                  <span>{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <span>{selectedTime && format(new Date(`2000-01-01 ${selectedTime}`), 'h:mm a')} ({meetingDetails.duration} min)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {meetingDetails.meetingType === 'VIRTUAL' && <Video className="w-4 h-4 text-blue-600" />}
+                  {meetingDetails.meetingType === 'PHONE_CALL' && <Phone className="w-4 h-4 text-blue-600" />}
+                  {meetingDetails.meetingType === 'IN_PERSON' && <MapPin className="w-4 h-4 text-blue-600" />}
+                  <span>
+                    {meetingDetails.meetingType === 'VIRTUAL' && 'Virtual Meeting'}
+                    {meetingDetails.meetingType === 'PHONE_CALL' && 'Phone Call'}
+                    {meetingDetails.meetingType === 'IN_PERSON' && meetingDetails.location}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span>{participants.length} participant{participants.length !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+
+              {meetingDetails.description && (
+                <div>
+                  <h4 className="font-medium text-sm mb-2">Description:</h4>
+                  <p className="text-sm text-gray-600">{meetingDetails.description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Participants List */}
+            <div>
+              <h4 className="font-medium mb-3">Participants will be notified:</h4>
+              <div className="space-y-2">
+                {participants.map((participant, index) => (
+                  <div key={index} className="flex items-center gap-3 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span className="font-medium">{participant.name}</span>
+                    <span className="text-gray-500">({participant.email})</span>
+                    {participant.isRequired && (
+                      <Badge variant="secondary" className="text-xs">Required</Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Reminders */}
+            {reminders.some(r => r.enabled) && (
+              <div>
+                <h4 className="font-medium mb-3">Email reminders:</h4>
+                <div className="space-y-2">
+                  {reminders.filter(r => r.enabled).map((reminder, index) => (
+                    <div key={index} className="flex items-center gap-3 text-sm">
+                      <Bell className="w-4 h-4 text-blue-600" />
+                      <span>
+                        {reminder.minutesBefore < 60 
+                          ? `${reminder.minutesBefore} minutes before`
+                          : reminder.minutesBefore === 60
+                          ? '1 hour before'
+                          : '1 day before'
+                        }
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setCurrentStep('participants')}>
+              Back
+            </Button>
+            <Button 
+              onClick={scheduleMeeting}
+              disabled={isCreating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isCreating ? (
+                <>Scheduling...</>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Schedule Meeting
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
       )}
     </div>
   );
