@@ -15,7 +15,7 @@ import {
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 import { callToast, handleCallError } from "../call-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
-import { MeetingSchedulerDialog } from "./meeting-scheduler-dialog";
+import { MeetingSchedulerDialog } from "../../schedule-meeting/components/meeting-scheduler-dialog";
 
 interface CallFormProps {
   id?: number;
