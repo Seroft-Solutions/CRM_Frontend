@@ -39,7 +39,6 @@ export class EntityComponentGenerator {
       path.join(entityDir, '[id]', 'edit'),
       path.join(entityDir, 'components'),
       path.join(entityDir, 'components', 'form'),
-      path.join(entityDir, 'components', 'form', 'steps'),
       path.join(entityDir, 'components', 'table'),
       path.join(entityDir, 'actions'),
     ];
@@ -177,58 +176,58 @@ export class EntityComponentGenerator {
         variables: vars,
       },
 
-      // Modular Form Components - Step Components
-      {
-        templatePath: 'entity/components/form/steps/basic-info-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'basic-info-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/date-time-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'date-time-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/settings-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'settings-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/geographic-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'geographic-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/user-assignment-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'user-assignment-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/classification-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'classification-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/business-relations-step.tsx.ejs',
-        outputPath: path.join(
-          entityDir,
-          'components',
-          'form',
-          'steps',
-          'business-relations-step.tsx'
-        ),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/other-relations-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'other-relations-step.tsx'),
-        variables: vars,
-      },
-      {
-        templatePath: 'entity/components/form/steps/review-step.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'steps', 'review-step.tsx'),
-        variables: vars,
-      },
+      // // Modular Form Components - Step Components
+      // {
+      //   templatePath: 'entity/components/form/steps/basic-info-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'basic-info-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/date-time-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'date-time-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/settings-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'settings-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/geographic-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'geographic-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/user-assignment-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'user-assignment-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/classification-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'classification-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/business-relations-step.tsx.ejs',
+      //   outputPath: path.join(
+      //     entityDir,
+      //     'components',
+      //     'form',
+      //     'steps',
+      //     'business-relations-step.tsx'
+      //   ),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/other-relations-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'other-relations-step.tsx'),
+      //   variables: vars,
+      // },
+      // {
+      //   templatePath: 'entity/components/form/steps/review-step.tsx.ejs',
+      //   outputPath: path.join(entityDir, 'components', 'form', 'steps', 'review-step.tsx'),
+      //   variables: vars,
+      // },
 
       // Table sub-components
       {
