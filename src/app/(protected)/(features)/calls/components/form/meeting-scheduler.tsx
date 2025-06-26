@@ -327,33 +327,37 @@ export function MeetingScheduler({
   return (
     <div className="space-y-6">
       {/* Progress Header */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>Step {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1} of 4</span>
+      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+              {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Step {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1} of 4</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {currentStep === 'datetime' && 'Select Date & Time'}
+                {currentStep === 'details' && 'Meeting Details'}
+                {currentStep === 'participants' && 'Add Participants'}
+                {currentStep === 'confirmation' && 'Review & Schedule'}
+              </p>
+            </div>
           </div>
-          <div className="text-sm text-gray-500">
-            {currentStep === 'datetime' && 'Select Date & Time'}
-            {currentStep === 'details' && 'Meeting Details'}
-            {currentStep === 'participants' && 'Add Participants'}
-            {currentStep === 'confirmation' && 'Review & Schedule'}
+          <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+            {Math.round(getStepProgress())}% Complete
           </div>
         </div>
-        <Progress value={getStepProgress()} className="h-2" />
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out" 
+            style={{ width: `${getStepProgress()}%` }}
+          ></div>
+        </div>
       </div>
 
       {/* Step Content */}
       {currentStep === 'datetime' && (
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-            <CardTitle className="flex items-center gap-3 text-xl">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <CalendarDays className="h-5 w-5 text-white" />
-              </div>
-              Select Date & Time
-            </CardTitle>
-            <p className="text-gray-600 mt-2">Choose when you'd like to meet with {customerData?.customerBusinessName}</p>
-          </CardHeader>
+        <Card className="border shadow-sm">
           <CardContent className="p-8 flex justify-center">
             <div className="max-w-2xl w-full">
               <Calendar20
@@ -370,29 +374,23 @@ export function MeetingScheduler({
               />
             </div>
           </CardContent>
-          <CardFooter className="bg-gray-50 px-8 py-6">
+          <CardFooter className="bg-gray-50 px-8 py-4 border-t">
             <Button 
               onClick={() => setCurrentStep('details')}
               disabled={!canProceedToNext()}
-              className="ml-auto h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
-              size="lg"
+              className="ml-auto h-10 px-6 bg-blue-600 hover:bg-blue-700"
+              size="default"
             >
               Next: Meeting Details
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </CardFooter>
         </Card>
       )}
 
       {currentStep === 'details' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-blue-600" />
-              Meeting Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Card className="border shadow-sm">
+          <CardContent className="space-y-6 p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Meeting Title *</Label>
@@ -493,30 +491,27 @@ export function MeetingScheduler({
               />
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setCurrentStep('datetime')}>
-              Back
-            </Button>
-            <Button 
-              onClick={() => setCurrentStep('participants')}
-              disabled={!canProceedToNext()}
-            >
-              Next: Participants
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
+          <CardFooter className="bg-gray-50 px-8 py-6 border-t">
+            <div className="flex justify-between w-full">
+              <Button variant="outline" onClick={() => setCurrentStep('datetime')} className="h-11 px-6">
+                Back
+              </Button>
+              <Button 
+                onClick={() => setCurrentStep('participants')}
+                disabled={!canProceedToNext()}
+                className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
+              >
+                Next: Participants
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}
 
       {currentStep === 'participants' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              Participants & Reminders
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Card className="border shadow-sm">
+          <CardContent className="space-y-6 p-8">
             {/* Participants */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -632,30 +627,27 @@ export function MeetingScheduler({
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setCurrentStep('details')}>
-              Back
-            </Button>
-            <Button 
-              onClick={() => setCurrentStep('confirmation')}
-              disabled={!canProceedToNext()}
-            >
-              Review Meeting
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
+          <CardFooter className="bg-gray-50 px-8 py-6 border-t">
+            <div className="flex justify-between w-full">
+              <Button variant="outline" onClick={() => setCurrentStep('details')} className="h-11 px-6">
+                Back
+              </Button>
+              <Button 
+                onClick={() => setCurrentStep('confirmation')}
+                disabled={!canProceedToNext()}
+                className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
+              >
+                Review Meeting
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}
 
       {currentStep === 'confirmation' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Review & Schedule Meeting
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Card className="border shadow-sm">
+          <CardContent className="space-y-6 p-8">
             {/* Meeting Summary */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 space-y-4">
               <h3 className="font-semibold text-lg">{meetingDetails.title}</h3>
@@ -732,24 +724,26 @@ export function MeetingScheduler({
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setCurrentStep('participants')}>
-              Back
-            </Button>
-            <Button 
-              onClick={scheduleMeeting}
-              disabled={isCreating}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isCreating ? (
-                <>Scheduling...</>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Schedule Meeting
-                </>
-              )}
-            </Button>
+          <CardFooter className="bg-gray-50 px-8 py-6 border-t">
+            <div className="flex justify-between w-full">
+              <Button variant="outline" onClick={() => setCurrentStep('participants')} className="h-11 px-6">
+                Back
+              </Button>
+              <Button 
+                onClick={scheduleMeeting}
+                disabled={isCreating}
+                className="h-11 px-6 bg-green-600 hover:bg-green-700"
+              >
+                {isCreating ? (
+                  <>Scheduling...</>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Schedule Meeting
+                  </>
+                )}
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}
