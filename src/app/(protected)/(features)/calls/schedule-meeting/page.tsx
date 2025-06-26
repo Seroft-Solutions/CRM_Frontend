@@ -31,23 +31,23 @@ function ScheduleMeetingContent() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleBack}
-              className="h-10 w-10 p-0 rounded-full"
+              className="h-9 w-9 p-0 rounded-full"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-600 rounded-xl">
-                <CalendarDays className="h-6 w-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <CalendarDays className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Schedule Meeting</h1>
-                <p className="text-gray-600 mt-1">
+                <h1 className="text-xl font-bold text-gray-900">Schedule Meeting</h1>
+                <p className="text-gray-600 text-sm">
                   Book a follow-up meeting with {customerData?.customerBusinessName || 'your customer'}
                 </p>
               </div>
@@ -57,7 +57,7 @@ function ScheduleMeetingContent() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         <MeetingScheduler
           customerId={customerId}
           assignedUserId={assignedUserId}
