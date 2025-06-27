@@ -23,6 +23,7 @@ export const userProfileFormSchema = z.object({
   user: z.string().optional(),
   organizations: z.array(z.number()).optional(),
   groups: z.array(z.number()).optional(),
+  roles: z.array(z.number()).optional(),
   channelType: z.number().optional(),
 });
 
@@ -48,6 +49,7 @@ export const userProfileFieldSchemas = {
   user: z.string().optional(),
   organizations: z.array(z.number()).optional(),
   groups: z.array(z.number()).optional(),
+  roles: z.array(z.number()).optional(),
   channelType: z.number().optional(),
 };
 
@@ -74,6 +76,7 @@ export const userProfileStepSchemas = {
   other: z.object({
     organizations: userProfileFieldSchemas.organizations,
     groups: userProfileFieldSchemas.groups,
+    roles: userProfileFieldSchemas.roles,
   }),
   
   review: userProfileFormSchema

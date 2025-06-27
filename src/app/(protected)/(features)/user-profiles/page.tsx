@@ -6,7 +6,7 @@ import Link from "next/link";
 import { UserProfileTable } from "./components/user-profile-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
+import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
 
 export const metadata = {
   title: "UserProfiles",

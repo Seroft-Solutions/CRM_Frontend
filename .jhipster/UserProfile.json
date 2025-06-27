@@ -78,6 +78,14 @@
     },
     {
       "otherEntityField": "name",
+      "otherEntityName": "role",
+      "otherEntityRelationshipName": "users",
+      "relationshipName": "roles",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityField": "name",
       "otherEntityName": "channelType",
       "otherEntityRelationshipName": "channelParties",
       "relationshipName": "channelType",

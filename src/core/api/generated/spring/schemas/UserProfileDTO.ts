@@ -8,6 +8,7 @@
 import type { UserDTO } from './UserDTO';
 import type { OrganizationDTO } from './OrganizationDTO';
 import type { GroupDTO } from './GroupDTO';
+import type { RoleDTO } from './RoleDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
 
 /**
@@ -33,5 +34,6 @@ export interface UserProfileDTO {
   user?: UserDTO;
   organizations?: OrganizationDTO[];
   groups?: GroupDTO[];
+  roles?: RoleDTO[];
   channelType?: ChannelTypeDTO;
 }

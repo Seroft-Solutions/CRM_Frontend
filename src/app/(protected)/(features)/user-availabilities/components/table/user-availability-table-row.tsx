@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard } from "@/core/auth";
 import { RelationshipCell } from "./relationship-cell";
 import type { UserAvailabilityDTO } from "@/core/api/generated/spring/schemas/UserAvailabilityDTO";
 
