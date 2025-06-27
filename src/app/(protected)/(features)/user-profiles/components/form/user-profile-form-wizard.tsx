@@ -91,6 +91,7 @@ function UserProfileFormContent({ id }: UserProfileFormProps) {
           'user': 'User',
           'organizations': 'Organizations',
           'groups': 'Groups',
+          'roles': 'Roles',
           'channelType': 'Channel Type',
         }}
       />

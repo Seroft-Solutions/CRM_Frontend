@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard } from "@/core/auth";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface PaginatedRelationshipComboboxProps {

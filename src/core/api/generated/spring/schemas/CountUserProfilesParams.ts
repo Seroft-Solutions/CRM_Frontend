@@ -98,6 +98,15 @@ export type CountUserProfilesParams = {
 'groupsId.specified'?: boolean;
 'groupsId.in'?: number[];
 'groupsId.notIn'?: number[];
+'rolesId.greaterThan'?: number;
+'rolesId.lessThan'?: number;
+'rolesId.greaterThanOrEqual'?: number;
+'rolesId.lessThanOrEqual'?: number;
+'rolesId.equals'?: number;
+'rolesId.notEquals'?: number;
+'rolesId.specified'?: boolean;
+'rolesId.in'?: number[];
+'rolesId.notIn'?: number[];
 'channelTypeId.greaterThan'?: number;
 'channelTypeId.lessThan'?: number;
 'channelTypeId.greaterThanOrEqual'?: number;

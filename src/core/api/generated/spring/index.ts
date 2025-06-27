@@ -28,3 +28,8 @@ export * from './endpoints/public-user-resource/public-user-resource.gen';
 export * from './endpoints/account-resource/account-resource.gen';
 export * from './endpoints/auth-info-resource/auth-info-resource.gen';
 export * from './schemas';
+export * from './endpoints/role-resource/role-resource.gen';
+export * from './endpoints/whats-app-controller/whats-app-controller.gen';
+export * from './endpoints/sms-controller/sms-controller.gen';
+export * from './endpoints/email-controller/email-controller.gen';
+export * from './endpoints/google-calendar-controller/google-calendar-controller.gen';
