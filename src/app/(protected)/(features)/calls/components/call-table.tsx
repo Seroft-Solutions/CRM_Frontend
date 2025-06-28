@@ -856,7 +856,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {
@@ -920,7 +920,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {

@@ -77,7 +77,6 @@ export const userProfileFormConfig: FormConfig = {
       relationships: [
         'organizations',
         'groups',
-        'roles',
       ],
       validation: {
         mode: 'onBlur',
@@ -241,32 +240,6 @@ export const userProfileFormConfig: FormConfig = {
       ui: {
         label: 'Groups',
         placeholder: 'Select groups',
-        icon: '🔗',
-      }
-    },
-    {
-      name: 'roles',
-      type: 'many-to-many',
-      targetEntity: 'role',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: false,
-      multiple: true,
-      category: 'other',
-      api: {
-        useGetAllHook: 'useGetAllRoles',
-        useSearchHook: 'useSearchRoles',
-        useCountHook: 'useCountRoles',
-        entityName: 'Roles',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/roles/new',
-        createPermission: 'role:create',
-      },
-      ui: {
-        label: 'Roles',
-        placeholder: 'Select roles',
         icon: '🔗',
       }
     },

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CallCategoryDetails } from "../components/call-category-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
+import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallCategoryPageProps {
