@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -41,22 +35,22 @@ interface MeetingTableHeaderProps {
   }>;
 }
 
-export function MeetingTableHeader({ 
-  onSort, 
+export function MeetingTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
-  visibleColumns
+  visibleColumns,
 }: MeetingTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -77,8 +71,8 @@ export function MeetingTableHeader({
           />
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={column.id} 
+          <TableHead
+            key={column.id}
             className={`
               px-2 sm:px-3 py-2 
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
@@ -92,14 +86,10 @@ export function MeetingTableHeader({
                 className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
               >
                 {column.label}
-                <div className="text-gray-400">
-                  {renderSortIcon(column.accessor)}
-                </div>
+                <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
               </Button>
             ) : (
-              <span className="font-medium text-gray-700 text-sm">
-                {column.label}
-              </span>
+              <span className="font-medium text-gray-700 text-sm">{column.label}</span>
             )}
           </TableHead>
         ))}
@@ -110,240 +100,225 @@ export function MeetingTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={`filter-${column.id}`} 
+          <TableHead
+            key={`filter-${column.id}`}
             className={`
               px-2 sm:px-3 py-2
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
             `}
           >
-            {column.type === 'field' ? (
-              (() => {
-                
-                if (column.accessor === 'meetingDateTime') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["meetingDateTime"] as string || ""}
-                      onChange={(e) => onFilterChange("meetingDateTime", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'duration') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["duration"] as string || ""}
-                      onChange={(e) => onFilterChange("duration", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'title') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["title"] as string || ""}
-                      onChange={(e) => onFilterChange("title", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'description') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["description"] as string || ""}
-                      onChange={(e) => onFilterChange("description", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'meetingUrl') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["meetingUrl"] as string || ""}
-                      onChange={(e) => onFilterChange("meetingUrl", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'googleCalendarEventId') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["googleCalendarEventId"] as string || ""}
-                      onChange={(e) => onFilterChange("googleCalendarEventId", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'notes') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["notes"] as string || ""}
-                      onChange={(e) => onFilterChange("notes", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'isRecurring') {
-                  
-                  return (
-                    <Select
-                      value={filters["isRecurring"] as string || "__all__"}
-                      onValueChange={(value) => onFilterChange("isRecurring", value === "__all__" ? undefined : value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__all__">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  );
-                  
-                }
-                
-                if (column.accessor === 'timeZone') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["timeZone"] as string || ""}
-                      onChange={(e) => onFilterChange("timeZone", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'meetingStatus') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["meetingStatus"] as string || ""}
-                      onChange={(e) => onFilterChange("meetingStatus", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'meetingType') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["meetingType"] as string || ""}
-                      onChange={(e) => onFilterChange("meetingType", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'createdAt') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["createdAt"] as string || ""}
-                      onChange={(e) => onFilterChange("createdAt", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'updatedAt') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["updatedAt"] as string || ""}
-                      onChange={(e) => onFilterChange("updatedAt", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                return null;
-              })()
-            ) : (
-              (() => {
-                
-                if (column.accessor === 'organizer') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["organizer.displayName"] as string || ""}
-                      onChange={(e) => onFilterChange("organizer.displayName", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'assignedCustomer') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["assignedCustomer.customerBusinessName"] as string || ""}
-                      onChange={(e) => onFilterChange("assignedCustomer.customerBusinessName", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'call') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["call.name"] as string || ""}
-                      onChange={(e) => onFilterChange("call.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                return null;
-              })()
-            )}
+            {column.type === 'field'
+              ? (() => {
+                  if (column.accessor === 'meetingDateTime') {
+                    return (
+                      <Input
+                        type="date"
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={(filters['meetingDateTime'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('meetingDateTime', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'duration') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['duration'] as string) || ''}
+                        onChange={(e) => onFilterChange('duration', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'title') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['title'] as string) || ''}
+                        onChange={(e) => onFilterChange('title', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'description') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['description'] as string) || ''}
+                        onChange={(e) => onFilterChange('description', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'meetingUrl') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['meetingUrl'] as string) || ''}
+                        onChange={(e) => onFilterChange('meetingUrl', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'googleCalendarEventId') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['googleCalendarEventId'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('googleCalendarEventId', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'notes') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['notes'] as string) || ''}
+                        onChange={(e) => onFilterChange('notes', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'isRecurring') {
+                    return (
+                      <Select
+                        value={(filters['isRecurring'] as string) || '__all__'}
+                        onValueChange={(value) =>
+                          onFilterChange('isRecurring', value === '__all__' ? undefined : value)
+                        }
+                      >
+                        <SelectTrigger className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                          <SelectValue placeholder="All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__all__">All</SelectItem>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    );
+                  }
+
+                  if (column.accessor === 'timeZone') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['timeZone'] as string) || ''}
+                        onChange={(e) => onFilterChange('timeZone', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'meetingStatus') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['meetingStatus'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('meetingStatus', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'meetingType') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['meetingType'] as string) || ''}
+                        onChange={(e) => onFilterChange('meetingType', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'createdAt') {
+                    return (
+                      <Input
+                        type="date"
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={(filters['createdAt'] as string) || ''}
+                        onChange={(e) => onFilterChange('createdAt', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'updatedAt') {
+                    return (
+                      <Input
+                        type="date"
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={(filters['updatedAt'] as string) || ''}
+                        onChange={(e) => onFilterChange('updatedAt', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  return null;
+                })()
+              : (() => {
+                  if (column.accessor === 'organizer') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['organizer.displayName'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('organizer.displayName', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'assignedCustomer') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['assignedCustomer.customerBusinessName'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange(
+                            'assignedCustomer.customerBusinessName',
+                            e.target.value || undefined
+                          )
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'call') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['call.name'] as string) || ''}
+                        onChange={(e) => onFilterChange('call.name', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  return null;
+                })()}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

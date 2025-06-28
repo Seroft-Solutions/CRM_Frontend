@@ -37,10 +37,10 @@ interface SessionManagerProviderProps {
   warningBeforeLogoutMinutes?: number; // Default to 2 minutes warning
 }
 
-export function SessionManagerProvider({ 
-  children, 
+export function SessionManagerProvider({
+  children,
   idleTimeoutMinutes = 10,
-  warningBeforeLogoutMinutes = 2 
+  warningBeforeLogoutMinutes = 2,
 }: SessionManagerProviderProps) {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -54,7 +54,7 @@ export function SessionManagerProvider({
   const [isIdle, setIsIdle] = useState(false);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [minutesIdle, setMinutesIdle] = useState(0);
-  
+
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,8 +62,14 @@ export function SessionManagerProvider({
 
   // Events to track for user activity
   const activityEvents = [
-    'mousedown', 'mousemove', 'keypress', 'scroll', 
-    'touchstart', 'click', 'keydown', 'resize'
+    'mousedown',
+    'mousemove',
+    'keypress',
+    'scroll',
+    'touchstart',
+    'click',
+    'keydown',
+    'resize',
   ];
 
   const showSessionExpiredModal = useCallback(() => {
@@ -90,7 +96,7 @@ export function SessionManagerProvider({
 
   const hideSessionModal = useCallback(() => {
     // Only allow hiding if it's a warning modal, not expired or idle
-    setModalState(prev => {
+    setModalState((prev) => {
       if (prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
       }
@@ -112,9 +118,9 @@ export function SessionManagerProvider({
 
   const handleManualLogout = useCallback(async () => {
     try {
-      await signOut({ 
+      await signOut({
         callbackUrl: '/',
-        redirect: true 
+        redirect: true,
       });
     } catch (error) {
       console.error('Logout failed:', error);
@@ -128,9 +134,9 @@ export function SessionManagerProvider({
     setLastActivity(now);
     setIsIdle(false);
     setMinutesIdle(0);
-    
+
     // Only hide the modal if it's a warning modal, not if it's expired or idle
-    setModalState(prev => {
+    setModalState((prev) => {
       if (prev.isOpen && prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
       }
@@ -155,7 +161,13 @@ export function SessionManagerProvider({
       showIdleTimeoutModal();
       // Don't force logout - just show modal and let user decide
     }, logoutTime);
-  }, [idleTimeoutMinutes, warningBeforeLogoutMinutes, hideSessionModal, showSessionWarningModal, showIdleTimeoutModal]);
+  }, [
+    idleTimeoutMinutes,
+    warningBeforeLogoutMinutes,
+    hideSessionModal,
+    showSessionWarningModal,
+    showIdleTimeoutModal,
+  ]);
 
   const handleActivity = useCallback(() => {
     resetIdleTimer();

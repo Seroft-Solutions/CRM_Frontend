@@ -5,10 +5,9 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { OrganizationDTO } from './OrganizationDTO';
 
 /**
- * Keycloak Group mapping
+ * Group is scoped per organization.
  */
 export interface GroupDTO {
   id?: number;
@@ -30,7 +29,6 @@ export interface GroupDTO {
    */
   description?: string;
   isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  organization: OrganizationDTO;
+  /** Organization is a tenant and maps to a DB schema. */
+  organization?: unknown;
 }

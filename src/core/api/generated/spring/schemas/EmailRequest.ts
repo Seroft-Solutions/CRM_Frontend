@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export interface Authority {
-  /**
-   * @minLength 0
-   * @maxLength 50
-   */
-  name: string;
+export interface EmailRequest {
+  to?: string;
+  subject?: string;
+  message?: string;
+  cc?: string;
+  bcc?: string;
 }

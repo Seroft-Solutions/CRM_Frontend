@@ -1,17 +1,19 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for Meeting form
  * This file is auto-generated. To modify validation rules, update the generator templates.
  */
 export const meetingFormSchema = z.object({
-  meetingDateTime: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }),
-  duration: z.string().refine(val => !val || Number(val) >= 15, { message: "Must be at least 15" }).refine(val => !val || Number(val) <= 480, { message: "Must be at most 480" }),
+  meetingDateTime: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    }),
+  duration: z
+    .string()
+    .refine((val) => !val || Number(val) >= 15, { message: 'Must be at least 15' })
+    .refine((val) => !val || Number(val) <= 480, { message: 'Must be at most 480' }),
   title: z.string().min(2).max(200),
   description: z.string().max(1000).optional(),
   meetingUrl: z.string().max(500).optional(),
@@ -21,34 +23,36 @@ export const meetingFormSchema = z.object({
   timeZone: z.string().max(50).optional(),
   meetingStatus: z.string(),
   meetingType: z.string(),
-  createdAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  updatedAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  createdAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  updatedAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   organizer: z.number(),
   assignedCustomer: z.number().optional(),
-  call: z.number(),
+  call: z.number().optional(),
 });
 
 export type MeetingFormValues = z.infer<typeof meetingFormSchema>;
 
 // Individual field schemas for granular validation
 export const meetingFieldSchemas = {
-  meetingDateTime: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }),
-  duration: z.string().refine(val => !val || Number(val) >= 15, { message: "Must be at least 15" }).refine(val => !val || Number(val) <= 480, { message: "Must be at most 480" }),
+  meetingDateTime: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    }),
+  duration: z
+    .string()
+    .refine((val) => !val || Number(val) >= 15, { message: 'Must be at least 15' })
+    .refine((val) => !val || Number(val) <= 480, { message: 'Must be at most 480' }),
   title: z.string().min(2).max(200),
   description: z.string().max(1000).optional(),
   meetingUrl: z.string().max(500).optional(),
@@ -58,21 +62,21 @@ export const meetingFieldSchemas = {
   timeZone: z.string().max(50).optional(),
   meetingStatus: z.string(),
   meetingType: z.string(),
-  createdAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  updatedAt: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  createdAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  updatedAt: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   organizer: z.number(),
   assignedCustomer: z.number().optional(),
-  call: z.number(),
+  call: z.number().optional(),
 };
 
 // Step-specific validation schemas
@@ -88,17 +92,17 @@ export const meetingStepSchemas = {
     meetingType: meetingFieldSchemas.meetingType,
     duration: meetingFieldSchemas.duration,
   }),
-  
+
   dates: z.object({
     meetingDateTime: meetingFieldSchemas.meetingDateTime,
     createdAt: meetingFieldSchemas.createdAt,
     updatedAt: meetingFieldSchemas.updatedAt,
   }),
-  
+
   settings: z.object({
     isRecurring: meetingFieldSchemas.isRecurring,
   }),
-  
+
   user: z.object({
     organizer: meetingFieldSchemas.organizer,
   }),
@@ -108,8 +112,8 @@ export const meetingStepSchemas = {
   other: z.object({
     call: meetingFieldSchemas.call,
   }),
-  
-  review: meetingFormSchema
+
+  review: meetingFormSchema,
 };
 
 // Validation helper functions
@@ -117,7 +121,7 @@ export const meetingValidationHelpers = {
   validateStep: (stepId: string, data: Partial<MeetingFormValues>) => {
     const stepSchema = meetingStepSchemas[stepId as keyof typeof meetingStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -125,11 +129,11 @@ export const meetingValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = meetingFieldSchemas[fieldName as keyof typeof meetingFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -137,7 +141,7 @@ export const meetingValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'meetingDateTime') {
       return {
@@ -198,7 +202,7 @@ export const meetingValidationHelpers = {
         required: true,
       };
     }
-    
+
     return {};
-  }
+  },
 };

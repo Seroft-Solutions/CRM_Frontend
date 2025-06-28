@@ -6,7 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export interface UserDTO {
-  id?: string;
-  login?: string;
-}
+export type GetAuthorizationUrlParams = {
+userEmail: string;
+};

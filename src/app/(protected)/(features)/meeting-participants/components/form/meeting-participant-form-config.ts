@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for MeetingParticipant form
@@ -6,80 +6,63 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const meetingParticipantFormConfig: FormConfig = {
   entity: 'MeetingParticipant',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'email',
-        'name',
-      ],
-      relationships: [
-      ],
+      fields: ['email', 'name'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'assignment',
       title: 'Assignment & Date',
       description: 'Assign users, set dates and status',
-      fields: [
-        'responseDateTime',
-      ],
-      relationships: [
-      ],
+      fields: ['responseDateTime'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'settings',
       title: 'Settings & Files',
       description: 'Configure options',
-      fields: [
-        'isRequired',
-        'hasAccepted',
-        'hasDeclined',
-      ],
-      relationships: [
-      ],
+      fields: ['isRequired', 'hasAccepted', 'hasDeclined'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'meeting',
-      ],
+      fields: [],
+      relationships: ['meeting'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -96,8 +79,7 @@ export const meetingParticipantFormConfig: FormConfig = {
         maxLength: 254,
         pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'name',
@@ -109,8 +91,7 @@ export const meetingParticipantFormConfig: FormConfig = {
         required: false,
         maxLength: 100,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'isRequired',
@@ -121,8 +102,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'hasAccepted',
@@ -133,8 +113,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'hasDeclined',
@@ -145,8 +124,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'responseDateTime',
@@ -157,8 +135,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -188,7 +165,7 @@ export const meetingParticipantFormConfig: FormConfig = {
         label: 'Meeting',
         placeholder: 'Select meeting',
         icon: '🔗',
-      }
+      },
     },
   ],
 
@@ -213,7 +190,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -236,17 +213,20 @@ export const meetingParticipantFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const meetingParticipantFormHelpers = {
-  getStepById: (stepId: string) => meetingParticipantFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => meetingParticipantFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => meetingParticipantFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) =>
+    meetingParticipantFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    meetingParticipantFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    meetingParticipantFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = meetingParticipantFormConfig.steps.find(s => s.id === stepId);
+    const step = meetingParticipantFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

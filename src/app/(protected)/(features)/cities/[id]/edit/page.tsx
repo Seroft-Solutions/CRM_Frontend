@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { CityForm } from "../../components/city-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { CityForm } from '../../components/city-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditCityPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditCityPageProps {
 }
 
 export const metadata = {
-  title: "Edit City",
+  title: 'Edit City',
 };
 
 export default async function EditCityPage({ params }: EditCityPageProps) {
@@ -23,7 +23,7 @@ export default async function EditCityPage({ params }: EditCityPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="city:update"
       unauthorizedTitle="Access Denied to Edit City"
       unauthorizedDescription="You don't have permission to edit city records."
@@ -31,7 +31,7 @@ export default async function EditCityPage({ params }: EditCityPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/cities"
               defaultLabel="Back to Cities"
               entityName="City"
@@ -47,7 +47,7 @@ export default async function EditCityPage({ params }: EditCityPageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this city</p>
             </div>
           </div>
-          
+
           <CityForm id={id} />
         </div>
       </div>

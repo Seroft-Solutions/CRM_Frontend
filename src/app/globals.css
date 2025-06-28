@@ -131,7 +131,7 @@
   }
 
   /* Ensure modal content stays interactive */
-  [data-session-modal="true"] {
+  [data-session-modal='true'] {
     pointer-events: all !important;
     user-select: auto !important;
   }

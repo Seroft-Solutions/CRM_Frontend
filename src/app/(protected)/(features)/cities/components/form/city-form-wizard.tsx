@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CityFormProvider, useEntityForm } from "./city-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CityFormProvider, useEntityForm } from './city-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateCity,
   useUpdateCity,
   useGetCity,
-} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
-import { cityToast, handleCityError } from "../city-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+import { cityToast, handleCityError } from '../city-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface CityFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CityFormContent({ id }: CityFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCity(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-city", id]
+      queryKey: ['get-city', id],
     },
   });
 
@@ -42,15 +42,15 @@ function CityFormContent({ id }: CityFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/cities";
-      
+      const backRoute = returnUrl || '/cities';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,11 +80,11 @@ function CityFormContent({ id }: CityFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'district': 'District',
+          name: '',
+          district: 'District',
         }}
       />
 
@@ -92,7 +92,7 @@ function CityFormContent({ id }: CityFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -116,7 +116,7 @@ export function CityForm({ id }: CityFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -124,7 +124,7 @@ export function CityForm({ id }: CityFormProps) {
         } else {
           setIsRedirecting(true);
           cityToast.created();
-          router.push("/cities");
+          router.push('/cities');
         }
       },
       onError: (error) => {
@@ -138,7 +138,7 @@ export function CityForm({ id }: CityFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         cityToast.updated();
-        router.push("/cities");
+        router.push('/cities');
       },
       onError: (error) => {
         handleCityError(error);
@@ -159,11 +159,11 @@ export function CityForm({ id }: CityFormProps) {
   }
 
   return (
-    <CityFormProvider 
+    <CityFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

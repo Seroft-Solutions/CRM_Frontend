@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { MeetingDetails } from "../components/meeting-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { MeetingDetails } from '../components/meeting-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface MeetingPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface MeetingPageProps {
 }
 
 export const metadata = {
-  title: "Meeting Details",
+  title: 'Meeting Details',
 };
 
 export default async function MeetingPage({ params }: MeetingPageProps) {
@@ -23,7 +23,7 @@ export default async function MeetingPage({ params }: MeetingPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="meeting:read"
       unauthorizedTitle="Access Denied to Meeting Details"
       unauthorizedDescription="You don't have permission to view this meeting."
@@ -31,7 +31,7 @@ export default async function MeetingPage({ params }: MeetingPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/meetings"
               defaultLabel="Back to Meetings"
               entityName="Meeting"
@@ -44,10 +44,12 @@ export default async function MeetingPage({ params }: MeetingPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Meeting Details</h1>
-              <p className="text-sm text-gray-600 mt-1">View detailed information for this meeting</p>
+              <p className="text-sm text-gray-600 mt-1">
+                View detailed information for this meeting
+              </p>
             </div>
           </div>
-          
+
           <MeetingDetails id={id} />
         </div>
       </div>

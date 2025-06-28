@@ -13,13 +13,8 @@ interface SessionStatusProps {
 }
 
 export function SessionStatus({ className, showInProduction = false }: SessionStatusProps) {
-  const { 
-    isIdle, 
-    minutesIdle, 
-    getActivityStatus, 
-    getTimeUntilWarning, 
-    getTimeUntilLogout 
-  } = useIdleTimeout();
+  const { isIdle, minutesIdle, getActivityStatus, getTimeUntilWarning, getTimeUntilLogout } =
+    useIdleTimeout();
 
   // Hide in production unless explicitly shown
   if (process.env.NODE_ENV === 'production' && !showInProduction) {

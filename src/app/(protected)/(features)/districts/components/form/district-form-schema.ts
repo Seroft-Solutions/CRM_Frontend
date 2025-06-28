@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for District form
@@ -22,14 +22,12 @@ export const districtStepSchemas = {
   basic: z.object({
     name: districtFieldSchemas.name,
   }),
-  
-  
-  
+
   geographic: z.object({
     state: districtFieldSchemas.state,
   }),
-  
-  review: districtFormSchema
+
+  review: districtFormSchema,
 };
 
 // Validation helper functions
@@ -37,7 +35,7 @@ export const districtValidationHelpers = {
   validateStep: (stepId: string, data: Partial<DistrictFormValues>) => {
     const stepSchema = districtStepSchemas[stepId as keyof typeof districtStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -45,11 +43,11 @@ export const districtValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
     const fieldSchema = districtFieldSchemas[fieldName as keyof typeof districtFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -57,7 +55,7 @@ export const districtValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'name') {
       return {
@@ -66,7 +64,7 @@ export const districtValidationHelpers = {
         maxLength: 100,
       };
     }
-    
+
     return {};
-  }
+  },
 };

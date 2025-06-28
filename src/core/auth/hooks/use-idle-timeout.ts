@@ -8,12 +8,7 @@
 import { useSessionManager } from '../providers/session-manager';
 
 export function useIdleTimeout() {
-  const {
-    isIdle,
-    minutesIdle,
-    resetIdleTimer,
-    isAuthenticated,
-  } = useSessionManager();
+  const { isIdle, minutesIdle, resetIdleTimer, isAuthenticated } = useSessionManager();
 
   return {
     isIdle,

@@ -1,22 +1,26 @@
-"use client";
+'use client';
 
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, CalendarDays } from "lucide-react";
-import { MeetingScheduler } from "./components/meeting-scheduler";
-import { useGetCustomer } from "@/core/api/generated/spring";
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { MeetingScheduler } from './components/meeting-scheduler';
+import { useGetCustomer } from '@/core/api/generated/spring';
 
 function ScheduleMeetingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const customerId = searchParams.get('customerId') ? parseInt(searchParams.get('customerId')!) : undefined;
-  const assignedUserId = searchParams.get('assignedUserId') ? parseInt(searchParams.get('assignedUserId')!) : undefined;
+
+  const customerId = searchParams.get('customerId')
+    ? parseInt(searchParams.get('customerId')!)
+    : undefined;
+  const assignedUserId = searchParams.get('assignedUserId')
+    ? parseInt(searchParams.get('assignedUserId')!)
+    : undefined;
   const callId = searchParams.get('callId') ? parseInt(searchParams.get('callId')!) : undefined;
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
-    query: { enabled: !!customerId }
+    query: { enabled: !!customerId },
   });
 
   const handleMeetingScheduled = (meetingData: any) => {
@@ -48,7 +52,8 @@ function ScheduleMeetingContent() {
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Schedule Meeting</h1>
                 <p className="text-gray-600 text-sm">
-                  Book a follow-up meeting with {customerData?.customerBusinessName || 'your customer'}
+                  Book a follow-up meeting with{' '}
+                  {customerData?.customerBusinessName || 'your customer'}
                 </p>
               </div>
             </div>
@@ -72,14 +77,16 @@ function ScheduleMeetingContent() {
 
 export default function ScheduleMeetingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading meeting scheduler...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading meeting scheduler...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ScheduleMeetingContent />
     </Suspense>
   );

@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for CallStatus form
@@ -6,37 +6,30 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const callStatusFormConfig: FormConfig = {
   entity: 'CallStatus',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'name',
-        'description',
-        'remark',
-      ],
-      relationships: [
-      ],
+      fields: ['name', 'description', 'remark'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -53,8 +46,7 @@ export const callStatusFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 50,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'description',
@@ -66,8 +58,7 @@ export const callStatusFormConfig: FormConfig = {
         required: false,
         maxLength: 255,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'remark',
@@ -79,14 +70,12 @@ export const callStatusFormConfig: FormConfig = {
         required: false,
         maxLength: 1000,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
   // Relationship definitions
-  relationships: [
-  ],
+  relationships: [],
 
   // Global form configuration
   validation: {
@@ -109,7 +98,7 @@ export const callStatusFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -132,17 +121,19 @@ export const callStatusFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const callStatusFormHelpers = {
-  getStepById: (stepId: string) => callStatusFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => callStatusFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => callStatusFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => callStatusFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    callStatusFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    callStatusFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = callStatusFormConfig.steps.find(s => s.id === stepId);
+    const step = callStatusFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

@@ -56,5 +56,5 @@ export interface MeetingDTO {
   updatedAt?: string;
   organizer: UserProfileDTO;
   assignedCustomer?: CustomerDTO;
-  call: CallDTO;
+  call?: CallDTO;
 }

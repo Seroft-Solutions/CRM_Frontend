@@ -1,9 +1,9 @@
 {
   "annotations": {
-    "changelogDate": "20250625070802"
+    "changelogDate": "20250628212528"
   },
   "applications": ["crmBackend"],
-  "documentation": "Extended user profile for CRM-specific data",
+  "documentation": "Extended user profile linked to Keycloak.",
   "dto": "mapstruct",
   "fields": [
     {
@@ -11,6 +11,26 @@
       "fieldType": "String",
       "fieldValidateRules": ["pattern"],
       "fieldValidateRulesPattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    {
+      "fieldName": "firstName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "fieldName": "lastName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "pattern"],
+      "fieldValidateRulesPattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     },
     {
       "fieldName": "phone",
@@ -24,28 +44,12 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "200"
-    },
-    {
-      "fieldName": "createdAt",
-      "fieldType": "Instant"
-    },
-    {
-      "fieldName": "updatedAt",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "UserProfile",
   "pagination": "pagination",
   "relationships": [
-    {
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "user",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
     {
       "otherEntityName": "userAvailability",
       "otherEntityRelationshipName": "user",
@@ -73,6 +77,14 @@
       "otherEntityName": "group",
       "otherEntityRelationshipName": "members",
       "relationshipName": "groups",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "role",
+      "otherEntityRelationshipName": "users",
+      "relationshipName": "roles",
       "relationshipSide": "left",
       "relationshipType": "many-to-many"
     },

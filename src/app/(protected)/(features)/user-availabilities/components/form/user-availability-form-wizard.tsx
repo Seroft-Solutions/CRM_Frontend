@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { UserAvailabilityFormProvider, useEntityForm } from "./user-availability-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { UserAvailabilityFormProvider, useEntityForm } from './user-availability-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateUserAvailability,
   useUpdateUserAvailability,
   useGetUserAvailability,
-} from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
-import { userAvailabilityToast, handleUserAvailabilityError } from "../user-availability-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
+import { userAvailabilityToast, handleUserAvailabilityError } from '../user-availability-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface UserAvailabilityFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function UserAvailabilityFormContent({ id }: UserAvailabilityFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetUserAvailability(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-user-availability", id]
+      queryKey: ['get-user-availability', id],
     },
   });
 
@@ -42,15 +42,15 @@ function UserAvailabilityFormContent({ id }: UserAvailabilityFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/user-availabilities";
-      
+      const backRoute = returnUrl || '/user-availabilities';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,17 +80,17 @@ function UserAvailabilityFormContent({ id }: UserAvailabilityFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'dayOfWeek': '',
-          'startTime': '',
-          'endTime': '',
-          'isAvailable': '',
-          'effectiveFrom': '',
-          'effectiveTo': '',
-          'timeZone': '',
-          'user': 'User',
+          dayOfWeek: '',
+          startTime: '',
+          endTime: '',
+          isAvailable: '',
+          effectiveFrom: '',
+          effectiveTo: '',
+          timeZone: '',
+          user: 'User',
         }}
       />
 
@@ -98,7 +98,7 @@ function UserAvailabilityFormContent({ id }: UserAvailabilityFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -122,7 +122,7 @@ export function UserAvailabilityForm({ id }: UserAvailabilityFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -130,7 +130,7 @@ export function UserAvailabilityForm({ id }: UserAvailabilityFormProps) {
         } else {
           setIsRedirecting(true);
           userAvailabilityToast.created();
-          router.push("/user-availabilities");
+          router.push('/user-availabilities');
         }
       },
       onError: (error) => {
@@ -144,7 +144,7 @@ export function UserAvailabilityForm({ id }: UserAvailabilityFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         userAvailabilityToast.updated();
-        router.push("/user-availabilities");
+        router.push('/user-availabilities');
       },
       onError: (error) => {
         handleUserAvailabilityError(error);
@@ -165,11 +165,11 @@ export function UserAvailabilityForm({ id }: UserAvailabilityFormProps) {
   }
 
   return (
-    <UserAvailabilityFormProvider 
+    <UserAvailabilityFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

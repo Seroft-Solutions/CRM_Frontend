@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CustomerFormProvider, useEntityForm } from "./customer-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CustomerFormProvider, useEntityForm } from './customer-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateCustomer,
   useUpdateCustomer,
   useGetCustomer,
-} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
-import { customerToast, handleCustomerError } from "../customer-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import { customerToast, handleCustomerError } from '../customer-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface CustomerFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCustomer(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-customer", id]
+      queryKey: ['get-customer', id],
     },
   });
 
@@ -42,15 +42,15 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/customers";
-      
+      const backRoute = returnUrl || '/customers';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,18 +80,18 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'customerBusinessName': '',
-          'email': '',
-          'mobile': '',
-          'whatsApp': '',
-          'contactPerson': '',
-          'state': 'State',
-          'district': 'District',
-          'city': 'City',
-          'area': 'Area',
+          customerBusinessName: '',
+          email: '',
+          mobile: '',
+          whatsApp: '',
+          contactPerson: '',
+          state: 'State',
+          district: 'District',
+          city: 'City',
+          area: 'Area',
         }}
       />
 
@@ -99,7 +99,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -123,7 +123,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -131,7 +131,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
         } else {
           setIsRedirecting(true);
           customerToast.created();
-          router.push("/customers");
+          router.push('/customers');
         }
       },
       onError: (error) => {
@@ -145,7 +145,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         customerToast.updated();
-        router.push("/customers");
+        router.push('/customers');
       },
       onError: (error) => {
         handleCustomerError(error);
@@ -166,11 +166,11 @@ export function CustomerForm({ id }: CustomerFormProps) {
   }
 
   return (
-    <CustomerFormProvider 
+    <CustomerFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

@@ -1,19 +1,14 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, CheckCircle2, Building2 } from "lucide-react";
-import { useGetCustomer } from "@/core/api/generated/spring";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CalendarDays, CheckCircle2, Building2 } from 'lucide-react';
+import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingSchedulerDialogProps {
   open: boolean;
@@ -30,12 +25,12 @@ export function MeetingSchedulerDialog({
   customerId,
   assignedUserId,
   callId,
-  onMeetingScheduledAction
+  onMeetingScheduledAction,
 }: MeetingSchedulerDialogProps) {
   const router = useRouter();
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
-    query: { enabled: !!customerId }
+    query: { enabled: !!customerId },
   });
 
   if (!callId) return null;
@@ -44,15 +39,15 @@ export function MeetingSchedulerDialog({
     const params = new URLSearchParams({
       customerId: customerId?.toString() || '',
       assignedUserId: assignedUserId?.toString() || '',
-      callId: callId.toString()
+      callId: callId.toString(),
     });
-    
+
     const url = `/calls/schedule-meeting?${params.toString()}`;
     console.log('Navigating to:', url);
-    
+
     // Close dialog first, then navigate
     onOpenChangeAction(false);
-    
+
     // Use setTimeout to ensure dialog closes before navigation
     setTimeout(() => {
       router.push(url);
@@ -99,7 +94,10 @@ export function MeetingSchedulerDialog({
                 </h4>
                 <p className="text-sm text-gray-500 mt-0.5">{customerData.email}</p>
               </div>
-              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 font-medium">
+              <Badge
+                variant="secondary"
+                className="bg-green-50 text-green-700 border-green-200 font-medium"
+              >
                 Active Lead
               </Badge>
             </div>
@@ -111,9 +109,9 @@ export function MeetingSchedulerDialog({
           <h5 className="font-medium text-gray-900 text-sm">Meeting Benefits:</h5>
           <div className="space-y-3">
             {[
-              "Strengthen customer relationship",
-              "Address specific needs & concerns", 
-              "Accelerate the sales process"
+              'Strengthen customer relationship',
+              'Address specific needs & concerns',
+              'Accelerate the sales process',
             ].map((benefit, idx) => (
               <div key={idx} className="flex items-center gap-3 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -122,18 +120,18 @@ export function MeetingSchedulerDialog({
             ))}
           </div>
         </div>
-        
+
         {/* Actions */}
         <div className="px-6 py-5 bg-gray-50/50 flex gap-3">
-          <Button 
-            variant="outline" 
-            onClick={handleDecline} 
+          <Button
+            variant="outline"
+            onClick={handleDecline}
             className="flex-1 h-11 font-medium border-gray-300 hover:bg-gray-100"
           >
             Maybe Later
           </Button>
-          <Button 
-            onClick={handleScheduleMeeting} 
+          <Button
+            onClick={handleScheduleMeeting}
             className="flex-1 h-11 font-medium bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-sm"
           >
             <CalendarDays className="w-4 h-4 mr-2" />

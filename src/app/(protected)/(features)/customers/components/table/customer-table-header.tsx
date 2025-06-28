@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -41,22 +35,22 @@ interface CustomerTableHeaderProps {
   }>;
 }
 
-export function CustomerTableHeader({ 
-  onSort, 
+export function CustomerTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
-  visibleColumns
+  visibleColumns,
 }: CustomerTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -77,8 +71,8 @@ export function CustomerTableHeader({
           />
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={column.id} 
+          <TableHead
+            key={column.id}
             className={`
               px-2 sm:px-3 py-2 
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
@@ -92,14 +86,10 @@ export function CustomerTableHeader({
                 className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
               >
                 {column.label}
-                <div className="text-gray-400">
-                  {renderSortIcon(column.accessor)}
-                </div>
+                <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
               </Button>
             ) : (
-              <span className="font-medium text-gray-700 text-sm">
-                {column.label}
-              </span>
+              <span className="font-medium text-gray-700 text-sm">{column.label}</span>
             )}
           </TableHead>
         ))}
@@ -110,140 +100,132 @@ export function CustomerTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={`filter-${column.id}`} 
+          <TableHead
+            key={`filter-${column.id}`}
             className={`
               px-2 sm:px-3 py-2
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
             `}
           >
-            {column.type === 'field' ? (
-              (() => {
-                
-                if (column.accessor === 'customerBusinessName') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["customerBusinessName"] as string || ""}
-                      onChange={(e) => onFilterChange("customerBusinessName", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'email') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["email"] as string || ""}
-                      onChange={(e) => onFilterChange("email", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'mobile') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["mobile"] as string || ""}
-                      onChange={(e) => onFilterChange("mobile", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'whatsApp') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["whatsApp"] as string || ""}
-                      onChange={(e) => onFilterChange("whatsApp", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'contactPerson') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["contactPerson"] as string || ""}
-                      onChange={(e) => onFilterChange("contactPerson", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                return null;
-              })()
-            ) : (
-              (() => {
-                
-                if (column.accessor === 'state') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["state.name"] as string || ""}
-                      onChange={(e) => onFilterChange("state.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'district') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["district.name"] as string || ""}
-                      onChange={(e) => onFilterChange("district.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'city') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["city.name"] as string || ""}
-                      onChange={(e) => onFilterChange("city.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'area') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["area.name"] as string || ""}
-                      onChange={(e) => onFilterChange("area.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                return null;
-              })()
-            )}
+            {column.type === 'field'
+              ? (() => {
+                  if (column.accessor === 'customerBusinessName') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['customerBusinessName'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('customerBusinessName', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'email') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['email'] as string) || ''}
+                        onChange={(e) => onFilterChange('email', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'mobile') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['mobile'] as string) || ''}
+                        onChange={(e) => onFilterChange('mobile', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'whatsApp') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['whatsApp'] as string) || ''}
+                        onChange={(e) => onFilterChange('whatsApp', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'contactPerson') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['contactPerson'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('contactPerson', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  return null;
+                })()
+              : (() => {
+                  if (column.accessor === 'state') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['state.name'] as string) || ''}
+                        onChange={(e) => onFilterChange('state.name', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'district') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['district.name'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('district.name', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'city') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['city.name'] as string) || ''}
+                        onChange={(e) => onFilterChange('city.name', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'area') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['area.name'] as string) || ''}
+                        onChange={(e) => onFilterChange('area.name', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  return null;
+                })()}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

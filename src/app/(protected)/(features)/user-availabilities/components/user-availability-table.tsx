@@ -1,18 +1,12 @@
+'use client';
 
-"use client";
-
-import { useState, useEffect, useMemo } from "react";
-import { toast } from "sonner";
-import { userAvailabilityToast, handleUserAvailabilityError } from "./user-availability-toast";
-import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
+import { userAvailabilityToast, handleUserAvailabilityError } from './user-availability-toast';
+import { Search, X, Download, Settings2, Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,15 +14,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
+} from '@/components/ui/dropdown-menu';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +32,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Add custom scrollbar styles
 const tableScrollStyles = `
@@ -73,29 +67,20 @@ import {
   useUpdateUserAvailability,
   usePartialUpdateUserAvailability,
   useSearchUserAvailabilities,
-} from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
-
-
-
+} from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
 // Relationship data imports
 
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
-
-import {
-  useGetAllUserProfiles
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
-
-
-
-import { UserAvailabilitySearchAndFilters } from "./table/user-availability-search-filters";
-import { UserAvailabilityTableHeader } from "./table/user-availability-table-header";
-import { UserAvailabilityTableRow } from "./table/user-availability-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { UserAvailabilitySearchAndFilters } from './table/user-availability-search-filters';
+import { UserAvailabilityTableHeader } from './table/user-availability-table-header';
+import { UserAvailabilityTableRow } from './table/user-availability-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 
 // Define sort ordering constants
-const ASC = "asc";
-const DESC = "desc";
+const ASC = 'asc';
+const DESC = 'desc';
 
 // Define column configuration
 interface ColumnConfig {
@@ -117,7 +102,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'dayOfWeek',
     label: 'Day Of Week',
@@ -126,7 +111,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'startTime',
     label: 'Start Time',
@@ -135,7 +120,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'endTime',
     label: 'End Time',
@@ -144,7 +129,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'isAvailable',
     label: 'Is Available',
@@ -153,7 +138,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'effectiveFrom',
     label: 'Effective From',
@@ -162,7 +147,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'effectiveTo',
     label: 'Effective To',
@@ -171,7 +156,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'timeZone',
     label: 'Time Zone',
@@ -180,8 +165,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
-  
+
   {
     id: 'user',
     label: 'User',
@@ -190,7 +174,6 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: false,
   },
-  
 ];
 
 // Local storage key for column visibility
@@ -207,9 +190,9 @@ interface DateRange {
 
 export function UserAvailabilityTable() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
+  const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -217,29 +200,33 @@ export function UserAvailabilityTable() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
-  
+
   // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
-  
+
   // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
         // Default visibility - all columns visible
-        setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+        setColumnVisibility(
+          ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {})
+        );
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
       // Fallback to default visibility
-      setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+      setColumnVisibility(
+        ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {})
+      );
     } finally {
       setIsColumnVisibilityLoaded(true);
     }
@@ -258,14 +245,14 @@ export function UserAvailabilityTable() {
 
   // Get visible columns
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter(col => columnVisibility[col.id] !== false);
+    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
-    setColumnVisibility(prev => ({
+    setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]
+      [columnId]: !prev[columnId],
     }));
   };
 
@@ -276,31 +263,34 @@ export function UserAvailabilityTable() {
       return;
     }
 
-    const headers = visibleColumns.map(col => col.label);
+    const headers = visibleColumns.map((col) => col.label);
     const csvContent = [
       headers.join(','),
-      ...data.map(item => {
-        return visibleColumns.map(col => {
-          let value = '';
-          if (col.type === 'field') {
-            const fieldValue = item[col.accessor as keyof typeof item];
-            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
-          } else if (col.type === 'relationship') {
-            const relationship = item[col.accessor as keyof typeof item] as any;
-            
-            
-            if (col.id === 'user' && relationship) {
-              value = relationship.displayName || '';
+      ...data.map((item) => {
+        return visibleColumns
+          .map((col) => {
+            let value = '';
+            if (col.type === 'field') {
+              const fieldValue = item[col.accessor as keyof typeof item];
+              value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
+            } else if (col.type === 'relationship') {
+              const relationship = item[col.accessor as keyof typeof item] as any;
+
+              if (col.id === 'user' && relationship) {
+                value = relationship.displayName || '';
+              }
             }
-            
-          }
-          // Escape CSV values
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-            value = `"${value.replace(/"/g, '""')}"`;
-          }
-          return value;
-        }).join(',');
-      })
+            // Escape CSV values
+            if (
+              typeof value === 'string' &&
+              (value.includes(',') || value.includes('"') || value.includes('\n'))
+            ) {
+              value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          })
+          .join(',');
+      }),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -312,7 +302,7 @@ export function UserAvailabilityTable() {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
+
     toast.success('Data exported successfully');
   };
 
@@ -320,60 +310,55 @@ export function UserAvailabilityTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
-  
   // Fetch relationship data for dropdowns
-  
+
   const { data: userprofileOptions = [] } = useGetAllUserProfiles(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
-  
-  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    const entity = entities?.find((e) =>
+      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+    );
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-    
-    
+
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      
-      'user.displayName': { 
-        apiParam: 'userId.equals', 
-        options: userprofileOptions, 
-        displayField: 'displayName' 
+      'user.displayName': {
+        apiParam: 'userId.equals',
+        options: userprofileOptions,
+        displayField: 'displayName',
       },
-      
     };
-    
-    
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        
+      if (value !== undefined && value !== '' && value !== null) {
         // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
+          const entityId = findEntityIdByName(
+            mapping.options,
+            value as string,
+            mapping.displayField
+          );
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
         }
-        
-        
+
         // Handle isAvailable boolean filter
         else if (key === 'isAvailable') {
           params['isAvailable.equals'] = value === 'true';
         }
-        
-        
-        
+
         // Handle effectiveFrom date filter
         else if (key === 'effectiveFrom') {
           if (value instanceof Date) {
@@ -382,7 +367,7 @@ export function UserAvailabilityTable() {
             params['effectiveFrom.equals'] = value;
           }
         }
-        
+
         // Handle effectiveTo date filter
         else if (key === 'effectiveTo') {
           if (value instanceof Date) {
@@ -391,36 +376,35 @@ export function UserAvailabilityTable() {
             params['effectiveTo.equals'] = value;
           }
         }
-        
-        
+
         // Handle dayOfWeek text filter with contains
         else if (key === 'dayOfWeek') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['dayOfWeek.contains'] = value;
           }
         }
-        
+
         // Handle startTime text filter with contains
         else if (key === 'startTime') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['startTime.contains'] = value;
           }
         }
-        
+
         // Handle endTime text filter with contains
         else if (key === 'endTime') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['endTime.contains'] = value;
           }
         }
-        
+
         // Handle timeZone text filter with contains
         else if (key === 'timeZone') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['timeZone.contains'] = value;
           }
         }
-        
+
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -433,21 +417,20 @@ export function UserAvailabilityTable() {
     });
 
     // Add date range filters
-    
+
     if (dateRange.from) {
       params['effectiveFrom.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['effectiveFrom.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
+
     if (dateRange.from) {
       params['effectiveTo.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['effectiveTo.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
 
     return params;
   };
@@ -455,8 +438,8 @@ export function UserAvailabilityTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
-  const { data, isLoading, refetch } = searchTerm 
+
+  const { data, isLoading, refetch } = searchTerm
     ? useSearchUserAvailabilities(
         {
           query: searchTerm,
@@ -484,17 +467,13 @@ export function UserAvailabilityTable() {
           },
         }
       );
-  
 
   // Get total count for pagination
-  const { data: countData } = useCountUserAvailabilities(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data: countData } = useCountUserAvailabilities(filterParams, {
+    query: {
+      enabled: true,
+    },
+  });
 
   // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateUserAvailability({
@@ -536,9 +515,9 @@ export function UserAvailabilityTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return 'ChevronsUpDown';
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
   // Handle delete
@@ -556,9 +535,9 @@ export function UserAvailabilityTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [column]: value
+      [column]: value,
     }));
     setPage(1);
   };
@@ -566,18 +545,16 @@ export function UserAvailabilityTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
     setPage(1);
   };
 
-  
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setPage(1);
   };
-  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -599,7 +576,9 @@ export function UserAvailabilityTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
+      setSelectedRows(
+        new Set(data.map((item) => item.id).filter((id): id is number => id !== undefined))
+      );
     }
   };
 
@@ -609,13 +588,17 @@ export function UserAvailabilityTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
+    const deletePromises = Array.from(selectedRows).map(
+      (id) =>
+        new Promise<void>((resolve, reject) => {
+          deleteEntity(
+            { id },
+            {
+              onSuccess: () => resolve(),
+              onError: (error) => reject(error),
+            }
+          );
+        })
     );
 
     try {
@@ -630,10 +613,14 @@ export function UserAvailabilityTable() {
   };
 
   // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  const handleRelationshipUpdate = async (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     return new Promise<void>((resolve, reject) => {
       // Get the current entity data first
-      const currentEntity = data?.find(item => item.id === entityId);
+      const currentEntity = data?.find((item) => item.id === entityId);
       if (!currentEntity) {
         reject(new Error('UserAvailability not found in current data'));
         return;
@@ -642,9 +629,9 @@ export function UserAvailabilityTable() {
       // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
-        id: entityId
+        id: entityId,
       };
-      
+
       // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
@@ -654,29 +641,36 @@ export function UserAvailabilityTable() {
 
       console.log(`Updating ${relationshipName} for UserAvailability ${entityId}:`, updateData);
 
-      updateEntity({ 
-        id: entityId,
-        data: updateData
-      }, {
-        onSuccess: () => {
-          userAvailabilityToast.relationshipUpdated(relationshipName);
-          refetch(); // Refetch data to ensure UI is in sync
-          resolve();
+      updateEntity(
+        {
+          id: entityId,
+          data: updateData,
         },
-        onError: (error: any) => {
-          console.error(`Failed to update ${relationshipName}:`, error);
-          handleUserAvailabilityError(error);
-          reject(error);
+        {
+          onSuccess: () => {
+            userAvailabilityToast.relationshipUpdated(relationshipName);
+            refetch(); // Refetch data to ensure UI is in sync
+            resolve();
+          },
+          onError: (error: any) => {
+            console.error(`Failed to update ${relationshipName}:`, error);
+            handleUserAvailabilityError(error);
+            reject(error);
+          },
         }
-      });
+      );
     });
   };
 
   // Handle bulk relationship updates
-  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+  const handleBulkRelationshipUpdate = async (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     let successCount = 0;
     let errorCount = 0;
-    
+
     // Process updates sequentially to avoid overwhelming the server
     for (const id of entityIds) {
       try {
@@ -687,10 +681,10 @@ export function UserAvailabilityTable() {
         errorCount++;
       }
     }
-    
+
     // Refresh data after updates
     refetch();
-    
+
     // Throw error if all failed, otherwise consider it partially successful
     if (errorCount === entityIds.length) {
       throw new Error(`All ${errorCount} updates failed`);
@@ -701,19 +695,21 @@ export function UserAvailabilityTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
-    
     {
-      name: "user",
-      displayName: "User",
+      name: 'user',
+      displayName: 'User',
       options: userprofileOptions || [],
-      displayField: "displayName",
+      displayField: 'displayName',
       isEditable: false, // Disabled by default
     },
-    
   ];
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 ||
+    Boolean(searchTerm) ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -737,262 +733,255 @@ export function UserAvailabilityTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
-      {/* Table Controls */}
-      <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Column Visibility Toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Columns</span>
-                <span className="sm:hidden">Cols</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ALL_COLUMNS.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={columnVisibility[column.id] !== false}
-                  onCheckedChange={() => toggleColumnVisibility(column.id)}
-                  onSelect={(e) => e.preventDefault()}
-                  className="flex items-center gap-2"
-                >
-                  {columnVisibility[column.id] !== false ? (
-                    <Eye className="h-4 w-4" />
-                  ) : (
-                    <EyeOff className="h-4 w-4" />
-                  )}
-                  {column.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Table Controls */}
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Column Visibility Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                  <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Columns</span>
+                  <span className="sm:hidden">Cols</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {ALL_COLUMNS.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={columnVisibility[column.id] !== false}
+                    onCheckedChange={() => toggleColumnVisibility(column.id)}
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex items-center gap-2"
+                  >
+                    {columnVisibility[column.id] !== false ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
+                    )}
+                    {column.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Export Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportToCSV}
-            className="gap-2 text-xs sm:text-sm"
-            disabled={!data || data.length === 0}
-          >
-            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Export CSV</span>
-            <span className="sm:hidden">CSV</span>
-          </Button>
-        </div>
-
-        {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearAllFilters}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-            Clear All Filters
-          </Button>
-        )}
-      </div>
-
-      {/* Bulk Actions */}
-      {selectedRows.size > 0 && (
-        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
-          <span className="text-sm text-muted-foreground">
-            {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
-          </span>
-          <div className="flex flex-wrap gap-2 sm:ml-auto">
-            {relationshipConfigs.some(config => config.isEditable) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBulkRelationshipDialog(true)}
-                className="gap-2"
-              >
-                Assign Associations
-              </Button>
-            )}
+            {/* Export Button */}
             <Button
-              variant="destructive"
+              variant="outline"
               size="sm"
-              onClick={handleBulkDelete}
+              onClick={exportToCSV}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={!data || data.length === 0}
             >
-              Delete Selected
+              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
             </Button>
           </div>
-        </div>
-      )}
 
-      {/* Data Table */}
-      <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
-        <div className="table-scroll overflow-x-auto">
-          <Table className="w-full min-w-[600px]">
-            
-            <UserAvailabilityTableHeader 
-              onSort={handleSort}
-              getSortIcon={getSortIcon}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              isAllSelected={isAllSelected}
-              isIndeterminate={isIndeterminate}
-              onSelectAll={handleSelectAll}
-              visibleColumns={visibleColumns}
-            />
-            <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length + 2}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : data?.length ? (
-              data.map((userAvailability) => (
-                <UserAvailabilityTableRow
-                  key={userAvailability.id}
-                  userAvailability={userAvailability}
-                  onDelete={handleDelete}
-                  isDeleting={isDeleting}
-                  isSelected={selectedRows.has(userAvailability.id || 0)}
-                  onSelect={handleSelectRow}
-                  relationshipConfigs={relationshipConfigs}
-                  onRelationshipUpdate={handleRelationshipUpdate}
-                  isUpdating={isUpdating}
-                  visibleColumns={visibleColumns}
-                />
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length + 2}
-                  className="h-24 text-center"
-                >
-                  No user availabilities found
-                  {hasActiveFilters && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Try adjusting your filters
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        </div>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="table-container">
-          <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (page > 1) setPage(page - 1);
-                }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNumbers = [];
-              const startPage = Math.max(1, page - 2);
-              const endPage = Math.min(totalPages, startPage + 4);
-              
-              for (let j = startPage; j <= endPage; j++) {
-                pageNumbers.push(j);
-              }
-              
-              return pageNumbers[i];
-            }).filter(Boolean).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(p);
-                  }}
-                  isActive={page === p}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (page < totalPages) setPage(page + 1);
-                }}
-                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-        </div>
-      )}
-
-      {/* Bulk Delete Dialog */}
-      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected user availabilities and remove their data from the server.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmBulkDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-2 text-muted-foreground hover:text-foreground"
             >
-              Delete All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <X className="h-4 w-4" />
+              Clear All Filters
+            </Button>
+          )}
+        </div>
 
-      {/* Delete Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              useravailability and remove its data from the server.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        {/* Bulk Actions */}
+        {selectedRows.size > 0 && (
+          <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
+            <span className="text-sm text-muted-foreground">
+              {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="flex flex-wrap gap-2 sm:ml-auto">
+              {relationshipConfigs.some((config) => config.isEditable) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkRelationshipDialog(true)}
+                  className="gap-2"
+                >
+                  Assign Associations
+                </Button>
+              )}
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
 
-      {/* Bulk Relationship Assignment Dialog */}
-      <BulkRelationshipAssignment
-        open={showBulkRelationshipDialog}
-        onOpenChange={setShowBulkRelationshipDialog}
-        selectedEntityIds={Array.from(selectedRows)}
-        relationshipConfigs={relationshipConfigs}
-        onBulkUpdate={handleBulkRelationshipUpdate}
-      />
+        {/* Data Table */}
+        <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
+          <div className="table-scroll overflow-x-auto">
+            <Table className="w-full min-w-[600px]">
+              <UserAvailabilityTableHeader
+                onSort={handleSort}
+                getSortIcon={getSortIcon}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                isAllSelected={isAllSelected}
+                isIndeterminate={isIndeterminate}
+                onSelectAll={handleSelectAll}
+                visibleColumns={visibleColumns}
+              />
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : data?.length ? (
+                  data.map((userAvailability) => (
+                    <UserAvailabilityTableRow
+                      key={userAvailability.id}
+                      userAvailability={userAvailability}
+                      onDelete={handleDelete}
+                      isDeleting={isDeleting}
+                      isSelected={selectedRows.has(userAvailability.id || 0)}
+                      onSelect={handleSelectRow}
+                      relationshipConfigs={relationshipConfigs}
+                      onRelationshipUpdate={handleRelationshipUpdate}
+                      isUpdating={isUpdating}
+                      visibleColumns={visibleColumns}
+                    />
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                      No user availabilities found
+                      {hasActiveFilters && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Try adjusting your filters
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="table-container">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page > 1) setPage(page - 1);
+                    }}
+                    className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNumbers = [];
+                  const startPage = Math.max(1, page - 2);
+                  const endPage = Math.min(totalPages, startPage + 4);
+
+                  for (let j = startPage; j <= endPage; j++) {
+                    pageNumbers.push(j);
+                  }
+
+                  return pageNumbers[i];
+                })
+                  .filter(Boolean)
+                  .map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(p);
+                        }}
+                        isActive={page === p}
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page < totalPages) setPage(page + 1);
+                    }}
+                    className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
+        {/* Bulk Delete Dialog */}
+        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the selected user
+                availabilities and remove their data from the server.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete All
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the useravailability and
+                remove its data from the server.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk Relationship Assignment Dialog */}
+        <BulkRelationshipAssignment
+          open={showBulkRelationshipDialog}
+          onOpenChange={setShowBulkRelationshipDialog}
+          selectedEntityIds={Array.from(selectedRows)}
+          relationshipConfigs={relationshipConfigs}
+          onBulkUpdate={handleBulkRelationshipUpdate}
+        />
       </div>
     </>
   );

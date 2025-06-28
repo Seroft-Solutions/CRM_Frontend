@@ -2,7 +2,9 @@
 
 ## Overview
 
-The authentication system has been reorganized into a centralized, well-structured module located at `/src/core/auth/`. This provides a single source of truth for all authentication-related functionality.
+The authentication system has been reorganized into a centralized,
+well-structured module located at `/src/core/auth/`. This provides a single
+source of truth for all authentication-related functionality.
 
 ## Directory Structure
 
@@ -42,65 +44,74 @@ The authentication system has been reorganized into a centralized, well-structur
 ## Key Features
 
 ### 1. Centralized Configuration
+
 - **Location**: `/src/core/auth/config/nextauth.ts`
 - **Purpose**: Single NextAuth configuration with Keycloak integration
-- **Features**: 
+- **Features**:
   - Automatic token refresh
   - Role and group parsing
   - Route protection
   - Keycloak logout handling
 
 ### 2. Type Safety
+
 - **Location**: `/src/core/auth/types/index.ts`
 - **Purpose**: Comprehensive TypeScript types for all auth functionality
-- **Includes**: 
+- **Includes**:
   - Session interfaces
   - Token payload structures
   - Component prop types
   - Hook option types
 
 ### 3. Token Management
+
 - **Storage**: Local/session storage utilities
 - **Caching**: In-memory token caching with automatic refresh
 - **Refresh**: Keycloak token refresh implementation
 - **Utilities**: Token validation, expiry checking
 
 ### 4. Session Management
+
 - **Roles Manager**: In-memory role storage and permission checking
 - **Event System**: Global session event handling
 - **Monitoring**: Automatic session validation and renewal
 
 ### 5. React Hooks
+
 - **Activity Tracker**: Monitor user activity for idle detection
 - **Session Monitor**: Comprehensive session state monitoring
 - **Permission Hooks**: Easy permission checking in components
 
 ### 6. UI Components
+
 - **Permission Guard**: Declarative permission-based rendering
 - **Unauthorized Page**: Consistent unauthorized access handling
 - **Session Modals**: User-friendly session expiry notifications
 
 ### 7. Advanced Providers
+
 - **Session Provider**: Basic NextAuth session provider wrapper
 - **Session Manager**: Advanced session management with automatic recovery
 
 ## Usage Examples
 
 ### Basic Authentication Check
+
 ```typescript
 import { useAuth } from '@/core/auth';
 
 function MyComponent() {
   const { session, isLoading } = useAuth();
-  
+
   if (isLoading) return <div>Loading...</div>;
   if (!session) return <div>Please login</div>;
-  
+
   return <div>Welcome, {session.user.name}!</div>;
 }
 ```
 
 ### Permission-Based Access Control
+
 ```typescript
 import { PermissionGuard } from '@/core/auth';
 
@@ -114,6 +125,7 @@ function AdminPanel() {
 ```
 
 ### Session Monitoring
+
 ```typescript
 import { useSessionMonitor } from '@/core/auth';
 
@@ -123,12 +135,13 @@ function App() {
     onSessionExpired: () => console.log('Session expired!'),
     onSessionWarning: (minutes) => console.log(`${minutes} minutes left!`),
   });
-  
+
   return <div>Status: {isAuthenticated ? 'Logged in' : 'Logged out'}</div>;
 }
 ```
 
 ### Role Management
+
 ```typescript
 import { rolesManager } from '@/core/auth';
 
@@ -140,6 +153,7 @@ const isAdmin = rolesManager.hasAnyRole(userId, ['admin', 'super-admin']);
 ```
 
 ### Token Operations
+
 ```typescript
 import { tokenStorage, isTokenExpired } from '@/core/auth';
 
@@ -155,6 +169,7 @@ if (isTokenExpired(token)) {
 ## Migration Guide
 
 ### Old Import Patterns
+
 ```typescript
 // OLD - Scattered imports
 import { useSession } from 'next-auth/react';
@@ -164,17 +179,19 @@ import { tokenStorage } from '@/lib/token-storage';
 ```
 
 ### New Import Patterns
+
 ```typescript
 // NEW - Centralized imports
-import { 
-  useAuth, 
-  rolesManager, 
-  useSessionMonitor, 
-  tokenStorage 
+import {
+  useAuth,
+  rolesManager,
+  useSessionMonitor,
+  tokenStorage,
 } from '@/core/auth';
 ```
 
 ### Component Updates
+
 ```typescript
 // OLD
 import { PermissionGuard } from '@/components/auth/permission-guard';
@@ -196,34 +213,44 @@ AUTH_URL=http://localhost:3000
 
 ## Best Practices
 
-1. **Always use the centralized auth module**: Import from `@/core/auth` instead of individual files
-2. **Use TypeScript types**: Leverage the provided types for better development experience
-3. **Handle loading states**: Always check `isLoading` before rendering auth-dependent content
+1. **Always use the centralized auth module**: Import from `@/core/auth` instead
+   of individual files
+2. **Use TypeScript types**: Leverage the provided types for better development
+   experience
+3. **Handle loading states**: Always check `isLoading` before rendering
+   auth-dependent content
 4. **Use Permission Guards**: Wrap components that require specific permissions
 5. **Monitor sessions**: Implement session monitoring in your main app component
 6. **Handle errors gracefully**: Use the session event system for error handling
 
 ## Security Considerations
 
-1. **Token Storage**: Tokens are stored in memory and browser storage with appropriate security measures
+1. **Token Storage**: Tokens are stored in memory and browser storage with
+   appropriate security measures
 2. **Automatic Refresh**: Tokens are automatically refreshed before expiry
 3. **Session Monitoring**: Idle users are warned before session expiry
-4. **Permission Checks**: All permission checks are performed on both client and server
-5. **Logout Handling**: Proper cleanup on logout including Keycloak session termination
+4. **Permission Checks**: All permission checks are performed on both client and
+   server
+5. **Logout Handling**: Proper cleanup on logout including Keycloak session
+   termination
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Import Errors**: Ensure you're importing from `@/core/auth` and not old paths
+1. **Import Errors**: Ensure you're importing from `@/core/auth` and not old
+   paths
 2. **Type Errors**: Use the provided TypeScript types from the auth module
-3. **Session Not Loading**: Check NextAuth configuration and environment variables
+3. **Session Not Loading**: Check NextAuth configuration and environment
+   variables
 4. **Permission Denied**: Verify user roles and permission strings match exactly
-5. **Token Refresh Failing**: Check Keycloak configuration and network connectivity
+5. **Token Refresh Failing**: Check Keycloak configuration and network
+   connectivity
 
 ### Debug Mode
 
 Enable debug logging by setting:
+
 ```typescript
 // In your development environment
 console.log('Auth Debug:', { session, isLoading, isAuthenticated });
@@ -242,6 +269,7 @@ When adding new authentication features:
 ## Migration Status
 
 ✅ **Completed**:
+
 - Centralized authentication configuration
 - Type definitions
 - Token management
@@ -251,6 +279,7 @@ When adding new authentication features:
 - Provider setup
 
 🔄 **Next Steps**:
+
 - Update all import statements throughout the application
 - Remove old authentication files
 - Test all authentication flows

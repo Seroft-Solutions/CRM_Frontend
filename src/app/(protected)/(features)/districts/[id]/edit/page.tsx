@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { DistrictForm } from "../../components/district-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { DistrictForm } from '../../components/district-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditDistrictPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditDistrictPageProps {
 }
 
 export const metadata = {
-  title: "Edit District",
+  title: 'Edit District',
 };
 
 export default async function EditDistrictPage({ params }: EditDistrictPageProps) {
@@ -23,7 +23,7 @@ export default async function EditDistrictPage({ params }: EditDistrictPageProps
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="district:update"
       unauthorizedTitle="Access Denied to Edit District"
       unauthorizedDescription="You don't have permission to edit district records."
@@ -31,7 +31,7 @@ export default async function EditDistrictPage({ params }: EditDistrictPageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/districts"
               defaultLabel="Back to Districts"
               entityName="District"
@@ -47,7 +47,7 @@ export default async function EditDistrictPage({ params }: EditDistrictPageProps
               <p className="text-sm text-gray-600 mt-1">Update the information for this district</p>
             </div>
           </div>
-          
+
           <DistrictForm id={id} />
         </div>
       </div>

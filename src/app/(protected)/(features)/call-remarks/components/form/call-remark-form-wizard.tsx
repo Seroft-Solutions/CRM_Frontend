@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CallRemarkFormProvider, useEntityForm } from "./call-remark-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CallRemarkFormProvider, useEntityForm } from './call-remark-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateCallRemark,
   useUpdateCallRemark,
   useGetCallRemark,
-} from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
-import { callRemarkToast, handleCallRemarkError } from "../call-remark-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+import { callRemarkToast, handleCallRemarkError } from '../call-remark-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface CallRemarkFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CallRemarkFormContent({ id }: CallRemarkFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCallRemark(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-call-remark", id]
+      queryKey: ['get-call-remark', id],
     },
   });
 
@@ -42,15 +42,15 @@ function CallRemarkFormContent({ id }: CallRemarkFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/call-remarks";
-      
+      const backRoute = returnUrl || '/call-remarks';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,12 +80,12 @@ function CallRemarkFormContent({ id }: CallRemarkFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'remark': '',
-          'dateTime': '',
-          'call': 'Call',
+          remark: '',
+          dateTime: '',
+          call: 'Call',
         }}
       />
 
@@ -93,7 +93,7 @@ function CallRemarkFormContent({ id }: CallRemarkFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -117,7 +117,7 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -125,7 +125,7 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
         } else {
           setIsRedirecting(true);
           callRemarkToast.created();
-          router.push("/call-remarks");
+          router.push('/call-remarks');
         }
       },
       onError: (error) => {
@@ -139,7 +139,7 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         callRemarkToast.updated();
-        router.push("/call-remarks");
+        router.push('/call-remarks');
       },
       onError: (error) => {
         handleCallRemarkError(error);
@@ -160,11 +160,11 @@ export function CallRemarkForm({ id }: CallRemarkFormProps) {
   }
 
   return (
-    <CallRemarkFormProvider 
+    <CallRemarkFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

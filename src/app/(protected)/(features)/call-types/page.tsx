@@ -1,20 +1,20 @@
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 
-import { CallTypeTable } from "./components/call-type-table";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { CallTypeTable } from './components/call-type-table';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: "CallTypes",
+  title: 'CallTypes',
 };
 
 export default function CallTypePage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="callType:read"
       unauthorizedTitle="Access Denied to Call Types"
       unauthorizedDescription="You don't have permission to view call types."
@@ -40,7 +40,11 @@ export default function CallTypePage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="callType:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs"
+                >
                   <Link href="/call-types/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

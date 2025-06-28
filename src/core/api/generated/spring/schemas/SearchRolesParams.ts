@@ -6,7 +6,8 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type GetAllPublicUsersParams = {
+export type SearchRolesParams = {
+query: string;
 /**
  * Zero-based page index (0..N)
  */

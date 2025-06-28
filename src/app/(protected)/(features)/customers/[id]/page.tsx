@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { CustomerDetails } from "../components/customer-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { CustomerDetails } from '../components/customer-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface CustomerPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface CustomerPageProps {
 }
 
 export const metadata = {
-  title: "Customer Details",
+  title: 'Customer Details',
 };
 
 export default async function CustomerPage({ params }: CustomerPageProps) {
@@ -23,7 +23,7 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="customer:read"
       unauthorizedTitle="Access Denied to Customer Details"
       unauthorizedDescription="You don't have permission to view this customer."
@@ -31,7 +31,7 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/customers"
               defaultLabel="Back to Customers"
               entityName="Customer"
@@ -44,10 +44,12 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Customer Details</h1>
-              <p className="text-sm text-gray-600 mt-1">View detailed information for this customer</p>
+              <p className="text-sm text-gray-600 mt-1">
+                View detailed information for this customer
+              </p>
             </div>
           </div>
-          
+
           <CustomerDetails id={id} />
         </div>
       </div>

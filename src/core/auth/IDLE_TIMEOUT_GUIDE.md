@@ -2,7 +2,9 @@
 
 ## Overview
 
-The idle timeout feature automatically logs out users after a specified period of inactivity, enhancing security by ensuring that unattended sessions don't remain active.
+The idle timeout feature automatically logs out users after a specified period
+of inactivity, enhancing security by ensuring that unattended sessions don't
+remain active.
 
 ## Features
 
@@ -20,10 +22,7 @@ The feature is already configured in your protected layout:
 
 ```tsx
 // src/app/(protected)/layout.tsx
-<SessionManagerProvider 
-  idleTimeoutMinutes={10} 
-  warningBeforeLogoutMinutes={2}
->
+<SessionManagerProvider idleTimeoutMinutes={10} warningBeforeLogoutMinutes={2}>
   {/* Your app content */}
 </SessionManagerProvider>
 ```
@@ -31,7 +30,8 @@ The feature is already configured in your protected layout:
 ### Configuration Options
 
 - `idleTimeoutMinutes`: Total minutes before logout (default: 10)
-- `warningBeforeLogoutMinutes`: Minutes before timeout to show warning (default: 2)
+- `warningBeforeLogoutMinutes`: Minutes before timeout to show warning
+  (default: 2)
 
 ## User Experience
 
@@ -39,12 +39,14 @@ The feature is already configured in your protected layout:
 
 1. **0-8 minutes**: User is active, no warnings
 2. **8-10 minutes**: Warning modal appears: "Session expiring in 2 minutes"
-3. **10+ minutes**: Idle timeout modal appears: "Session expired due to inactivity"
+3. **10+ minutes**: Idle timeout modal appears: "Session expired due to
+   inactivity"
 4. **10+ minutes + 30 seconds**: Automatic logout to login page
 
 ### Modal Types
 
 1. **Warning Modal** (at 8 minutes):
+
    - Shows time remaining
    - "Extend Session" button
    - "Dismiss" button
@@ -62,13 +64,13 @@ The feature is already configured in your protected layout:
 import { useIdleTimeout } from '@/core/auth';
 
 function MyComponent() {
-  const { 
-    isIdle, 
-    minutesIdle, 
+  const {
+    isIdle,
+    minutesIdle,
     getActivityStatus,
     getTimeUntilWarning,
     getTimeUntilLogout,
-    resetIdleTimer 
+    resetIdleTimer,
   } = useIdleTimeout();
 
   return (
@@ -77,12 +79,8 @@ function MyComponent() {
       <p>Idle for: {minutesIdle} minutes</p>
       <p>Warning in: {getTimeUntilWarning()} minutes</p>
       <p>Logout in: {getTimeUntilLogout()} minutes</p>
-      
-      {isIdle && (
-        <button onClick={resetIdleTimer}>
-          Reset Activity Timer
-        </button>
-      )}
+
+      {isIdle && <button onClick={resetIdleTimer}>Reset Activity Timer</button>}
     </div>
   );
 }
@@ -96,12 +94,13 @@ For development and testing, you can add the SessionStatus component:
 import { SessionStatus } from '@/core/auth';
 
 // In your component
-<SessionStatus className="fixed bottom-4 right-4" />
+<SessionStatus className="fixed bottom-4 right-4" />;
 ```
 
 ## Activity Events Tracked
 
 The system tracks these events as user activity:
+
 - `mousedown` - Mouse clicks
 - `mousemove` - Mouse movement
 - `keypress` - Keyboard input
@@ -132,7 +131,7 @@ const getTimeoutForUser = (userRole: string) => {
 };
 
 // In your layout
-<SessionManagerProvider 
+<SessionManagerProvider
   idleTimeoutMinutes={getTimeoutForUser(user.role)}
   warningBeforeLogoutMinutes={5}
 >
@@ -142,7 +141,7 @@ const getTimeoutForUser = (userRole: string) => {
 
 ```tsx
 // Show warning 5 minutes before 15-minute timeout
-<SessionManagerProvider 
+<SessionManagerProvider
   idleTimeoutMinutes={15}
   warningBeforeLogoutMinutes={5}
 >
@@ -152,7 +151,8 @@ const getTimeoutForUser = (userRole: string) => {
 
 To test the idle timeout feature:
 
-1. **Quick test**: Set `idleTimeoutMinutes={1}` and `warningBeforeLogoutMinutes={0.5}`
+1. **Quick test**: Set `idleTimeoutMinutes={1}` and
+   `warningBeforeLogoutMinutes={0.5}`
 2. **Stop interacting** with the page
 3. **Watch for warning** at 30 seconds
 4. **Watch for logout** at 1 minute

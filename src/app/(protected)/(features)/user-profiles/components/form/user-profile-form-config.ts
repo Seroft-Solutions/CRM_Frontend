@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for UserProfile form
@@ -6,95 +6,52 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const userProfileFormConfig: FormConfig = {
   entity: 'UserProfile',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'keycloakId',
-        'phone',
-        'displayName',
-      ],
-      relationships: [
-      ],
+      fields: ['keycloakId', 'firstName', 'lastName', 'email', 'phone', 'displayName'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'channel',
       title: 'Channel Details',
       description: 'Channel type and parties',
-      fields: [
-      ],
-      relationships: [
-        'channelType',
-      ],
+      fields: [],
+      relationships: ['channelType'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'assignment',
-      title: 'Assignment & Date',
-      description: 'Assign users, set dates and status',
-      fields: [
-        'createdAt',
-        'updatedAt',
-      ],
-      relationships: [
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
-    },
-    {
-      id: 'users',
-      title: 'People & Users',
-      description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'user',
-      ],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'organizations',
-        'groups',
-      ],
+      fields: [],
+      relationships: ['organizations', 'groups', 'roles'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -110,8 +67,45 @@ export const userProfileFormConfig: FormConfig = {
         required: false,
         pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
-      ui: {
-      }
+      ui: {},
+    },
+    {
+      name: 'firstName',
+      type: 'text',
+      label: 'First Name',
+      placeholder: 'Enter first name',
+      required: true,
+      validation: {
+        required: true,
+        minLength: 2,
+        maxLength: 50,
+      },
+      ui: {},
+    },
+    {
+      name: 'lastName',
+      type: 'text',
+      label: 'Last Name',
+      placeholder: 'Enter last name',
+      required: true,
+      validation: {
+        required: true,
+        minLength: 2,
+        maxLength: 50,
+      },
+      ui: {},
+    },
+    {
+      name: 'email',
+      type: 'text',
+      label: 'Email',
+      placeholder: 'Enter email',
+      required: true,
+      validation: {
+        required: true,
+        pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      },
+      ui: {},
     },
     {
       name: 'phone',
@@ -124,8 +118,7 @@ export const userProfileFormConfig: FormConfig = {
         maxLength: 20,
         pattern: /^[+]?[0-9\s\-\(\)]{10,20}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'displayName',
@@ -137,60 +130,12 @@ export const userProfileFormConfig: FormConfig = {
         required: false,
         maxLength: 200,
       },
-      ui: {
-      }
-    },
-    {
-      name: 'createdAt',
-      type: 'date',
-      label: 'Created At',
-      placeholder: 'Enter created at',
-      required: false,
-      validation: {
-        required: false,
-      },
-      ui: {
-      }
-    },
-    {
-      name: 'updatedAt',
-      type: 'date',
-      label: 'Updated At',
-      placeholder: 'Enter updated at',
-      required: false,
-      validation: {
-        required: false,
-      },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
   // Relationship definitions
   relationships: [
-    {
-      name: 'user',
-      type: 'one-to-one',
-      targetEntity: 'user',
-      displayField: 'login',
-      primaryKey: 'id',
-      required: false,
-      multiple: false,
-      category: 'user',
-      api: {
-        useGetAllHook: 'useGetAllPublicUsers',
-        useSearchHook: 'useSearchPublicUsers',
-        entityName: 'PublicUsers',
-      },
-      creation: {
-        canCreate: false,
-      },
-      ui: {
-        label: 'User',
-        placeholder: 'Select user',
-        icon: '👥',
-      }
-    },
     {
       name: 'organizations',
       type: 'many-to-many',
@@ -215,7 +160,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Organizations',
         placeholder: 'Select organizations',
         icon: '🔗',
-      }
+      },
     },
     {
       name: 'groups',
@@ -241,7 +186,33 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Groups',
         placeholder: 'Select groups',
         icon: '🔗',
-      }
+      },
+    },
+    {
+      name: 'roles',
+      type: 'many-to-many',
+      targetEntity: 'role',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: true,
+      category: 'other',
+      api: {
+        useGetAllHook: 'useGetAllRoles',
+        useSearchHook: 'useSearchRoles',
+        useCountHook: 'useCountRoles',
+        entityName: 'Roles',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/roles/new',
+        createPermission: 'role:create',
+      },
+      ui: {
+        label: 'Roles',
+        placeholder: 'Select roles',
+        icon: '🔗',
+      },
     },
     {
       name: 'channelType',
@@ -267,7 +238,7 @@ export const userProfileFormConfig: FormConfig = {
         label: 'Channel Type',
         placeholder: 'Select channel type',
         icon: '📞',
-      }
+      },
     },
   ],
 
@@ -292,7 +263,7 @@ export const userProfileFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -315,17 +286,19 @@ export const userProfileFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const userProfileFormHelpers = {
-  getStepById: (stepId: string) => userProfileFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => userProfileFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => userProfileFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => userProfileFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    userProfileFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    userProfileFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = userProfileFormConfig.steps.find(s => s.id === stepId);
+    const step = userProfileFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };
