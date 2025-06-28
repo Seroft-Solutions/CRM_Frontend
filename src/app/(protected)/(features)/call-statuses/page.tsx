@@ -6,7 +6,7 @@ import Link from "next/link";
 import { CallStatusTable } from "./components/call-status-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
+import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 
 export const metadata = {
   title: "CallStatuses",

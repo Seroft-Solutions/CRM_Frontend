@@ -21,11 +21,6 @@ import {
   useCountGroups,
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 import {
-  useGetAllRoles,
-  useSearchRoles,
-  useCountRoles,
-} from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
-import {
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes,
@@ -150,44 +145,6 @@ export function RelationshipRenderer({
             useGetAllHook={useGetAllGroups}
             useSearchHook={useSearchGroups}
             useCountHook={useCountGroups}
-            entityName={relConfig.api.entityName}
-            searchField={relConfig.displayField}
-            canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ""}
-            createPermission={relConfig.creation?.createPermission || ""}
-            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
-            parentField={relConfig.cascadingFilter?.parentField}
-            disabled={
-              relConfig.cascadingFilter 
-                ? !form.watch(relConfig.cascadingFilter.parentField) 
-                : relConfig.ui.disabled
-            }
-            {...actions.getNavigationProps(relConfig.name)}
-          />
-        );
-        
-      case 'roles':
-        return (
-          <PaginatedRelationshipCombobox
-            value={field.value}
-            onValueChange={(value) => {
-              field.onChange(value);
-              if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter((depRel: any) => 
-                  depRel.cascadingFilter?.parentField === relConfig.name
-                );
-                dependentRelationships.forEach((depRel: any) => {
-                  form.setValue(depRel.name, undefined);
-                });
-              }
-            }}
-            displayField={relConfig.displayField}
-            placeholder={relConfig.ui.placeholder}
-            multiple={relConfig.multiple}
-            useGetAllHook={useGetAllRoles}
-            useSearchHook={useSearchRoles}
-            useCountHook={useCountRoles}
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}

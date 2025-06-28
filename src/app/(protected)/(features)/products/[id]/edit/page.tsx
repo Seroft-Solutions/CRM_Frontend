@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProductForm } from "../../components/product-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
-import { PermissionGuard } from "@/core/auth";
+import { PermissionGuard } from '@/core/auth';
 import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditProductPageProps {
