@@ -80,7 +80,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // Refresh token if expired
-      if (token.expires_at && typeof token.expires_at === 'number' && Date.now() / 1000 >= token.expires_at - 60) {
+      if (
+        token.expires_at &&
+        typeof token.expires_at === 'number' &&
+        Date.now() / 1000 >= token.expires_at - 60
+      ) {
         token = await refreshAccessToken(token);
       }
 
@@ -151,7 +155,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signOut(params) {
       // Handle both token and session based signout
       const token = 'token' in params ? params.token : null;
-      
+
       // Clear roles from roles manager on signout
       if (token?.sub) {
         rolesManager.clearUserRoles(token.sub);

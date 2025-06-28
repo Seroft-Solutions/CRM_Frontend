@@ -1,9 +1,9 @@
 {
   "annotations": {
-    "changelogDate": "20250625070804"
+    "changelogDate": "20250628212728"
   },
   "applications": ["crmBackend"],
-  "documentation": "Keycloak Group mapping",
+  "documentation": "Group is scoped per organization.",
   "dto": "mapstruct",
   "entityTableName": "jhi_group",
   "fields": [
@@ -36,14 +36,6 @@
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "createdAt",
-      "fieldType": "Instant"
-    },
-    {
-      "fieldName": "updatedAt",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -55,8 +47,7 @@
       "otherEntityName": "organization",
       "relationshipName": "organization",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
+      "relationshipType": "many-to-one"
     },
     {
       "otherEntityField": "displayName",

@@ -1,9 +1,9 @@
 {
   "annotations": {
-    "changelogDate": "20250625070803"
+    "changelogDate": "20250628212628"
   },
   "applications": ["crmBackend"],
-  "documentation": "Keycloak Organization mapping",
+  "documentation": "Organization is a tenant and maps to a DB schema.",
   "dto": "mapstruct",
   "fields": [
     {
@@ -36,14 +36,6 @@
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "createdAt",
-      "fieldType": "Instant"
-    },
-    {
-      "fieldName": "updatedAt",
-      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,

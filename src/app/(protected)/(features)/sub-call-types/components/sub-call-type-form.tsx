@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { SubCallTypeForm } from "./form/sub-call-type-form-wizard";
+import React from 'react';
+import { SubCallTypeForm } from './form/sub-call-type-form-wizard';
 
 interface SubCallTypeFormProps {
   id?: number;

@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { StateDetails } from "../components/state-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { StateDetails } from '../components/state-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface StatePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface StatePageProps {
 }
 
 export const metadata = {
-  title: "State Details",
+  title: 'State Details',
 };
 
 export default async function StatePage({ params }: StatePageProps) {
@@ -23,7 +23,7 @@ export default async function StatePage({ params }: StatePageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="state:read"
       unauthorizedTitle="Access Denied to State Details"
       unauthorizedDescription="You don't have permission to view this state."
@@ -31,7 +31,7 @@ export default async function StatePage({ params }: StatePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/states"
               defaultLabel="Back to States"
               entityName="State"
@@ -47,7 +47,7 @@ export default async function StatePage({ params }: StatePageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this state</p>
             </div>
           </div>
-          
+
           <StateDetails id={id} />
         </div>
       </div>

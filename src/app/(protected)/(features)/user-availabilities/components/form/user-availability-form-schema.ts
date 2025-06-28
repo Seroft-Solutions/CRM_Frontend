@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Zod validation schema for UserAvailability form
@@ -9,18 +9,18 @@ export const userAvailabilityFormSchema = z.object({
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   isAvailable: z.boolean(),
-  effectiveFrom: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  effectiveTo: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  effectiveFrom: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  effectiveTo: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   timeZone: z.string().max(50).optional(),
   user: z.number(),
 });
@@ -33,18 +33,18 @@ export const userAvailabilityFieldSchemas = {
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   isAvailable: z.boolean(),
-  effectiveFrom: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
-  effectiveTo: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Invalid date format"
-  }).optional(),
+  effectiveFrom: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  effectiveTo: z
+    .union([z.date(), z.string().transform((str) => new Date(str))])
+    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+      message: 'Invalid date format',
+    })
+    .optional(),
   timeZone: z.string().max(50).optional(),
   user: z.number(),
 };
@@ -57,29 +57,30 @@ export const userAvailabilityStepSchemas = {
     endTime: userAvailabilityFieldSchemas.endTime,
     timeZone: userAvailabilityFieldSchemas.timeZone,
   }),
-  
+
   dates: z.object({
     effectiveFrom: userAvailabilityFieldSchemas.effectiveFrom,
     effectiveTo: userAvailabilityFieldSchemas.effectiveTo,
   }),
-  
+
   settings: z.object({
     isAvailable: userAvailabilityFieldSchemas.isAvailable,
   }),
-  
+
   user: z.object({
     user: userAvailabilityFieldSchemas.user,
   }),
-  
-  review: userAvailabilityFormSchema
+
+  review: userAvailabilityFormSchema,
 };
 
 // Validation helper functions
 export const userAvailabilityValidationHelpers = {
   validateStep: (stepId: string, data: Partial<UserAvailabilityFormValues>) => {
-    const stepSchema = userAvailabilityStepSchemas[stepId as keyof typeof userAvailabilityStepSchemas];
+    const stepSchema =
+      userAvailabilityStepSchemas[stepId as keyof typeof userAvailabilityStepSchemas];
     if (!stepSchema) return { success: true, data, error: null };
-    
+
     try {
       const validatedData = stepSchema.parse(data);
       return { success: true, data: validatedData, error: null };
@@ -87,11 +88,12 @@ export const userAvailabilityValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   validateField: (fieldName: string, value: any) => {
-    const fieldSchema = userAvailabilityFieldSchemas[fieldName as keyof typeof userAvailabilityFieldSchemas];
+    const fieldSchema =
+      userAvailabilityFieldSchemas[fieldName as keyof typeof userAvailabilityFieldSchemas];
     if (!fieldSchema) return { success: true, data: value, error: null };
-    
+
     try {
       const validatedValue = fieldSchema.parse(value);
       return { success: true, data: validatedValue, error: null };
@@ -99,7 +101,7 @@ export const userAvailabilityValidationHelpers = {
       return { success: false, data: null, error };
     }
   },
-  
+
   getFieldValidationRules: (fieldName: string) => {
     if (fieldName === 'dayOfWeek') {
       return {
@@ -129,7 +131,7 @@ export const userAvailabilityValidationHelpers = {
         maxLength: 50,
       };
     }
-    
+
     return {};
-  }
+  },
 };

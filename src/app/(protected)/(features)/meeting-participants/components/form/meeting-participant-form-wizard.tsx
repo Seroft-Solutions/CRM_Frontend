@@ -1,20 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { MeetingParticipantFormProvider, useEntityForm } from "./meeting-participant-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { MeetingParticipantFormProvider, useEntityForm } from './meeting-participant-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateMeetingParticipant,
   useUpdateMeetingParticipant,
   useGetMeetingParticipant,
-} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
-import { meetingParticipantToast, handleMeetingParticipantError } from "../meeting-participant-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+import {
+  meetingParticipantToast,
+  handleMeetingParticipantError,
+} from '../meeting-participant-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface MeetingParticipantFormProps {
   id?: number;
@@ -30,7 +33,7 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetMeetingParticipant(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-meeting-participant", id]
+      queryKey: ['get-meeting-participant', id],
     },
   });
 
@@ -42,15 +45,15 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/meeting-participants";
-      
+      const backRoute = returnUrl || '/meeting-participants';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,16 +83,16 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'email': '',
-          'name': '',
-          'isRequired': '',
-          'hasAccepted': '',
-          'hasDeclined': '',
-          'responseDateTime': '',
-          'meeting': 'Meeting',
+          email: '',
+          name: '',
+          isRequired: '',
+          hasAccepted: '',
+          hasDeclined: '',
+          responseDateTime: '',
+          meeting: 'Meeting',
         }}
       />
 
@@ -97,7 +100,7 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -121,7 +124,7 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -129,7 +132,7 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
         } else {
           setIsRedirecting(true);
           meetingParticipantToast.created();
-          router.push("/meeting-participants");
+          router.push('/meeting-participants');
         }
       },
       onError: (error) => {
@@ -143,7 +146,7 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         meetingParticipantToast.updated();
-        router.push("/meeting-participants");
+        router.push('/meeting-participants');
       },
       onError: (error) => {
         handleMeetingParticipantError(error);
@@ -164,11 +167,11 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
   }
 
   return (
-    <MeetingParticipantFormProvider 
+    <MeetingParticipantFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

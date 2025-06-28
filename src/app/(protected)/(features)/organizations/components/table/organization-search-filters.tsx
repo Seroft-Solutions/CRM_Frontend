@@ -1,39 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Filter,
-  X,
-  Search,
-  CalendarIcon,
-  ChevronDown
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { Filter, X, Search, CalendarIcon, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-
-
+} from '@/components/ui/dropdown-menu';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -63,13 +51,14 @@ export function OrganizationSearchAndFilters({
   dateRange,
   onDateRangeChange,
   onClearAll,
-  hasActiveFilters
+  hasActiveFilters,
 }: OrganizationSearchAndFiltersProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   // Count active filters for badge
-  const activeFiltersCount = Object.values(filters).filter(v => v !== undefined && v !== "").length + 
-    (searchTerm ? 1 : 0) + 
+  const activeFiltersCount =
+    Object.values(filters).filter((v) => v !== undefined && v !== '').length +
+    (searchTerm ? 1 : 0) +
     (dateRange.from || dateRange.to ? 1 : 0);
 
   // Remove specific filter
@@ -93,16 +82,10 @@ export function OrganizationSearchAndFilters({
       const [relationName] = key.split('.');
       return relationName;
     }
-    
+
     // Handle regular field filters
     if (key === 'isActive') {
       return 'isActive';
-    }
-    if (key === 'createdAt') {
-      return 'createdAt';
-    }
-    if (key === 'updatedAt') {
-      return 'updatedAt';
     }
     if (key === 'keycloakOrgId') {
       return 'keycloakOrgId';
@@ -150,24 +133,19 @@ export function OrganizationSearchAndFilters({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80 p-4" align="end">
             <div className="space-y-4">
-              
-              
-
-              
               <DropdownMenuSeparator />
-              
+
               {/* Boolean Fields Section */}
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      isActive
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">isActive</label>
                     <Select
-                      value={filters["isActive"] as string || "__all__"}
-                      onValueChange={(value) => onFilterChange("isActive", value === "__all__" ? undefined : value)}
+                      value={(filters['isActive'] as string) || '__all__'}
+                      onValueChange={(value) =>
+                        onFilterChange('isActive', value === '__all__' ? undefined : value)
+                      }
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="All" />
@@ -179,116 +157,50 @@ export function OrganizationSearchAndFilters({
                       </SelectContent>
                     </Select>
                   </div>
-                  
                 </div>
               </div>
-              
 
-              
-
-              
               <DropdownMenuSeparator />
-              
-              {/* Dates Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
-                <div className="mt-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    createdAt Range
-                  </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full h-8 justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-3 w-3" />
-                        {dateRange.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "MMM dd, yyyy")
-                          )
-                        ) : (
-                          "Pick date range"
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange.from}
-                        selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) => onDateRangeChange({ from: range?.from, to: range?.to })}
-                        numberOfMonths={2}
-                      />
-                      <div className="p-3 border-t">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full h-7"
-                          onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
-                        >
-                          Clear Date Range
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              
 
-              
-              <DropdownMenuSeparator />
-              
               {/* Other Fields Section */}
               <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">
+                  Other Fields
+                </DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
-                  
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
                       keycloakOrgId
                     </label>
                     <Input
                       placeholder="Filter by keycloakOrgId..."
-                      value={filters["keycloakOrgId"] as string || ""}
-                      onChange={(e) => onFilterChange("keycloakOrgId", e.target.value || undefined)}
+                      value={(filters['keycloakOrgId'] as string) || ''}
+                      onChange={(e) => onFilterChange('keycloakOrgId', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      name
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">name</label>
                     <Input
                       placeholder="Filter by name..."
-                      value={filters["name"] as string || ""}
-                      onChange={(e) => onFilterChange("name", e.target.value || undefined)}
+                      value={(filters['name'] as string) || ''}
+                      onChange={(e) => onFilterChange('name', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      displayName
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">displayName</label>
                     <Input
                       placeholder="Filter by displayName..."
-                      value={filters["displayName"] as string || ""}
-                      onChange={(e) => onFilterChange("displayName", e.target.value || undefined)}
+                      value={(filters['displayName'] as string) || ''}
+                      onChange={(e) => onFilterChange('displayName', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
-                  
                 </div>
               </div>
-              
-
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -314,33 +226,35 @@ export function OrganizationSearchAndFilters({
             <Badge variant="secondary" className="gap-1">
               Search: {searchTerm}
               <button
-                onClick={() => onSearchChange({ target: { value: "" } } as any)}
+                onClick={() => onSearchChange({ target: { value: '' } } as any)}
                 className="ml-1 rounded-full hover:bg-secondary-foreground/20"
               >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
-          
-          {Object.entries(filters).map(([key, value]) => (
-            value !== undefined && value !== "" && (
-              <Badge key={key} variant="secondary" className="gap-1">
-                {getFilterDisplayName(key)}: {getFilterDisplayValue(key, value)}
-                <button
-                  onClick={() => removeFilter(key)}
-                  className="ml-1 rounded-full hover:bg-secondary-foreground/20"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )
-          ))}
-          
+
+          {Object.entries(filters).map(
+            ([key, value]) =>
+              value !== undefined &&
+              value !== '' && (
+                <Badge key={key} variant="secondary" className="gap-1">
+                  {getFilterDisplayName(key)}: {getFilterDisplayValue(key, value)}
+                  <button
+                    onClick={() => removeFilter(key)}
+                    className="ml-1 rounded-full hover:bg-secondary-foreground/20"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )
+          )}
+
           {(dateRange.from || dateRange.to) && (
             <Badge variant="secondary" className="gap-1">
-              Date: {dateRange.from && format(dateRange.from, "MMM dd")}
-              {dateRange.from && dateRange.to && " - "}
-              {dateRange.to && format(dateRange.to, "MMM dd")}
+              Date: {dateRange.from && format(dateRange.from, 'MMM dd')}
+              {dateRange.from && dateRange.to && ' - '}
+              {dateRange.to && format(dateRange.to, 'MMM dd')}
               <button
                 onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
                 className="ml-1 rounded-full hover:bg-secondary-foreground/20"

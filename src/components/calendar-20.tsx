@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 interface Calendar20Props {
   onDateTimeSelected?: (date: Date, time: string) => void;
@@ -24,26 +24,24 @@ export default function Calendar20({
   initialDate,
   initialTime,
   showContinueButton = true,
-  continueButtonText = "Continue",
+  continueButtonText = 'Continue',
   onContinue,
   disabled = false,
 }: Calendar20Props) {
-  const [date, setDate] = React.useState<Date | undefined>(
-    initialDate || new Date(2025, 5, 12)
-  )
-  const [selectedTime, setSelectedTime] = React.useState<string | null>(initialTime || null)
-  
+  const [date, setDate] = React.useState<Date | undefined>(initialDate || new Date(2025, 5, 12));
+  const [selectedTime, setSelectedTime] = React.useState<string | null>(initialTime || null);
+
   // Use provided time slots or generate default ones
   const timeSlots = React.useMemo(() => {
     if (availableTimeSlots && availableTimeSlots.length > 0) {
       return availableTimeSlots;
     }
     return Array.from({ length: 37 }, (_, i) => {
-      const totalMinutes = i * 15
-      const hour = Math.floor(totalMinutes / 60) + 9
-      const minute = totalMinutes % 60
-      return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
-    })
+      const totalMinutes = i * 15;
+      const hour = Math.floor(totalMinutes / 60) + 9;
+      const minute = totalMinutes % 60;
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    });
   }, [availableTimeSlots]);
 
   const handleDateSelect = (newDate: Date | undefined) => {
@@ -67,24 +65,22 @@ export default function Calendar20({
             selected={date}
             onSelect={handleDateSelect}
             defaultMonth={date}
-            disabled={(date) => 
+            disabled={(date) =>
               disabled ||
-              date < new Date() || 
-              bookedDates.some(bookedDate => 
-                bookedDate.toDateString() === date.toDateString()
-              )
+              date < new Date() ||
+              bookedDates.some((bookedDate) => bookedDate.toDateString() === date.toDateString())
             }
             showOutsideDays={false}
             modifiers={{
               booked: bookedDates,
             }}
             modifiersClassNames={{
-              booked: "[&>button]:line-through opacity-100",
+              booked: '[&>button]:line-through opacity-100',
             }}
             className="bg-transparent p-0 [--cell-size:--spacing(10)] md:[--cell-size:--spacing(12)]"
             formatters={{
               formatWeekdayName: (date) => {
-                return date.toLocaleString("en-US", { weekday: "short" })
+                return date.toLocaleString('en-US', { weekday: 'short' });
               },
             }}
           />
@@ -94,7 +90,7 @@ export default function Calendar20({
             {timeSlots.map((time) => (
               <Button
                 key={time}
-                variant={selectedTime === time ? "default" : "outline"}
+                variant={selectedTime === time ? 'default' : 'outline'}
                 onClick={() => handleTimeSelect(time)}
                 disabled={disabled}
                 className="w-full shadow-none"
@@ -110,13 +106,13 @@ export default function Calendar20({
           <div className="text-sm">
             {date && selectedTime ? (
               <>
-                Your meeting is booked for{" "}
+                Your meeting is booked for{' '}
                 <span className="font-medium">
-                  {date?.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  })}{" "}
+                  {date?.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  })}{' '}
                 </span>
                 at <span className="font-medium">{selectedTime}</span>.
               </>
@@ -141,5 +137,5 @@ export default function Calendar20({
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }

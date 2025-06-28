@@ -1,20 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { meetingParticipantToast, handleMeetingParticipantError } from "./meeting-participant-toast";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  meetingParticipantToast,
+  handleMeetingParticipantError,
+} from './meeting-participant-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +21,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetMeetingParticipant,
   useDeleteMeetingParticipant,
-} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 
 interface MeetingParticipantDetailsProps {
   id: number;
@@ -54,7 +49,7 @@ export function MeetingParticipantDetails({ id }: MeetingParticipantDetailsProps
     mutation: {
       onSuccess: () => {
         meetingParticipantToast.deleted();
-        router.push("/meeting-participants");
+        router.push('/meeting-participants');
       },
       onError: (error) => {
         handleMeetingParticipantError(error);
@@ -96,75 +91,83 @@ export function MeetingParticipantDetails({ id }: MeetingParticipantDetailsProps
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Email
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.email || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.email || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Name
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.name || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.name || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Required</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Is Required
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isRequired ? "default" : "secondary"} className="text-sm">
-                      {entity.isRequired ? "Yes" : "No"}
+                    <Badge
+                      variant={entity.isRequired ? 'default' : 'secondary'}
+                      className="text-sm"
+                    >
+                      {entity.isRequired ? 'Yes' : 'No'}
                     </Badge>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Has Accepted</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Has Accepted
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.hasAccepted ? "default" : "secondary"} className="text-sm">
-                      {entity.hasAccepted ? "Yes" : "No"}
+                    <Badge
+                      variant={entity.hasAccepted ? 'default' : 'secondary'}
+                      className="text-sm"
+                    >
+                      {entity.hasAccepted ? 'Yes' : 'No'}
                     </Badge>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Has Declined</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Has Declined
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.hasDeclined ? "default" : "secondary"} className="text-sm">
-                      {entity.hasDeclined ? "Yes" : "No"}
+                    <Badge
+                      variant={entity.hasDeclined ? 'default' : 'secondary'}
+                      className="text-sm"
+                    >
+                      {entity.hasDeclined ? 'Yes' : 'No'}
                     </Badge>
-                    
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Response Date Time</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Response Date Time
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     <span className="text-foreground">
-                      {entity.responseDateTime ? format(new Date(entity.responseDateTime), "PPP") : "—"}
+                      {entity.responseDateTime
+                        ? format(new Date(entity.responseDateTime), 'PPP')
+                        : '—'}
                     </span>
-                    
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
 
-        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -175,25 +178,24 @@ export function MeetingParticipantDetails({ id }: MeetingParticipantDetailsProps
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meeting</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Meeting
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
                     {entity.meeting ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.meeting as any).name || entity.meeting.id}
                       </Badge>
-                    ) : "—"}
-                    
+                    ) : (
+                      '—'
+                    )}
                   </dd>
                 </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-        
       </div>
 
       {/* Action Buttons */}
@@ -205,7 +207,7 @@ export function MeetingParticipantDetails({ id }: MeetingParticipantDetailsProps
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -221,8 +223,8 @@ export function MeetingParticipantDetails({ id }: MeetingParticipantDetailsProps
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              meetingparticipant and remove its data from the server.
+              This action cannot be undone. This will permanently delete the meetingparticipant and
+              remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -21,7 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AdminUserDTO
+  UserVM
 } from '../../schemas';
 
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
@@ -118,7 +118,7 @@ export const getAccount = (
 ) => {
       
       
-      return springServiceMutator<AdminUserDTO>(
+      return springServiceMutator<UserVM>(
       {url: `/api/account`, method: 'GET', signal
     },
       options);

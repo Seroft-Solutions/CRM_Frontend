@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { GroupDetails } from "../components/group-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { GroupDetails } from '../components/group-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface GroupPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface GroupPageProps {
 }
 
 export const metadata = {
-  title: "Group Details",
+  title: 'Group Details',
 };
 
 export default async function GroupPage({ params }: GroupPageProps) {
@@ -23,7 +23,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="group:read"
       unauthorizedTitle="Access Denied to Group Details"
       unauthorizedDescription="You don't have permission to view this group."
@@ -31,7 +31,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/groups"
               defaultLabel="Back to Groups"
               entityName="Group"
@@ -47,7 +47,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this group</p>
             </div>
           </div>
-          
+
           <GroupDetails id={id} />
         </div>
       </div>

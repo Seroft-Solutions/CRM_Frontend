@@ -1,24 +1,30 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import Calendar20 from "@/components/calendar-20";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { 
-  CalendarDays, 
-  Video, 
-  Phone, 
-  MapPin, 
-  Users, 
-  Bell, 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import Calendar20 from '@/components/calendar-20';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import {
+  CalendarDays,
+  Video,
+  Phone,
+  MapPin,
+  Users,
+  Bell,
   Clock,
   CheckCircle2,
   ChevronRight,
@@ -26,39 +32,33 @@ import {
   Sparkles,
   ArrowRight,
   Plus,
-  X
-} from "lucide-react";
-import { format, addMinutes } from "date-fns";
-import { cn } from "@/lib/utils";
+  X,
+} from 'lucide-react';
+import { format, addMinutes } from 'date-fns';
+import { cn } from '@/lib/utils';
 import './meeting-scheduler.css';
 
 // Backend imports
-import { 
+import {
   useCreateMeeting,
-  useGetAllMeetings 
-} from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
-import { 
-  useCreateMeetingParticipant 
-} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
-import { 
-  useCreateMeetingReminder 
-} from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-import { 
-  useGetAllAvailableTimeSlots 
-} from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
-import { useGetAllUserAvailabilities } from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
+  useGetAllMeetings,
+} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+import { useCreateMeetingParticipant } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+import { useCreateMeetingReminder } from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
+import { useGetAllAvailableTimeSlots } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
-import { 
-  MeetingDTOMeetingType, 
+import {
+  MeetingDTOMeetingType,
   MeetingDTOMeetingStatus,
-  MeetingReminderDTOReminderType 
-} from "@/core/api/generated/spring/schemas";
-import type { 
+  MeetingReminderDTOReminderType,
+} from '@/core/api/generated/spring/schemas';
+import type {
   MeetingDTO,
   MeetingParticipantDTO,
-  MeetingReminderDTO 
-} from "@/core/api/generated/spring/schemas";
-import {useGetCustomer} from "@/core/api/generated/spring";
+  MeetingReminderDTO,
+} from '@/core/api/generated/spring/schemas';
+import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingDetails {
   title: string;
@@ -96,7 +96,7 @@ export function MeetingScheduler({
   assignedUserId,
   callId,
   onMeetingScheduledAction,
-  disabled = false
+  disabled = false,
 }: MeetingSchedulerProps) {
   const [currentStep, setCurrentStep] = useState<Step>('datetime');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -107,17 +107,17 @@ export function MeetingScheduler({
     duration: 30,
     meetingType: 'VIRTUAL',
     meetingUrl: 'https://meet.google.com/',
-    location: ''
+    location: '',
   });
   const [participants, setParticipants] = useState<ParticipantDetails[]>([]);
   const [reminders, setReminders] = useState<ReminderDetails[]>([
-    { enabled: true, type: 'EMAIL', minutesBefore: 15 }
+    { enabled: true, type: 'EMAIL', minutesBefore: 15 },
   ]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
-    query: { enabled: !!customerId }
+    query: { enabled: !!customerId },
   });
 
   // Backend hooks
@@ -126,7 +126,7 @@ export function MeetingScheduler({
       onSuccess: async (meetingData) => {
         if (participants.length > 0) {
           await Promise.all(
-            participants.map(participant =>
+            participants.map((participant) =>
               createMeetingParticipant({
                 data: {
                   email: participant.email,
@@ -134,23 +134,23 @@ export function MeetingScheduler({
                   isRequired: participant.isRequired,
                   hasAccepted: false,
                   hasDeclined: false,
-                  meeting: meetingData
-                }
+                  meeting: meetingData,
+                },
               })
             )
           );
         }
 
-        const enabledReminders = reminders.filter(r => r.enabled);
+        const enabledReminders = reminders.filter((r) => r.enabled);
         if (enabledReminders.length > 0) {
           await Promise.all(
-            enabledReminders.map(reminder =>
+            enabledReminders.map((reminder) =>
               createMeetingReminder({
                 data: {
                   reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
                   reminderMinutesBefore: reminder.minutesBefore,
-                  meeting: meetingData
-                }
+                  meeting: meetingData,
+                },
               })
             )
           );
@@ -186,17 +186,19 @@ export function MeetingScheduler({
   // Initialize default participant
   useEffect(() => {
     if (customerData && participants.length === 0) {
-      setParticipants([{
-        email: customerData.email || '',
-        name: customerData.customerBusinessName || '',
-        isRequired: true
-      }]);
+      setParticipants([
+        {
+          email: customerData.email || '',
+          name: customerData.customerBusinessName || '',
+          isRequired: true,
+        },
+      ]);
     }
 
     if (customerData && !meetingDetails.title) {
-      setMeetingDetails(prev => ({
+      setMeetingDetails((prev) => ({
         ...prev,
-        title: `Follow-up Meeting with ${customerData.customerBusinessName || 'Customer'}`
+        title: `Follow-up Meeting with ${customerData.customerBusinessName || 'Customer'}`,
       }));
     }
   }, [customerData, participants.length, meetingDetails.title]);
@@ -204,9 +206,9 @@ export function MeetingScheduler({
   // Process available time slots
   useEffect(() => {
     const slots: string[] = [];
-    
+
     if (timeSlots && userAvailabilities) {
-      timeSlots.forEach(slot => {
+      timeSlots.forEach((slot) => {
         if (!slot.isBooked) {
           const slotTime = new Date(slot.slotDateTime);
           const timeString = format(slotTime, 'HH:mm');
@@ -216,20 +218,20 @@ export function MeetingScheduler({
         }
       });
 
-      userAvailabilities.forEach(availability => {
+      userAvailabilities.forEach((availability) => {
         if (availability.isAvailable) {
           const [startHour, startMin] = availability.startTime.split(':').map(Number);
           const [endHour, endMin] = availability.endTime.split(':').map(Number);
-          
+
           let currentHour = startHour;
           let currentMin = startMin;
-          
+
           while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
             const timeSlot = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
             if (!slots.includes(timeSlot)) {
               slots.push(timeSlot);
             }
-            
+
             currentMin += 30;
             if (currentMin >= 60) {
               currentMin = 0;
@@ -239,7 +241,7 @@ export function MeetingScheduler({
         }
       });
     }
-    
+
     // Default time slots if none from backend
     if (slots.length === 0) {
       for (let hour = 9; hour <= 17; hour++) {
@@ -250,7 +252,7 @@ export function MeetingScheduler({
         }
       }
     }
-    
+
     setAvailableTimeSlots(slots.sort());
   }, [timeSlots, userAvailabilities]);
 
@@ -258,12 +260,13 @@ export function MeetingScheduler({
   useEffect(() => {
     if (existingMeetings) {
       const booked = existingMeetings
-        .filter(meeting => 
-          meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED || 
-          meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED
+        .filter(
+          (meeting) =>
+            meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED ||
+            meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED
         )
-        .map(meeting => new Date(meeting.meetingDateTime));
-      
+        .map((meeting) => new Date(meeting.meetingDateTime));
+
       setBookedDates(booked);
     }
   }, [existingMeetings]);
@@ -301,7 +304,7 @@ export function MeetingScheduler({
       case 'details':
         return meetingDetails.title.trim().length > 0;
       case 'participants':
-        return participants.every(p => p.email && p.name);
+        return participants.every((p) => p.email && p.name);
       default:
         return true;
     }
@@ -334,7 +337,11 @@ export function MeetingScheduler({
               {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1}
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Step {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1} of 4</p>
+              <p className="text-sm font-medium text-gray-500">
+                Step{' '}
+                {['datetime', 'details', 'participants', 'confirmation'].indexOf(currentStep) + 1}{' '}
+                of 4
+              </p>
               <p className="text-lg font-semibold text-gray-900">
                 {currentStep === 'datetime' && 'Select Date & Time'}
                 {currentStep === 'details' && 'Meeting Details'}
@@ -348,8 +355,8 @@ export function MeetingScheduler({
           </div>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out" 
+          <div
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out"
             style={{ width: `${getStepProgress()}%` }}
           ></div>
         </div>
@@ -375,7 +382,7 @@ export function MeetingScheduler({
             </div>
           </CardContent>
           <CardFooter className="bg-gray-50 px-8 py-4 border-t">
-            <Button 
+            <Button
               onClick={() => setCurrentStep('details')}
               disabled={!canProceedToNext()}
               className="ml-auto h-10 px-6 bg-blue-600 hover:bg-blue-700"
@@ -398,15 +405,19 @@ export function MeetingScheduler({
                   id="title"
                   placeholder="Enter meeting title"
                   value={meetingDetails.title}
-                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                  }
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration</Label>
                 <Select
                   value={meetingDetails.duration.toString()}
-                  onValueChange={(value) => setMeetingDetails(prev => ({ ...prev, duration: parseInt(value) }))}
+                  onValueChange={(value) =>
+                    setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -426,8 +437,8 @@ export function MeetingScheduler({
               <Label htmlFor="type">Meeting Type</Label>
               <Select
                 value={meetingDetails.meetingType}
-                onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') => 
-                  setMeetingDetails(prev => ({ ...prev, meetingType: value }))
+                onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') =>
+                  setMeetingDetails((prev) => ({ ...prev, meetingType: value }))
                 }
               >
                 <SelectTrigger>
@@ -463,7 +474,9 @@ export function MeetingScheduler({
                   id="meetingUrl"
                   placeholder="https://meet.google.com/..."
                   value={meetingDetails.meetingUrl}
-                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, meetingUrl: e.target.value }))}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, meetingUrl: e.target.value }))
+                  }
                 />
               </div>
             )}
@@ -475,7 +488,9 @@ export function MeetingScheduler({
                   id="location"
                   placeholder="Enter meeting location"
                   value={meetingDetails.location}
-                  onChange={(e) => setMeetingDetails(prev => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, location: e.target.value }))
+                  }
                 />
               </div>
             )}
@@ -486,17 +501,23 @@ export function MeetingScheduler({
                 id="description"
                 placeholder="Add meeting agenda or notes..."
                 value={meetingDetails.description}
-                onChange={(e) => setMeetingDetails(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                }
                 rows={3}
               />
             </div>
           </CardContent>
           <CardFooter className="bg-gray-50 px-8 py-6 border-t">
             <div className="flex justify-between w-full">
-              <Button variant="outline" onClick={() => setCurrentStep('datetime')} className="h-11 px-6">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('datetime')}
+                className="h-11 px-6"
+              >
                 Back
               </Button>
-              <Button 
+              <Button
                 onClick={() => setCurrentStep('participants')}
                 disabled={!canProceedToNext()}
                 className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
@@ -519,16 +540,21 @@ export function MeetingScheduler({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setParticipants(prev => [...prev, { email: '', name: '', isRequired: false }])}
+                  onClick={() =>
+                    setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }])
+                  }
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Participant
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {participants.map((participant, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg"
+                  >
                     <div className="col-span-5">
                       <Label>Email</Label>
                       <Input
@@ -568,7 +594,9 @@ export function MeetingScheduler({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setParticipants(prev => prev.filter((_, i) => i !== index))}
+                        onClick={() =>
+                          setParticipants((prev) => prev.filter((_, i) => i !== index))
+                        }
                         disabled={index === 0 && customerData?.email === participant.email}
                       >
                         <X className="w-4 h-4" />
@@ -588,10 +616,13 @@ export function MeetingScheduler({
                   Email Reminders
                 </h4>
               </div>
-              
+
               <div className="space-y-3">
                 {reminders.map((reminder, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         checked={reminder.enabled}
@@ -629,10 +660,14 @@ export function MeetingScheduler({
           </CardContent>
           <CardFooter className="bg-gray-50 px-8 py-6 border-t">
             <div className="flex justify-between w-full">
-              <Button variant="outline" onClick={() => setCurrentStep('details')} className="h-11 px-6">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('details')}
+                className="h-11 px-6"
+              >
                 Back
               </Button>
-              <Button 
+              <Button
                 onClick={() => setCurrentStep('confirmation')}
                 disabled={!canProceedToNext()}
                 className="h-11 px-6 bg-blue-600 hover:bg-blue-700"
@@ -651,20 +686,29 @@ export function MeetingScheduler({
             {/* Meeting Summary */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 space-y-4">
               <h3 className="font-semibold text-lg">{meetingDetails.title}</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="w-4 h-4 text-blue-600" />
-                  <span>{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
+                  <span>{selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-600" />
-                  <span>{selectedTime && format(new Date(`2000-01-01 ${selectedTime}`), 'h:mm a')} ({meetingDetails.duration} min)</span>
+                  <span>
+                    {selectedTime && format(new Date(`2000-01-01 ${selectedTime}`), 'h:mm a')} (
+                    {meetingDetails.duration} min)
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {meetingDetails.meetingType === 'VIRTUAL' && <Video className="w-4 h-4 text-blue-600" />}
-                  {meetingDetails.meetingType === 'PHONE_CALL' && <Phone className="w-4 h-4 text-blue-600" />}
-                  {meetingDetails.meetingType === 'IN_PERSON' && <MapPin className="w-4 h-4 text-blue-600" />}
+                  {meetingDetails.meetingType === 'VIRTUAL' && (
+                    <Video className="w-4 h-4 text-blue-600" />
+                  )}
+                  {meetingDetails.meetingType === 'PHONE_CALL' && (
+                    <Phone className="w-4 h-4 text-blue-600" />
+                  )}
+                  {meetingDetails.meetingType === 'IN_PERSON' && (
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                  )}
                   <span>
                     {meetingDetails.meetingType === 'VIRTUAL' && 'Virtual Meeting'}
                     {meetingDetails.meetingType === 'PHONE_CALL' && 'Phone Call'}
@@ -673,7 +717,9 @@ export function MeetingScheduler({
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-blue-600" />
-                  <span>{participants.length} participant{participants.length !== 1 ? 's' : ''}</span>
+                  <span>
+                    {participants.length} participant{participants.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
 
@@ -695,7 +741,9 @@ export function MeetingScheduler({
                     <span className="font-medium">{participant.name}</span>
                     <span className="text-gray-500">({participant.email})</span>
                     {participant.isRequired && (
-                      <Badge variant="secondary" className="text-xs">Required</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Required
+                      </Badge>
                     )}
                   </div>
                 ))}
@@ -703,33 +751,38 @@ export function MeetingScheduler({
             </div>
 
             {/* Reminders */}
-            {reminders.some(r => r.enabled) && (
+            {reminders.some((r) => r.enabled) && (
               <div>
                 <h4 className="font-medium mb-3">Email reminders:</h4>
                 <div className="space-y-2">
-                  {reminders.filter(r => r.enabled).map((reminder, index) => (
-                    <div key={index} className="flex items-center gap-3 text-sm">
-                      <Bell className="w-4 h-4 text-blue-600" />
-                      <span>
-                        {reminder.minutesBefore < 60 
-                          ? `${reminder.minutesBefore} minutes before`
-                          : reminder.minutesBefore === 60
-                          ? '1 hour before'
-                          : '1 day before'
-                        }
-                      </span>
-                    </div>
-                  ))}
+                  {reminders
+                    .filter((r) => r.enabled)
+                    .map((reminder, index) => (
+                      <div key={index} className="flex items-center gap-3 text-sm">
+                        <Bell className="w-4 h-4 text-blue-600" />
+                        <span>
+                          {reminder.minutesBefore < 60
+                            ? `${reminder.minutesBefore} minutes before`
+                            : reminder.minutesBefore === 60
+                              ? '1 hour before'
+                              : '1 day before'}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
           </CardContent>
           <CardFooter className="bg-gray-50 px-8 py-6 border-t">
             <div className="flex justify-between w-full">
-              <Button variant="outline" onClick={() => setCurrentStep('participants')} className="h-11 px-6">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('participants')}
+                className="h-11 px-6"
+              >
                 Back
               </Button>
-              <Button 
+              <Button
                 onClick={scheduleMeeting}
                 disabled={isCreating}
                 className="h-11 px-6 bg-green-600 hover:bg-green-700"

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CityForm } from "./form/city-form-wizard";
+import React from 'react';
+import { CityForm } from './form/city-form-wizard';
 
 interface CityFormProps {
   id?: number;

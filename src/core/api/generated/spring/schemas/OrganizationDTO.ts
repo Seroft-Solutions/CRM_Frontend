@@ -8,7 +8,7 @@
 import type { UserProfileDTO } from './UserProfileDTO';
 
 /**
- * Keycloak Organization mapping
+ * Organization is a tenant and maps to a DB schema.
  */
 export interface OrganizationDTO {
   id?: number;
@@ -31,7 +31,5 @@ export interface OrganizationDTO {
    */
   domain?: string;
   isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
   members?: UserProfileDTO[];
 }

@@ -60,13 +60,13 @@ export function SessionExpiredModal({
         pointerEvents: document.body.style.pointerEvents,
         userSelect: document.body.style.userSelect,
       };
-      
+
       // Apply styles to prevent all interactions
       document.body.style.overflow = 'hidden';
       document.body.style.pointerEvents = 'none';
       document.body.style.userSelect = 'none';
       document.body.classList.add('session-locked');
-      
+
       // Create and add blur overlay with high z-index
       const blurOverlay = document.createElement('div');
       blurOverlay.id = 'session-blur-overlay';
@@ -85,7 +85,7 @@ export function SessionExpiredModal({
         pointer-events: all;
       `;
       document.body.appendChild(blurOverlay);
-      
+
       // Focus trap - ensure focus stays within modal
       const modalElement = document.querySelector('[data-session-modal="true"]') as HTMLElement;
       const focusableElements = modalElement?.querySelectorAll(
@@ -93,12 +93,12 @@ export function SessionExpiredModal({
       ) as NodeListOf<HTMLElement>;
       const firstFocusableElement = focusableElements?.[0];
       const lastFocusableElement = focusableElements?.[focusableElements.length - 1];
-      
+
       // Comprehensive event blocking
       const preventKeyboard = (e: KeyboardEvent) => {
         const target = e.target as HTMLElement;
         const isInModal = target.closest('[data-session-modal="true"]');
-        
+
         // Handle focus trap for Tab key within modal
         if (e.key === 'Tab' && isInModal) {
           if (e.shiftKey) {
@@ -120,7 +120,7 @@ export function SessionExpiredModal({
           e.stopImmediatePropagation();
         }
       };
-      
+
       // Prevent all mouse interactions outside modal
       const preventMouse = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
@@ -131,14 +131,14 @@ export function SessionExpiredModal({
           e.stopImmediatePropagation();
         }
       };
-      
+
       // Prevent context menu everywhere
       const preventContextMenu = (e: Event) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
       };
-      
+
       // Add event listeners with highest priority
       const eventOptions = { capture: true, passive: false };
       document.addEventListener('keydown', preventKeyboard, eventOptions);
@@ -149,27 +149,27 @@ export function SessionExpiredModal({
       document.addEventListener('contextmenu', preventContextMenu, eventOptions);
       document.addEventListener('touchstart', preventMouse as any, eventOptions);
       document.addEventListener('touchend', preventMouse as any, eventOptions);
-      
+
       // Auto-focus first element in modal
       setTimeout(() => {
         firstFocusableElement?.focus();
       }, 100);
-      
+
       return () => {
         // Cleanup
         document.body.classList.remove('session-locked');
-        
+
         // Remove blur overlay
         const existingOverlay = document.getElementById('session-blur-overlay');
         if (existingOverlay) {
           document.body.removeChild(existingOverlay);
         }
-        
+
         // Restore original body styles
         Object.entries(originalBodyStyle).forEach(([property, value]) => {
           (document.body.style as any)[property] = value;
         });
-        
+
         // Remove event listeners
         document.removeEventListener('keydown', preventKeyboard, eventOptions);
         document.removeEventListener('keyup', preventKeyboard, eventOptions);
@@ -260,11 +260,11 @@ export function SessionExpiredModal({
   // Idle timeout modal (forced action required)
   if (type === 'idle') {
     return (
-      <Dialog 
-        open={isOpen} 
+      <Dialog
+        open={isOpen}
         onOpenChange={() => {}} // Prevent closing by any means
       >
-        <DialogContent 
+        <DialogContent
           data-session-modal="true"
           className="sm:max-w-md z-[100] [&>button]:hidden border-2 border-orange-500/20 shadow-2xl bg-white"
           onPointerDownOutside={(e) => e.preventDefault()}
@@ -277,13 +277,13 @@ export function SessionExpiredModal({
               Session Expired Due to Inactivity
             </DialogTitle>
             <DialogDescription className="text-gray-600">
-              Your session has been expired due to inactivity. For security reasons, 
-              you have been automatically logged out and must sign in again.
+              Your session has been expired due to inactivity. For security reasons, you have been
+              automatically logged out and must sign in again.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
-            <Button 
-              onClick={handleLogout} 
+            <Button
+              onClick={handleLogout}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
               size="lg"
               autoFocus
@@ -309,8 +309,8 @@ export function SessionExpiredModal({
 
   // Session expired modal (forced action required)
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={() => {}} // Prevent closing
     >
       <DialogContent
@@ -337,7 +337,7 @@ export function SessionExpiredModal({
                 <span className="text-gray-600">Re-authenticating...</span>
               </>
             ) : (
-              <Button 
+              <Button
                 onClick={handleContinue}
                 className="w-full bg-red-600 hover:bg-red-700 text-white focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 size="lg"

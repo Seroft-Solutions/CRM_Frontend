@@ -98,7 +98,12 @@ export class EntityComponentGenerator {
       },
       {
         templatePath: 'entity/components/form/paginated-relationship-combobox.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'form', 'paginated-relationship-combobox.tsx'),
+        outputPath: path.join(
+          entityDir,
+          'components',
+          'form',
+          'paginated-relationship-combobox.tsx'
+        ),
         variables: vars,
       },
 
@@ -232,17 +237,32 @@ export class EntityComponentGenerator {
       // Table sub-components
       {
         templatePath: 'entity/components/table/entity-search-filters.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-search-filters.tsx`),
+        outputPath: path.join(
+          entityDir,
+          'components',
+          'table',
+          `${vars.entityFileName}-search-filters.tsx`
+        ),
         variables: vars,
       },
       {
         templatePath: 'entity/components/table/entity-table-header.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-table-header.tsx`),
+        outputPath: path.join(
+          entityDir,
+          'components',
+          'table',
+          `${vars.entityFileName}-table-header.tsx`
+        ),
         variables: vars,
       },
       {
         templatePath: 'entity/components/table/entity-table-row.tsx.ejs',
-        outputPath: path.join(entityDir, 'components', 'table', `${vars.entityFileName}-table-row.tsx`),
+        outputPath: path.join(
+          entityDir,
+          'components',
+          'table',
+          `${vars.entityFileName}-table-row.tsx`
+        ),
         variables: vars,
       },
       {

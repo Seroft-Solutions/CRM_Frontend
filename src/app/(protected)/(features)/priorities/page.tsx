@@ -1,20 +1,20 @@
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 
-import { PriorityTable } from "./components/priority-table";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { PriorityTable } from './components/priority-table';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: "Priorities",
+  title: 'Priorities',
 };
 
 export default function PriorityPage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="priority:read"
       unauthorizedTitle="Access Denied to Priorities"
       unauthorizedDescription="You don't have permission to view priorities."
@@ -40,7 +40,11 @@ export default function PriorityPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="priority:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs"
+                >
                   <Link href="/priorities/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CallCategoryFormProvider, useEntityForm } from "./call-category-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CallCategoryFormProvider, useEntityForm } from './call-category-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateCallCategory,
   useUpdateCallCategory,
   useGetCallCategory,
-} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
-import { callCategoryToast, handleCallCategoryError } from "../call-category-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen';
+import { callCategoryToast, handleCallCategoryError } from '../call-category-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface CallCategoryFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function CallCategoryFormContent({ id }: CallCategoryFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetCallCategory(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-call-category", id]
+      queryKey: ['get-call-category', id],
     },
   });
 
@@ -42,15 +42,15 @@ function CallCategoryFormContent({ id }: CallCategoryFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/call-categories";
-      
+      const backRoute = returnUrl || '/call-categories';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,12 +80,12 @@ function CallCategoryFormContent({ id }: CallCategoryFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'name': '',
-          'description': '',
-          'remark': '',
+          name: '',
+          description: '',
+          remark: '',
         }}
       />
 
@@ -93,7 +93,7 @@ function CallCategoryFormContent({ id }: CallCategoryFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -117,7 +117,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -125,7 +125,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
         } else {
           setIsRedirecting(true);
           callCategoryToast.created();
-          router.push("/call-categories");
+          router.push('/call-categories');
         }
       },
       onError: (error) => {
@@ -139,7 +139,7 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         callCategoryToast.updated();
-        router.push("/call-categories");
+        router.push('/call-categories');
       },
       onError: (error) => {
         handleCallCategoryError(error);
@@ -160,11 +160,11 @@ export function CallCategoryForm({ id }: CallCategoryFormProps) {
   }
 
   return (
-    <CallCategoryFormProvider 
+    <CallCategoryFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

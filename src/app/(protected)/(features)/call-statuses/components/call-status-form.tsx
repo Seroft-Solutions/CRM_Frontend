@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CallStatusForm } from "./form/call-status-form-wizard";
+import React from 'react';
+import { CallStatusForm } from './form/call-status-form-wizard';
 
 interface CallStatusFormProps {
   id?: number;

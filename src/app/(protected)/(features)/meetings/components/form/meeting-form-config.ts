@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Meeting form
@@ -6,7 +6,7 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const meetingFormConfig: FormConfig = {
   entity: 'Meeting',
-  
+
   // Form steps configuration
   steps: [
     {
@@ -24,97 +24,77 @@ export const meetingFormConfig: FormConfig = {
         'meetingType',
         'duration',
       ],
-      relationships: [
-      ],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'business',
       title: 'Business Relations',
       description: 'Connect with customers and sources',
-      fields: [
-      ],
-      relationships: [
-        'assignedCustomer',
-      ],
+      fields: [],
+      relationships: ['assignedCustomer'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'assignment',
       title: 'Assignment & Date',
       description: 'Assign users, set dates and status',
-      fields: [
-        'meetingDateTime',
-        'createdAt',
-        'updatedAt',
-      ],
-      relationships: [
-      ],
+      fields: ['meetingDateTime', 'createdAt', 'updatedAt'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'users',
       title: 'People & Users',
       description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'organizer',
-      ],
+      fields: [],
+      relationships: ['organizer'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'settings',
       title: 'Settings & Files',
       description: 'Configure options',
-      fields: [
-        'isRecurring',
-      ],
-      relationships: [
-      ],
+      fields: ['isRecurring'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'call',
-      ],
+      fields: [],
+      relationships: ['call'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -129,8 +109,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'duration',
@@ -145,7 +124,7 @@ export const meetingFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
-      }
+      },
     },
     {
       name: 'title',
@@ -158,8 +137,7 @@ export const meetingFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 200,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'description',
@@ -171,8 +149,7 @@ export const meetingFormConfig: FormConfig = {
         required: false,
         maxLength: 1000,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'meetingUrl',
@@ -184,8 +161,7 @@ export const meetingFormConfig: FormConfig = {
         required: false,
         maxLength: 500,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'googleCalendarEventId',
@@ -197,8 +173,7 @@ export const meetingFormConfig: FormConfig = {
         required: false,
         maxLength: 100,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'notes',
@@ -210,8 +185,7 @@ export const meetingFormConfig: FormConfig = {
         required: false,
         maxLength: 2000,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'isRecurring',
@@ -222,8 +196,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'timeZone',
@@ -235,8 +208,7 @@ export const meetingFormConfig: FormConfig = {
         required: false,
         maxLength: 50,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'meetingStatus',
@@ -247,8 +219,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'meetingType',
@@ -259,8 +230,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'createdAt',
@@ -271,8 +241,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'updatedAt',
@@ -283,8 +252,7 @@ export const meetingFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -314,7 +282,7 @@ export const meetingFormConfig: FormConfig = {
         label: 'Organizer',
         placeholder: 'Select organizer',
         icon: '👥',
-      }
+      },
     },
     {
       name: 'assignedCustomer',
@@ -340,7 +308,7 @@ export const meetingFormConfig: FormConfig = {
         label: 'Assigned Customer',
         placeholder: 'Select assigned customer',
         icon: '🏢',
-      }
+      },
     },
     {
       name: 'call',
@@ -348,7 +316,7 @@ export const meetingFormConfig: FormConfig = {
       targetEntity: 'call',
       displayField: 'name',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'other',
       api: {
@@ -366,7 +334,7 @@ export const meetingFormConfig: FormConfig = {
         label: 'Call',
         placeholder: 'Select call',
         icon: '🔗',
-      }
+      },
     },
   ],
 
@@ -391,7 +359,7 @@ export const meetingFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -414,17 +382,19 @@ export const meetingFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const meetingFormHelpers = {
-  getStepById: (stepId: string) => meetingFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => meetingFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => meetingFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => meetingFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    meetingFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    meetingFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = meetingFormConfig.steps.find(s => s.id === stepId);
+    const step = meetingFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

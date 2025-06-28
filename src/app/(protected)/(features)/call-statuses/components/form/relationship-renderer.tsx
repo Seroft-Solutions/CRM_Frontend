@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
+import React from 'react';
+import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 // Import all hooks statically for the specific entity
 
-
-import type { RelationshipConfig } from "./form-types";
+import type { RelationshipConfig } from './form-types';
 
 interface RelationshipRendererProps {
   relConfig: RelationshipConfig;
@@ -18,14 +17,13 @@ interface RelationshipRendererProps {
 }
 
 // Generic relationship component that uses hooks based on the relationship name
-export function RelationshipRenderer({ 
-  relConfig, 
-  field, 
-  form, 
-  actions, 
-  config 
+export function RelationshipRenderer({
+  relConfig,
+  field,
+  form,
+  actions,
+  config,
 }: RelationshipRendererProps) {
-  
   // Use hooks based on relationship name - this ensures hooks are called consistently
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
@@ -45,11 +43,9 @@ export function RelationshipRenderer({
     <FormItem>
       <FormLabel className="text-sm font-medium">
         {relConfig.ui.label}
-        {relConfig.required && " *"}
+        {relConfig.required && ' *'}
       </FormLabel>
-      <FormControl>
-        {renderRelationshipWithHooks()}
-      </FormControl>
+      <FormControl>{renderRelationshipWithHooks()}</FormControl>
       <FormMessage />
     </FormItem>
   );

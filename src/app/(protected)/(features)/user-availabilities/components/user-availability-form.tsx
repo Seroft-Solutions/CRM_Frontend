@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { UserAvailabilityForm } from "./form/user-availability-form-wizard";
+import React from 'react';
+import { UserAvailabilityForm } from './form/user-availability-form-wizard';
 
 interface UserAvailabilityFormProps {
   id?: number;

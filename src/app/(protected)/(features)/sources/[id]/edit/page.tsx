@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { SourceForm } from "../../components/source-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { SourceForm } from '../../components/source-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditSourcePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditSourcePageProps {
 }
 
 export const metadata = {
-  title: "Edit Source",
+  title: 'Edit Source',
 };
 
 export default async function EditSourcePage({ params }: EditSourcePageProps) {
@@ -23,7 +23,7 @@ export default async function EditSourcePage({ params }: EditSourcePageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="source:update"
       unauthorizedTitle="Access Denied to Edit Source"
       unauthorizedDescription="You don't have permission to edit source records."
@@ -31,7 +31,7 @@ export default async function EditSourcePage({ params }: EditSourcePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/sources"
               defaultLabel="Back to Sources"
               entityName="Source"
@@ -47,7 +47,7 @@ export default async function EditSourcePage({ params }: EditSourcePageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this source</p>
             </div>
           </div>
-          
+
           <SourceForm id={id} />
         </div>
       </div>

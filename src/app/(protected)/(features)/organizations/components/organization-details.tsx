@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { organizationToast, handleOrganizationError } from "./organization-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { organizationToast, handleOrganizationError } from './organization-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +18,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useGetOrganization,
   useDeleteOrganization,
-} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
-
-
+} from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
 interface OrganizationDetailsProps {
   id: number;
@@ -54,7 +46,7 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
     mutation: {
       onSuccess: () => {
         organizationToast.deleted();
-        router.push("/organizations");
+        router.push('/organizations');
       },
       onError: (error) => {
         handleOrganizationError(error);
@@ -96,82 +88,58 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Keycloak Org Id</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Keycloak Org Id
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.keycloakOrgId || "—"}</span>
-                    
+                    <span className="text-foreground break-words">
+                      {entity.keycloakOrgId || '—'}
+                    </span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Name
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.name || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.name || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Display Name</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Display Name
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.displayName || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.displayName || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Domain</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Domain
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.domain || "—"}</span>
-                    
+                    <span className="text-foreground break-words">{entity.domain || '—'}</span>
                   </dd>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Is Active
+                  </dt>
                   <dd className="text-sm font-medium">
-                    
-                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
-                      {entity.isActive ? "Yes" : "No"}
+                    <Badge variant={entity.isActive ? 'default' : 'secondary'} className="text-sm">
+                      {entity.isActive ? 'Yes' : 'No'}
                     </Badge>
-                    
                   </dd>
                 </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created At</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.createdAt ? format(new Date(entity.createdAt), "PPP") : "—"}
-                    </span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Updated At</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.updatedAt ? format(new Date(entity.updatedAt), "PPP") : "—"}
-                    </span>
-                    
-                  </dd>
-                </div>
-                
               </div>
             </CardContent>
           </Card>
         </div>
-
-        
       </div>
 
       {/* Action Buttons */}
@@ -183,7 +151,7 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -199,8 +167,8 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              organization and remove its data from the server.
+              This action cannot be undone. This will permanently delete the organization and remove
+              its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

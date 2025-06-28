@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { AreaForm } from "../../components/area-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { AreaForm } from '../../components/area-form';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface EditAreaPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditAreaPageProps {
 }
 
 export const metadata = {
-  title: "Edit Area",
+  title: 'Edit Area',
 };
 
 export default async function EditAreaPage({ params }: EditAreaPageProps) {
@@ -23,7 +23,7 @@ export default async function EditAreaPage({ params }: EditAreaPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="area:update"
       unauthorizedTitle="Access Denied to Edit Area"
       unauthorizedDescription="You don't have permission to edit area records."
@@ -31,7 +31,7 @@ export default async function EditAreaPage({ params }: EditAreaPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/areas"
               defaultLabel="Back to Areas"
               entityName="Area"
@@ -47,7 +47,7 @@ export default async function EditAreaPage({ params }: EditAreaPageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this area</p>
             </div>
           </div>
-          
+
           <AreaForm id={id} />
         </div>
       </div>

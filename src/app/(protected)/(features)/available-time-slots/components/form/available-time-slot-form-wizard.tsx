@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { AvailableTimeSlotFormProvider, useEntityForm } from "./available-time-slot-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AvailableTimeSlotFormProvider, useEntityForm } from './available-time-slot-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import {
   useCreateAvailableTimeSlot,
   useUpdateAvailableTimeSlot,
   useGetAvailableTimeSlot,
-} from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
-import { availableTimeSlotToast, handleAvailableTimeSlotError } from "../available-time-slot-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { availableTimeSlotToast, handleAvailableTimeSlotError } from '../available-time-slot-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 interface AvailableTimeSlotFormProps {
   id?: number;
@@ -30,7 +30,7 @@ function AvailableTimeSlotFormContent({ id }: AvailableTimeSlotFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetAvailableTimeSlot(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-available-time-slot", id]
+      queryKey: ['get-available-time-slot', id],
     },
   });
 
@@ -42,15 +42,15 @@ function AvailableTimeSlotFormContent({ id }: AvailableTimeSlotFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/available-time-slots";
-      
+      const backRoute = returnUrl || '/available-time-slots';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -80,14 +80,14 @@ function AvailableTimeSlotFormContent({ id }: AvailableTimeSlotFormProps) {
       <FormProgressIndicator />
 
       {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay 
+      <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
-          'slotDateTime': '',
-          'duration': '',
-          'isBooked': '',
-          'bookedAt': '',
-          'user': 'User',
+          slotDateTime: '',
+          duration: '',
+          isBooked: '',
+          bookedAt: '',
+          user: 'User',
         }}
       />
 
@@ -95,7 +95,7 @@ function AvailableTimeSlotFormContent({ id }: AvailableTimeSlotFormProps) {
       <FormStepRenderer entity={entity} />
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -119,7 +119,7 @@ export function AvailableTimeSlotForm({ id }: AvailableTimeSlotFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -127,7 +127,7 @@ export function AvailableTimeSlotForm({ id }: AvailableTimeSlotFormProps) {
         } else {
           setIsRedirecting(true);
           availableTimeSlotToast.created();
-          router.push("/available-time-slots");
+          router.push('/available-time-slots');
         }
       },
       onError: (error) => {
@@ -141,7 +141,7 @@ export function AvailableTimeSlotForm({ id }: AvailableTimeSlotFormProps) {
       onSuccess: () => {
         setIsRedirecting(true);
         availableTimeSlotToast.updated();
-        router.push("/available-time-slots");
+        router.push('/available-time-slots');
       },
       onError: (error) => {
         handleAvailableTimeSlotError(error);
@@ -162,11 +162,11 @@ export function AvailableTimeSlotForm({ id }: AvailableTimeSlotFormProps) {
   }
 
   return (
-    <AvailableTimeSlotFormProvider 
+    <AvailableTimeSlotFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

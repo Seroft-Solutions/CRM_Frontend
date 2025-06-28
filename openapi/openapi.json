@@ -310,6 +310,57 @@
         }
       }
     },
+    "/api/roles/{id}": {
+      "get": {
+        "tags": ["role-resource"],
+        "operationId": "getRole",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } } }
+        }
+      },
+      "put": {
+        "tags": ["role-resource"],
+        "operationId": "updateRole",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["role-resource"],
+        "operationId": "deleteRole",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["role-resource"],
+        "operationId": "partialUpdateRole",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RoleDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/RoleDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } } }
+        }
+      }
+    },
     "/api/products/{id}": {
       "get": {
         "tags": ["product-resource"],
@@ -1363,6 +1414,17 @@
         }
       }
     },
+    "/api/whatsapp/send-message": {
+      "post": {
+        "tags": ["whats-app-controller"],
+        "operationId": "sendMessage",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WhatsappRequest" } } },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "object" } } } } }
+      }
+    },
     "/api/user-profiles": {
       "get": {
         "tags": ["user-profile-resource"],
@@ -1429,6 +1491,57 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
           },
+          { "name": "firstName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "firstName.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "firstName.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "lastName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "lastName.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "lastName.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "email.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "email.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "email.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
           { "name": "phone.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "phone.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "phone.equals", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -1459,121 +1572,6 @@
           },
           {
             "name": "displayName.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          { "name": "userId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "userId.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "userId.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
@@ -1780,6 +1778,55 @@
           },
           {
             "name": "groupsId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "rolesId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "rolesId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "rolesId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "rolesId.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
@@ -2789,6 +2836,255 @@
         }
       }
     },
+    "/api/sms/send": {
+      "post": {
+        "tags": ["sms-controller"],
+        "operationId": "sendSms",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SmsRequest" } } },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "string" } } } } }
+      }
+    },
+    "/api/roles": {
+      "get": {
+        "tags": ["role-resource"],
+        "operationId": "getAllRoles",
+        "parameters": [
+          {
+            "name": "id.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "id.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "name.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "name.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "name.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "description.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "description.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "description.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isActive.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isActive.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "organizationId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "organizationId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "organizationId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "organizationId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "usersId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "usersId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "usersId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "usersId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "minimum": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "type": "integer", "default": 20, "minimum": 1 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RoleDTO" } } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["role-resource"],
+        "operationId": "createRole",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoleDTO" } } } }
+        }
+      }
+    },
     "/api/products": {
       "get": {
         "tags": ["product-resource"],
@@ -3305,104 +3601,6 @@
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
-          },
-          {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
           },
           {
             "name": "membersId.greaterThan",
@@ -4960,104 +5158,6 @@
             "schema": { "type": "array", "items": { "type": "boolean" } }
           },
           {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
             "name": "organizationId.greaterThan",
             "in": "query",
             "required": false,
@@ -5200,6 +5300,17 @@
             "content": { "*/*": { "schema": { "$ref": "#/components/schemas/GroupDTO" } } }
           }
         }
+      }
+    },
+    "/api/email/send": {
+      "post": {
+        "tags": ["email-controller"],
+        "operationId": "sendEmail",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmailRequest" } } },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "string" } } } } }
       }
     },
     "/api/districts": {
@@ -7668,6 +7779,17 @@
         }
       }
     },
+    "/api/calendar/schedule": {
+      "post": {
+        "tags": ["google-calendar-controller"],
+        "operationId": "scheduleMeeting",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MeetingRequest" } } },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "string" } } } } }
+      }
+    },
     "/api/available-time-slots": {
       "get": {
         "tags": ["available-time-slot-resource"],
@@ -7975,34 +8097,6 @@
         }
       }
     },
-    "/api/authorities": {
-      "get": {
-        "tags": ["authority-resource"],
-        "operationId": "getAllAuthorities",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Authority" } } }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["authority-resource"],
-        "operationId": "createAuthority",
-        "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Authority" } } },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/Authority" } } }
-          }
-        }
-      }
-    },
     "/api/areas": {
       "get": {
         "tags": ["area-resource"],
@@ -8177,54 +8271,6 @@
         }
       }
     },
-    "/api/users": {
-      "get": {
-        "tags": ["public-user-resource"],
-        "operationId": "getAllPublicUsers",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Zero-based page index (0..N)",
-            "required": false,
-            "schema": { "type": "integer", "default": 0, "minimum": 0 }
-          },
-          {
-            "name": "size",
-            "in": "query",
-            "description": "The size of the page to be returned",
-            "required": false,
-            "schema": { "type": "integer", "default": 20, "minimum": 1 }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "*/*": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/UserDTO" } } } }
-          }
-        }
-      }
-    },
-    "/api/users/_search/{query}": {
-      "get": {
-        "tags": ["public-user-resource"],
-        "operationId": "search",
-        "parameters": [{ "name": "query", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "*/*": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/UserDTO" } } } }
-          }
-        }
-      }
-    },
     "/api/user-profiles/count": {
       "get": {
         "tags": ["user-profile-resource"],
@@ -8291,6 +8337,57 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
           },
+          { "name": "firstName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "firstName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "firstName.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "firstName.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "lastName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "lastName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "lastName.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "lastName.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "email.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "email.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "email.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "email.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
           { "name": "phone.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "phone.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "phone.equals", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -8321,121 +8418,6 @@
           },
           {
             "name": "displayName.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          { "name": "userId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "userId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "userId.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "userId.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
@@ -8642,6 +8624,55 @@
           },
           {
             "name": "groupsId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "rolesId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "rolesId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "rolesId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "rolesId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "rolesId.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
@@ -9630,6 +9661,245 @@
         }
       }
     },
+    "/api/roles/count": {
+      "get": {
+        "tags": ["role-resource"],
+        "operationId": "countRoles",
+        "parameters": [
+          {
+            "name": "id.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "id.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "id.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "name.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "name.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "name.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "name.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "description.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "description.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "description.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isActive.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isActive.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "organizationId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "organizationId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "organizationId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "organizationId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "organizationId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "usersId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.lessThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.equals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "usersId.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "usersId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "usersId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "usersId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/roles/_search": {
+      "get": {
+        "tags": ["role-resource"],
+        "operationId": "searchRoles",
+        "parameters": [
+          { "name": "query", "in": "query", "required": true, "schema": { "type": "string" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "minimum": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "type": "integer", "default": 20, "minimum": 1 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RoleDTO" } } } }
+          }
+        }
+      }
+    },
     "/api/products/count": {
       "get": {
         "tags": ["product-resource"],
@@ -10142,104 +10412,6 @@
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
-          },
-          {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
           },
           {
             "name": "membersId.greaterThan",
@@ -11775,104 +11947,6 @@
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
-          },
-          {
-            "name": "createdAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "createdAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "createdAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "createdAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.greaterThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThan",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.greaterThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.lessThanOrEqual",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.equals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "name": "updatedAt.notEquals",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
-          {
-            "name": "updatedAt.in",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
-          },
-          {
-            "name": "updatedAt.notIn",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
           },
           {
             "name": "organizationId.greaterThan",
@@ -14471,6 +14545,25 @@
         }
       }
     },
+    "/api/calendar/oauth2callback": {
+      "get": {
+        "tags": ["google-calendar-controller"],
+        "operationId": "handleOAuthCallback",
+        "parameters": [
+          { "name": "code", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "state", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "object" } } } } }
+      }
+    },
+    "/api/calendar/oauth2/authorize": {
+      "get": {
+        "tags": ["google-calendar-controller"],
+        "operationId": "getAuthorizationUrl",
+        "parameters": [{ "name": "userEmail", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "object" } } } } }
+      }
+    },
     "/api/available-time-slots/count": {
       "get": {
         "tags": ["available-time-slot-resource"],
@@ -14776,25 +14869,6 @@
         }
       }
     },
-    "/api/authorities/{id}": {
-      "get": {
-        "tags": ["authority-resource"],
-        "operationId": "getAuthority",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/Authority" } } }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["authority-resource"],
-        "operationId": "deleteAuthority",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
     "/api/authenticate": {
       "get": {
         "tags": ["account-resource"],
@@ -14994,10 +15068,7 @@
         "tags": ["account-resource"],
         "operationId": "getAccount",
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/AdminUserDTO" } } }
-          }
+          "200": { "description": "OK", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/UserVM" } } } }
         }
       }
     }
@@ -15016,7 +15087,7 @@
       },
       "GroupDTO": {
         "type": "object",
-        "description": "Keycloak Group mapping",
+        "description": "Group is scoped per organization.",
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "keycloakGroupId": {
@@ -15027,15 +15098,16 @@
           "path": { "type": "string", "maxLength": 500, "minLength": 0 },
           "description": { "type": "string", "maxLength": 255, "minLength": 0 },
           "isActive": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "organization": { "$ref": "#/components/schemas/OrganizationDTO" }
+          "organization": {
+            "description": "Organization is a tenant and maps to a DB schema.",
+            "required": ["isActive", "keycloakOrgId", "name"]
+          }
         },
-        "required": ["isActive", "keycloakGroupId", "name", "organization", "path"]
+        "required": ["isActive", "keycloakGroupId", "name", "path"]
       },
       "OrganizationDTO": {
         "type": "object",
-        "description": "Keycloak Organization mapping",
+        "description": "Organization is a tenant and maps to a DB schema.",
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "keycloakOrgId": {
@@ -15051,8 +15123,6 @@
             "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?)*\\.[a-zA-Z]{2,}$"
           },
           "isActive": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
           "members": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/UserProfileDTO" },
@@ -15061,29 +15131,44 @@
         },
         "required": ["isActive", "keycloakOrgId", "name"]
       },
-      "UserDTO": { "type": "object", "properties": { "id": { "type": "string" }, "login": { "type": "string" } } },
+      "RoleDTO": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 50, "minLength": 2 },
+          "description": { "type": "string", "maxLength": 200, "minLength": 0 },
+          "isActive": { "type": "boolean" },
+          "organization": {
+            "description": "Organization is a tenant and maps to a DB schema.",
+            "required": ["isActive", "keycloakOrgId", "name"]
+          }
+        },
+        "required": ["isActive", "name"]
+      },
       "UserProfileDTO": {
         "type": "object",
-        "description": "Extended user profile for CRM-specific data",
+        "description": "Extended user profile linked to Keycloak.",
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "keycloakId": {
             "type": "string",
             "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
           },
+          "firstName": { "type": "string", "maxLength": 50, "minLength": 2 },
+          "lastName": { "type": "string", "maxLength": 50, "minLength": 2 },
+          "email": { "type": "string", "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" },
           "phone": { "type": "string", "maxLength": 20, "minLength": 0, "pattern": "^[+]?[0-9\\s\\-\\(\\)]{10,20}$" },
           "displayName": { "type": "string", "maxLength": 200, "minLength": 0 },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "user": { "$ref": "#/components/schemas/UserDTO" },
           "organizations": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/OrganizationDTO" },
             "uniqueItems": true
           },
           "groups": { "type": "array", "items": { "$ref": "#/components/schemas/GroupDTO" }, "uniqueItems": true },
+          "roles": { "type": "array", "items": { "$ref": "#/components/schemas/RoleDTO" }, "uniqueItems": true },
           "channelType": { "$ref": "#/components/schemas/ChannelTypeDTO" }
-        }
+        },
+        "required": ["email", "firstName", "lastName"]
       },
       "UserAvailabilityDTO": {
         "type": "object",
@@ -15289,7 +15374,7 @@
           "assignedCustomer": { "$ref": "#/components/schemas/CustomerDTO" },
           "call": { "$ref": "#/components/schemas/CallDTO" }
         },
-        "required": ["call", "duration", "meetingDateTime", "meetingStatus", "meetingType", "organizer", "title"]
+        "required": ["duration", "meetingDateTime", "meetingStatus", "meetingType", "organizer", "title"]
       },
       "MeetingReminderDTO": {
         "type": "object",
@@ -15345,38 +15430,53 @@
         },
         "required": ["duration", "slotDateTime", "user"]
       },
-      "Authority": {
+      "WhatsappRequest": {
         "type": "object",
-        "properties": { "name": { "type": "string", "maxLength": 50, "minLength": 0 } },
-        "required": ["name"]
+        "properties": {
+          "phoneNumberId": { "type": "string" },
+          "to": { "type": "string" },
+          "messageType": { "type": "string" },
+          "messageContent": { "type": "object", "additionalProperties": {} }
+        }
+      },
+      "SmsRequest": {
+        "type": "object",
+        "properties": { "phoneNumber": { "type": "string" }, "message": { "type": "string" } }
+      },
+      "EmailRequest": {
+        "type": "object",
+        "properties": {
+          "to": { "type": "string" },
+          "subject": { "type": "string" },
+          "message": { "type": "string" },
+          "cc": { "type": "string" },
+          "bcc": { "type": "string" }
+        }
+      },
+      "MeetingRequest": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string" },
+          "location": { "type": "string" },
+          "description": { "type": "string" },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "timeZone": { "type": "string" },
+          "attendees": { "type": "array", "items": { "type": "string" } },
+          "userEmail": { "type": "string" }
+        }
       },
       "AuthInfoVM": {
         "type": "object",
         "properties": { "issuer": { "type": "string" }, "clientId": { "type": "string" } }
       },
-      "AdminUserDTO": {
+      "UserVM": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "login": {
-            "type": "string",
-            "maxLength": 50,
-            "minLength": 1,
-            "pattern": "^(?>[a-zA-Z0-9!$&*+=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)|(?>[_.@A-Za-z0-9-]+)$"
-          },
-          "firstName": { "type": "string", "maxLength": 50, "minLength": 0 },
-          "lastName": { "type": "string", "maxLength": 50, "minLength": 0 },
-          "email": { "type": "string", "maxLength": 254, "minLength": 5 },
-          "imageUrl": { "type": "string", "maxLength": 256, "minLength": 0 },
-          "activated": { "type": "boolean" },
-          "langKey": { "type": "string", "maxLength": 10, "minLength": 2 },
-          "createdBy": { "type": "string" },
-          "createdDate": { "type": "string", "format": "date-time" },
-          "lastModifiedBy": { "type": "string" },
-          "lastModifiedDate": { "type": "string", "format": "date-time" },
-          "authorities": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
-        },
-        "required": ["login"]
+          "login": { "type": "string" },
+          "authorities": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "activated": { "type": "boolean" }
+        }
       }
     }
   }

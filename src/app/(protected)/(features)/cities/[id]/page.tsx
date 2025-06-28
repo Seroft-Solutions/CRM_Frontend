@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { CityDetails } from "../components/city-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
+import { CityDetails } from '../components/city-details';
+import { PageHeader } from '@/components/page-header';
+import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 
 interface CityPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface CityPageProps {
 }
 
 export const metadata = {
-  title: "City Details",
+  title: 'City Details',
 };
 
 export default async function CityPage({ params }: CityPageProps) {
@@ -23,7 +23,7 @@ export default async function CityPage({ params }: CityPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="city:read"
       unauthorizedTitle="Access Denied to City Details"
       unauthorizedDescription="You don't have permission to view this city."
@@ -31,7 +31,7 @@ export default async function CityPage({ params }: CityPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton 
+            <ContextAwareBackButton
               defaultRoute="/cities"
               defaultLabel="Back to Cities"
               entityName="City"
@@ -47,7 +47,7 @@ export default async function CityPage({ params }: CityPageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this city</p>
             </div>
           </div>
-          
+
           <CityDetails id={id} />
         </div>
       </div>

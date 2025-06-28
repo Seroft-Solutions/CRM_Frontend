@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-
+} from '@/components/ui/select';
+import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -41,22 +35,22 @@ interface UserProfileTableHeaderProps {
   }>;
 }
 
-export function UserProfileTableHeader({ 
-  onSort, 
+export function UserProfileTableHeader({
+  onSort,
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
-  visibleColumns
+  visibleColumns,
 }: UserProfileTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case "ChevronUp":
+      case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
-      case "ChevronDown":
+      case 'ChevronDown':
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -77,8 +71,8 @@ export function UserProfileTableHeader({
           />
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={column.id} 
+          <TableHead
+            key={column.id}
             className={`
               px-2 sm:px-3 py-2 
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
@@ -92,14 +86,10 @@ export function UserProfileTableHeader({
                 className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
               >
                 {column.label}
-                <div className="text-gray-400">
-                  {renderSortIcon(column.accessor)}
-                </div>
+                <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
               </Button>
             ) : (
-              <span className="font-medium text-gray-700 text-sm">
-                {column.label}
-              </span>
+              <span className="font-medium text-gray-700 text-sm">{column.label}</span>
             )}
           </TableHead>
         ))}
@@ -110,118 +100,106 @@ export function UserProfileTableHeader({
           </div>
         </TableHead>
       </TableRow>
-      
+
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead 
-            key={`filter-${column.id}`} 
+          <TableHead
+            key={`filter-${column.id}`}
             className={`
               px-2 sm:px-3 py-2
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
             `}
           >
-            {column.type === 'field' ? (
-              (() => {
-                
-                if (column.accessor === 'keycloakId') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["keycloakId"] as string || ""}
-                      onChange={(e) => onFilterChange("keycloakId", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'phone') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["phone"] as string || ""}
-                      onChange={(e) => onFilterChange("phone", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'displayName') {
-                  
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["displayName"] as string || ""}
-                      onChange={(e) => onFilterChange("displayName", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'createdAt') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["createdAt"] as string || ""}
-                      onChange={(e) => onFilterChange("createdAt", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                if (column.accessor === 'updatedAt') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["updatedAt"] as string || ""}
-                      onChange={(e) => onFilterChange("updatedAt", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
-                return null;
-              })()
-            ) : (
-              (() => {
-                
-                if (column.accessor === 'user') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["user.login"] as string || ""}
-                      onChange={(e) => onFilterChange("user.login", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                if (column.accessor === 'channelType') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["channelType.name"] as string || ""}
-                      onChange={(e) => onFilterChange("channelType.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
-                return null;
-              })()
-            )}
+            {column.type === 'field'
+              ? (() => {
+                  if (column.accessor === 'keycloakId') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['keycloakId'] as string) || ''}
+                        onChange={(e) => onFilterChange('keycloakId', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'firstName') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['firstName'] as string) || ''}
+                        onChange={(e) => onFilterChange('firstName', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'lastName') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['lastName'] as string) || ''}
+                        onChange={(e) => onFilterChange('lastName', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'email') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['email'] as string) || ''}
+                        onChange={(e) => onFilterChange('email', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'phone') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['phone'] as string) || ''}
+                        onChange={(e) => onFilterChange('phone', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'displayName') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['displayName'] as string) || ''}
+                        onChange={(e) => onFilterChange('displayName', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  return null;
+                })()
+              : (() => {
+                  if (column.accessor === 'channelType') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['channelType.name'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('channelType.name', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  return null;
+                })()}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

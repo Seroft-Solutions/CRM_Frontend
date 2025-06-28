@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for City form
@@ -6,49 +6,41 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const cityFormConfig: FormConfig = {
   entity: 'City',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'name',
-      ],
-      relationships: [
-      ],
+      fields: ['name'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'geographic',
       title: 'Location Details',
       description: 'Select geographic information',
-      fields: [
-      ],
-      relationships: [
-        'district',
-      ],
+      fields: [],
+      relationships: ['district'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -65,8 +57,7 @@ export const cityFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -96,7 +87,7 @@ export const cityFormConfig: FormConfig = {
         label: 'District',
         placeholder: 'Select district',
         icon: '📍',
-      }
+      },
     },
   ],
 
@@ -121,7 +112,7 @@ export const cityFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -144,17 +135,19 @@ export const cityFormConfig: FormConfig = {
       returnUrlKey: 'returnUrl',
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const cityFormHelpers = {
-  getStepById: (stepId: string) => cityFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => cityFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => cityFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => cityFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    cityFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    cityFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = cityFormConfig.steps.find(s => s.id === stepId);
+    const step = cityFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };
