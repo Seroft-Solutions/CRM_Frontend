@@ -86,7 +86,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       }));
       // Don't refetch organizations here - wait for progress to complete
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables) => {
       // Check if it's a 409 conflict error (organization already exists)
       if (error.message === 'ORGANIZATION_EXISTS') {
         toast.error('Organization already exists', {
@@ -98,6 +98,18 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           isSetupInProgress: false,
           error: 'Organization already exists',
         }));
+      } else if (error.message === 'SETUP_TIMEOUT') {
+        // Handle timeout gracefully - backend may still be processing
+        console.log('⚠️ Setup timed out on frontend, starting progress tracking...');
+        setState((prev) => ({
+          ...prev,
+          isSetupInProgress: true, // Keep true to trigger progress tracking
+          error: null,
+          organizationName: variables.organizationName, // Set organization name for progress tracking
+        }));
+        toast.info('Setup in progress', {
+          description: 'Organization setup is taking longer than expected. Please wait while we complete the process.',
+        });
       } else {
         setState((prev) => ({
           ...prev,

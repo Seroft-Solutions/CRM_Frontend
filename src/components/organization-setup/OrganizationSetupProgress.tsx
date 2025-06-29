@@ -52,7 +52,14 @@ export function OrganizationSetupProgress({
     query: {
       refetchInterval: 2000, // Poll every 2 seconds
       refetchIntervalInBackground: true,
-      retry: 3,
+      retry: (failureCount, error: any) => {
+        // Retry up to 5 times for network errors, but not for 404s (organization not found)
+        if (error?.response?.status === 404) {
+          return failureCount < 30; // Retry 404s for up to 1 minute (30 * 2s)
+        }
+        return failureCount < 5;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff
     },
   });
 
@@ -69,10 +76,15 @@ export function OrganizationSetupProgress({
 
       if (
         progressData.includes('Creating workspace schema') ||
-        progressData.includes('Initializing setup')
+        progressData.includes('Initializing setup') ||
+        progressData.includes('Creating/verified schema')
       ) {
         stepIndex = 0;
-      } else if (progressData.includes('Running migrations')) {
+      } else if (
+        progressData.includes('Running migrations') ||
+        progressData.includes('structure migrations') ||
+        progressData.includes('Running Changeset')
+      ) {
         stepIndex = 1;
         // Handle migration percentage updates
         const match = progressData.match(/(\d+)%/);
@@ -82,7 +94,11 @@ export function OrganizationSetupProgress({
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
-      } else if (progressData.includes('Loading') && progressData.includes('data')) {
+      } else if (
+        (progressData.includes('Loading') && progressData.includes('data')) ||
+        progressData.includes('data migrations') ||
+        progressData.includes('Creating organization record')
+      ) {
         stepIndex = 2;
         // Handle data loading percentage updates
         const match = progressData.match(/(\d+)%/);
@@ -104,11 +120,21 @@ export function OrganizationSetupProgress({
           setProgress(setupSteps[stepIndex].progress);
         }
       }
+    } else {
+      // No progress data yet - show initial state
+      setCurrentStep(0);
+      setProgress(10); // Show some initial progress
     }
   }, [progressData, onComplete, onError]);
 
   useEffect(() => {
     if (isError) {
+      // Don't immediately show error for 404s - backend might still be setting up
+      if (error?.response?.status === 404 || error?.status === 404) {
+        console.log('⚠️ Organization not found yet, backend may still be processing setup...');
+        return; // Don't set error state, keep polling
+      }
+      
       setHasError(true);
       onError(error?.message || 'Setup failed');
     }

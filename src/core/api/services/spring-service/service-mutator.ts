@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '../base/types';
-import { SPRING_SERVICE_CONFIG } from './config';
+import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './config';
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
 
@@ -21,6 +21,13 @@ const getTenantHeader = (): string | undefined => {
 
   // Convert to lowercase and replace special characters with underscores
   return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+};
+
+// Check if the request is a long-running operation
+const isLongRunningOperation = (url: string): boolean => {
+  return url.includes('/tenants/organizations/setup') || 
+         url.includes('/setup-progress') ||
+         url.includes('/schemas/') && url.includes('/setup');
 };
 
 export const springServiceMutator = async <T>(
@@ -49,7 +56,12 @@ export const springServiceMutator = async <T>(
     }
   }
 
-  const instance = axios.create(SPRING_SERVICE_CONFIG);
+  // Use long-running config for organization setup operations
+  const config = url && isLongRunningOperation(url) 
+    ? SPRING_SERVICE_LONG_RUNNING_CONFIG 
+    : SPRING_SERVICE_CONFIG;
+
+  const instance = axios.create(config);
 
   // Add auth and tenant interceptor
   instance.interceptors.request.use(async (config) => {

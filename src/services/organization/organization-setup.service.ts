@@ -61,24 +61,39 @@ export class OrganizationSetupService {
 
       // Step 4: Create Spring organization record and setup tenant schema
       console.log('Step 4: Creating Spring organization with schema setup...');
-      const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
-      console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
+      try {
+        const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
+        console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
 
-      // Step 5: Create/update user profile
-      console.log('Step 5: Creating user profile...');
-      const userProfileId = await this.createUserProfile(session, keycloakUserId);
-      console.log('✓ Step 5 completed - User profile ID:', userProfileId);
+        // Step 5: Create/update user profile
+        console.log('Step 5: Creating user profile...');
+        const userProfileId = await this.createUserProfile(session, keycloakUserId);
+        console.log('✓ Step 5 completed - User profile ID:', userProfileId);
 
-      // Step 6: Associate user with organization in Spring
-      console.log('Step 6: Associating user with organization...');
-      await this.associateUserWithOrganization(userProfileId, springOrgId);
-      console.log('✓ Step 6 completed - All steps successful');
+        // Step 6: Associate user with organization in Spring
+        console.log('Step 6: Associating user with organization...');
+        await this.associateUserWithOrganization(userProfileId, springOrgId);
+        console.log('✓ Step 6 completed - All steps successful');
 
-      return {
-        keycloakOrgId,
-        springOrgId,
-        userProfileId,
-      };
+        return {
+          keycloakOrgId,
+          springOrgId,
+          userProfileId,
+        };
+      } catch (error: any) {
+        if (error.message === 'SETUP_TIMEOUT') {
+          console.log('⚠️ Setup timed out on frontend, but backend may still be processing');
+          console.log('✓ Returning partial result - progress tracking will handle completion');
+          
+          // Return partial result, progress tracking will monitor completion
+          return {
+            keycloakOrgId,
+            springOrgId: 0, // Placeholder - actual ID will be retrieved by progress tracking
+            userProfileId: 0, // Placeholder - will be created after schema setup completes
+          };
+        }
+        throw error;
+      }
     } catch (error) {
       console.error('❌ Organization setup failed at step:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to setup organization');
@@ -191,14 +206,29 @@ export class OrganizationSetupService {
 
     console.log('Sending OrganizationDTO to Spring:', organizationDTO);
 
-    // Use the correct endpoint that creates organization AND sets up schema
-    const response = await createOrganizationWithSchema(organizationDTO);
+    try {
+      // Use the correct endpoint that creates organization AND sets up schema
+      // This is a long-running operation, so we handle timeouts gracefully
+      const response = await createOrganizationWithSchema(organizationDTO);
 
-    if (!response.id) {
-      throw new Error('Failed to create organization: no ID returned');
+      if (!response.id) {
+        throw new Error('Failed to create organization: no ID returned');
+      }
+
+      return response.id;
+    } catch (error: any) {
+      // If it's a timeout error, the backend might still be processing
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        console.log('⚠️ Organization creation timed out on frontend, but backend may still be processing...');
+        
+        // For timeout errors, we'll return a placeholder ID and let the progress tracking handle it
+        // The progress component will poll for actual completion
+        throw new Error('SETUP_TIMEOUT');
+      }
+      
+      console.error('❌ Organization creation failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to create organization');
     }
-
-    return response.id;
   }
 
   /**
