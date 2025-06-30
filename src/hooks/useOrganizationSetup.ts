@@ -108,7 +108,8 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           organizationName: variables.organizationName, // Set organization name for progress tracking
         }));
         toast.info('Setup in progress', {
-          description: 'Organization setup is taking longer than expected. Please wait while we complete the process.',
+          description:
+            'Organization setup is taking longer than expected. Please wait while we complete the process.',
         });
       } else {
         setState((prev) => ({

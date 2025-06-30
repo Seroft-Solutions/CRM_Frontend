@@ -25,9 +25,11 @@ const getTenantHeader = (): string | undefined => {
 
 // Check if the request is a long-running operation
 const isLongRunningOperation = (url: string): boolean => {
-  return url.includes('/tenants/organizations/setup') || 
-         url.includes('/setup-progress') ||
-         url.includes('/schemas/') && url.includes('/setup');
+  return (
+    url.includes('/tenants/organizations/setup') ||
+    url.includes('/setup-progress') ||
+    (url.includes('/schemas/') && url.includes('/setup'))
+  );
 };
 
 export const springServiceMutator = async <T>(
@@ -57,9 +59,8 @@ export const springServiceMutator = async <T>(
   }
 
   // Use long-running config for organization setup operations
-  const config = url && isLongRunningOperation(url) 
-    ? SPRING_SERVICE_LONG_RUNNING_CONFIG 
-    : SPRING_SERVICE_CONFIG;
+  const config =
+    url && isLongRunningOperation(url) ? SPRING_SERVICE_LONG_RUNNING_CONFIG : SPRING_SERVICE_CONFIG;
 
   const instance = axios.create(config);
 
