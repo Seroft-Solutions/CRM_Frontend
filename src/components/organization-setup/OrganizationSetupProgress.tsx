@@ -134,7 +134,7 @@ export function OrganizationSetupProgress({
         console.log('⚠️ Organization not found yet, backend may still be processing setup...');
         return; // Don't set error state, keep polling
       }
-      
+
       setHasError(true);
       onError(error?.message || 'Setup failed');
     }

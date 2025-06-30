@@ -84,7 +84,7 @@ export class OrganizationSetupService {
         if (error.message === 'SETUP_TIMEOUT') {
           console.log('⚠️ Setup timed out on frontend, but backend may still be processing');
           console.log('✓ Returning partial result - progress tracking will handle completion');
-          
+
           // Return partial result, progress tracking will monitor completion
           return {
             keycloakOrgId,
@@ -219,13 +219,15 @@ export class OrganizationSetupService {
     } catch (error: any) {
       // If it's a timeout error, the backend might still be processing
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        console.log('⚠️ Organization creation timed out on frontend, but backend may still be processing...');
-        
+        console.log(
+          '⚠️ Organization creation timed out on frontend, but backend may still be processing...'
+        );
+
         // For timeout errors, we'll return a placeholder ID and let the progress tracking handle it
         // The progress component will poll for actual completion
         throw new Error('SETUP_TIMEOUT');
       }
-      
+
       console.error('❌ Organization creation failed:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to create organization');
     }
