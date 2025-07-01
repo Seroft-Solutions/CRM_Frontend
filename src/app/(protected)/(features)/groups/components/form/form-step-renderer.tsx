@@ -6,7 +6,6 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { useEntityForm } from "./group-form-provider";
 import { RelationshipRenderer } from "./relationship-renderer";
 
@@ -91,11 +90,11 @@ function RelationshipDisplayValue({
   );
 
   if (!value) {
-    return <Badge variant="outline" className="text-muted-foreground text-xs">Not selected</Badge>;
+    return <span className="text-sm text-muted-foreground">Not selected</span>;
   }
 
   if (!allData) {
-    return <Badge variant="outline" className="text-muted-foreground text-xs">Loading...</Badge>;
+    return <span className="text-sm text-muted-foreground">Loading...</span>;
   }
 
   // Extract data array from response (handle both direct array and paginated response)
@@ -105,7 +104,7 @@ function RelationshipDisplayValue({
 
   if (multiple && Array.isArray(value)) {
     if (value.length === 0) {
-      return <Badge variant="outline" className="text-muted-foreground">None selected</Badge>;
+      return <span className="text-sm text-muted-foreground">None selected</span>;
     }
     
     const selectedItems = dataArray.filter((item: any) => 
@@ -113,33 +112,15 @@ function RelationshipDisplayValue({
     );
     
     if (selectedItems.length === 0) {
-      return <Badge variant="outline">{value.length} selected</Badge>;
+      return <span className="text-sm text-muted-foreground">{value.length} selected</span>;
     }
     
-    if (selectedItems.length <= 3) {
-      return (
-        <div className="flex flex-wrap gap-1">
-          {selectedItems.map((item: any, index: number) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {item[displayField]}
-            </Badge>
-          ))}
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex flex-wrap gap-1">
-          {selectedItems.slice(0, 2).map((item: any, index: number) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {item[displayField]}
-            </Badge>
-          ))}
-          <Badge variant="outline" className="text-xs">
-            +{selectedItems.length - 2} more
-          </Badge>
-        </div>
-      );
-    }
+    const displayValues = selectedItems.map((item: any) => item[displayField]);
+    return (
+      <span className="text-sm text-foreground">
+        {displayValues.join(", ")}
+      </span>
+    );
   } else {
     // Single value
     const selectedItem = dataArray.find((item: any) => 
@@ -147,13 +128,13 @@ function RelationshipDisplayValue({
     );
     
     return selectedItem ? (
-      <Badge variant="default" className="text-xs font-medium">
+      <span className="text-sm text-foreground font-medium">
         {selectedItem[displayField]}
-      </Badge>
+      </span>
     ) : (
-      <Badge variant="outline" className="text-xs text-muted-foreground">
+      <span className="text-sm text-muted-foreground">
         Selected (ID: {value})
-      </Badge>
+      </span>
     );
   }
 }
@@ -332,13 +313,26 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
             <p className="text-muted-foreground mt-2">Please review all the information before submitting.</p>
           </div>
           
-          {config.steps.slice(0, -1).map((step) => {
+          {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
             
             return (
               <div key={step.id} className="border rounded-lg p-4">
-                <h4 className="font-medium mb-3 text-sm">{step.title}</h4>
+                <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground">{step.title}</h4>
+                    {step.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
+                    )}
+                  </div>
+                  <div className="ml-auto text-xs text-muted-foreground">
+                    Step {index + 1} of {config.steps.length - 1}
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {step.fields.map(fieldName => {
                     const fieldConfig = config.fields.find(f => f.name === fieldName);
@@ -348,7 +342,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     // Format value for display
                     const displayValue = (() => {
                       if (!value) return (
-                        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+                        <span className="text-sm text-muted-foreground">Not set</span>
                       );
                       
                       if (fieldConfig.type === 'date') {
@@ -356,55 +350,55 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                           const date = value instanceof Date ? value : new Date(value);
                           const dateStr = isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
                           return (
-                            <Badge variant="secondary" className="text-xs">
+                            <span className="text-sm text-foreground">
                               {dateStr}
-                            </Badge>
+                            </span>
                           );
                         } catch {
                           return (
-                            <Badge variant="destructive" className="text-xs">
+                            <span className="text-sm text-muted-foreground">
                               Invalid date
-                            </Badge>
+                            </span>
                           );
                         }
                       }
                       
                       if (fieldConfig.type === 'boolean') {
                         return (
-                          <Badge variant={value ? "default" : "secondary"} className="text-xs">
+                          <span className="text-sm text-foreground">
                             {value ? 'Yes' : 'No'}
-                          </Badge>
+                          </span>
                         );
                       }
                       
                       if (fieldConfig.type === 'enum') {
                         const option = fieldConfig.options?.find((opt: any) => opt.value === value);
                         return (
-                          <Badge variant="default" className="text-xs">
+                          <span className="text-sm text-foreground font-medium">
                             {option ? option.label : value}
-                          </Badge>
+                          </span>
                         );
                       }
                       
                       if (fieldConfig.type === 'file') {
                         const fileStr = value && value.name ? value.name : 'No file selected';
                         return (
-                          <Badge variant={value && value.name ? "default" : "outline"} className="text-xs">
+                          <span className="text-sm text-foreground">
                             {fileStr}
-                          </Badge>
+                          </span>
                         );
                       }
                       
                       return (
-                        <Badge variant="secondary" className="text-xs">
+                        <span className="text-sm text-foreground">
                           {String(value)}
-                        </Badge>
+                        </span>
                       );
                     })();
                     
                     return (
                       <div key={fieldName} className="space-y-1">
-                        <span className="text-xs font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                        <span className="text-sm font-semibold text-foreground">{fieldConfig.label}:</span>
                         <div>{displayValue}</div>
                       </div>
                     );
@@ -416,7 +410,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     
                     return (
                       <div key={relName} className="space-y-1">
-                        <span className="text-xs font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                        <span className="text-sm font-semibold text-foreground">{relConfig.ui.label}:</span>
                         <div>
                           <RelationshipValueResolver relConfig={relConfig} value={value} />
                         </div>
