@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for State form
@@ -6,30 +6,36 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const stateFormConfig: FormConfig = {
   entity: 'State',
-
+  
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'country'],
-      relationships: [],
+      fields: [
+        'name',
+        'country',
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -39,14 +45,15 @@ export const stateFormConfig: FormConfig = {
       name: 'name',
       type: 'text',
       label: 'Name',
-      placeholder: 'Enter name',
+      placeholder: 'Enter name (minimum 2 characters)',
       required: true,
       validation: {
         required: true,
         minLength: 2,
         maxLength: 100,
       },
-      ui: {},
+      ui: {
+      }
     },
     {
       name: 'country',
@@ -59,12 +66,14 @@ export const stateFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 50,
       },
-      ui: {},
+      ui: {
+      }
     },
   ],
 
   // Relationship definitions
-  relationships: [],
+  relationships: [
+  ],
 
   // Global form configuration
   validation: {
@@ -87,7 +96,7 @@ export const stateFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -111,18 +120,19 @@ export const stateFormConfig: FormConfig = {
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
     },
-  },
+    rendering: {
+      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+    }
+  }
 };
 
 // Export utility functions for external use
 export const stateFormHelpers = {
-  getStepById: (stepId: string) => stateFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    stateFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    stateFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => stateFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => stateFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => stateFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = stateFormConfig.steps.find((s) => s.id === stepId);
+    const step = stateFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

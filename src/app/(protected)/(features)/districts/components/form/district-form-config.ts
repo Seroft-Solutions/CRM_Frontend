@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
  * Configuration for District form
@@ -6,41 +6,49 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
  */
 export const districtFormConfig: FormConfig = {
   entity: 'District',
-
+  
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name'],
-      relationships: [],
+      fields: [
+        'name',
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'geographic',
       title: 'Location Details',
       description: 'Select geographic information',
-      fields: [],
-      relationships: ['state'],
+      fields: [
+      ],
+      relationships: [
+        'state',
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [],
-      relationships: [],
+      fields: [
+      ],
+      relationships: [
+      ],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true,
-      },
+        validateOnNext: true
+      }
     },
   ],
 
@@ -50,14 +58,15 @@ export const districtFormConfig: FormConfig = {
       name: 'name',
       type: 'text',
       label: 'Name',
-      placeholder: 'Enter name',
+      placeholder: 'Enter name (minimum 2 characters)',
       required: true,
       validation: {
         required: true,
         minLength: 2,
         maxLength: 100,
       },
-      ui: {},
+      ui: {
+      }
     },
   ],
 
@@ -87,7 +96,7 @@ export const districtFormConfig: FormConfig = {
         label: 'State',
         placeholder: 'Select state',
         icon: '📍',
-      },
+      }
     },
   ],
 
@@ -112,7 +121,7 @@ export const districtFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    },
+    }
   },
 
   behavior: {
@@ -136,18 +145,19 @@ export const districtFormConfig: FormConfig = {
       relationshipInfoKey: 'relationshipFieldInfo',
       newEntityIdKey: 'newlyCreatedEntityId',
     },
-  },
+    rendering: {
+      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+    }
+  }
 };
 
 // Export utility functions for external use
 export const districtFormHelpers = {
-  getStepById: (stepId: string) => districtFormConfig.steps.find((step) => step.id === stepId),
-  getFieldConfig: (fieldName: string) =>
-    districtFormConfig.fields.find((field) => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) =>
-    districtFormConfig.relationships.find((rel) => rel.name === relationshipName),
+  getStepById: (stepId: string) => districtFormConfig.steps.find(step => step.id === stepId),
+  getFieldConfig: (fieldName: string) => districtFormConfig.fields.find(field => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) => districtFormConfig.relationships.find(rel => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = districtFormConfig.steps.find((s) => s.id === stepId);
+    const step = districtFormConfig.steps.find(s => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  },
+  }
 };

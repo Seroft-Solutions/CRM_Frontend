@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { subCallTypeToast, handleSubCallTypeError } from './sub-call-type-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { subCallTypeToast, handleSubCallTypeError } from "./sub-call-type-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetSubCallType,
   useDeleteSubCallType,
-} from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+
+
 
 interface SubCallTypeDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
     mutation: {
       onSuccess: () => {
         subCallTypeToast.deleted();
-        router.push('/sub-call-types');
+        router.push("/sub-call-types");
       },
       onError: (error) => {
         handleSubCallTypeError(error);
@@ -88,37 +96,40 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Description
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.description || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.description || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Remark
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.remark || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.remark || "—"}</span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -129,24 +140,25 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Call Type
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Type</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.callType ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.callType as any).name || entity.callType.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -158,7 +170,7 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -174,8 +186,8 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the subcalltype and remove
-              its data from the server.
+              This action cannot be undone. This will permanently delete the
+              subcalltype and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,24 +1,25 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for SubCallType form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * SubCallType form validation schema with user-friendly messages
  */
-export const subCallTypeFormSchema = z.object({
-  name: z.string().min(2).max(50),
-  description: z.string().max(255).optional(),
-  remark: z.string().max(1000).optional(),
-  callType: z.number(),
-});
+import { z } from "zod";
+
+export const subCallTypeFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
+  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  callType: z.number({ message: "Please select call type from the dropdown" }),
+};
+
+export const subCallTypeFormSchema = z.object(subCallTypeFormSchemaFields);
 
 export type SubCallTypeFormValues = z.infer<typeof subCallTypeFormSchema>;
 
 // Individual field schemas for granular validation
 export const subCallTypeFieldSchemas = {
-  name: z.string().min(2).max(50),
-  description: z.string().max(255).optional(),
-  remark: z.string().max(1000).optional(),
-  callType: z.number(),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
+  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  callType: z.number({ message: "Please select call type from the dropdown" }),
 };
 
 // Step-specific validation schemas
@@ -28,61 +29,19 @@ export const subCallTypeStepSchemas = {
     description: subCallTypeFieldSchemas.description,
     remark: subCallTypeFieldSchemas.remark,
   }),
-
-  classification: z.object({
-    callType: subCallTypeFieldSchemas.callType,
-  }),
-
+  
   review: subCallTypeFormSchema,
 };
 
-// Validation helper functions
-export const subCallTypeValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<SubCallTypeFormValues>) => {
-    const stepSchema = subCallTypeStepSchemas[stepId as keyof typeof subCallTypeStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = subCallTypeFieldSchemas[fieldName as keyof typeof subCallTypeFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 50,
-      };
-    }
-    if (fieldName === 'description') {
-      return {
-        required: false,
-        maxLength: 255,
-      };
-    }
-    if (fieldName === 'remark') {
-      return {
-        required: false,
-        maxLength: 1000,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = subCallTypeStepSchemas[stepId as keyof typeof subCallTypeStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

@@ -1,64 +1,33 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for Product form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * Product form validation schema with user-friendly messages
  */
-export const productFormSchema = z.object({
-  name: z.string().min(2).max(100),
-  code: z
-    .string()
-    .min(2)
-    .max(20)
-    .regex(/^[A-Za-z0-9_-]+$/),
-  description: z.string().max(500).optional(),
-  category: z.string().max(50).optional(),
-  basePrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  minPrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  maxPrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  remark: z.string().max(1000).optional(),
-});
+import { z } from "zod";
+
+export const productFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  code: z.string({ message: "Please enter code" }).min(1, { message: "Please enter code" }).min(2, { message: "Please enter at least 2 characters" }).max(20, { message: "Please enter no more than 20 characters" }).regex(/^[A-Za-z0-9_-]+$/, { message: "Please enter valid code" }),
+  description: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  category: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
+  basePrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+};
+
+export const productFormSchema = z.object(productFormSchemaFields);
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
 // Individual field schemas for granular validation
 export const productFieldSchemas = {
-  name: z.string().min(2).max(100),
-  code: z
-    .string()
-    .min(2)
-    .max(20)
-    .regex(/^[A-Za-z0-9_-]+$/),
-  description: z.string().max(500).optional(),
-  category: z.string().max(50).optional(),
-  basePrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  minPrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  maxPrice: z
-    .string()
-    .refine((val) => !val || Number(val) >= 0, { message: 'Must be at least 0' })
-    .refine((val) => !val || Number(val) <= 999999, { message: 'Must be at most 999999' })
-    .optional(),
-  remark: z.string().max(1000).optional(),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  code: z.string({ message: "Please enter code" }).min(1, { message: "Please enter code" }).min(2, { message: "Please enter at least 2 characters" }).max(20, { message: "Please enter no more than 20 characters" }).regex(/^[A-Za-z0-9_-]+$/, { message: "Please enter valid code" }),
+  description: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  category: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
+  basePrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  minPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  maxPrice: z.string().refine(val => !val || Number(val) >= 0, { message: "Please enter a number 0 or higher" }).refine(val => !val || Number(val) <= 999999, { message: "Please enter a number 999999 or lower" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
 };
 
 // Step-specific validation schemas
@@ -68,97 +37,24 @@ export const productStepSchemas = {
     code: productFieldSchemas.code,
     description: productFieldSchemas.description,
     category: productFieldSchemas.category,
-    remark: productFieldSchemas.remark,
     basePrice: productFieldSchemas.basePrice,
     minPrice: productFieldSchemas.minPrice,
     maxPrice: productFieldSchemas.maxPrice,
+    remark: productFieldSchemas.remark,
   }),
-
+  
   review: productFormSchema,
 };
 
-// Validation helper functions
-export const productValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<ProductFormValues>) => {
-    const stepSchema = productStepSchemas[stepId as keyof typeof productStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = productFieldSchemas[fieldName as keyof typeof productFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'code') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 20,
-        pattern: /^[A-Za-z0-9_-]+$/,
-      };
-    }
-    if (fieldName === 'description') {
-      return {
-        required: false,
-        maxLength: 500,
-      };
-    }
-    if (fieldName === 'category') {
-      return {
-        required: false,
-        maxLength: 50,
-      };
-    }
-    if (fieldName === 'basePrice') {
-      return {
-        required: false,
-        min: 0,
-        max: 999999,
-      };
-    }
-    if (fieldName === 'minPrice') {
-      return {
-        required: false,
-        min: 0,
-        max: 999999,
-      };
-    }
-    if (fieldName === 'maxPrice') {
-      return {
-        required: false,
-        min: 0,
-        max: 999999,
-      };
-    }
-    if (fieldName === 'remark') {
-      return {
-        required: false,
-        maxLength: 1000,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = productStepSchemas[stepId as keyof typeof productStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { PriorityForm } from '../../components/priority-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { PriorityForm } from "../../components/priority-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditPriorityPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditPriorityPageProps {
 }
 
 export const metadata = {
-  title: 'Edit Priority',
+  title: "Edit Priority",
 };
 
 export default async function EditPriorityPage({ params }: EditPriorityPageProps) {
@@ -23,7 +23,7 @@ export default async function EditPriorityPage({ params }: EditPriorityPageProps
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="priority:update"
       unauthorizedTitle="Access Denied to Edit Priority"
       unauthorizedDescription="You don't have permission to edit priority records."
@@ -31,7 +31,7 @@ export default async function EditPriorityPage({ params }: EditPriorityPageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/priorities"
               defaultLabel="Back to Priorities"
               entityName="Priority"
@@ -47,7 +47,7 @@ export default async function EditPriorityPage({ params }: EditPriorityPageProps
               <p className="text-sm text-gray-600 mt-1">Update the information for this priority</p>
             </div>
           </div>
-
+          
           <PriorityForm id={id} />
         </div>
       </div>

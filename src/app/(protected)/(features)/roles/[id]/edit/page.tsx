@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { RoleForm } from '../../components/role-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { RoleForm } from "../../components/role-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditRolePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditRolePageProps {
 }
 
 export const metadata = {
-  title: 'Edit Role',
+  title: "Edit Role",
 };
 
 export default async function EditRolePage({ params }: EditRolePageProps) {
@@ -23,7 +23,7 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="role:update"
       unauthorizedTitle="Access Denied to Edit Role"
       unauthorizedDescription="You don't have permission to edit role records."
@@ -31,7 +31,7 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/roles"
               defaultLabel="Back to Roles"
               entityName="Role"
@@ -47,7 +47,7 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
               <p className="text-sm text-gray-600 mt-1">Update the information for this role</p>
             </div>
           </div>
-
+          
           <RoleForm id={id} />
         </div>
       </div>

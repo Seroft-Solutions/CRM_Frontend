@@ -1,20 +1,20 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { ProductForm } from '../components/product-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { ProductForm } from "../components/product-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 export const metadata = {
-  title: 'Create Product',
+  title: "Create Product",
 };
 
 export default function CreateProductPage() {
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="product:create"
       unauthorizedTitle="Access Denied to Create Product"
       unauthorizedDescription="You don't have permission to create new product records."
@@ -22,7 +22,7 @@ export default function CreateProductPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/products"
               defaultLabel="Back to Products"
               entityName="Product"
@@ -35,12 +35,10 @@ export default function CreateProductPage() {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Create Product</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Enter the details below to create a new product
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Enter the details below to create a new product</p>
             </div>
           </div>
-
+          
           <ProductForm />
         </div>
       </div>

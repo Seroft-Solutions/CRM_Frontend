@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallCategoryForm } from '../../components/call-category-form';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallCategoryForm } from "../../components/call-category-form";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditCallCategoryPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface EditCallCategoryPageProps {
 }
 
 export const metadata = {
-  title: 'Edit CallCategory',
+  title: "Edit CallCategory",
 };
 
 export default async function EditCallCategoryPage({ params }: EditCallCategoryPageProps) {
@@ -23,7 +23,7 @@ export default async function EditCallCategoryPage({ params }: EditCallCategoryP
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="callCategory:update"
       unauthorizedTitle="Access Denied to Edit Call Category"
       unauthorizedDescription="You don't have permission to edit call category records."
@@ -31,7 +31,7 @@ export default async function EditCallCategoryPage({ params }: EditCallCategoryP
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/call-categories"
               defaultLabel="Back to Call Categories"
               entityName="CallCategory"
@@ -44,12 +44,10 @@ export default async function EditCallCategoryPage({ params }: EditCallCategoryP
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Edit Call Category</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Update the information for this call category
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Update the information for this call category</p>
             </div>
           </div>
-
+          
           <CallCategoryForm id={id} />
         </div>
       </div>

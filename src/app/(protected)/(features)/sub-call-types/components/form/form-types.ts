@@ -142,6 +142,7 @@ export interface BehaviorConfig {
   persistence: PersistenceConfig;
   navigation: NavigationConfig;
   crossEntity: CrossEntityConfig;
+  rendering?: RenderingConfig;
 }
 
 export interface AutoSaveConfig {
@@ -166,6 +167,10 @@ export interface CrossEntityConfig {
   returnUrlKey: string;
   relationshipInfoKey: string;
   newEntityIdKey: string;
+}
+
+export interface RenderingConfig {
+  useGeneratedSteps: boolean;
 }
 
 export type ValidationFunction = (value: any, allValues: Record<string, any>) => string | undefined;

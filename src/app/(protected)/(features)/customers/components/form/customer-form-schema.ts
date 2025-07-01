@@ -1,48 +1,35 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for Customer form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * Customer form validation schema with user-friendly messages
  */
-export const customerFormSchema = z.object({
-  customerBusinessName: z.string().min(2).max(100),
-  email: z
-    .string()
-    .max(254)
-    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-    .optional(),
-  mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  whatsApp: z
-    .string()
-    .regex(/^[+]?[0-9]{10,15}$/)
-    .optional(),
-  contactPerson: z.string().min(2).max(100).optional(),
-  state: z.number(),
-  district: z.number().optional(),
-  city: z.number().optional(),
-  area: z.number().optional(),
-});
+import { z } from "zod";
+
+export const customerFormSchemaFields = {
+  customerBusinessName: z.string({ message: "Please enter customerbusinessname" }).min(1, { message: "Please enter customerbusinessname" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  email: z.string().max(254, { message: "Please enter no more than 254 characters" }).email({ message: "Please enter a valid email address (example: name@company.com)" }).optional(),
+  mobile: z.string({ message: "Please enter mobile" }).min(1, { message: "Please enter mobile" }).regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, { message: "Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567" }),
+  whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/, { message: "Please enter valid whatsapp" }).optional(),
+  contactPerson: z.string().min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }).optional(),
+  state: z.number({ message: "Please select state from the dropdown" }),
+  district: z.number({ message: "Please select district from the dropdown" }),
+  city: z.number({ message: "Please select city from the dropdown" }),
+  area: z.number({ message: "Please select area from the dropdown" }),
+};
+
+export const customerFormSchema = z.object(customerFormSchemaFields);
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 // Individual field schemas for granular validation
 export const customerFieldSchemas = {
-  customerBusinessName: z.string().min(2).max(100),
-  email: z
-    .string()
-    .max(254)
-    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-    .optional(),
-  mobile: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  whatsApp: z
-    .string()
-    .regex(/^[+]?[0-9]{10,15}$/)
-    .optional(),
-  contactPerson: z.string().min(2).max(100).optional(),
-  state: z.number(),
-  district: z.number().optional(),
-  city: z.number().optional(),
-  area: z.number().optional(),
+  customerBusinessName: z.string({ message: "Please enter customerbusinessname" }).min(1, { message: "Please enter customerbusinessname" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  email: z.string().max(254, { message: "Please enter no more than 254 characters" }).email({ message: "Please enter a valid email address (example: name@company.com)" }).optional(),
+  mobile: z.string({ message: "Please enter mobile" }).min(1, { message: "Please enter mobile" }).regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, { message: "Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567" }),
+  whatsApp: z.string().regex(/^[+]?[0-9]{10,15}$/, { message: "Please enter valid whatsapp" }).optional(),
+  contactPerson: z.string().min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }).optional(),
+  state: z.number({ message: "Please select state from the dropdown" }),
+  district: z.number({ message: "Please select district from the dropdown" }),
+  city: z.number({ message: "Please select city from the dropdown" }),
+  area: z.number({ message: "Please select area from the dropdown" }),
 };
 
 // Step-specific validation schemas
@@ -54,78 +41,19 @@ export const customerStepSchemas = {
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
   }),
-
-  geographic: z.object({
-    state: customerFieldSchemas.state,
-    district: customerFieldSchemas.district,
-    city: customerFieldSchemas.city,
-    area: customerFieldSchemas.area,
-  }),
-
+  
   review: customerFormSchema,
 };
 
-// Validation helper functions
-export const customerValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<CustomerFormValues>) => {
-    const stepSchema = customerStepSchemas[stepId as keyof typeof customerStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = customerFieldSchemas[fieldName as keyof typeof customerFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'customerBusinessName') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'email') {
-      return {
-        required: false,
-        maxLength: 254,
-        pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      };
-    }
-    if (fieldName === 'mobile') {
-      return {
-        required: true,
-        pattern: /^[+]?[0-9]{10,15}$/,
-      };
-    }
-    if (fieldName === 'whatsApp') {
-      return {
-        required: false,
-        pattern: /^[+]?[0-9]{10,15}$/,
-      };
-    }
-    if (fieldName === 'contactPerson') {
-      return {
-        required: false,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = customerStepSchemas[stepId as keyof typeof customerStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

@@ -1,20 +1,21 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for State form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * State form validation schema with user-friendly messages
  */
-export const stateFormSchema = z.object({
-  name: z.string().min(2).max(100),
-  country: z.string().min(2).max(50),
-});
+import { z } from "zod";
+
+export const stateFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  country: z.string({ message: "Please enter country" }).min(1, { message: "Please enter country" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
+};
+
+export const stateFormSchema = z.object(stateFormSchemaFields);
 
 export type StateFormValues = z.infer<typeof stateFormSchema>;
 
 // Individual field schemas for granular validation
 export const stateFieldSchemas = {
-  name: z.string().min(2).max(100),
-  country: z.string().min(2).max(50),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  country: z.string({ message: "Please enter country" }).min(1, { message: "Please enter country" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
 };
 
 // Step-specific validation schemas
@@ -23,52 +24,19 @@ export const stateStepSchemas = {
     name: stateFieldSchemas.name,
     country: stateFieldSchemas.country,
   }),
-
+  
   review: stateFormSchema,
 };
 
-// Validation helper functions
-export const stateValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<StateFormValues>) => {
-    const stepSchema = stateStepSchemas[stepId as keyof typeof stateStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = stateFieldSchemas[fieldName as keyof typeof stateFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'country') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 50,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = stateStepSchemas[stepId as keyof typeof stateStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

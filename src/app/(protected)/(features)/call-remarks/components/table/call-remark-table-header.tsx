@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+} from "@/components/ui/select";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -35,22 +41,22 @@ interface CallRemarkTableHeaderProps {
   }>;
 }
 
-export function CallRemarkTableHeader({
-  onSort,
+export function CallRemarkTableHeader({ 
+  onSort, 
   getSortIcon,
   filters,
   onFilterChange,
   isAllSelected,
   isIndeterminate,
   onSelectAll,
-  visibleColumns,
+  visibleColumns
 }: CallRemarkTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
     switch (iconType) {
-      case 'ChevronUp':
+      case "ChevronUp":
         return <ChevronUp className="h-4 w-4" />;
-      case 'ChevronDown':
+      case "ChevronDown":
         return <ChevronDown className="h-4 w-4" />;
       default:
         return <ChevronsUpDown className="h-4 w-4" />;
@@ -71,8 +77,8 @@ export function CallRemarkTableHeader({
           />
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead
-            key={column.id}
+          <TableHead 
+            key={column.id} 
             className={`
               px-2 sm:px-3 py-2 
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
@@ -86,10 +92,14 @@ export function CallRemarkTableHeader({
                 className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
               >
                 {column.label}
-                <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
+                <div className="text-gray-400">
+                  {renderSortIcon(column.accessor)}
+                </div>
               </Button>
             ) : (
-              <span className="font-medium text-gray-700 text-sm">{column.label}</span>
+              <span className="font-medium text-gray-700 text-sm">
+                {column.label}
+              </span>
             )}
           </TableHead>
         ))}
@@ -100,60 +110,68 @@ export function CallRemarkTableHeader({
           </div>
         </TableHead>
       </TableRow>
-
+      
       {/* Filter Row */}
       <TableRow className="border-b bg-white">
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
         {visibleColumns.map((column, index) => (
-          <TableHead
-            key={`filter-${column.id}`}
+          <TableHead 
+            key={`filter-${column.id}`} 
             className={`
               px-2 sm:px-3 py-2
               ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
             `}
           >
-            {column.type === 'field'
-              ? (() => {
-                  if (column.accessor === 'remark') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['remark'] as string) || ''}
-                        onChange={(e) => onFilterChange('remark', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
-                  if (column.accessor === 'dateTime') {
-                    return (
-                      <Input
-                        type="date"
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        value={(filters['dateTime'] as string) || ''}
-                        onChange={(e) => onFilterChange('dateTime', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
-                  return null;
-                })()
-              : (() => {
-                  if (column.accessor === 'call') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['call.name'] as string) || ''}
-                        onChange={(e) => onFilterChange('call.name', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
-                  return null;
-                })()}
+            {column.type === 'field' ? (
+              (() => {
+                
+                if (column.accessor === 'remark') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["remark"] as string || ""}
+                      onChange={(e) => onFilterChange("remark", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'dateTime') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["dateTime"] as string || ""}
+                      onChange={(e) => onFilterChange("dateTime", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                return null;
+              })()
+            ) : (
+              (() => {
+                
+                if (column.accessor === 'call') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["call.name"] as string || ""}
+                      onChange={(e) => onFilterChange("call.name", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                return null;
+              })()
+            )}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

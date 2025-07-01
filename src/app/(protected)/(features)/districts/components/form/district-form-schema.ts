@@ -1,20 +1,21 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for District form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * District form validation schema with user-friendly messages
  */
-export const districtFormSchema = z.object({
-  name: z.string().min(2).max(100),
-  state: z.number(),
-});
+import { z } from "zod";
+
+export const districtFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  state: z.number({ message: "Please select state from the dropdown" }),
+};
+
+export const districtFormSchema = z.object(districtFormSchemaFields);
 
 export type DistrictFormValues = z.infer<typeof districtFormSchema>;
 
 // Individual field schemas for granular validation
 export const districtFieldSchemas = {
-  name: z.string().min(2).max(100),
-  state: z.number(),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  state: z.number({ message: "Please select state from the dropdown" }),
 };
 
 // Step-specific validation schemas
@@ -22,49 +23,19 @@ export const districtStepSchemas = {
   basic: z.object({
     name: districtFieldSchemas.name,
   }),
-
-  geographic: z.object({
-    state: districtFieldSchemas.state,
-  }),
-
+  
   review: districtFormSchema,
 };
 
-// Validation helper functions
-export const districtValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<DistrictFormValues>) => {
-    const stepSchema = districtStepSchemas[stepId as keyof typeof districtStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = districtFieldSchemas[fieldName as keyof typeof districtFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = districtStepSchemas[stepId as keyof typeof districtStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };
