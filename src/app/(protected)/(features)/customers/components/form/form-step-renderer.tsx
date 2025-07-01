@@ -6,11 +6,190 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useEntityForm } from "./customer-form-provider";
 import { RelationshipRenderer } from "./relationship-renderer";
 
+
+import {
+  useGetAllStates,
+  useSearchStates,
+  useCountStates,
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+import {
+  useGetAllDistricts,
+  useSearchDistricts,
+  useCountDistricts,
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+import {
+  useGetAllCities,
+  useSearchCities,
+  useCountCities,
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+import {
+  useGetAllAreas,
+  useSearchAreas,
+  useCountAreas,
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+
 interface FormStepRendererProps {
   entity?: any;
+}
+
+// Relationship value resolver component
+function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
+  // Use hooks based on relationship configuration
+  const resolveRelationshipDisplay = () => {
+    switch (relConfig.name) {
+      case 'state':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllStates}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="States"
+          />
+        );
+        
+      case 'district':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllDistricts}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="Districts"
+          />
+        );
+        
+      case 'city':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllCities}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="Cities"
+          />
+        );
+        
+      case 'area':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllAreas}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="Areas"
+          />
+        );
+        
+      default:
+        return <span>{value ? 'Selected' : 'Not selected'}</span>;
+    }
+  };
+
+  return resolveRelationshipDisplay();
+}
+
+// Component to display relationship values
+function RelationshipDisplayValue({ 
+  value, 
+  useGetAllHook, 
+  displayField, 
+  primaryKey, 
+  multiple,
+  label 
+}: { 
+  value: any; 
+  useGetAllHook: any; 
+  displayField: string; 
+  primaryKey: string; 
+  multiple: boolean;
+  label: string;
+}) {
+  // Fetch all data to resolve display values
+  const { data: allData } = useGetAllHook(
+    { page: 0, size: 1000 }, // Get enough data to resolve most relationships
+    {
+      query: {
+        enabled: !!value, // Only fetch if there's a value to resolve
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      }
+    }
+  );
+
+  if (!value) {
+    return <Badge variant="outline" className="text-muted-foreground text-xs">Not selected</Badge>;
+  }
+
+  if (!allData) {
+    return <Badge variant="outline" className="text-muted-foreground text-xs">Loading...</Badge>;
+  }
+
+  // Extract data array from response (handle both direct array and paginated response)
+  const dataArray = Array.isArray(allData) ? allData : 
+                   allData.content ? allData.content : 
+                   allData.data ? allData.data : [];
+
+  if (multiple && Array.isArray(value)) {
+    if (value.length === 0) {
+      return <Badge variant="outline" className="text-muted-foreground">None selected</Badge>;
+    }
+    
+    const selectedItems = dataArray.filter((item: any) => 
+      value.includes(item[primaryKey])
+    );
+    
+    if (selectedItems.length === 0) {
+      return <Badge variant="outline">{value.length} selected</Badge>;
+    }
+    
+    if (selectedItems.length <= 3) {
+      return (
+        <div className="flex flex-wrap gap-1">
+          {selectedItems.map((item: any, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {item[displayField]}
+            </Badge>
+          ))}
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex flex-wrap gap-1">
+          {selectedItems.slice(0, 2).map((item: any, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {item[displayField]}
+            </Badge>
+          ))}
+          <Badge variant="outline" className="text-xs">
+            +{selectedItems.length - 2} more
+          </Badge>
+        </div>
+      );
+    }
+  } else {
+    // Single value
+    const selectedItem = dataArray.find((item: any) => 
+      item[primaryKey] === value
+    );
+    
+    return selectedItem ? (
+      <Badge variant="default" className="text-xs font-medium">
+        {selectedItem[displayField]}
+      </Badge>
+    ) : (
+      <Badge variant="outline" className="text-xs text-muted-foreground">
+        Selected (ID: {value})
+      </Badge>
+    );
+  }
 }
 
 export function FormStepRenderer({ entity }: FormStepRendererProps) {
@@ -181,7 +360,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     // Special handling for review step
     if (currentStepConfig.id === 'review') {
       return (
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div className="text-center">
             <h3 className="text-lg font-semibold">Review Your Information</h3>
             <p className="text-muted-foreground mt-2">Please review all the information before submitting.</p>
@@ -192,9 +371,9 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
             if (stepFields.length === 0) return null;
             
             return (
-              <div key={step.id} className="border rounded-lg p-4">
-                <h4 className="font-medium mb-3">{step.title}</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div key={step.id} className="border rounded-lg p-6">
+                <h4 className="font-medium mb-4">{step.title}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {step.fields.map(fieldName => {
                     const fieldConfig = config.fields.find(f => f.name === fieldName);
                     if (!fieldConfig) return null;
@@ -202,24 +381,65 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     
                     // Format value for display
                     const displayValue = (() => {
-                      if (!value) return 'Not set';
+                      if (!value) return (
+                        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+                      );
                       
                       if (fieldConfig.type === 'date') {
                         try {
                           const date = value instanceof Date ? value : new Date(value);
-                          return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                          const dateStr = isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                          return (
+                            <Badge variant="secondary" className="text-xs">
+                              {dateStr}
+                            </Badge>
+                          );
                         } catch {
-                          return 'Invalid date';
+                          return (
+                            <Badge variant="destructive" className="text-xs">
+                              Invalid date
+                            </Badge>
+                          );
                         }
                       }
                       
-                      return String(value);
+                      if (fieldConfig.type === 'boolean') {
+                        return (
+                          <Badge variant={value ? "default" : "secondary"} className="text-xs">
+                            {value ? 'Yes' : 'No'}
+                          </Badge>
+                        );
+                      }
+                      
+                      if (fieldConfig.type === 'enum') {
+                        const option = fieldConfig.options?.find((opt: any) => opt.value === value);
+                        return (
+                          <Badge variant="default" className="text-xs">
+                            {option ? option.label : value}
+                          </Badge>
+                        );
+                      }
+                      
+                      if (fieldConfig.type === 'file') {
+                        const fileStr = value && value.name ? value.name : 'No file selected';
+                        return (
+                          <Badge variant={value && value.name ? "default" : "outline"} className="text-xs">
+                            {fileStr}
+                          </Badge>
+                        );
+                      }
+                      
+                      return (
+                        <Badge variant="secondary" className="text-xs">
+                          {String(value)}
+                        </Badge>
+                      );
                     })();
                     
                     return (
-                      <div key={fieldName} className="text-sm">
-                        <span className="font-medium">{fieldConfig.label}:</span>
-                        <span className="ml-2">{displayValue}</span>
+                      <div key={fieldName} className="text-sm space-y-2">
+                        <span className="font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                        <div>{displayValue}</div>
                       </div>
                     );
                   })}
@@ -227,10 +447,13 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     const relConfig = config.relationships.find(r => r.name === relName);
                     if (!relConfig) return null;
                     const value = form.getValues(relName);
+                    
                     return (
-                      <div key={relName} className="text-sm">
-                        <span className="font-medium">{relConfig.ui.label}:</span>
-                        <span className="ml-2">{value ? 'Selected' : 'Not selected'}</span>
+                      <div key={relName} className="text-sm space-y-2">
+                        <span className="font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                        <div>
+                          <RelationshipValueResolver relConfig={relConfig} value={value} />
+                        </div>
                       </div>
                     );
                   })}

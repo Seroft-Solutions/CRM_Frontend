@@ -7,14 +7,8 @@ import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { customerToast, handleCustomerError } from "./customer-toast";
+import { customerFormConfig } from "./form/customer-form-config";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +36,9 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Get form config for step organization
+  const formConfig = customerFormConfig;
+
   // Fetch entity details
   const { data: entity, isLoading } = useGetCustomer(id, {
     query: {
@@ -67,6 +64,87 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
     setShowDeleteDialog(false);
   };
 
+  // Render field value with consistent badge styling
+  const renderFieldValue = (fieldConfig: any, value: any) => {
+    if (fieldConfig.type === 'boolean') {
+      return (
+        <Badge variant={value ? "default" : "secondary"} className="text-xs">
+          {value ? "Yes" : "No"}
+        </Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'date') {
+      return value ? (
+        <Badge variant="secondary" className="text-xs">
+          {format(new Date(value), "PPP")}
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'file') {
+      return value ? (
+        <Badge variant="default" className="text-xs">File uploaded</Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">No file</Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'enum') {
+      return value ? (
+        <Badge variant="default" className="text-xs font-medium">{value}</Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+      );
+    }
+    
+    // Default text/number fields
+    return value ? (
+      <Badge variant="secondary" className="text-xs break-words">{value}</Badge>
+    ) : (
+      <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+    );
+  };
+
+  // Render relationship value with consistent badge styling
+  const renderRelationshipValue = (relConfig: any, value: any) => {
+    if (!value) {
+      return (
+        <Badge variant="outline" className="text-muted-foreground text-xs">
+          {relConfig.multiple ? "None selected" : "Not selected"}
+        </Badge>
+      );
+    }
+
+    if (relConfig.multiple && Array.isArray(value)) {
+      if (value.length === 0) {
+        return (
+          <Badge variant="outline" className="text-muted-foreground text-xs">None selected</Badge>
+        );
+      }
+      
+      return (
+        <div className="flex flex-wrap gap-1">
+          {value.map((item: any, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {item[relConfig.displayField] || item.id}
+            </Badge>
+          ))}
+        </div>
+      );
+    } else {
+      // Single relationship
+      const displayValue = value[relConfig.displayField] || value.id;
+      return (
+        <Badge variant="default" className="text-xs font-medium">
+          {displayValue}
+        </Badge>
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -83,139 +161,60 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
     );
   }
 
+  // Filter out review step and empty steps
+  const displaySteps = formConfig.steps.filter(step => 
+    step.id !== 'review' && 
+    (step.fields.length > 0 || step.relationships.length > 0)
+  );
+
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* Basic Information */}
-        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Customer Business Name</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.customerBusinessName || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.email || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mobile</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.mobile || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Whats App</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.whatsApp || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Person</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground break-words">{entity.contactPerson || "—"}</span>
-                    
-                  </dd>
-                </div>
-                
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="space-y-8">
+        {displaySteps.map((step, index) => {
+          const stepFields = [...step.fields, ...step.relationships];
+          if (stepFields.length === 0) return null;
 
-        
-        {/* Relationships */}
-        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Related Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">State</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.state ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.state as any).name || entity.state.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">District</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.district ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.district as any).name || entity.district.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">City</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.city ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.city as any).name || entity.city.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Area</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.area ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.area as any).name || entity.area.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
+          return (
+            <div key={step.id} className="border rounded-lg p-6">
+              <h4 className="font-medium mb-4">{step.title}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Render Fields */}
+                {step.fields.map(fieldName => {
+                  const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
+                  if (!fieldConfig) return null;
+                  
+                  const value = entity[fieldName];
+                  
+                  return (
+                    <div key={fieldName} className="space-y-2">
+                      <span className="font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                      <div>
+                        {renderFieldValue(fieldConfig, value)}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Render Relationships */}
+                {step.relationships.map(relationshipName => {
+                  const relConfig = formConfig.relationships.find(r => r.name === relationshipName);
+                  if (!relConfig) return null;
+                  
+                  const value = entity[relationshipName];
+                  
+                  return (
+                    <div key={relationshipName} className="space-y-2">
+                      <span className="font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                      <div>
+                        {renderRelationshipValue(relConfig, value)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        
+            </div>
+          );
+        })}
       </div>
 
       {/* Action Buttons */}
