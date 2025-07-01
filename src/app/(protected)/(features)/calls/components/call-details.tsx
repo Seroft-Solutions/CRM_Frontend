@@ -7,14 +7,8 @@ import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { callToast, handleCallError } from "./call-toast";
+import { callFormConfig } from "./form/call-form-config";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +36,9 @@ export function CallDetails({ id }: CallDetailsProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Get form config for step organization
+  const formConfig = callFormConfig;
+
   // Fetch entity details
   const { data: entity, isLoading } = useGetCall(id, {
     query: {
@@ -67,6 +64,87 @@ export function CallDetails({ id }: CallDetailsProps) {
     setShowDeleteDialog(false);
   };
 
+  // Render field value with consistent badge styling
+  const renderFieldValue = (fieldConfig: any, value: any) => {
+    if (fieldConfig.type === 'boolean') {
+      return (
+        <Badge variant={value ? "default" : "secondary"} className="text-xs">
+          {value ? "Yes" : "No"}
+        </Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'date') {
+      return value ? (
+        <Badge variant="secondary" className="text-xs">
+          {format(new Date(value), "PPP")}
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'file') {
+      return value ? (
+        <Badge variant="default" className="text-xs">File uploaded</Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">No file</Badge>
+      );
+    }
+    
+    if (fieldConfig.type === 'enum') {
+      return value ? (
+        <Badge variant="default" className="text-xs font-medium">{value}</Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+      );
+    }
+    
+    // Default text/number fields
+    return value ? (
+      <Badge variant="secondary" className="text-xs break-words">{value}</Badge>
+    ) : (
+      <Badge variant="outline" className="text-muted-foreground text-xs">Not set</Badge>
+    );
+  };
+
+  // Render relationship value with consistent badge styling
+  const renderRelationshipValue = (relConfig: any, value: any) => {
+    if (!value) {
+      return (
+        <Badge variant="outline" className="text-muted-foreground text-xs">
+          {relConfig.multiple ? "None selected" : "Not selected"}
+        </Badge>
+      );
+    }
+
+    if (relConfig.multiple && Array.isArray(value)) {
+      if (value.length === 0) {
+        return (
+          <Badge variant="outline" className="text-muted-foreground text-xs">None selected</Badge>
+        );
+      }
+      
+      return (
+        <div className="flex flex-wrap gap-1">
+          {value.map((item: any, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {item[relConfig.displayField] || item.id}
+            </Badge>
+          ))}
+        </div>
+      );
+    } else {
+      // Single relationship
+      const displayValue = value[relConfig.displayField] || value.id;
+      return (
+        <Badge variant="default" className="text-xs font-medium">
+          {displayValue}
+        </Badge>
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -83,183 +161,60 @@ export function CallDetails({ id }: CallDetailsProps) {
     );
   }
 
+  // Filter out review step and empty steps
+  const displaySteps = formConfig.steps.filter(step => 
+    step.id !== 'review' && 
+    (step.fields.length > 0 || step.relationships.length > 0)
+  );
+
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* Basic Information */}
-        <div className="lg:col-span-1 xl:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Date Time</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    <span className="text-foreground">
-                      {entity.callDateTime ? format(new Date(entity.callDateTime), "PPP") : "—"}
-                    </span>
-                    
-                  </dd>
-                </div>
-                
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="space-y-8">
+        {displaySteps.map((step, index) => {
+          const stepFields = [...step.fields, ...step.relationships];
+          if (stepFields.length === 0) return null;
 
-        
-        {/* Relationships */}
-        <div className="lg:col-span-1 xl:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground border-b pb-3">
-                Related Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Priority</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.priority ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.priority as any).name || entity.priority.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callType as any).name || entity.callType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sub Call Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.subCallType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.subCallType as any).name || entity.subCallType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Category</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callCategory ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callCategory as any).name || entity.callCategory.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.source ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.source as any).name || entity.source.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Customer</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.customer ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.customer as any).customerBusinessName || entity.customer.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Type</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.channelType ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelType as any).name || entity.channelType.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Channel Parties</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.channelParties ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.channelParties as any).displayName || entity.channelParties.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assigned To</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.assignedTo ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.assignedTo as any).displayName || entity.assignedTo.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
-                <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call Status</dt>
-                  <dd className="text-sm font-medium">
-                    
-                    {entity.callStatus ? (
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {(entity.callStatus as any).name || entity.callStatus.id}
-                      </Badge>
-                    ) : "—"}
-                    
-                  </dd>
-                </div>
-                
+          return (
+            <div key={step.id} className="border rounded-lg p-6">
+              <h4 className="font-medium mb-4">{step.title}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Render Fields */}
+                {step.fields.map(fieldName => {
+                  const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
+                  if (!fieldConfig) return null;
+                  
+                  const value = entity[fieldName];
+                  
+                  return (
+                    <div key={fieldName} className="space-y-2">
+                      <span className="font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                      <div>
+                        {renderFieldValue(fieldConfig, value)}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Render Relationships */}
+                {step.relationships.map(relationshipName => {
+                  const relConfig = formConfig.relationships.find(r => r.name === relationshipName);
+                  if (!relConfig) return null;
+                  
+                  const value = entity[relationshipName];
+                  
+                  return (
+                    <div key={relationshipName} className="space-y-2">
+                      <span className="font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                      <div>
+                        {renderRelationshipValue(relConfig, value)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        
+            </div>
+          );
+        })}
       </div>
 
       {/* Action Buttons */}

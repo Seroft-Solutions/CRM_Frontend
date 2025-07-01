@@ -207,7 +207,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
   
   {
     id: 'customer',
-    label: 'Customer Business Name',
+    label: 'Customer',
     accessor: 'customer',
     type: 'relationship',
     visible: true,

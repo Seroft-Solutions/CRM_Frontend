@@ -11,7 +11,7 @@ import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-import { stepComponents } from './steps';
+// import { stepComponents } from './steps';
 import { 
   useCreateCustomer,
   useUpdateCustomer,
@@ -51,11 +51,12 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
     // Use imported step components (requires manual import after generation)
     try {
-      const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      if (StepComponent) {
-        return <StepComponent {...stepProps} />;
-      }
-      
+      // STEP_GENERATOR_START
+      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
+      // if (StepComponent) {
+      //   return <StepComponent {...stepProps} />;
+      // }
+      // STEP_GENERATOR_END
     } catch (error) {
       // Steps not imported yet
     }
