@@ -326,7 +326,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     // Special handling for review step
     if (currentStepConfig.id === 'review') {
       return (
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="text-center">
             <h3 className="text-lg font-semibold">Review Your Information</h3>
             <p className="text-muted-foreground mt-2">Please review all the information before submitting.</p>
@@ -337,9 +337,9 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
             if (stepFields.length === 0) return null;
             
             return (
-              <div key={step.id} className="border rounded-lg p-6">
-                <h4 className="font-medium mb-4">{step.title}</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div key={step.id} className="border rounded-lg p-4">
+                <h4 className="font-medium mb-3 text-sm">{step.title}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {step.fields.map(fieldName => {
                     const fieldConfig = config.fields.find(f => f.name === fieldName);
                     if (!fieldConfig) return null;
@@ -403,8 +403,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     })();
                     
                     return (
-                      <div key={fieldName} className="text-sm space-y-2">
-                        <span className="font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                      <div key={fieldName} className="space-y-1">
+                        <span className="text-xs font-medium text-muted-foreground">{fieldConfig.label}:</span>
                         <div>{displayValue}</div>
                       </div>
                     );
@@ -415,8 +415,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     const value = form.getValues(relName);
                     
                     return (
-                      <div key={relName} className="text-sm space-y-2">
-                        <span className="font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                      <div key={relName} className="space-y-1">
+                        <span className="text-xs font-medium text-muted-foreground">{relConfig.ui.label}:</span>
                         <div>
                           <RelationshipValueResolver relConfig={relConfig} value={value} />
                         </div>
