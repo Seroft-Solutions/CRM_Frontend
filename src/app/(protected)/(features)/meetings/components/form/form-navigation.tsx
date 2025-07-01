@@ -57,10 +57,12 @@ export function FormNavigation({
 
   return (
     <div className="space-y-4">
-      {/* Required fields indicator */}
-      <div className="text-xs text-muted-foreground text-center">
-        <span className="text-red-500">*</span> means required fields - please fill these out
-      </div>
+      {/* Required fields indicator - hide on review step */}
+      {!isLastStep && (
+        <div className="text-xs text-muted-foreground text-center">
+          <span className="text-red-500">*</span> means required fields - please fill these out
+        </div>
+      )}
       
       <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
       {/* Cancel/Previous Button */}
