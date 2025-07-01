@@ -169,15 +169,15 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
 
   return (
     <>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {displaySteps.map((step, index) => {
           const stepFields = [...step.fields, ...step.relationships];
           if (stepFields.length === 0) return null;
 
           return (
-            <div key={step.id} className="border rounded-lg p-6">
-              <h4 className="font-medium mb-4">{step.title}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div key={step.id} className="border rounded-lg p-4">
+              <h4 className="font-medium mb-3 text-sm">{step.title}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Render Fields */}
                 {step.fields.map(fieldName => {
                   const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
@@ -186,8 +186,8 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
                   const value = entity[fieldName];
                   
                   return (
-                    <div key={fieldName} className="space-y-2">
-                      <span className="font-medium text-muted-foreground">{fieldConfig.label}:</span>
+                    <div key={fieldName} className="space-y-1">
+                      <span className="text-xs font-medium text-muted-foreground">{fieldConfig.label}:</span>
                       <div>
                         {renderFieldValue(fieldConfig, value)}
                       </div>
@@ -203,8 +203,8 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
                   const value = entity[relationshipName];
                   
                   return (
-                    <div key={relationshipName} className="space-y-2">
-                      <span className="font-medium text-muted-foreground">{relConfig.ui.label}:</span>
+                    <div key={relationshipName} className="space-y-1">
+                      <span className="text-xs font-medium text-muted-foreground">{relConfig.ui.label}:</span>
                       <div>
                         {renderRelationshipValue(relConfig, value)}
                       </div>
