@@ -260,8 +260,8 @@ export const callFormConfig: FormConfig = {
         createPermission: 'customer:create',
       },
       ui: {
-        label: 'Customer',
-        placeholder: 'Select customer',
+        label: 'Customer Business Name',
+        placeholder: 'Select customer business name',
         icon: '🏢',
       }
     },
@@ -273,7 +273,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: true,
       multiple: false,
-      category: 'channel',
+      category: 'other',
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
@@ -297,9 +297,13 @@ export const callFormConfig: FormConfig = {
       targetEntity: 'userProfile',
       displayField: 'displayName',
       primaryKey: 'id',
-      required: false,
+      required: true,
       multiple: false,
-      category: 'channel',
+      category: 'other',
+      cascadingFilter: {
+        parentField: 'channelType',
+        filterField: 'channelType',
+      },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
@@ -325,7 +329,7 @@ export const callFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'assignment',
+      category: 'user',
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
