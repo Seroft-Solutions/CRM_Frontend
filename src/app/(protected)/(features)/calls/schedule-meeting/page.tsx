@@ -27,6 +27,11 @@ function ScheduleMeetingContent() {
     router.push('/calls?scheduled=true');
   };
 
+  const handleMeetingError = (error: any) => {
+    console.error('Meeting scheduling error:', error);
+    // Error dialog will handle the user interaction
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -68,6 +73,7 @@ function ScheduleMeetingContent() {
           assignedUserId={assignedUserId}
           callId={callId}
           onMeetingScheduledAction={handleMeetingScheduled}
+          onError={handleMeetingError}
           disabled={false}
         />
       </div>

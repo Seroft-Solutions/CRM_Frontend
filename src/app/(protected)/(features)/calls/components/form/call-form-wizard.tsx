@@ -231,6 +231,12 @@ export function CallForm({ id }: CallFormProps) {
     router.push("/calls");
   };
 
+  const handleMeetingError = (error: any) => {
+    // Error will be handled by the meeting scheduler's error dialog
+    // Just log it here for debugging
+    console.error('Meeting scheduling error from call form:', error);
+  };
+
   // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
     return (
@@ -294,6 +300,7 @@ export function CallForm({ id }: CallFormProps) {
         assignedUserId={createdCallData?.assignedTo?.id}
         callId={createdCallData?.id}
         onMeetingScheduledAction={handleMeetingScheduled}
+        onError={handleMeetingError}
       />
     </>
   );
