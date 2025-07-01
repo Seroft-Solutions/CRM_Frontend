@@ -37,6 +37,7 @@ import {
 import { format, addMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import './meeting-scheduler.css';
+import { MeetingErrorDialog } from './meeting-error-dialog';
 
 // Backend imports
 import {
@@ -86,6 +87,7 @@ interface MeetingSchedulerProps {
   assignedUserId?: number;
   callId?: number;
   onMeetingScheduledAction: (meetingData: any) => void;
+  onError?: (error: any) => void;
   disabled?: boolean;
 }
 
@@ -96,6 +98,7 @@ export function MeetingScheduler({
   assignedUserId,
   callId,
   onMeetingScheduledAction,
+  onError,
   disabled = false,
 }: MeetingSchedulerProps) {
   const [currentStep, setCurrentStep] = useState<Step>('datetime');
@@ -115,6 +118,10 @@ export function MeetingScheduler({
   ]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
+  
+  // Error handling state
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
     query: { enabled: !!customerId },
@@ -124,42 +131,56 @@ export function MeetingScheduler({
   const { mutate: createMeeting, isPending: isCreating } = useCreateMeeting({
     mutation: {
       onSuccess: async (meetingData) => {
-        if (participants.length > 0) {
-          await Promise.all(
-            participants.map((participant) =>
-              createMeetingParticipant({
-                data: {
-                  email: participant.email,
-                  name: participant.name,
-                  isRequired: participant.isRequired,
-                  hasAccepted: false,
-                  hasDeclined: false,
-                  meeting: meetingData,
-                },
-              })
-            )
-          );
-        }
+        try {
+          if (participants.length > 0) {
+            await Promise.all(
+              participants.map((participant) =>
+                createMeetingParticipant({
+                  data: {
+                    email: participant.email,
+                    name: participant.name,
+                    isRequired: participant.isRequired,
+                    hasAccepted: false,
+                    hasDeclined: false,
+                    meeting: meetingData,
+                  },
+                })
+              )
+            );
+          }
 
-        const enabledReminders = reminders.filter((r) => r.enabled);
-        if (enabledReminders.length > 0) {
-          await Promise.all(
-            enabledReminders.map((reminder) =>
-              createMeetingReminder({
-                data: {
-                  reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
-                  reminderMinutesBefore: reminder.minutesBefore,
-                  meeting: meetingData,
-                },
-              })
-            )
-          );
-        }
+          const enabledReminders = reminders.filter((r) => r.enabled);
+          if (enabledReminders.length > 0) {
+            await Promise.all(
+              enabledReminders.map((reminder) =>
+                createMeetingReminder({
+                  data: {
+                    reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
+                    reminderMinutesBefore: reminder.minutesBefore,
+                    meeting: meetingData,
+                  },
+                })
+              )
+            );
+          }
 
-        onMeetingScheduledAction(meetingData);
+          onMeetingScheduledAction(meetingData);
+        } catch (error) {
+          // Handle errors in participant/reminder creation
+          console.error('Error in post-meeting creation steps:', error);
+          setErrorMessage('Meeting was created but some participants or reminders could not be set up. Please check the meeting details.');
+          setShowErrorDialog(true);
+          onError?.(error);
+        }
       },
       onError: (error) => {
         console.error('Failed to create meeting:', error);
+        setErrorMessage(
+          error?.message || 
+          'We encountered an unexpected error while scheduling your meeting. Please try again or contact support if the issue persists.'
+        );
+        setShowErrorDialog(true);
+        onError?.(error);
       },
     },
   });
@@ -295,6 +316,11 @@ export function MeetingScheduler({
     };
 
     createMeeting({ data: meetingData });
+  };
+
+  const handleRetryScheduling = () => {
+    setErrorMessage('');
+    scheduleMeeting();
   };
 
   const canProceedToNext = () => {
@@ -800,6 +826,15 @@ export function MeetingScheduler({
           </CardFooter>
         </Card>
       )}
+
+      {/* Meeting Error Dialog */}
+      <MeetingErrorDialog
+        open={showErrorDialog}
+        onOpenChange={setShowErrorDialog}
+        onRetry={handleRetryScheduling}
+        errorMessage={errorMessage}
+        redirectToCalls={true}
+      />
     </div>
   );
 }

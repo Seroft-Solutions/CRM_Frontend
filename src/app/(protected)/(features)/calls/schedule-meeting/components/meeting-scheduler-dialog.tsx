@@ -17,6 +17,7 @@ interface MeetingSchedulerDialogProps {
   assignedUserId?: number;
   callId?: number;
   onMeetingScheduledAction?: (meetingData: any) => void;
+  onError?: (error: any) => void;
 }
 
 export function MeetingSchedulerDialog({
@@ -26,6 +27,7 @@ export function MeetingSchedulerDialog({
   assignedUserId,
   callId,
   onMeetingScheduledAction,
+  onError,
 }: MeetingSchedulerDialogProps) {
   const router = useRouter();
 
