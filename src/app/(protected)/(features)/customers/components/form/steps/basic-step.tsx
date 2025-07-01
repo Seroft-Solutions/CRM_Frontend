@@ -4,6 +4,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { RelationshipRenderer } from "../relationship-renderer";
 
 interface CustomerBasicStepProps {
@@ -15,14 +16,6 @@ interface CustomerBasicStepProps {
 export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepProps) {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-medium">Basic Information</h3>
-        <p className="text-muted-foreground">Enter essential details</p>
-        <p className="text-xs text-muted-foreground mt-2">
-          <span className="text-red-500">*</span> means required fields - please fill these out
-        </p>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
         
@@ -87,15 +80,14 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
                 <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  type="tel"
-                  placeholder="Enter phone number (example: 03001234567)"
-                  {...field}
-                  onChange={(e) => {
-                    // Allow only numbers, spaces, dashes, parentheses, and plus
-                    const cleaned = e.target.value.replace(/[^\d\s\-\(\)\+]/g, '');
-                    field.onChange(cleaned);
+                <PhoneInput
+                  placeholder="Enter phone number"
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    form.setValue('whatsApp', value);
                     form.trigger('mobile');
+                    form.trigger('whatsApp');
                   }}
                 />
               </FormControl>
@@ -111,15 +103,14 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium">
-                Whats App
+                WhatsApp
               </FormLabel>
               <FormControl>
-                <Input
-                  type="text"
-                  placeholder="Enter whats app"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
+                <PhoneInput
+                  placeholder="Enter WhatsApp number"
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
                     form.trigger('whatsApp');
                   }}
                 />

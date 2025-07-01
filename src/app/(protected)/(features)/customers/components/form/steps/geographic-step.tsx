@@ -15,14 +15,6 @@ interface CustomerGeographicStepProps {
 export function CustomerGeographicStep({ form, config, actions }: CustomerGeographicStepProps) {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-medium">Location Details</h3>
-        <p className="text-muted-foreground">Select geographic information</p>
-        <p className="text-xs text-muted-foreground mt-2">
-          <span className="text-red-500">*</span> means required fields - please fill these out
-        </p>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
         
