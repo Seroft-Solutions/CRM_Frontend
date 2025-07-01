@@ -66,44 +66,30 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
   // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
-      return (
-        <span className="text-sm text-foreground">
-          {value ? "Yes" : "No"}
-        </span>
-      );
+      return value ? "Yes" : "No";
     }
     
     if (fieldConfig.type === 'date') {
-      return value ? (
-        <span className="text-sm text-foreground">
-          {format(new Date(value), "PPP")}
-        </span>
-      ) : (
-        <span className="text-sm text-muted-foreground">Not set</span>
+      return value ? format(new Date(value), "PPP") : (
+        <span className="text-muted-foreground italic">Not set</span>
       );
     }
     
     if (fieldConfig.type === 'file') {
-      return value ? (
-        <span className="text-sm text-foreground">File uploaded</span>
-      ) : (
-        <span className="text-sm text-muted-foreground">No file</span>
+      return value ? "File uploaded" : (
+        <span className="text-muted-foreground italic">No file</span>
       );
     }
     
     if (fieldConfig.type === 'enum') {
-      return value ? (
-        <span className="text-sm text-foreground font-medium">{value}</span>
-      ) : (
-        <span className="text-sm text-muted-foreground">Not set</span>
+      return value || (
+        <span className="text-muted-foreground italic">Not set</span>
       );
     }
     
     // Default text/number fields
-    return value ? (
-      <span className="text-sm text-foreground">{value}</span>
-    ) : (
-      <span className="text-sm text-muted-foreground">Not set</span>
+    return value || (
+      <span className="text-muted-foreground italic">Not set</span>
     );
   };
 
@@ -111,7 +97,7 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
   const renderRelationshipValue = (relConfig: any, value: any) => {
     if (!value) {
       return (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground italic">
           {relConfig.multiple ? "None selected" : "Not selected"}
         </span>
       );
@@ -120,24 +106,16 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
     if (relConfig.multiple && Array.isArray(value)) {
       if (value.length === 0) {
         return (
-          <span className="text-sm text-muted-foreground">None selected</span>
+          <span className="text-muted-foreground italic">None selected</span>
         );
       }
       
       const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id);
-      return (
-        <span className="text-sm text-foreground">
-          {displayValues.join(", ")}
-        </span>
-      );
+      return displayValues.join(", ");
     } else {
       // Single relationship
       const displayValue = value[relConfig.displayField] || value.id;
-      return (
-        <span className="text-sm text-foreground font-medium">
-          {displayValue}
-        </span>
-      );
+      return displayValue;
     }
   };
 
@@ -196,8 +174,10 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
                   
                   return (
                     <div key={fieldName} className="space-y-1">
-                      <span className="text-sm font-semibold text-foreground">{fieldConfig.label}:</span>
-                      <div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {fieldConfig.label}
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">
                         {renderFieldValue(fieldConfig, value)}
                       </div>
                     </div>
@@ -213,8 +193,10 @@ export function MeetingDetails({ id }: MeetingDetailsProps) {
                   
                   return (
                     <div key={relationshipName} className="space-y-1">
-                      <span className="text-sm font-semibold text-foreground">{relConfig.ui.label}:</span>
-                      <div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {relConfig.ui.label}
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">
                         {renderRelationshipValue(relConfig, value)}
                       </div>
                     </div>
