@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { callRemarkToast, handleCallRemarkError } from './call-remark-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { callRemarkToast, handleCallRemarkError } from "./call-remark-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetCallRemark,
   useDeleteCallRemark,
-} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+} from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
+
+
 
 interface CallRemarkDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
     mutation: {
       onSuccess: () => {
         callRemarkToast.deleted();
-        router.push('/call-remarks');
+        router.push("/call-remarks");
       },
       onError: (error) => {
         handleCallRemarkError(error);
@@ -88,30 +96,33 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Remark
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Remark</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.remark || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.remark || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Date Time
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Date Time</dt>
                   <dd className="text-sm font-medium">
+                    
                     <span className="text-foreground">
-                      {entity.dateTime ? format(new Date(entity.dateTime), 'PPP') : '—'}
+                      {entity.dateTime ? format(new Date(entity.dateTime), "PPP") : "—"}
                     </span>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -122,24 +133,25 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Call
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Call</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.call ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.call as any).name || entity.call.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -151,7 +163,7 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -167,8 +179,8 @@ export function CallRemarkDetails({ id }: CallRemarkDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the callremark and remove
-              its data from the server.
+              This action cannot be undone. This will permanently delete the
+              callremark and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

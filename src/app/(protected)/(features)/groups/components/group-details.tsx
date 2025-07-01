@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { groupToast, handleGroupError } from './group-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { groupToast, handleGroupError } from "./group-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetGroup,
   useDeleteGroup,
-} from '@/core/api/generated/spring/endpoints/group-resource/group-resource.gen';
+} from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
+
+
 
 interface GroupDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function GroupDetails({ id }: GroupDetailsProps) {
     mutation: {
       onSuccess: () => {
         groupToast.deleted();
-        router.push('/groups');
+        router.push("/groups");
       },
       onError: (error) => {
         handleGroupError(error);
@@ -88,59 +96,60 @@ export function GroupDetails({ id }: GroupDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Keycloak Group Id
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Keycloak Group Id</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">
-                      {entity.keycloakGroupId || '—'}
-                    </span>
+                    
+                    <span className="text-foreground break-words">{entity.keycloakGroupId || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Path
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Path</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.path || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.path || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Description
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.description || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.description || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Is Active
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
                   <dd className="text-sm font-medium">
-                    <Badge variant={entity.isActive ? 'default' : 'secondary'} className="text-sm">
-                      {entity.isActive ? 'Yes' : 'No'}
+                    
+                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
+                      {entity.isActive ? "Yes" : "No"}
                     </Badge>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -151,24 +160,25 @@ export function GroupDetails({ id }: GroupDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Organization
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Organization</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.organization ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.organization as any).name || entity.organization.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -180,7 +190,7 @@ export function GroupDetails({ id }: GroupDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -196,8 +206,8 @@ export function GroupDetails({ id }: GroupDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the group and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              group and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

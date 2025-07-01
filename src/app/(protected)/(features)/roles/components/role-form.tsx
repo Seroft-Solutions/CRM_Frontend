@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { RoleForm } from './form/role-form-wizard';
+import React from "react";
+import { RoleForm } from "./form/role-form-wizard";
 
 interface RoleFormProps {
   id?: number;

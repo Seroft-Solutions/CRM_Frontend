@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { GroupForm } from './form/group-form-wizard';
+import React from "react";
+import { GroupForm } from "./form/group-form-wizard";
 
 interface GroupFormProps {
   id?: number;

@@ -1,30 +1,23 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for Area form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * Area form validation schema with user-friendly messages
  */
-export const areaFormSchema = z.object({
-  name: z.string().min(2).max(100),
-  pincode: z
-    .string()
-    .min(6)
-    .max(6)
-    .regex(/^[0-9]{6}$/),
-  city: z.number().optional(),
-});
+import { z } from "zod";
+
+export const areaFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  pincode: z.string({ message: "Please enter pincode" }).min(1, { message: "Please enter pincode" }).min(6, { message: "Please enter at least 6 characters" }).max(6, { message: "Please enter no more than 6 characters" }).regex(/^[0-9]{6}$/, { message: "Please enter valid pincode" }),
+  city: z.number({ message: "Please select city from the dropdown" }),
+};
+
+export const areaFormSchema = z.object(areaFormSchemaFields);
 
 export type AreaFormValues = z.infer<typeof areaFormSchema>;
 
 // Individual field schemas for granular validation
 export const areaFieldSchemas = {
-  name: z.string().min(2).max(100),
-  pincode: z
-    .string()
-    .min(6)
-    .max(6)
-    .regex(/^[0-9]{6}$/),
-  city: z.number().optional(),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(100, { message: "Please enter no more than 100 characters" }),
+  pincode: z.string({ message: "Please enter pincode" }).min(1, { message: "Please enter pincode" }).min(6, { message: "Please enter at least 6 characters" }).max(6, { message: "Please enter no more than 6 characters" }).regex(/^[0-9]{6}$/, { message: "Please enter valid pincode" }),
+  city: z.number({ message: "Please select city from the dropdown" }),
 };
 
 // Step-specific validation schemas
@@ -33,57 +26,19 @@ export const areaStepSchemas = {
     name: areaFieldSchemas.name,
     pincode: areaFieldSchemas.pincode,
   }),
-
-  geographic: z.object({
-    city: areaFieldSchemas.city,
-  }),
-
+  
   review: areaFormSchema,
 };
 
-// Validation helper functions
-export const areaValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<AreaFormValues>) => {
-    const stepSchema = areaStepSchemas[stepId as keyof typeof areaStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = areaFieldSchemas[fieldName as keyof typeof areaFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'pincode') {
-      return {
-        required: true,
-        minLength: 6,
-        maxLength: 6,
-        pattern: /^[0-9]{6}$/,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = areaStepSchemas[stepId as keyof typeof areaStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

@@ -1,80 +1,77 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for Meeting form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * Meeting form validation schema with user-friendly messages
  */
-export const meetingFormSchema = z.object({
-  meetingDateTime: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    }),
-  duration: z
-    .string()
-    .refine((val) => !val || Number(val) >= 15, { message: 'Must be at least 15' })
-    .refine((val) => !val || Number(val) <= 480, { message: 'Must be at most 480' }),
-  title: z.string().min(2).max(200),
-  description: z.string().max(1000).optional(),
-  meetingUrl: z.string().max(500).optional(),
-  googleCalendarEventId: z.string().max(100).optional(),
-  notes: z.string().max(2000).optional(),
+import { z } from "zod";
+
+export const meetingFormSchemaFields = {
+  meetingDateTime: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }),
+  duration: z.string({ message: "Please enter duration" }).min(1, { message: "Please enter duration" }).refine(val => !val || Number(val) >= 15, { message: "Please enter a number 15 or higher" }).refine(val => !val || Number(val) <= 480, { message: "Please enter a number 480 or lower" }),
+  title: z.string({ message: "Please enter title" }).min(1, { message: "Please enter title" }).min(2, { message: "Please enter at least 2 characters" }).max(200, { message: "Please enter no more than 200 characters" }),
+  description: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  meetingUrl: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  googleCalendarEventId: z.string().max(100, { message: "Please enter no more than 100 characters" }).optional(),
+  notes: z.string().max(2000, { message: "Please enter no more than 2000 characters" }).optional(),
   isRecurring: z.boolean().optional(),
-  timeZone: z.string().max(50).optional(),
-  meetingStatus: z.string(),
-  meetingType: z.string(),
-  createdAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  updatedAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  organizer: z.number(),
+  timeZone: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
+  meetingStatus: z.string({ message: "Please enter meetingstatus" }).min(1, { message: "Please enter meetingstatus" }),
+  meetingType: z.string({ message: "Please enter meetingtype" }).min(1, { message: "Please enter meetingtype" }),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  organizer: z.number({ message: "Please select organizer from the dropdown" }),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
-});
+};
+
+export const meetingFormSchema = z.object(meetingFormSchemaFields);
 
 export type MeetingFormValues = z.infer<typeof meetingFormSchema>;
 
 // Individual field schemas for granular validation
 export const meetingFieldSchemas = {
-  meetingDateTime: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    }),
-  duration: z
-    .string()
-    .refine((val) => !val || Number(val) >= 15, { message: 'Must be at least 15' })
-    .refine((val) => !val || Number(val) <= 480, { message: 'Must be at most 480' }),
-  title: z.string().min(2).max(200),
-  description: z.string().max(1000).optional(),
-  meetingUrl: z.string().max(500).optional(),
-  googleCalendarEventId: z.string().max(100).optional(),
-  notes: z.string().max(2000).optional(),
+  meetingDateTime: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }),
+  duration: z.string({ message: "Please enter duration" }).min(1, { message: "Please enter duration" }).refine(val => !val || Number(val) >= 15, { message: "Please enter a number 15 or higher" }).refine(val => !val || Number(val) <= 480, { message: "Please enter a number 480 or lower" }),
+  title: z.string({ message: "Please enter title" }).min(1, { message: "Please enter title" }).min(2, { message: "Please enter at least 2 characters" }).max(200, { message: "Please enter no more than 200 characters" }),
+  description: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  meetingUrl: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  googleCalendarEventId: z.string().max(100, { message: "Please enter no more than 100 characters" }).optional(),
+  notes: z.string().max(2000, { message: "Please enter no more than 2000 characters" }).optional(),
   isRecurring: z.boolean().optional(),
-  timeZone: z.string().max(50).optional(),
-  meetingStatus: z.string(),
-  meetingType: z.string(),
-  createdAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  updatedAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  organizer: z.number(),
+  timeZone: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
+  meetingStatus: z.string({ message: "Please enter meetingstatus" }).min(1, { message: "Please enter meetingstatus" }),
+  meetingType: z.string({ message: "Please enter meetingtype" }).min(1, { message: "Please enter meetingtype" }),
+  createdAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  updatedAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  organizer: z.number({ message: "Please select organizer from the dropdown" }),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
 };
@@ -82,6 +79,8 @@ export const meetingFieldSchemas = {
 // Step-specific validation schemas
 export const meetingStepSchemas = {
   basic: z.object({
+    meetingDateTime: meetingFieldSchemas.meetingDateTime,
+    duration: meetingFieldSchemas.duration,
     title: meetingFieldSchemas.title,
     description: meetingFieldSchemas.description,
     meetingUrl: meetingFieldSchemas.meetingUrl,
@@ -90,119 +89,22 @@ export const meetingStepSchemas = {
     timeZone: meetingFieldSchemas.timeZone,
     meetingStatus: meetingFieldSchemas.meetingStatus,
     meetingType: meetingFieldSchemas.meetingType,
-    duration: meetingFieldSchemas.duration,
-  }),
-
-  dates: z.object({
-    meetingDateTime: meetingFieldSchemas.meetingDateTime,
     createdAt: meetingFieldSchemas.createdAt,
     updatedAt: meetingFieldSchemas.updatedAt,
   }),
-
-  settings: z.object({
-    isRecurring: meetingFieldSchemas.isRecurring,
-  }),
-
-  user: z.object({
-    organizer: meetingFieldSchemas.organizer,
-  }),
-  business: z.object({
-    assignedCustomer: meetingFieldSchemas.assignedCustomer,
-  }),
-  other: z.object({
-    call: meetingFieldSchemas.call,
-  }),
-
+  
   review: meetingFormSchema,
 };
 
-// Validation helper functions
-export const meetingValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<MeetingFormValues>) => {
-    const stepSchema = meetingStepSchemas[stepId as keyof typeof meetingStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = meetingFieldSchemas[fieldName as keyof typeof meetingFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'meetingDateTime') {
-      return {
-        required: true,
-      };
-    }
-    if (fieldName === 'duration') {
-      return {
-        required: true,
-        min: 15,
-        max: 480,
-      };
-    }
-    if (fieldName === 'title') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 200,
-      };
-    }
-    if (fieldName === 'description') {
-      return {
-        required: false,
-        maxLength: 1000,
-      };
-    }
-    if (fieldName === 'meetingUrl') {
-      return {
-        required: false,
-        maxLength: 500,
-      };
-    }
-    if (fieldName === 'googleCalendarEventId') {
-      return {
-        required: false,
-        maxLength: 100,
-      };
-    }
-    if (fieldName === 'notes') {
-      return {
-        required: false,
-        maxLength: 2000,
-      };
-    }
-    if (fieldName === 'timeZone') {
-      return {
-        required: false,
-        maxLength: 50,
-      };
-    }
-    if (fieldName === 'meetingStatus') {
-      return {
-        required: true,
-      };
-    }
-    if (fieldName === 'meetingType') {
-      return {
-        required: true,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = meetingStepSchemas[stepId as keyof typeof meetingStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { RoleDetails } from '../components/role-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { RoleDetails } from "../components/role-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface RolePageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface RolePageProps {
 }
 
 export const metadata = {
-  title: 'Role Details',
+  title: "Role Details",
 };
 
 export default async function RolePage({ params }: RolePageProps) {
@@ -23,7 +23,7 @@ export default async function RolePage({ params }: RolePageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="role:read"
       unauthorizedTitle="Access Denied to Role Details"
       unauthorizedDescription="You don't have permission to view this role."
@@ -31,7 +31,7 @@ export default async function RolePage({ params }: RolePageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/roles"
               defaultLabel="Back to Roles"
               entityName="Role"
@@ -47,7 +47,7 @@ export default async function RolePage({ params }: RolePageProps) {
               <p className="text-sm text-gray-600 mt-1">View detailed information for this role</p>
             </div>
           </div>
-
+          
           <RoleDetails id={id} />
         </div>
       </div>

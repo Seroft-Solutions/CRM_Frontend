@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { CallRemarkDetails } from '../components/call-remark-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CallRemarkDetails } from "../components/call-remark-details";
+import { PageHeader } from "@/components/page-header";
+import { PageTitle } from "@/components/page-title";
+import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
+import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface CallRemarkPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface CallRemarkPageProps {
 }
 
 export const metadata = {
-  title: 'CallRemark Details',
+  title: "CallRemark Details",
 };
 
 export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
@@ -23,7 +23,7 @@ export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    <PermissionGuard
+    <PermissionGuard 
       requiredPermission="callRemark:read"
       unauthorizedTitle="Access Denied to Call Remark Details"
       unauthorizedDescription="You don't have permission to view this call remark."
@@ -31,7 +31,7 @@ export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader>
-            <ContextAwareBackButton
+            <ContextAwareBackButton 
               defaultRoute="/call-remarks"
               defaultLabel="Back to Call Remarks"
               entityName="CallRemark"
@@ -44,12 +44,10 @@ export default async function CallRemarkPage({ params }: CallRemarkPageProps) {
             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Call Remark Details</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                View detailed information for this call remark
-              </p>
+              <p className="text-sm text-gray-600 mt-1">View detailed information for this call remark</p>
             </div>
           </div>
-
+          
           <CallRemarkDetails id={id} />
         </div>
       </div>

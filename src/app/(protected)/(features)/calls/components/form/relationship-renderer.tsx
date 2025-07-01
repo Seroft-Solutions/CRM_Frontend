@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
+import React from "react";
+import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 
 // Import all hooks statically for the specific entity
 
@@ -10,49 +10,49 @@ import {
   useGetAllPriorities,
   useSearchPriorities,
   useCountPriorities,
-} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
 import {
   useGetAllCallTypes,
   useSearchCallTypes,
   useCountCallTypes,
-} from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
 import {
   useGetAllSubCallTypes,
   useSearchSubCallTypes,
   useCountSubCallTypes,
-} from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
 import {
   useGetAllCallCategories,
   useSearchCallCategories,
   useCountCallCategories,
-} from '@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen';
+} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
 import {
   useGetAllSources,
   useSearchSources,
   useCountSources,
-} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
 import {
   useGetAllCustomers,
   useSearchCustomers,
   useCountCustomers,
-} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 import {
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes,
-} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 import {
   useGetAllUserProfiles,
   useSearchUserProfiles,
   useCountUserProfiles,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 import {
   useGetAllCallStatuses,
   useSearchCallStatuses,
   useCountCallStatuses,
-} from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
+} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
 
-import type { RelationshipConfig } from './form-types';
+import type { RelationshipConfig } from "./form-types";
 
 interface RelationshipRendererProps {
   relConfig: RelationshipConfig;
@@ -63,13 +63,14 @@ interface RelationshipRendererProps {
 }
 
 // Generic relationship component that uses hooks based on the relationship name
-export function RelationshipRenderer({
-  relConfig,
-  field,
-  form,
-  actions,
-  config,
+export function RelationshipRenderer({ 
+  relConfig, 
+  field, 
+  form, 
+  actions, 
+  config 
 }: RelationshipRendererProps) {
+  
   // Use hooks based on relationship name - this ensures hooks are called consistently
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
@@ -80,8 +81,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -97,24 +98,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'callType':
         return (
           <PaginatedRelationshipCombobox
@@ -122,8 +119,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -139,24 +136,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'subCallType':
         return (
           <PaginatedRelationshipCombobox
@@ -164,8 +157,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -181,24 +174,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'callCategory':
         return (
           <PaginatedRelationshipCombobox
@@ -206,8 +195,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -223,24 +212,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'source':
         return (
           <PaginatedRelationshipCombobox
@@ -248,8 +233,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -265,24 +250,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'customer':
         return (
           <PaginatedRelationshipCombobox
@@ -290,8 +271,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -307,24 +288,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'channelType':
         return (
           <PaginatedRelationshipCombobox
@@ -332,8 +309,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -349,24 +326,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'channelParties':
       case 'assignedTo':
         return (
@@ -375,8 +348,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -392,24 +365,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'assignedTo':
       case 'channelParties':
         return (
@@ -418,8 +387,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -435,24 +404,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       case 'callStatus':
         return (
           <PaginatedRelationshipCombobox
@@ -460,8 +425,8 @@ export function RelationshipRenderer({
             onValueChange={(value) => {
               field.onChange(value);
               if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
                 );
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, undefined);
@@ -477,24 +442,20 @@ export function RelationshipRenderer({
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
             disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
                 : relConfig.ui.disabled
             }
             {...actions.getNavigationProps(relConfig.name)}
           />
         );
-
+        
       default:
         // For relationships without proper API configuration, show a fallback message
         return (
@@ -511,9 +472,11 @@ export function RelationshipRenderer({
     <FormItem>
       <FormLabel className="text-sm font-medium">
         {relConfig.ui.label}
-        {relConfig.required && ' *'}
+        {relConfig.required && <span className="text-red-500 ml-1">*</span>}
       </FormLabel>
-      <FormControl>{renderRelationshipWithHooks()}</FormControl>
+      <FormControl>
+        {renderRelationshipWithHooks()}
+      </FormControl>
       <FormMessage />
     </FormItem>
   );

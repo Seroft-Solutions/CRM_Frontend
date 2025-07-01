@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { UserProfileForm } from './form/user-profile-form-wizard';
+import React from "react";
+import { UserProfileForm } from "./form/user-profile-form-wizard";
 
 interface UserProfileFormProps {
   id?: number;

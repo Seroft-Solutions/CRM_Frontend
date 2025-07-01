@@ -1,12 +1,18 @@
-'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
-import { callRemarkToast, handleCallRemarkError } from './call-remark-toast';
-import { Search, X, Download, Settings2, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
+import { callRemarkToast, handleCallRemarkError } from "./call-remark-toast";
+import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +20,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+} from "@/components/ui/dropdown-menu";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +38,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 // Add custom scrollbar styles
 const tableScrollStyles = `
@@ -66,20 +72,30 @@ import {
   useCountCallRemarks,
   useUpdateCallRemark,
   usePartialUpdateCallRemark,
-} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+  
+} from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
+
+
+
 
 // Relationship data imports
 
-import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 
-import { CallRemarkSearchAndFilters } from './table/call-remark-search-filters';
-import { CallRemarkTableHeader } from './table/call-remark-table-header';
-import { CallRemarkTableRow } from './table/call-remark-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+
+import {
+  useGetAllCalls
+} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
+
+
+
+import { CallRemarkSearchAndFilters } from "./table/call-remark-search-filters";
+import { CallRemarkTableHeader } from "./table/call-remark-table-header";
+import { CallRemarkTableRow } from "./table/call-remark-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
-const ASC = 'asc';
-const DESC = 'desc';
+const ASC = "asc";
+const DESC = "desc";
 
 // Define column configuration
 interface ColumnConfig {
@@ -101,7 +117,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-
+  
   {
     id: 'remark',
     label: 'Remark',
@@ -110,7 +126,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-
+  
   {
     id: 'dateTime',
     label: 'Date Time',
@@ -119,7 +135,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-
+  
+  
   {
     id: 'call',
     label: 'Call',
@@ -128,6 +145,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: false,
   },
+  
 ];
 
 // Local storage key for column visibility
@@ -144,9 +162,9 @@ interface DateRange {
 
 export function CallRemarkTable() {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState('id');
+  const [sort, setSort] = useState("id");
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -154,33 +172,29 @@ export function CallRemarkTable() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
-
+  
   // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
-
+  
   // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
+    
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
         // Default visibility - all columns visible
-        setColumnVisibility(
-          ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {})
-        );
+        setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
       // Fallback to default visibility
-      setColumnVisibility(
-        ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {})
-      );
+      setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
     } finally {
       setIsColumnVisibilityLoaded(true);
     }
@@ -199,14 +213,14 @@ export function CallRemarkTable() {
 
   // Get visible columns
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
+    return ALL_COLUMNS.filter(col => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
-    setColumnVisibility((prev) => ({
+    setColumnVisibility(prev => ({
       ...prev,
-      [columnId]: !prev[columnId],
+      [columnId]: !prev[columnId]
     }));
   };
 
@@ -217,34 +231,31 @@ export function CallRemarkTable() {
       return;
     }
 
-    const headers = visibleColumns.map((col) => col.label);
+    const headers = visibleColumns.map(col => col.label);
     const csvContent = [
       headers.join(','),
-      ...data.map((item) => {
-        return visibleColumns
-          .map((col) => {
-            let value = '';
-            if (col.type === 'field') {
-              const fieldValue = item[col.accessor as keyof typeof item];
-              value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
-            } else if (col.type === 'relationship') {
-              const relationship = item[col.accessor as keyof typeof item] as any;
-
-              if (col.id === 'call' && relationship) {
-                value = relationship.name || '';
-              }
+      ...data.map(item => {
+        return visibleColumns.map(col => {
+          let value = '';
+          if (col.type === 'field') {
+            const fieldValue = item[col.accessor as keyof typeof item];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
+          } else if (col.type === 'relationship') {
+            const relationship = item[col.accessor as keyof typeof item] as any;
+            
+            
+            if (col.id === 'call' && relationship) {
+              value = relationship.name || '';
             }
-            // Escape CSV values
-            if (
-              typeof value === 'string' &&
-              (value.includes(',') || value.includes('"') || value.includes('\n'))
-            ) {
-              value = `"${value.replace(/"/g, '""')}"`;
-            }
-            return value;
-          })
-          .join(',');
-      }),
+            
+          }
+          // Escape CSV values
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        }).join(',');
+      })
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -256,7 +267,7 @@ export function CallRemarkTable() {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-
+    
     toast.success('Data exported successfully');
   };
 
@@ -264,50 +275,55 @@ export function CallRemarkTable() {
   const apiPage = page - 1;
   const pageSize = 10;
 
+  
   // Fetch relationship data for dropdowns
-
+  
   const { data: callOptions = [] } = useGetAllCalls(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
+  
+  
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find((e) =>
-      e[displayField]?.toLowerCase().includes(name.toLowerCase())
-    );
+    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-
+    
+    
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      'call.name': {
-        apiParam: 'callId.equals',
-        options: callOptions,
-        displayField: 'name',
+      
+      'call.name': { 
+        apiParam: 'callId.equals', 
+        options: callOptions, 
+        displayField: 'name' 
       },
+      
     };
-
+    
+    
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== '' && value !== null) {
+      if (value !== undefined && value !== "" && value !== null) {
+        
         // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(
-            mapping.options,
-            value as string,
-            mapping.displayField
-          );
+          const entityId = findEntityIdByName(mapping.options, value as string, mapping.displayField);
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
         }
-
+        
+        
+        
+        
         // Handle dateTime date filter
         else if (key === 'dateTime') {
           if (value instanceof Date) {
@@ -316,14 +332,15 @@ export function CallRemarkTable() {
             params['dateTime.equals'] = value;
           }
         }
-
+        
+        
         // Handle remark text filter with contains
         else if (key === 'remark') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['remark.contains'] = value;
           }
         }
-
+        
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -336,13 +353,14 @@ export function CallRemarkTable() {
     });
 
     // Add date range filters
-
+    
     if (dateRange.from) {
       params['dateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['dateTime.lessThanOrEqual'] = dateRange.to.toISOString();
     }
+    
 
     return params;
   };
@@ -350,7 +368,7 @@ export function CallRemarkTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-
+  
   const { data, isLoading, refetch } = useGetAllCallRemarks(
     {
       page: apiPage,
@@ -364,13 +382,17 @@ export function CallRemarkTable() {
       },
     }
   );
+  
 
   // Get total count for pagination
-  const { data: countData } = useCountCallRemarks(filterParams, {
-    query: {
-      enabled: true,
-    },
-  });
+  const { data: countData } = useCountCallRemarks(
+    filterParams,
+    {
+      query: {
+        enabled: true,
+      },
+    }
+  );
 
   // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCallRemark({
@@ -412,9 +434,9 @@ export function CallRemarkTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return 'ChevronsUpDown';
+      return "ChevronsUpDown";
     }
-    return order === ASC ? 'ChevronUp' : 'ChevronDown';
+    return order === ASC ? "ChevronUp" : "ChevronDown";
   };
 
   // Handle delete
@@ -432,9 +454,9 @@ export function CallRemarkTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
-      [column]: value,
+      [column]: value
     }));
     setPage(1);
   };
@@ -442,10 +464,12 @@ export function CallRemarkTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm('');
+    setSearchTerm("");
     setDateRange({ from: undefined, to: undefined });
     setPage(1);
   };
+
+  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -467,9 +491,7 @@ export function CallRemarkTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(
-        new Set(data.map((item) => item.id).filter((id): id is number => id !== undefined))
-      );
+      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
     }
   };
 
@@ -479,17 +501,13 @@ export function CallRemarkTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(
-      (id) =>
-        new Promise<void>((resolve, reject) => {
-          deleteEntity(
-            { id },
-            {
-              onSuccess: () => resolve(),
-              onError: (error) => reject(error),
-            }
-          );
-        })
+    const deletePromises = Array.from(selectedRows).map(id => 
+      new Promise<void>((resolve, reject) => {
+        deleteEntity({ id }, {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error)
+        });
+      })
     );
 
     try {
@@ -504,14 +522,10 @@ export function CallRemarkTable() {
   };
 
   // Handle relationship updates
-  const handleRelationshipUpdate = async (
-    entityId: number,
-    relationshipName: string,
-    newValue: number | null
-  ) => {
+  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
     return new Promise<void>((resolve, reject) => {
       // Get the current entity data first
-      const currentEntity = data?.find((item) => item.id === entityId);
+      const currentEntity = data?.find(item => item.id === entityId);
       if (!currentEntity) {
         reject(new Error('CallRemark not found in current data'));
         return;
@@ -520,9 +534,9 @@ export function CallRemarkTable() {
       // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
+        id: entityId
       };
-
+      
       // Update only the specific relationship
       if (newValue) {
         updateData[relationshipName] = { id: newValue };
@@ -532,36 +546,29 @@ export function CallRemarkTable() {
 
       console.log(`Updating ${relationshipName} for CallRemark ${entityId}:`, updateData);
 
-      updateEntity(
-        {
-          id: entityId,
-          data: updateData,
+      updateEntity({ 
+        id: entityId,
+        data: updateData
+      }, {
+        onSuccess: () => {
+          callRemarkToast.relationshipUpdated(relationshipName);
+          refetch(); // Refetch data to ensure UI is in sync
+          resolve();
         },
-        {
-          onSuccess: () => {
-            callRemarkToast.relationshipUpdated(relationshipName);
-            refetch(); // Refetch data to ensure UI is in sync
-            resolve();
-          },
-          onError: (error: any) => {
-            console.error(`Failed to update ${relationshipName}:`, error);
-            handleCallRemarkError(error);
-            reject(error);
-          },
+        onError: (error: any) => {
+          console.error(`Failed to update ${relationshipName}:`, error);
+          handleCallRemarkError(error);
+          reject(error);
         }
-      );
+      });
     });
   };
 
   // Handle bulk relationship updates
-  const handleBulkRelationshipUpdate = async (
-    entityIds: number[],
-    relationshipName: string,
-    newValue: number | null
-  ) => {
+  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
     let successCount = 0;
     let errorCount = 0;
-
+    
     // Process updates sequentially to avoid overwhelming the server
     for (const id of entityIds) {
       try {
@@ -572,10 +579,10 @@ export function CallRemarkTable() {
         errorCount++;
       }
     }
-
+    
     // Refresh data after updates
     refetch();
-
+    
     // Throw error if all failed, otherwise consider it partially successful
     if (errorCount === entityIds.length) {
       throw new Error(`All ${errorCount} updates failed`);
@@ -586,21 +593,19 @@ export function CallRemarkTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
+    
     {
-      name: 'call',
-      displayName: 'Call',
+      name: "call",
+      displayName: "Call",
       options: callOptions || [],
-      displayField: 'name',
+      displayField: "name",
       isEditable: false, // Disabled by default
     },
+    
   ];
 
   // Check if any filters are active
-  const hasActiveFilters =
-    Object.keys(filters).length > 0 ||
-    Boolean(searchTerm) ||
-    Boolean(dateRange.from) ||
-    Boolean(dateRange.to);
+  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -624,255 +629,262 @@ export function CallRemarkTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
-        {/* Table Controls */}
-        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Column Visibility Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                  <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Columns</span>
-                  <span className="sm:hidden">Cols</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {ALL_COLUMNS.map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={columnVisibility[column.id] !== false}
-                    onCheckedChange={() => toggleColumnVisibility(column.id)}
-                    onSelect={(e) => e.preventDefault()}
-                    className="flex items-center gap-2"
-                  >
-                    {columnVisibility[column.id] !== false ? (
-                      <Eye className="h-4 w-4" />
-                    ) : (
-                      <EyeOff className="h-4 w-4" />
-                    )}
-                    {column.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Export Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCSV}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={!data || data.length === 0}
-            >
-              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Export CSV</span>
-              <span className="sm:hidden">CSV</span>
-            </Button>
-          </div>
-
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAllFilters}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-              Clear All Filters
-            </Button>
-          )}
-        </div>
-
-        {/* Bulk Actions */}
-        {selectedRows.size > 0 && (
-          <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
-            <span className="text-sm text-muted-foreground">
-              {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
-            </span>
-            <div className="flex flex-wrap gap-2 sm:ml-auto">
-              {relationshipConfigs.some((config) => config.isEditable) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowBulkRelationshipDialog(true)}
-                  className="gap-2"
-                >
-                  Assign Associations
-                </Button>
-              )}
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                Delete Selected
+      {/* Table Controls */}
+      <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Column Visibility Toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Columns</span>
+                <span className="sm:hidden">Cols</span>
               </Button>
-            </div>
-          </div>
-        )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ALL_COLUMNS.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={columnVisibility[column.id] !== false}
+                  onCheckedChange={() => toggleColumnVisibility(column.id)}
+                  onSelect={(e) => e.preventDefault()}
+                  className="flex items-center gap-2"
+                >
+                  {columnVisibility[column.id] !== false ? (
+                    <Eye className="h-4 w-4" />
+                  ) : (
+                    <EyeOff className="h-4 w-4" />
+                  )}
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        {/* Data Table */}
-        <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
-          <div className="table-scroll overflow-x-auto">
-            <Table className="w-full min-w-[600px]">
-              <CallRemarkTableHeader
-                onSort={handleSort}
-                getSortIcon={getSortIcon}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                isAllSelected={isAllSelected}
-                isIndeterminate={isIndeterminate}
-                onSelectAll={handleSelectAll}
-                visibleColumns={visibleColumns}
-              />
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : data?.length ? (
-                  data.map((callRemark) => (
-                    <CallRemarkTableRow
-                      key={callRemark.id}
-                      callRemark={callRemark}
-                      onDelete={handleDelete}
-                      isDeleting={isDeleting}
-                      isSelected={selectedRows.has(callRemark.id || 0)}
-                      onSelect={handleSelectRow}
-                      relationshipConfigs={relationshipConfigs}
-                      onRelationshipUpdate={handleRelationshipUpdate}
-                      isUpdating={isUpdating}
-                      visibleColumns={visibleColumns}
-                    />
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
-                      No call remarks found
-                      {hasActiveFilters && (
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Try adjusting your filters
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {/* Export Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToCSV}
+            className="gap-2 text-xs sm:text-sm"
+            disabled={!data || data.length === 0}
+          >
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="table-container">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page > 1) setPage(page - 1);
-                    }}
-                    className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNumbers = [];
-                  const startPage = Math.max(1, page - 2);
-                  const endPage = Math.min(totalPages, startPage + 4);
-
-                  for (let j = startPage; j <= endPage; j++) {
-                    pageNumbers.push(j);
-                  }
-
-                  return pageNumbers[i];
-                })
-                  .filter(Boolean)
-                  .map((p) => (
-                    <PaginationItem key={p}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setPage(p);
-                        }}
-                        isActive={page === p}
-                      >
-                        {p}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page < totalPages) setPage(page + 1);
-                    }}
-                    className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+        {/* Clear Filters Button */}
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+            Clear All Filters
+          </Button>
         )}
+      </div>
 
-        {/* Bulk Delete Dialog */}
-        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the selected call remarks
-                and remove their data from the server.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmBulkDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      {/* Bulk Actions */}
+      {selectedRows.size > 0 && (
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
+          </span>
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
+            {relationshipConfigs.some(config => config.isEditable) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkRelationshipDialog(true)}
+                className="gap-2"
               >
-                Delete All
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                Assign Associations
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+            >
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
 
-        {/* Delete Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the callremark and remove
-                its data from the server.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      {/* Data Table */}
+      <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
+        <div className="table-scroll overflow-x-auto">
+          <Table className="w-full min-w-[600px]">
+            
+            <CallRemarkTableHeader 
+              onSort={handleSort}
+              getSortIcon={getSortIcon}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              isAllSelected={isAllSelected}
+              isIndeterminate={isIndeterminate}
+              onSelectAll={handleSelectAll}
+              visibleColumns={visibleColumns}
+            />
+            <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={visibleColumns.length + 2}
+                  className="h-24 text-center"
+                >
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : data?.length ? (
+              data.map((callRemark) => (
+                <CallRemarkTableRow
+                  key={callRemark.id}
+                  callRemark={callRemark}
+                  onDelete={handleDelete}
+                  isDeleting={isDeleting}
+                  isSelected={selectedRows.has(callRemark.id || 0)}
+                  onSelect={handleSelectRow}
+                  relationshipConfigs={relationshipConfigs}
+                  onRelationshipUpdate={handleRelationshipUpdate}
+                  isUpdating={isUpdating}
+                  visibleColumns={visibleColumns}
+                />
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={visibleColumns.length + 2}
+                  className="h-24 text-center"
+                >
+                  No call remarks found
+                  {hasActiveFilters && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Try adjusting your filters
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        </div>
+      </div>
 
-        {/* Bulk Relationship Assignment Dialog */}
-        <BulkRelationshipAssignment
-          open={showBulkRelationshipDialog}
-          onOpenChange={setShowBulkRelationshipDialog}
-          selectedEntityIds={Array.from(selectedRows)}
-          relationshipConfigs={relationshipConfigs}
-          onBulkUpdate={handleBulkRelationshipUpdate}
-        />
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="table-container">
+          <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page > 1) setPage(page - 1);
+                }}
+                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNumbers = [];
+              const startPage = Math.max(1, page - 2);
+              const endPage = Math.min(totalPages, startPage + 4);
+              
+              for (let j = startPage; j <= endPage; j++) {
+                pageNumbers.push(j);
+              }
+              
+              return pageNumbers[i];
+            }).filter(Boolean).map((p) => (
+              <PaginationItem key={p}>
+                <PaginationLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(p);
+                  }}
+                  isActive={page === p}
+                >
+                  {p}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page < totalPages) setPage(page + 1);
+                }}
+                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+        </div>
+      )}
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              selected call remarks and remove their data from the server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              callremark and remove its data from the server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Relationship Assignment Dialog */}
+      <BulkRelationshipAssignment
+        open={showBulkRelationshipDialog}
+        onOpenChange={setShowBulkRelationshipDialog}
+        selectedEntityIds={Array.from(selectedRows)}
+        relationshipConfigs={relationshipConfigs}
+        onBulkUpdate={handleBulkRelationshipUpdate}
+      />
       </div>
     </>
   );

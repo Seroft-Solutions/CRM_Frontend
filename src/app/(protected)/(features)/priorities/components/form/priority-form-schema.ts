@@ -1,22 +1,23 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for Priority form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * Priority form validation schema with user-friendly messages
  */
-export const priorityFormSchema = z.object({
-  name: z.string().min(2).max(50),
-  description: z.string().max(255).optional(),
-  remark: z.string().max(1000).optional(),
-});
+import { z } from "zod";
+
+export const priorityFormSchemaFields = {
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
+  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+};
+
+export const priorityFormSchema = z.object(priorityFormSchemaFields);
 
 export type PriorityFormValues = z.infer<typeof priorityFormSchema>;
 
 // Individual field schemas for granular validation
 export const priorityFieldSchemas = {
-  name: z.string().min(2).max(50),
-  description: z.string().max(255).optional(),
-  remark: z.string().max(1000).optional(),
+  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
+  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
+  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
 };
 
 // Step-specific validation schemas
@@ -26,57 +27,19 @@ export const priorityStepSchemas = {
     description: priorityFieldSchemas.description,
     remark: priorityFieldSchemas.remark,
   }),
-
+  
   review: priorityFormSchema,
 };
 
-// Validation helper functions
-export const priorityValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<PriorityFormValues>) => {
-    const stepSchema = priorityStepSchemas[stepId as keyof typeof priorityStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema = priorityFieldSchemas[fieldName as keyof typeof priorityFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'name') {
-      return {
-        required: true,
-        minLength: 2,
-        maxLength: 50,
-      };
-    }
-    if (fieldName === 'description') {
-      return {
-        required: false,
-        maxLength: 255,
-      };
-    }
-    if (fieldName === 'remark') {
-      return {
-        required: false,
-        maxLength: 1000,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = priorityStepSchemas[stepId as keyof typeof priorityStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };

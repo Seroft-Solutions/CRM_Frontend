@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from './relationship-cell';
-import type { OrganizationDTO } from '@/core/api/generated/spring/schemas/OrganizationDTO';
+import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { InlinePermissionGuard } from "@/core/auth";
+import { RelationshipCell } from "./relationship-cell";
+import type { OrganizationDTO } from "@/core/api/generated/spring/schemas/OrganizationDTO";
+
+
 
 interface RelationshipConfig {
   name: string;
@@ -26,11 +28,7 @@ interface OrganizationTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (
-    entityId: number,
-    relationshipName: string,
-    newValue: number | null
-  ) => Promise<void>;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
   isUpdating?: boolean;
   visibleColumns: Array<{
     id: string;
@@ -42,11 +40,11 @@ interface OrganizationTableRowProps {
   }>;
 }
 
-export function OrganizationTableRow({
-  organization,
-  onDelete,
-  isDeleting,
-  isSelected,
+export function OrganizationTableRow({ 
+  organization, 
+  onDelete, 
+  isDeleting, 
+  isSelected, 
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
@@ -62,51 +60,69 @@ export function OrganizationTableRow({
         />
       </TableCell>
       {visibleColumns.map((column, index) => (
-        <TableCell
-          key={column.id}
+        <TableCell 
+          key={column.id} 
           className={`
             px-2 sm:px-3 py-2 
             ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
             whitespace-nowrap overflow-hidden text-ellipsis
           `}
         >
-          {column.type === 'field'
-            ? // Render field column
-              (() => {
-                const field = organization[column.accessor as keyof typeof organization];
-
-                if (column.id === 'keycloakOrgId') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'name') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'displayName') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'domain') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'isActive') {
-                  return field ? 'Yes' : 'No';
-                }
-
-                return field?.toString() || '';
-              })()
-            : // Render relationship column
-              (() => {
-                return null;
-              })()}
+          {column.type === 'field' ? (
+            // Render field column
+            (() => {
+              const field = organization[column.accessor as keyof typeof organization];
+              
+              if (column.id === 'keycloakOrgId') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'name') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'displayName') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'domain') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'isActive') {
+                
+                return field ? "Yes" : "No";
+                
+              }
+              
+              return field?.toString() || "";
+            })()
+          ) : (
+            // Render relationship column
+            (() => {
+              
+              return null;
+            })()
+          )}
         </TableCell>
       ))}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[100px] sm:w-[120px]">
         <div className="flex items-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="organization:read">
-            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+            >
               <Link href={`/organizations/${organization.id}`}>
                 <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">View</span>
@@ -114,7 +130,12 @@ export function OrganizationTableRow({
             </Button>
           </InlinePermissionGuard>
           <InlinePermissionGuard requiredPermission="organization:update">
-            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+            >
               <Link href={`/organizations/${organization.id}/edit`}>
                 <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">Edit</span>

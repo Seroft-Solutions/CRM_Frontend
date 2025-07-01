@@ -1,156 +1,156 @@
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 // Toast notification utilities for Call
 export const callToast = {
   // Success messages
-  created: (entityName?: string) =>
-    toast.success('✅ Success!', {
+  created: (entityName?: string) => 
+    toast.success("✅ Success!", {
       description: `${entityName || 'Call'} created successfully`,
       action: {
-        label: 'View',
-        onClick: () => (window.location.href = '/calls'),
-      },
+        label: "View",
+        onClick: () => window.location.href = "/calls"
+      }
     }),
-
-  updated: (entityName?: string) =>
-    toast.success('✅ Updated!', {
+    
+  updated: (entityName?: string) => 
+    toast.success("✅ Updated!", {
       description: `${entityName || 'Call'} updated successfully`,
       action: {
-        label: 'View All',
-        onClick: () => (window.location.href = '/calls'),
-      },
+        label: "View All",
+        onClick: () => window.location.href = "/calls"
+      }
     }),
-
-  deleted: (entityName?: string) =>
-    toast.success('🗑️ Deleted!', {
-      description: `${entityName || 'Call'} deleted successfully`,
+    
+  deleted: (entityName?: string) => 
+    toast.success("🗑️ Deleted!", {
+      description: `${entityName || 'Call'} deleted successfully`
     }),
-
-  bulkDeleted: (count: number) =>
-    toast.success('🗑️ Bulk Delete!', {
-      description: `${count} calls deleted successfully`,
+    
+  bulkDeleted: (count: number) => 
+    toast.success("🗑️ Bulk Delete!", {
+      description: `${count} calls deleted successfully`
     }),
-
-  relationshipUpdated: (relationshipName: string) =>
-    toast.success('🔗 Updated!', {
-      description: `${relationshipName} updated successfully`,
+    
+  relationshipUpdated: (relationshipName: string) => 
+    toast.success("🔗 Updated!", {
+      description: `${relationshipName} updated successfully`
     }),
-
-  exported: (format: string) =>
-    toast.success('📤 Exported!', {
-      description: `Calls exported to ${format} successfully`,
+    
+  exported: (format: string) => 
+    toast.success("📤 Exported!", {
+      description: `Calls exported to ${format} successfully`
     }),
-
-  imported: (count: number) =>
-    toast.success('📥 Imported!', {
-      description: `${count} calls imported successfully`,
+    
+  imported: (count: number) => 
+    toast.success("📥 Imported!", {
+      description: `${count} calls imported successfully`
     }),
 
   // Error messages
-  createError: (error?: string) =>
-    toast.error('❌ Creation Failed', {
+  createError: (error?: string) => 
+    toast.error("❌ Creation Failed", {
       description: error || `Failed to create call. Please try again.`,
       action: {
-        label: 'Retry',
-        onClick: () => window.location.reload(),
-      },
+        label: "Retry",
+        onClick: () => window.location.reload()
+      }
     }),
-
-  updateError: (error?: string) =>
-    toast.error('❌ Update Failed', {
+    
+  updateError: (error?: string) => 
+    toast.error("❌ Update Failed", {
       description: error || `Failed to update call. Please try again.`,
       action: {
-        label: 'Retry',
-        onClick: () => window.location.reload(),
-      },
+        label: "Retry",
+        onClick: () => window.location.reload()
+      }
     }),
-
-  deleteError: (error?: string) =>
-    toast.error('❌ Delete Failed', {
-      description: error || `Failed to delete call. Please try again.`,
+    
+  deleteError: (error?: string) => 
+    toast.error("❌ Delete Failed", {
+      description: error || `Failed to delete call. Please try again.`
     }),
-
-  bulkDeleteError: (error?: string) =>
-    toast.error('❌ Bulk Delete Failed', {
-      description: error || `Failed to delete selected calls. Please try again.`,
+    
+  bulkDeleteError: (error?: string) => 
+    toast.error("❌ Bulk Delete Failed", {
+      description: error || `Failed to delete selected calls. Please try again.`
     }),
-
-  validationError: (fields?: string[]) =>
-    toast.error('⚠️ Validation Error', {
-      description: fields?.length
-        ? `Please check: ${fields.join(', ')}`
-        : 'Please check your input and try again.',
+    
+  validationError: (fields?: string[]) => 
+    toast.error("⚠️ Validation Error", {
+      description: fields?.length ? 
+        `Please check: ${fields.join(', ')}` : 
+        "Please check your input and try again."
     }),
-
-  permissionError: () =>
-    toast.error('🚫 Permission Denied', {
-      description: "You don't have permission to perform this action.",
+    
+  permissionError: () => 
+    toast.error("🚫 Permission Denied", {
+      description: "You don't have permission to perform this action."
     }),
-
-  networkError: () =>
-    toast.error('🌐 Network Error', {
-      description: 'Please check your internet connection and try again.',
+    
+  networkError: () => 
+    toast.error("🌐 Network Error", {
+      description: "Please check your internet connection and try again.",
       action: {
-        label: 'Retry',
-        onClick: () => window.location.reload(),
-      },
+        label: "Retry",
+        onClick: () => window.location.reload()
+      }
     }),
 
-  // Warning messages
-  unsavedChanges: () =>
-    toast.warning('⚠️ Unsaved Changes', {
-      description: 'You have unsaved changes. Save or they will be lost.',
-      duration: 6000,
+  // Warning messages  
+  unsavedChanges: () => 
+    toast.warning("⚠️ Unsaved Changes", {
+      description: "You have unsaved changes. Save or they will be lost.",
+      duration: 6000
     }),
-
-  formRestored: () =>
-    toast.success('🔄 Form Restored', {
-      description: 'Your previous form data has been restored.',
+    
+  formRestored: () => 
+    toast.success("🔄 Form Restored", {
+      description: "Your previous form data has been restored."
     }),
-
-  duplicateWarning: (field: string) =>
-    toast.warning('⚠️ Duplicate Found', {
-      description: `${field} already exists. Please use a different value.`,
+    
+  duplicateWarning: (field: string) => 
+    toast.warning("⚠️ Duplicate Found", {
+      description: `${field} already exists. Please use a different value.`
     }),
 
   // Info messages
-  loading: (action: string) =>
+  loading: (action: string) => 
     toast.loading(`${action}...`, {
-      description: 'Please wait while we process your request.',
+      description: "Please wait while we process your request."
     }),
-
-  processingBulk: (count: number, action: string) =>
+    
+  processingBulk: (count: number, action: string) => 
     toast.loading(`${action} ${count} items...`, {
-      description: 'This may take a few moments.',
+      description: "This may take a few moments."
     }),
-
-  refreshing: () =>
-    toast.loading('🔄 Refreshing...', {
-      description: 'Updating data from server.',
+    
+  refreshing: () => 
+    toast.loading("🔄 Refreshing...", {
+      description: "Updating data from server."
     }),
 
   // Custom actions
   custom: {
-    success: (
-      title: string,
-      description: string,
-      action?: { label: string; onClick: () => void }
-    ) => toast.success(title, { description, action }),
-
-    error: (title: string, description: string, action?: { label: string; onClick: () => void }) =>
+    success: (title: string, description: string, action?: { label: string; onClick: () => void }) => 
+      toast.success(title, { description, action }),
+      
+    error: (title: string, description: string, action?: { label: string; onClick: () => void }) => 
       toast.error(title, { description, action }),
-
-    warning: (title: string, description: string) => toast.warning(title, { description }),
-
-    info: (title: string, description: string) => toast.info(title, { description }),
-  },
+      
+    warning: (title: string, description: string) => 
+      toast.warning(title, { description }),
+      
+    info: (title: string, description: string) => 
+      toast.info(title, { description })
+  }
 };
 
 // Helper function to handle API errors with toast
 export const handleCallError = (error: any) => {
-  const errorMessage =
-    error?.response?.data?.message || error?.message || 'An unexpected error occurred';
-
+  const errorMessage = error?.response?.data?.message || 
+                      error?.message || 
+                      'An unexpected error occurred';
+  
   if (error?.response?.status === 403) {
     callToast.permissionError();
   } else if (error?.response?.status === 422) {
@@ -160,12 +160,12 @@ export const handleCallError = (error: any) => {
   } else if (error?.code === 'NETWORK_ERROR') {
     callToast.networkError();
   } else {
-    toast.error('❌ Error', {
+    toast.error("❌ Error", {
       description: errorMessage,
       action: {
-        label: 'Report',
-        onClick: () => console.error('Error details:', error),
-      },
+        label: "Report",
+        onClick: () => console.error('Error details:', error)
+      }
     });
   }
 };

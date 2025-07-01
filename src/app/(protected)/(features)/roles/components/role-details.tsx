@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { roleToast, handleRoleError } from './role-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Trash2, ArrowLeft, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { roleToast, handleRoleError } from "./role-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 import {
   useGetRole,
   useDeleteRole,
-} from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
+} from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
+
+
 
 interface RoleDetailsProps {
   id: number;
@@ -46,7 +54,7 @@ export function RoleDetails({ id }: RoleDetailsProps) {
     mutation: {
       onSuccess: () => {
         roleToast.deleted();
-        router.push('/roles');
+        router.push("/roles");
       },
       onError: (error) => {
         handleRoleError(error);
@@ -88,39 +96,42 @@ export function RoleDetails({ id }: RoleDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Name
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.name || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.name || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Description
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</dt>
                   <dd className="text-sm font-medium">
-                    <span className="text-foreground break-words">{entity.description || '—'}</span>
+                    
+                    <span className="text-foreground break-words">{entity.description || "—"}</span>
+                    
                   </dd>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Is Active
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Is Active</dt>
                   <dd className="text-sm font-medium">
-                    <Badge variant={entity.isActive ? 'default' : 'secondary'} className="text-sm">
-                      {entity.isActive ? 'Yes' : 'No'}
+                    
+                    <Badge variant={entity.isActive ? "default" : "secondary"} className="text-sm">
+                      {entity.isActive ? "Yes" : "No"}
                     </Badge>
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
 
+        
         {/* Relationships */}
         <div className="lg:col-span-1 xl:col-span-1 space-y-6">
           <Card>
@@ -131,24 +142,25 @@ export function RoleDetails({ id }: RoleDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                
                 <div className="space-y-2">
-                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Organization
-                  </dt>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Organization</dt>
                   <dd className="text-sm font-medium">
+                    
                     {entity.organization ? (
                       <Badge variant="outline" className="text-sm font-medium">
                         {(entity.organization as any).name || entity.organization.id}
                       </Badge>
-                    ) : (
-                      '—'
-                    )}
+                    ) : "—"}
+                    
                   </dd>
                 </div>
+                
               </div>
             </CardContent>
           </Card>
         </div>
+        
       </div>
 
       {/* Action Buttons */}
@@ -160,7 +172,7 @@ export function RoleDetails({ id }: RoleDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
+          <Button 
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -176,8 +188,8 @@ export function RoleDetails({ id }: RoleDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the role and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the
+              role and remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

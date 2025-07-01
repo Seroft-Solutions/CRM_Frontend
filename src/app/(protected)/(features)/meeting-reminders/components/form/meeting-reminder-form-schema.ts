@@ -1,117 +1,62 @@
-import { z } from 'zod';
-
 /**
- * Zod validation schema for MeetingReminder form
- * This file is auto-generated. To modify validation rules, update the generator templates.
+ * MeetingReminder form validation schema with user-friendly messages
  */
-export const meetingReminderFormSchema = z.object({
-  reminderType: z.string(),
-  reminderMinutesBefore: z
-    .string()
-    .refine((val) => !val || Number(val) >= 5, { message: 'Must be at least 5' })
-    .refine((val) => !val || Number(val) <= 43200, { message: 'Must be at most 43200' }),
+import { z } from "zod";
+
+export const meetingReminderFormSchemaFields = {
+  reminderType: z.string({ message: "Please enter remindertype" }).min(1, { message: "Please enter remindertype" }),
+  reminderMinutesBefore: z.string({ message: "Please enter reminderminutesbefore" }).min(1, { message: "Please enter reminderminutesbefore" }).refine(val => !val || Number(val) >= 5, { message: "Please enter a number 5 or higher" }).refine(val => !val || Number(val) <= 43200, { message: "Please enter a number 43200 or lower" }),
   isTriggered: z.boolean().optional(),
-  triggeredAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  failureReason: z.string().max(500).optional(),
-  meeting: z.number(),
-});
+  triggeredAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  failureReason: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  meeting: z.number({ message: "Please select meeting from the dropdown" }),
+};
+
+export const meetingReminderFormSchema = z.object(meetingReminderFormSchemaFields);
 
 export type MeetingReminderFormValues = z.infer<typeof meetingReminderFormSchema>;
 
 // Individual field schemas for granular validation
 export const meetingReminderFieldSchemas = {
-  reminderType: z.string(),
-  reminderMinutesBefore: z
-    .string()
-    .refine((val) => !val || Number(val) >= 5, { message: 'Must be at least 5' })
-    .refine((val) => !val || Number(val) <= 43200, { message: 'Must be at most 43200' }),
+  reminderType: z.string({ message: "Please enter remindertype" }).min(1, { message: "Please enter remindertype" }),
+  reminderMinutesBefore: z.string({ message: "Please enter reminderminutesbefore" }).min(1, { message: "Please enter reminderminutesbefore" }).refine(val => !val || Number(val) >= 5, { message: "Please enter a number 5 or higher" }).refine(val => !val || Number(val) <= 43200, { message: "Please enter a number 43200 or lower" }),
   isTriggered: z.boolean().optional(),
-  triggeredAt: z
-    .union([z.date(), z.string().transform((str) => new Date(str))])
-    .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-      message: 'Invalid date format',
-    })
-    .optional(),
-  failureReason: z.string().max(500).optional(),
-  meeting: z.number(),
+  triggeredAt: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+    message: "Please select a valid date and time"
+  }).optional(),
+  failureReason: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
+  meeting: z.number({ message: "Please select meeting from the dropdown" }),
 };
 
 // Step-specific validation schemas
 export const meetingReminderStepSchemas = {
   basic: z.object({
     reminderType: meetingReminderFieldSchemas.reminderType,
-    failureReason: meetingReminderFieldSchemas.failureReason,
     reminderMinutesBefore: meetingReminderFieldSchemas.reminderMinutesBefore,
-  }),
-
-  dates: z.object({
     triggeredAt: meetingReminderFieldSchemas.triggeredAt,
+    failureReason: meetingReminderFieldSchemas.failureReason,
   }),
-
-  settings: z.object({
-    isTriggered: meetingReminderFieldSchemas.isTriggered,
-  }),
-
-  other: z.object({
-    meeting: meetingReminderFieldSchemas.meeting,
-  }),
-
+  
   review: meetingReminderFormSchema,
 };
 
-// Validation helper functions
-export const meetingReminderValidationHelpers = {
-  validateStep: (stepId: string, data: Partial<MeetingReminderFormValues>) => {
-    const stepSchema =
-      meetingReminderStepSchemas[stepId as keyof typeof meetingReminderStepSchemas];
-    if (!stepSchema) return { success: true, data, error: null };
-
-    try {
-      const validatedData = stepSchema.parse(data);
-      return { success: true, data: validatedData, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  validateField: (fieldName: string, value: any) => {
-    const fieldSchema =
-      meetingReminderFieldSchemas[fieldName as keyof typeof meetingReminderFieldSchemas];
-    if (!fieldSchema) return { success: true, data: value, error: null };
-
-    try {
-      const validatedValue = fieldSchema.parse(value);
-      return { success: true, data: validatedValue, error: null };
-    } catch (error) {
-      return { success: false, data: null, error };
-    }
-  },
-
-  getFieldValidationRules: (fieldName: string) => {
-    if (fieldName === 'reminderType') {
-      return {
-        required: true,
-      };
-    }
-    if (fieldName === 'reminderMinutesBefore') {
-      return {
-        required: true,
-        min: 5,
-        max: 43200,
-      };
-    }
-    if (fieldName === 'failureReason') {
-      return {
-        required: false,
-        maxLength: 500,
-      };
-    }
-
-    return {};
-  },
+// Validation helpers
+export const validateStep = (stepId: string, data: any) => {
+  const schema = meetingReminderStepSchemas[stepId as keyof typeof meetingReminderStepSchemas];
+  if (!schema) return { success: true, data };
+  
+  try {
+    const validData = schema.parse(data);
+    return { success: true, data: validData };
+  } catch (error) {
+    return { success: false, error };
+  }
 };
