@@ -90,11 +90,11 @@ function RelationshipDisplayValue({
   );
 
   if (!value) {
-    return <span className="text-sm text-muted-foreground">Not selected</span>;
+    return <span className="text-muted-foreground italic">Not selected</span>;
   }
 
   if (!allData) {
-    return <span className="text-sm text-muted-foreground">Loading...</span>;
+    return <span className="text-muted-foreground italic">Loading...</span>;
   }
 
   // Extract data array from response (handle both direct array and paginated response)
@@ -104,7 +104,7 @@ function RelationshipDisplayValue({
 
   if (multiple && Array.isArray(value)) {
     if (value.length === 0) {
-      return <span className="text-sm text-muted-foreground">None selected</span>;
+      return <span className="text-muted-foreground italic">None selected</span>;
     }
     
     const selectedItems = dataArray.filter((item: any) => 
@@ -112,27 +112,19 @@ function RelationshipDisplayValue({
     );
     
     if (selectedItems.length === 0) {
-      return <span className="text-sm text-muted-foreground">{value.length} selected</span>;
+      return <span className="text-muted-foreground italic">{value.length} selected</span>;
     }
     
     const displayValues = selectedItems.map((item: any) => item[displayField]);
-    return (
-      <span className="text-sm text-foreground">
-        {displayValues.join(", ")}
-      </span>
-    );
+    return displayValues.join(", ");
   } else {
     // Single value
     const selectedItem = dataArray.find((item: any) => 
       item[primaryKey] === value
     );
     
-    return selectedItem ? (
-      <span className="text-sm text-foreground font-medium">
-        {selectedItem[displayField]}
-      </span>
-    ) : (
-      <span className="text-sm text-muted-foreground">
+    return selectedItem ? selectedItem[displayField] : (
+      <span className="text-muted-foreground italic">
         Selected (ID: {value})
       </span>
     );
@@ -308,11 +300,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Review Your Information</h3>
-            <p className="text-muted-foreground mt-2">Please review all the information before submitting.</p>
-          </div>
-          
           {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
@@ -342,21 +329,17 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     // Format value for display
                     const displayValue = (() => {
                       if (!value) return (
-                        <span className="text-sm text-muted-foreground">Not set</span>
+                        <span className="text-muted-foreground italic">Not set</span>
                       );
                       
                       if (fieldConfig.type === 'date') {
                         try {
                           const date = value instanceof Date ? value : new Date(value);
                           const dateStr = isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
-                          return (
-                            <span className="text-sm text-foreground">
-                              {dateStr}
-                            </span>
-                          );
+                          return dateStr;
                         } catch {
                           return (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-muted-foreground italic">
                               Invalid date
                             </span>
                           );
@@ -364,42 +347,30 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                       }
                       
                       if (fieldConfig.type === 'boolean') {
-                        return (
-                          <span className="text-sm text-foreground">
-                            {value ? 'Yes' : 'No'}
-                          </span>
-                        );
+                        return value ? 'Yes' : 'No';
                       }
                       
                       if (fieldConfig.type === 'enum') {
                         const option = fieldConfig.options?.find((opt: any) => opt.value === value);
-                        return (
-                          <span className="text-sm text-foreground font-medium">
-                            {option ? option.label : value}
-                          </span>
-                        );
+                        return option ? option.label : value;
                       }
                       
                       if (fieldConfig.type === 'file') {
                         const fileStr = value && value.name ? value.name : 'No file selected';
-                        return (
-                          <span className="text-sm text-foreground">
-                            {fileStr}
-                          </span>
-                        );
+                        return fileStr;
                       }
                       
-                      return (
-                        <span className="text-sm text-foreground">
-                          {String(value)}
-                        </span>
-                      );
+                      return String(value);
                     })();
                     
                     return (
                       <div key={fieldName} className="space-y-1">
-                        <span className="text-sm font-semibold text-foreground">{fieldConfig.label}:</span>
-                        <div>{displayValue}</div>
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          {fieldConfig.label}
+                        </div>
+                        <div className="text-sm font-semibold text-foreground">
+                          {displayValue}
+                        </div>
                       </div>
                     );
                   })}
@@ -410,8 +381,10 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     
                     return (
                       <div key={relName} className="space-y-1">
-                        <span className="text-sm font-semibold text-foreground">{relConfig.ui.label}:</span>
-                        <div>
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          {relConfig.ui.label}
+                        </div>
+                        <div className="text-sm font-semibold text-foreground">
                           <RelationshipValueResolver relConfig={relConfig} value={value} />
                         </div>
                       </div>
