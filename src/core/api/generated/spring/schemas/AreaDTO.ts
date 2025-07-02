@@ -20,5 +20,17 @@ export interface AreaDTO {
    * @pattern ^[0-9]{6}$
    */
   pincode: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   city: CityDTO;
 }

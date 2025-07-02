@@ -72,7 +72,7 @@ import {
   useCountStates,
   useUpdateState,
   usePartialUpdateState,
-  
+  useSearchStates,
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
 
 
@@ -109,6 +109,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     sortable: true,
   },
   
+  
   {
     id: 'name',
     label: 'Name',
@@ -128,10 +129,47 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
   
   
+  
+  {
+    id: 'createdBy',
+    label: 'Created By',
+    accessor: 'createdBy',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'createdDate',
+    label: 'Created Date',
+    accessor: 'createdDate',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'lastModifiedBy',
+    label: 'Last Modified By',
+    accessor: 'lastModifiedBy',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'lastModifiedDate',
+    label: 'Last Modified Date',
+    accessor: 'lastModifiedDate',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
 ];
 
-// Local storage key for column visibility
-const COLUMN_VISIBILITY_KEY = 'state-table-columns';
+// Local storage key for column visibility with version
+const COLUMN_VISIBILITY_KEY = 'state-table-columns-v2'; // v2 to force reset for auditing fields
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -167,16 +205,33 @@ export function StateTable() {
     
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
+      const oldKey = 'state-table-columns'; // Old key without version
+      
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
-        // Default visibility - all columns visible
-        setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+        // Check for old localStorage data and migrate/reset
+        const oldSaved = localStorage.getItem(oldKey);
+        if (oldSaved) {
+          // Remove old key to force reset for auditing fields
+          localStorage.removeItem(oldKey);
+        }
+        
+        // Set default visibility with auditing fields hidden
+        const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
+          ...acc, 
+          [col.id]: col.visible 
+        }), {});
+        setColumnVisibility(defaultVisibility);
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
       // Fallback to default visibility
-      setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+      const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
+        ...acc, 
+        [col.id]: col.visible 
+      }), {});
+      setColumnVisibility(defaultVisibility);
     } finally {
       setIsColumnVisibilityLoaded(true);
     }
@@ -273,18 +328,50 @@ export function StateTable() {
         
         
         
+        // Handle createdDate date filter
+        if (key === 'createdDate') {
+          if (value instanceof Date) {
+            params['createdDate.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['createdDate.equals'] = value;
+          }
+        }
+        
+        // Handle lastModifiedDate date filter
+        if (key === 'lastModifiedDate') {
+          if (value instanceof Date) {
+            params['lastModifiedDate.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['lastModifiedDate.equals'] = value;
+          }
+        }
+        
         
         // Handle name text filter with contains
-        if (key === 'name') {
+        else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
         }
         
         // Handle country text filter with contains
-        if (key === 'country') {
+        else if (key === 'country') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['country.contains'] = value;
+          }
+        }
+        
+        // Handle createdBy text filter with contains
+        else if (key === 'createdBy') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['createdBy.contains'] = value;
+          }
+        }
+        
+        // Handle lastModifiedBy text filter with contains
+        else if (key === 'lastModifiedBy') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['lastModifiedBy.contains'] = value;
           }
         }
         
@@ -301,6 +388,20 @@ export function StateTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+    if (dateRange.from) {
+      params['lastModifiedDate.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
 
     return params;
   };
@@ -309,19 +410,34 @@ export function StateTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllStates(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchStates(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllStates(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -409,6 +525,12 @@ export function StateTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

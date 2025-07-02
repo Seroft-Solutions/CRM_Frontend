@@ -1,10 +1,16 @@
 {
   "annotations": {
-    "changelogDate": "20250628212828"
+    "changelogDate": "20250702155224"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
   "fields": [
+    {
+      "fieldName": "keycloakRoleId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "pattern"],
+      "fieldValidateRulesPattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
     {
       "fieldName": "name",
       "fieldType": "String",
@@ -22,6 +28,26 @@
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -44,5 +70,6 @@
       "relationshipType": "many-to-many"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

@@ -32,6 +32,18 @@ export interface CustomerDTO {
    * @maxLength 100
    */
   contactPerson?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   state: StateDTO;
   district: DistrictDTO;
   city: CityDTO;

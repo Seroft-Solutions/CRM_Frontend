@@ -23,4 +23,16 @@ export interface CallTypeDTO {
    * @maxLength 1000
    */
   remark?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
 }

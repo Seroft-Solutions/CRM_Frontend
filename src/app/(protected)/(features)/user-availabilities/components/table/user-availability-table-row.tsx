@@ -115,6 +115,30 @@ export function UserAvailabilityTableRow({
                 
               }
               
+              if (column.id === 'createdBy') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'createdDate') {
+                
+                return field ? format(new Date(field as string), "PPP") : "";
+                
+              }
+              
+              if (column.id === 'lastModifiedBy') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'lastModifiedDate') {
+                
+                return field ? format(new Date(field as string), "PPP") : "";
+                
+              }
+              
               return field?.toString() || "";
             })()
           ) : (

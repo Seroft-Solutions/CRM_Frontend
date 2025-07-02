@@ -43,6 +43,10 @@ export const meetingReminderStepSchemas = {
     reminderMinutesBefore: meetingReminderFieldSchemas.reminderMinutesBefore,
     triggeredAt: meetingReminderFieldSchemas.triggeredAt,
     failureReason: meetingReminderFieldSchemas.failureReason,
+    createdBy: meetingReminderFieldSchemas.createdBy,
+    createdDate: meetingReminderFieldSchemas.createdDate,
+    lastModifiedBy: meetingReminderFieldSchemas.lastModifiedBy,
+    lastModifiedDate: meetingReminderFieldSchemas.lastModifiedDate,
   }),
   
   review: meetingReminderFormSchema,

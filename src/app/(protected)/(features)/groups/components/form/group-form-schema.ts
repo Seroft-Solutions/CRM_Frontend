@@ -35,6 +35,10 @@ export const groupStepSchemas = {
     name: groupFieldSchemas.name,
     path: groupFieldSchemas.path,
     description: groupFieldSchemas.description,
+    createdBy: groupFieldSchemas.createdBy,
+    createdDate: groupFieldSchemas.createdDate,
+    lastModifiedBy: groupFieldSchemas.lastModifiedBy,
+    lastModifiedDate: groupFieldSchemas.lastModifiedDate,
   }),
   
   review: groupFormSchema,

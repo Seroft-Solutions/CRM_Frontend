@@ -26,6 +26,10 @@ export const callStatusStepSchemas = {
     name: callStatusFieldSchemas.name,
     description: callStatusFieldSchemas.description,
     remark: callStatusFieldSchemas.remark,
+    createdBy: callStatusFieldSchemas.createdBy,
+    createdDate: callStatusFieldSchemas.createdDate,
+    lastModifiedBy: callStatusFieldSchemas.lastModifiedBy,
+    lastModifiedDate: callStatusFieldSchemas.lastModifiedDate,
   }),
   
   review: callStatusFormSchema,

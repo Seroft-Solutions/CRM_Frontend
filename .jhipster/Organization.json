@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250628212628"
+    "changelogDate": "20250702155222"
   },
   "applications": ["crmBackend"],
   "documentation": "Organization is a tenant and maps to a DB schema.",
@@ -36,6 +36,26 @@
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -51,5 +71,6 @@
       "relationshipType": "many-to-many"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

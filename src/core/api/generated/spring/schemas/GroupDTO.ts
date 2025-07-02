@@ -29,6 +29,18 @@ export interface GroupDTO {
    */
   description?: string;
   isActive: boolean;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   /** Organization is a tenant and maps to a DB schema. */
   organization?: unknown;
 }

@@ -43,6 +43,10 @@ export const userProfileStepSchemas = {
     email: userProfileFieldSchemas.email,
     phone: userProfileFieldSchemas.phone,
     displayName: userProfileFieldSchemas.displayName,
+    createdBy: userProfileFieldSchemas.createdBy,
+    createdDate: userProfileFieldSchemas.createdDate,
+    lastModifiedBy: userProfileFieldSchemas.lastModifiedBy,
+    lastModifiedDate: userProfileFieldSchemas.lastModifiedDate,
   }),
   
   review: userProfileFormSchema,

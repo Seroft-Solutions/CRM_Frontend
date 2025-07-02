@@ -101,6 +101,12 @@ export function GroupSearchAndFilters({
     if (key === 'isActive') {
       return 'isActive';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'keycloakGroupId') {
       return 'keycloakGroupId';
     }
@@ -112,6 +118,12 @@ export function GroupSearchAndFilters({
     }
     if (key === 'description') {
       return 'description';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };
@@ -205,6 +217,59 @@ export function GroupSearchAndFilters({
               </div>
               
 
+              
+              <DropdownMenuSeparator />
+              
+              {/* Dates Section */}
+              <div>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
+                <div className="mt-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    createdDate Range
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full h-8 justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-3 w-3" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "MMM dd, yyyy")
+                          )
+                        ) : (
+                          "Pick date range"
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={dateRange.from}
+                        selected={{ from: dateRange.from, to: dateRange.to }}
+                        onSelect={(range) => onDateRangeChange({ from: range?.from, to: range?.to })}
+                        numberOfMonths={2}
+                      />
+                      <div className="p-3 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-7"
+                          onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
+                        >
+                          Clear Date Range
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
               
 
               

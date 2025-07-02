@@ -26,6 +26,10 @@ export const priorityStepSchemas = {
     name: priorityFieldSchemas.name,
     description: priorityFieldSchemas.description,
     remark: priorityFieldSchemas.remark,
+    createdBy: priorityFieldSchemas.createdBy,
+    createdDate: priorityFieldSchemas.createdDate,
+    lastModifiedBy: priorityFieldSchemas.lastModifiedBy,
+    lastModifiedDate: priorityFieldSchemas.lastModifiedDate,
   }),
   
   review: priorityFormSchema,

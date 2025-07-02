@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250628214428"
+    "changelogDate": "20250702155241"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -76,6 +76,26 @@
     },
     {
       "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
       "fieldType": "Instant"
     }
   ],

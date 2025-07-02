@@ -140,6 +140,58 @@ export function CityTableHeader({
                   
                 }
                 
+                if (column.accessor === 'createdBy') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["createdBy"] as string || ""}
+                      onChange={(e) => onFilterChange("createdBy", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'createdDate') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["createdDate"] as string || ""}
+                      onChange={(e) => onFilterChange("createdDate", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'lastModifiedBy') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["lastModifiedBy"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedBy", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'lastModifiedDate') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["lastModifiedDate"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedDate", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
                 return null;
               })()
             ) : (

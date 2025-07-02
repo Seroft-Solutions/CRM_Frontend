@@ -50,6 +50,10 @@ export const availableTimeSlotStepSchemas = {
     slotDateTime: availableTimeSlotFieldSchemas.slotDateTime,
     duration: availableTimeSlotFieldSchemas.duration,
     bookedAt: availableTimeSlotFieldSchemas.bookedAt,
+    createdBy: availableTimeSlotFieldSchemas.createdBy,
+    createdDate: availableTimeSlotFieldSchemas.createdDate,
+    lastModifiedBy: availableTimeSlotFieldSchemas.lastModifiedBy,
+    lastModifiedDate: availableTimeSlotFieldSchemas.lastModifiedDate,
   }),
   
   review: availableTimeSlotFormSchema,

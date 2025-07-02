@@ -22,6 +22,10 @@ export const districtFieldSchemas = {
 export const districtStepSchemas = {
   basic: z.object({
     name: districtFieldSchemas.name,
+    createdBy: districtFieldSchemas.createdBy,
+    createdDate: districtFieldSchemas.createdDate,
+    lastModifiedBy: districtFieldSchemas.lastModifiedBy,
+    lastModifiedDate: districtFieldSchemas.lastModifiedDate,
   }),
   
   review: districtFormSchema,

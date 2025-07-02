@@ -107,6 +107,12 @@ export function UserAvailabilitySearchAndFilters({
     if (key === 'effectiveTo') {
       return 'effectiveTo';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'dayOfWeek') {
       return 'dayOfWeek';
     }
@@ -118,6 +124,12 @@ export function UserAvailabilitySearchAndFilters({
     }
     if (key === 'timeZone') {
       return 'timeZone';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };

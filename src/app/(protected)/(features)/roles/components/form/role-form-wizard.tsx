@@ -124,6 +124,7 @@ function RoleFormContent({ id }: RoleFormProps) {
       {/* <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
+          'keycloakRoleId': '',
           'name': '',
           'description': '',
           'isActive': '',

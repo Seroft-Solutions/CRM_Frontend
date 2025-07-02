@@ -44,6 +44,10 @@ export const meetingParticipantStepSchemas = {
     email: meetingParticipantFieldSchemas.email,
     name: meetingParticipantFieldSchemas.name,
     responseDateTime: meetingParticipantFieldSchemas.responseDateTime,
+    createdBy: meetingParticipantFieldSchemas.createdBy,
+    createdDate: meetingParticipantFieldSchemas.createdDate,
+    lastModifiedBy: meetingParticipantFieldSchemas.lastModifiedBy,
+    lastModifiedDate: meetingParticipantFieldSchemas.lastModifiedDate,
   }),
   
   review: meetingParticipantFormSchema,

@@ -104,6 +104,12 @@ export function MeetingReminderSearchAndFilters({
     if (key === 'triggeredAt') {
       return 'triggeredAt';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'reminderType') {
       return 'reminderType';
     }
@@ -112,6 +118,12 @@ export function MeetingReminderSearchAndFilters({
     }
     if (key === 'failureReason') {
       return 'failureReason';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };

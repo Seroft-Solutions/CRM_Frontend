@@ -41,6 +41,10 @@ export const productStepSchemas = {
     minPrice: productFieldSchemas.minPrice,
     maxPrice: productFieldSchemas.maxPrice,
     remark: productFieldSchemas.remark,
+    createdBy: productFieldSchemas.createdBy,
+    createdDate: productFieldSchemas.createdDate,
+    lastModifiedBy: productFieldSchemas.lastModifiedBy,
+    lastModifiedDate: productFieldSchemas.lastModifiedDate,
   }),
   
   review: productFormSchema,

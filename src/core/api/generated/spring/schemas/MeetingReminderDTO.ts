@@ -23,5 +23,17 @@ export interface MeetingReminderDTO {
    * @maxLength 500
    */
   failureReason?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   meeting: MeetingDTO;
 }

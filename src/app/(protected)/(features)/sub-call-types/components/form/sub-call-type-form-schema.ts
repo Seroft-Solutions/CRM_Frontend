@@ -28,6 +28,10 @@ export const subCallTypeStepSchemas = {
     name: subCallTypeFieldSchemas.name,
     description: subCallTypeFieldSchemas.description,
     remark: subCallTypeFieldSchemas.remark,
+    createdBy: subCallTypeFieldSchemas.createdBy,
+    createdDate: subCallTypeFieldSchemas.createdDate,
+    lastModifiedBy: subCallTypeFieldSchemas.lastModifiedBy,
+    lastModifiedDate: subCallTypeFieldSchemas.lastModifiedDate,
   }),
   
   review: subCallTypeFormSchema,

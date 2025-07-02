@@ -33,6 +33,10 @@ export const organizationStepSchemas = {
     name: organizationFieldSchemas.name,
     displayName: organizationFieldSchemas.displayName,
     domain: organizationFieldSchemas.domain,
+    createdBy: organizationFieldSchemas.createdBy,
+    createdDate: organizationFieldSchemas.createdDate,
+    lastModifiedBy: organizationFieldSchemas.lastModifiedBy,
+    lastModifiedDate: organizationFieldSchemas.lastModifiedDate,
   }),
   
   review: organizationFormSchema,

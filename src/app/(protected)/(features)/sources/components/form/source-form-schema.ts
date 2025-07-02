@@ -26,6 +26,10 @@ export const sourceStepSchemas = {
     name: sourceFieldSchemas.name,
     description: sourceFieldSchemas.description,
     remark: sourceFieldSchemas.remark,
+    createdBy: sourceFieldSchemas.createdBy,
+    createdDate: sourceFieldSchemas.createdDate,
+    lastModifiedBy: sourceFieldSchemas.lastModifiedBy,
+    lastModifiedDate: sourceFieldSchemas.lastModifiedDate,
   }),
   
   review: sourceFormSchema,

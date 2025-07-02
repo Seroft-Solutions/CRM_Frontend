@@ -91,6 +91,10 @@ export const meetingStepSchemas = {
     meetingType: meetingFieldSchemas.meetingType,
     createdAt: meetingFieldSchemas.createdAt,
     updatedAt: meetingFieldSchemas.updatedAt,
+    createdBy: meetingFieldSchemas.createdBy,
+    createdDate: meetingFieldSchemas.createdDate,
+    lastModifiedBy: meetingFieldSchemas.lastModifiedBy,
+    lastModifiedDate: meetingFieldSchemas.lastModifiedDate,
   }),
   
   review: meetingFormSchema,
