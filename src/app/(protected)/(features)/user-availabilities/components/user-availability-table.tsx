@@ -232,7 +232,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 ];
 
 // Local storage key for column visibility with version
-const COLUMN_VISIBILITY_KEY = 'user-availability-table-columns-v2'; // v2 to force reset for auditing fields
+const COLUMN_VISIBILITY_KEY = 'user-availability-table-columns'; // v2 to force reset for auditing fields
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;

@@ -308,7 +308,7 @@ export const meetingFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'Organizer',
@@ -334,7 +334,7 @@ export const meetingFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/customers/new',
-        createPermission: 'customer:create',
+        createPermission: 'customer:create:inline',
       },
       ui: {
         label: 'Assigned Customer',
@@ -360,7 +360,7 @@ export const meetingFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/calls/new',
-        createPermission: 'call:create',
+        createPermission: 'call:create:inline',
       },
       ui: {
         label: 'Call',

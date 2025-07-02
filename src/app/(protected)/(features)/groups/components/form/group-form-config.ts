@@ -172,7 +172,7 @@ export const groupFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/organizations/new',
-        createPermission: 'organization:create',
+        createPermission: 'organization:create:inline',
       },
       ui: {
         label: 'Organization',
@@ -198,7 +198,7 @@ export const groupFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'Members',

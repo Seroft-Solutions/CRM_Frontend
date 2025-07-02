@@ -118,7 +118,7 @@ export const subCallTypeFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/call-types/new',
-        createPermission: 'callType:create',
+        createPermission: 'callType:create:inline',
       },
       ui: {
         label: 'Call Type',

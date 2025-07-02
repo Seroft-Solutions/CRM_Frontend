@@ -90,7 +90,7 @@ export const districtFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/states/new',
-        createPermission: 'state:create',
+        createPermission: 'state:create:inline',
       },
       ui: {
         label: 'State',

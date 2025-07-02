@@ -106,7 +106,7 @@ export const areaFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/cities/new',
-        createPermission: 'city:create',
+        createPermission: 'city:create:inline',
       },
       ui: {
         label: 'City',

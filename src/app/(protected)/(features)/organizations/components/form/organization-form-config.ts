@@ -159,7 +159,7 @@ export const organizationFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'Members',

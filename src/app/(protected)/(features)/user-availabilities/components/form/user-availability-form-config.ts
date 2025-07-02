@@ -195,7 +195,7 @@ export const userAvailabilityFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'User',

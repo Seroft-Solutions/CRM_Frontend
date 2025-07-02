@@ -178,7 +178,7 @@ export const userProfileFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/organizations/new',
-        createPermission: 'organization:create',
+        createPermission: 'organization:create:inline',
       },
       ui: {
         label: 'Organizations',
@@ -204,7 +204,7 @@ export const userProfileFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/groups/new',
-        createPermission: 'group:create',
+        createPermission: 'group:create:inline',
       },
       ui: {
         label: 'Groups',
@@ -230,7 +230,7 @@ export const userProfileFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/roles/new',
-        createPermission: 'role:create',
+        createPermission: 'role:create:inline',
       },
       ui: {
         label: 'Roles',
@@ -256,7 +256,7 @@ export const userProfileFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/channel-types/new',
-        createPermission: 'channelType:create',
+        createPermission: 'channelType:create:inline',
       },
       ui: {
         label: 'Channel Type',
