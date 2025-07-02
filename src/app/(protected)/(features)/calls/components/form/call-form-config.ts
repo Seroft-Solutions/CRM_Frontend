@@ -123,7 +123,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/priorities/new',
-        createPermission: 'priority:create',
+        createPermission: 'priority:create:inline',
       },
       ui: {
         label: 'Priority',
@@ -149,7 +149,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/call-types/new',
-        createPermission: 'callType:create',
+        createPermission: 'callType:create:inline',
       },
       ui: {
         label: 'Call Type',
@@ -179,7 +179,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/sub-call-types/new',
-        createPermission: 'subCallType:create',
+        createPermission: 'subCallType:create:inline',
       },
       ui: {
         label: 'Sub Call Type',
@@ -205,7 +205,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/call-categories/new',
-        createPermission: 'callCategory:create',
+        createPermission: 'callCategory:create:inline',
       },
       ui: {
         label: 'Call Category',
@@ -231,7 +231,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/sources/new',
-        createPermission: 'source:create',
+        createPermission: 'source:create:inline',
       },
       ui: {
         label: 'Source',
@@ -257,7 +257,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/customers/new',
-        createPermission: 'customer:create',
+        createPermission: 'customer:create:inline',
       },
       ui: {
         label: 'Customer',
@@ -283,7 +283,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/channel-types/new',
-        createPermission: 'channelType:create',
+        createPermission: 'channelType:create:inline',
       },
       ui: {
         label: 'Channel Type',
@@ -309,7 +309,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'Channel Parties',
@@ -335,7 +335,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create',
+        createPermission: 'userProfile:create:inline',
       },
       ui: {
         label: 'Assigned To',
@@ -361,7 +361,7 @@ export const callFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/call-statuses/new',
-        createPermission: 'callStatus:create',
+        createPermission: 'callStatus:create:inline',
       },
       ui: {
         label: 'Call Status',

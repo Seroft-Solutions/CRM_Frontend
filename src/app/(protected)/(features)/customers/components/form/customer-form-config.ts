@@ -151,7 +151,7 @@ export const customerFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/states/new',
-        createPermission: 'state:create',
+        createPermission: 'state:create:inline',
       },
       ui: {
         label: 'State',
@@ -181,7 +181,7 @@ export const customerFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/districts/new',
-        createPermission: 'district:create',
+        createPermission: 'district:create:inline',
       },
       ui: {
         label: 'District',
@@ -211,7 +211,7 @@ export const customerFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/cities/new',
-        createPermission: 'city:create',
+        createPermission: 'city:create:inline',
       },
       ui: {
         label: 'City',
@@ -241,7 +241,7 @@ export const customerFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/areas/new',
-        createPermission: 'area:create',
+        createPermission: 'area:create:inline',
       },
       ui: {
         label: 'Area',

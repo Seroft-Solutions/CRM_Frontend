@@ -170,7 +170,7 @@ export const meetingReminderFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/meetings/new',
-        createPermission: 'meeting:create',
+        createPermission: 'meeting:create:inline',
       },
       ui: {
         label: 'Meeting',

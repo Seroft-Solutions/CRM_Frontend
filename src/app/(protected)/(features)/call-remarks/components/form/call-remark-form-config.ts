@@ -115,7 +115,7 @@ export const callRemarkFormConfig: FormConfig = {
       creation: {
         canCreate: true,
         createPath: '/calls/new',
-        createPermission: 'call:create',
+        createPermission: 'call:create:inline',
       },
       ui: {
         label: 'Call',
