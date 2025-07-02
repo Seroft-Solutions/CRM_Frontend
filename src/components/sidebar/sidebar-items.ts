@@ -21,19 +21,19 @@ export const sidebarItems: SidebarItem[] = [
     label: 'User Management',
     icon: Users,
     expandable: true,
-    requiredPermission: 'manage-users',
+    requiredPermission: 'manage:users',
     children: [
       {
         key: 'organizationUsers',
         label: 'Organization Users',
         path: '/user-management/organization-users',
-        requiredPermission: 'manage-users',
+        requiredPermission: 'manage:users',
       },
       {
         key: 'inviteUsers',
         label: 'Invite Users',
         path: '/user-management/invite-users',
-        requiredPermission: 'manage-users',
+        requiredPermission: 'manage:users',
       },
     ],
   },
@@ -128,7 +128,7 @@ export const sidebarItems: SidebarItem[] = [
         key: 'customer',
         label: 'Customer Master',
         path: '/customers',
-        requiredPermission: 'party:read',
+        requiredPermission: 'customer:read',
       },
       {
         key: 'product',
