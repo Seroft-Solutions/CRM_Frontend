@@ -18,6 +18,18 @@ import type { CallStatusDTO } from './CallStatusDTO';
 export interface CallDTO {
   id?: number;
   callDateTime: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   priority: PriorityDTO;
   callType: CallTypeDTO;
   subCallType: SubCallTypeDTO;

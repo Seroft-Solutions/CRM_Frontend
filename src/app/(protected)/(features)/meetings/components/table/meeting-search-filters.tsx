@@ -116,6 +116,12 @@ export function MeetingSearchAndFilters({
     if (key === 'updatedAt') {
       return 'updatedAt';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'duration') {
       return 'duration';
     }
@@ -142,6 +148,12 @@ export function MeetingSearchAndFilters({
     }
     if (key === 'meetingType') {
       return 'meetingType';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };

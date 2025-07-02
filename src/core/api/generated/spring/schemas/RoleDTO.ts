@@ -8,6 +8,8 @@
 
 export interface RoleDTO {
   id?: number;
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ */
+  keycloakRoleId: string;
   /**
    * @minLength 2
    * @maxLength 50
@@ -19,6 +21,18 @@ export interface RoleDTO {
    */
   description?: string;
   isActive: boolean;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   /** Organization is a tenant and maps to a DB schema. */
   organization?: unknown;
 }

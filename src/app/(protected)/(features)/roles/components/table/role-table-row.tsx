@@ -73,6 +73,12 @@ export function RoleTableRow({
             (() => {
               const field = role[column.accessor as keyof typeof role];
               
+              if (column.id === 'keycloakRoleId') {
+                
+                return field?.toString() || "";
+                
+              }
+              
               if (column.id === 'name') {
                 
                 return field?.toString() || "";
@@ -88,6 +94,30 @@ export function RoleTableRow({
               if (column.id === 'isActive') {
                 
                 return field ? "Yes" : "No";
+                
+              }
+              
+              if (column.id === 'createdBy') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'createdDate') {
+                
+                return field ? format(new Date(field as string), "PPP") : "";
+                
+              }
+              
+              if (column.id === 'lastModifiedBy') {
+                
+                return field?.toString() || "";
+                
+              }
+              
+              if (column.id === 'lastModifiedDate') {
+                
+                return field ? format(new Date(field as string), "PPP") : "";
                 
               }
               

@@ -128,6 +128,18 @@ export function CallSearchAndFilters({
     if (key === 'callDateTime') {
       return 'callDateTime';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
+    }
     return key;
   };
 
@@ -354,6 +366,40 @@ export function CallSearchAndFilters({
               </div>
               
 
+              
+              <DropdownMenuSeparator />
+              
+              {/* Other Fields Section */}
+              <div>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">Other Fields</DropdownMenuLabel>
+                <div className="space-y-2 mt-2">
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      createdBy
+                    </label>
+                    <Input
+                      placeholder="Filter by createdBy..."
+                      value={filters["createdBy"] as string || ""}
+                      onChange={(e) => onFilterChange("createdBy", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      lastModifiedBy
+                    </label>
+                    <Input
+                      placeholder="Filter by lastModifiedBy..."
+                      value={filters["lastModifiedBy"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedBy", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                </div>
+              </div>
               
 
             </div>

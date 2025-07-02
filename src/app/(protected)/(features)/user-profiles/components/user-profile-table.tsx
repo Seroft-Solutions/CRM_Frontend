@@ -72,7 +72,7 @@ import {
   useCountUserProfiles,
   useUpdateUserProfile,
   usePartialUpdateUserProfile,
-  
+  useSearchUserProfiles,
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
 
 
@@ -117,6 +117,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
+  
   
   {
     id: 'keycloakId',
@@ -182,10 +183,47 @@ const ALL_COLUMNS: ColumnConfig[] = [
     sortable: false,
   },
   
+  
+  {
+    id: 'createdBy',
+    label: 'Created By',
+    accessor: 'createdBy',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'createdDate',
+    label: 'Created Date',
+    accessor: 'createdDate',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'lastModifiedBy',
+    label: 'Last Modified By',
+    accessor: 'lastModifiedBy',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
+  {
+    id: 'lastModifiedDate',
+    label: 'Last Modified Date',
+    accessor: 'lastModifiedDate',
+    type: 'field',
+    visible: false, // Hidden by default
+    sortable: true,
+  },
+  
 ];
 
-// Local storage key for column visibility
-const COLUMN_VISIBILITY_KEY = 'user-profile-table-columns';
+// Local storage key for column visibility with version
+const COLUMN_VISIBILITY_KEY = 'user-profile-table-columns-v2'; // v2 to force reset for auditing fields
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -221,16 +259,33 @@ export function UserProfileTable() {
     
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
+      const oldKey = 'user-profile-table-columns'; // Old key without version
+      
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
-        // Default visibility - all columns visible
-        setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+        // Check for old localStorage data and migrate/reset
+        const oldSaved = localStorage.getItem(oldKey);
+        if (oldSaved) {
+          // Remove old key to force reset for auditing fields
+          localStorage.removeItem(oldKey);
+        }
+        
+        // Set default visibility with auditing fields hidden
+        const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
+          ...acc, 
+          [col.id]: col.visible 
+        }), {});
+        setColumnVisibility(defaultVisibility);
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
       // Fallback to default visibility
-      setColumnVisibility(ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {}));
+      const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
+        ...acc, 
+        [col.id]: col.visible 
+      }), {});
+      setColumnVisibility(defaultVisibility);
     } finally {
       setIsColumnVisibilityLoaded(true);
     }
@@ -360,6 +415,24 @@ export function UserProfileTable() {
         
         
         
+        // Handle createdDate date filter
+        else if (key === 'createdDate') {
+          if (value instanceof Date) {
+            params['createdDate.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['createdDate.equals'] = value;
+          }
+        }
+        
+        // Handle lastModifiedDate date filter
+        else if (key === 'lastModifiedDate') {
+          if (value instanceof Date) {
+            params['lastModifiedDate.equals'] = value.toISOString().split('T')[0];
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            params['lastModifiedDate.equals'] = value;
+          }
+        }
+        
         
         // Handle keycloakId text filter with contains
         else if (key === 'keycloakId') {
@@ -403,6 +476,20 @@ export function UserProfileTable() {
           }
         }
         
+        // Handle createdBy text filter with contains
+        else if (key === 'createdBy') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['createdBy.contains'] = value;
+          }
+        }
+        
+        // Handle lastModifiedBy text filter with contains
+        else if (key === 'lastModifiedBy') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['lastModifiedBy.contains'] = value;
+          }
+        }
+        
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -416,6 +503,20 @@ export function UserProfileTable() {
 
     // Add date range filters
     
+    if (dateRange.from) {
+      params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
+    if (dateRange.from) {
+      params['lastModifiedDate.greaterThanOrEqual'] = dateRange.from.toISOString();
+    }
+    if (dateRange.to) {
+      params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+    
 
     return params;
   };
@@ -424,19 +525,34 @@ export function UserProfileTable() {
 
   // Fetch data with React Query
   
-  const { data, isLoading, refetch } = useGetAllUserProfiles(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: `${sort},${order}`,
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm 
+    ? useSearchUserProfiles(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      )
+    : useGetAllUserProfiles(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+          },
+        }
+      );
   
 
   // Get total count for pagination
@@ -524,6 +640,12 @@ export function UserProfileTable() {
     setPage(1);
   };
 
+  
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
   
 
   // Calculate total pages

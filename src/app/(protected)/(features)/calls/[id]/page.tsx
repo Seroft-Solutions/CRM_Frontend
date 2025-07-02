@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
 import { ContextAwareBackButton } from "@/components/context-aware-back-button";
-import {CallRemarksSection} from "@/app/(protected)/(features)/calls/components/call-remarks-section";
 
 interface CallPageProps {
   params: Promise<{
@@ -38,11 +37,6 @@ export default async function CallPage({ params }: CallPageProps) {
               entityName="Call"
             />
           </PageHeader>
-        </div>
-
-        {/* Call Remarks Section */}
-        <div className="mt-6">
-          <CallRemarksSection callId={id} />
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">

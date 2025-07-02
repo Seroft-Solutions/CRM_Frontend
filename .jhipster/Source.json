@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250628213228"
+    "changelogDate": "20250702155229"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -23,11 +23,32 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "1000"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
   "name": "Source",
   "pagination": "pagination",
   "relationships": [],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

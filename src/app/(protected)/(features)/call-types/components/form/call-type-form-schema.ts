@@ -26,6 +26,10 @@ export const callTypeStepSchemas = {
     name: callTypeFieldSchemas.name,
     description: callTypeFieldSchemas.description,
     remark: callTypeFieldSchemas.remark,
+    createdBy: callTypeFieldSchemas.createdBy,
+    createdDate: callTypeFieldSchemas.createdDate,
+    lastModifiedBy: callTypeFieldSchemas.lastModifiedBy,
+    lastModifiedDate: callTypeFieldSchemas.lastModifiedDate,
   }),
   
   review: callTypeFormSchema,

@@ -25,6 +25,10 @@ export const areaStepSchemas = {
   basic: z.object({
     name: areaFieldSchemas.name,
     pincode: areaFieldSchemas.pincode,
+    createdBy: areaFieldSchemas.createdBy,
+    createdDate: areaFieldSchemas.createdDate,
+    lastModifiedBy: areaFieldSchemas.lastModifiedBy,
+    lastModifiedDate: areaFieldSchemas.lastModifiedDate,
   }),
   
   review: areaFormSchema,

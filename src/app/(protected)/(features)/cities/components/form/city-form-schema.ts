@@ -22,6 +22,10 @@ export const cityFieldSchemas = {
 export const cityStepSchemas = {
   basic: z.object({
     name: cityFieldSchemas.name,
+    createdBy: cityFieldSchemas.createdBy,
+    createdDate: cityFieldSchemas.createdDate,
+    lastModifiedBy: cityFieldSchemas.lastModifiedBy,
+    lastModifiedDate: cityFieldSchemas.lastModifiedDate,
   }),
   
   review: cityFormSchema,

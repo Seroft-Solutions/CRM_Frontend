@@ -127,6 +127,19 @@ export function RoleTableHeader({
             {column.type === 'field' ? (
               (() => {
                 
+                if (column.accessor === 'keycloakRoleId') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["keycloakRoleId"] as string || ""}
+                      onChange={(e) => onFilterChange("keycloakRoleId", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
                 if (column.accessor === 'name') {
                   
                   return (
@@ -169,6 +182,58 @@ export function RoleTableHeader({
                         <SelectItem value="false">No</SelectItem>
                       </SelectContent>
                     </Select>
+                  );
+                  
+                }
+                
+                if (column.accessor === 'createdBy') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["createdBy"] as string || ""}
+                      onChange={(e) => onFilterChange("createdBy", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'createdDate') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["createdDate"] as string || ""}
+                      onChange={(e) => onFilterChange("createdDate", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'lastModifiedBy') {
+                  
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["lastModifiedBy"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedBy", e.target.value || undefined)}
+                    />
+                  );
+                  
+                }
+                
+                if (column.accessor === 'lastModifiedDate') {
+                  
+                  return (
+                    <Input
+                      type="date"
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={filters["lastModifiedDate"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedDate", e.target.value || undefined)}
+                    />
                   );
                   
                 }

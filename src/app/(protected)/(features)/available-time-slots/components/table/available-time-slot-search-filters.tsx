@@ -107,8 +107,20 @@ export function AvailableTimeSlotSearchAndFilters({
     if (key === 'bookedAt') {
       return 'bookedAt';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'duration') {
       return 'duration';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };
@@ -273,6 +285,30 @@ export function AvailableTimeSlotSearchAndFilters({
                       placeholder="Filter by duration..."
                       value={filters["duration"] as string || ""}
                       onChange={(e) => onFilterChange("duration", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      createdBy
+                    </label>
+                    <Input
+                      placeholder="Filter by createdBy..."
+                      value={filters["createdBy"] as string || ""}
+                      onChange={(e) => onFilterChange("createdBy", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      lastModifiedBy
+                    </label>
+                    <Input
+                      placeholder="Filter by lastModifiedBy..."
+                      value={filters["lastModifiedBy"] as string || ""}
+                      onChange={(e) => onFilterChange("lastModifiedBy", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

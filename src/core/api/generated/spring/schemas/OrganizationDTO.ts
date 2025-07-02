@@ -31,5 +31,17 @@ export interface OrganizationDTO {
    */
   domain?: string;
   isActive: boolean;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   members?: UserProfileDTO[];
 }

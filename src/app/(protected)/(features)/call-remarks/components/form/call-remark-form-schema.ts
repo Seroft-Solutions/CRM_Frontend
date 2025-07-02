@@ -35,6 +35,10 @@ export const callRemarkStepSchemas = {
   basic: z.object({
     remark: callRemarkFieldSchemas.remark,
     dateTime: callRemarkFieldSchemas.dateTime,
+    createdBy: callRemarkFieldSchemas.createdBy,
+    createdDate: callRemarkFieldSchemas.createdDate,
+    lastModifiedBy: callRemarkFieldSchemas.lastModifiedBy,
+    lastModifiedDate: callRemarkFieldSchemas.lastModifiedDate,
   }),
   
   review: callRemarkFormSchema,

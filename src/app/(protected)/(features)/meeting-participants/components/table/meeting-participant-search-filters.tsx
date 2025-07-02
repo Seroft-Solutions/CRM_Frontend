@@ -110,11 +110,23 @@ export function MeetingParticipantSearchAndFilters({
     if (key === 'responseDateTime') {
       return 'responseDateTime';
     }
+    if (key === 'createdDate') {
+      return 'createdDate';
+    }
+    if (key === 'lastModifiedDate') {
+      return 'lastModifiedDate';
+    }
     if (key === 'email') {
       return 'email';
     }
     if (key === 'name') {
       return 'name';
+    }
+    if (key === 'createdBy') {
+      return 'createdBy';
+    }
+    if (key === 'lastModifiedBy') {
+      return 'lastModifiedBy';
     }
     return key;
   };
@@ -329,6 +341,18 @@ export function MeetingParticipantSearchAndFilters({
                       placeholder="Filter by name..."
                       value={filters["name"] as string || ""}
                       onChange={(e) => onFilterChange("name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      createdBy
+                    </label>
+                    <Input
+                      placeholder="Filter by createdBy..."
+                      value={filters["createdBy"] as string || ""}
+                      onChange={(e) => onFilterChange("createdBy", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

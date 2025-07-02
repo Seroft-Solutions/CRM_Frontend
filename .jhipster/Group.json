@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250628212728"
+    "changelogDate": "20250702155223"
   },
   "applications": ["crmBackend"],
   "documentation": "Group is scoped per organization.",
@@ -36,6 +36,26 @@
       "fieldName": "isActive",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -58,5 +78,6 @@
       "relationshipType": "many-to-many"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

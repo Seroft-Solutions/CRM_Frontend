@@ -26,6 +26,10 @@ export const channelTypeStepSchemas = {
     name: channelTypeFieldSchemas.name,
     description: channelTypeFieldSchemas.description,
     commissionRate: channelTypeFieldSchemas.commissionRate,
+    createdBy: channelTypeFieldSchemas.createdBy,
+    createdDate: channelTypeFieldSchemas.createdDate,
+    lastModifiedBy: channelTypeFieldSchemas.lastModifiedBy,
+    lastModifiedDate: channelTypeFieldSchemas.lastModifiedDate,
   }),
   
   review: channelTypeFormSchema,

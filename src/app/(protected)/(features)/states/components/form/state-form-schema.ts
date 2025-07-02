@@ -23,6 +23,10 @@ export const stateStepSchemas = {
   basic: z.object({
     name: stateFieldSchemas.name,
     country: stateFieldSchemas.country,
+    createdBy: stateFieldSchemas.createdBy,
+    createdDate: stateFieldSchemas.createdDate,
+    lastModifiedBy: stateFieldSchemas.lastModifiedBy,
+    lastModifiedDate: stateFieldSchemas.lastModifiedDate,
   }),
   
   review: stateFormSchema,

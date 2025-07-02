@@ -26,6 +26,10 @@ export const callCategoryStepSchemas = {
     name: callCategoryFieldSchemas.name,
     description: callCategoryFieldSchemas.description,
     remark: callCategoryFieldSchemas.remark,
+    createdBy: callCategoryFieldSchemas.createdBy,
+    createdDate: callCategoryFieldSchemas.createdDate,
+    lastModifiedBy: callCategoryFieldSchemas.lastModifiedBy,
+    lastModifiedDate: callCategoryFieldSchemas.lastModifiedDate,
   }),
   
   review: callCategoryFormSchema,

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250628212528"
+    "changelogDate": "20250702155221"
   },
   "applications": ["crmBackend"],
   "documentation": "Extended user profile linked to Keycloak.",
@@ -44,6 +44,26 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "200"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
   "jpaMetamodelFiltering": true,
@@ -97,5 +117,6 @@
       "relationshipType": "many-to-one"
     }
   ],
+  "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

@@ -14,6 +14,7 @@ export const roleFormConfig: FormConfig = {
       title: 'Basic Information',
       description: 'Enter essential details',
       fields: [
+        'keycloakRoleId',
         'name',
         'description',
       ],
@@ -83,6 +84,19 @@ export const roleFormConfig: FormConfig = {
 
   // Field definitions
   fields: [
+    {
+      name: 'keycloakRoleId',
+      type: 'text',
+      label: 'Keycloak Role Id',
+      placeholder: 'Enter keycloak role id',
+      required: true,
+      validation: {
+        required: true,
+        pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      },
+      ui: {
+      }
+    },
     {
       name: 'name',
       type: 'text',

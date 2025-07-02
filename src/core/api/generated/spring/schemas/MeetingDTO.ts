@@ -54,6 +54,18 @@ export interface MeetingDTO {
   meetingType: MeetingDTOMeetingType;
   createdAt?: string;
   updatedAt?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  createdBy?: string;
+  createdDate?: string;
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
   organizer: UserProfileDTO;
   assignedCustomer?: CustomerDTO;
   call?: CallDTO;

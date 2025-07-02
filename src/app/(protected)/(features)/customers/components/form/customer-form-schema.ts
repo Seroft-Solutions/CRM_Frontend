@@ -40,6 +40,10 @@ export const customerStepSchemas = {
     mobile: customerFieldSchemas.mobile,
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
+    createdBy: customerFieldSchemas.createdBy,
+    createdDate: customerFieldSchemas.createdDate,
+    lastModifiedBy: customerFieldSchemas.lastModifiedBy,
+    lastModifiedDate: customerFieldSchemas.lastModifiedDate,
   }),
   
   review: customerFormSchema,

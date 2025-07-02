@@ -59,6 +59,10 @@ export const userAvailabilityStepSchemas = {
     effectiveFrom: userAvailabilityFieldSchemas.effectiveFrom,
     effectiveTo: userAvailabilityFieldSchemas.effectiveTo,
     timeZone: userAvailabilityFieldSchemas.timeZone,
+    createdBy: userAvailabilityFieldSchemas.createdBy,
+    createdDate: userAvailabilityFieldSchemas.createdDate,
+    lastModifiedBy: userAvailabilityFieldSchemas.lastModifiedBy,
+    lastModifiedDate: userAvailabilityFieldSchemas.lastModifiedDate,
   }),
   
   review: userAvailabilityFormSchema,
