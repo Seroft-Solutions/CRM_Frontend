@@ -264,7 +264,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
   };
 
   return (
-    <PermissionGuard requiredPermission="manage-users">
+    <PermissionGuard requiredPermission="manage:users">
       <div className={`space-y-6 ${className}`}>
         {/* Header */}
         <div className="flex items-center gap-4">
