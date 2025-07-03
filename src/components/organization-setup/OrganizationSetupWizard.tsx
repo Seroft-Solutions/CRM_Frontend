@@ -230,13 +230,6 @@ export function OrganizationSetupWizard() {
           </Alert>
 
           <div className="flex space-x-2">
-            <Button
-              onClick={() => setShowForm(true)}
-              disabled={state.isSetupInProgress}
-              className="flex-1"
-            >
-              Try Again
-            </Button>
             <Button variant="outline" onClick={actions.clearError} className="flex-1">
               Start Over
             </Button>
