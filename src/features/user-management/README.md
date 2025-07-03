@@ -116,11 +116,11 @@ await userManagementService.assignGroups(assignment);
 
 ## Permission System
 
-All components are protected by `PermissionGuard` with the `"manage-users"`
+All components are protected by `PermissionGuard` with the `"manage:users"`
 permission:
 
 ```typescript
-<PermissionGuard requiredPermission="manage-users">
+<PermissionGuard requiredPermission="manage:users">
   <OrganizationUsers />
 </PermissionGuard>
 ```

@@ -722,7 +722,7 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
   }
 
   return (
-    <PermissionGuard requiredPermission="manage-users">
+    <PermissionGuard requiredPermission="manage:users">
       <OrganizationUsersContent
         className={className}
         organizationId={organizationId}
