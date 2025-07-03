@@ -1,7 +1,6 @@
 /**
- * Organization Partners API Route with Dual Storage Support
+ * Organization Partners API Route
  * Partner invitation with "Business Partners" group assignment
- * Integrates with Spring Database for comprehensive user management
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -19,12 +18,6 @@ import {
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserIdGroups,
 } from '@/core/api/generated/keycloak';
-// Spring Database Integration for Partners
-import {
-  createUserProfile,
-  getAllUserProfiles,
-} from '@/core/api/generated/spring';
-import type { UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type {
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
   UserRepresentation,
@@ -221,32 +214,6 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing partner to organization');
 
-        // DUAL STORAGE: Create/Update partner profile in Spring Database for existing user
-        try {
-          // Check if partner profile already exists in Spring
-          const existingProfiles = await getAllUserProfiles();
-          const existingProfile = existingProfiles.find(profile => profile.keycloakId === userId);
-
-          if (!existingProfile) {
-            const springPartnerProfile: UserProfileDTO = {
-              keycloakId: userId,
-              firstName: existingUsers[0].firstName || '',
-              lastName: existingUsers[0].lastName || '',
-              email: existingUsers[0].email || '',
-              phone: body.phone || '',
-              displayName: `${existingUsers[0].firstName || ''} ${existingUsers[0].lastName || ''}`.trim() || existingUsers[0].email || '',
-            };
-
-            await createUserProfile({ data: springPartnerProfile });
-            console.log('✅ Created partner profile in Spring Database for existing user');
-          } else {
-            console.log('✅ Partner profile already exists in Spring Database');
-          }
-        } catch (springError) {
-          console.error('❌ Failed to handle Spring partner profile for existing user:', springError);
-          // Continue with Keycloak flow
-        }
-
         // Ensure proper group assignment for existing partner
         const groupResult = await ensureProperPartnerGroupAssignment(realm, userId);
         groupManagement.businessPartnersGroupAssigned =
@@ -319,25 +286,6 @@ export async function POST(
 
         userId = createdUsers[0].id!;
         console.log('Found created partner user ID:', userId);
-
-        // DUAL STORAGE: Create partner profile in Spring Database
-        try {
-          const springPartnerProfile: UserProfileDTO = {
-            keycloakId: userId,
-            firstName: inviteData.firstName || '',
-            lastName: inviteData.lastName || '',
-            email: inviteData.email,
-            phone: body.phone || '',
-            displayName: `${inviteData.firstName || ''} ${inviteData.lastName || ''}`.trim() || inviteData.email,
-            // Mark as partner in attributes if needed
-          };
-
-          await createUserProfile({ data: springPartnerProfile });
-          console.log('✅ Created partner profile in Spring Database');
-        } catch (springError) {
-          console.error('❌ Failed to create partner profile in Spring:', springError);
-          // Continue with Keycloak flow - Spring profile can be created later
-        }
 
         // 2. Ensure proper group assignment (Business Partners group + remove Admins if present)
         const groupResult1 = await ensureProperPartnerGroupAssignment(realm, userId);
