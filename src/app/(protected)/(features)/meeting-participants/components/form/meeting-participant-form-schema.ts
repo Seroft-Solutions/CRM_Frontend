@@ -15,7 +15,7 @@ export const meetingParticipantFormSchemaFields = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  meeting: z.number({ message: "Please select meeting from the dropdown" }),
+  meeting: z.number().optional(),
 };
 
 export const meetingParticipantFormSchema = z.object(meetingParticipantFormSchemaFields);
@@ -35,7 +35,7 @@ export const meetingParticipantFieldSchemas = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  meeting: z.number({ message: "Please select meeting from the dropdown" }),
+  meeting: z.number().optional(),
 };
 
 // Step-specific validation schemas

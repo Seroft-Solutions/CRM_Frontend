@@ -11,6 +11,10 @@ import { RelationshipRenderer } from "./relationship-renderer";
 
 
 import {
+  useGetAllPublicUsers,
+  useSearchPublicUsers,
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+import {
   useGetAllOrganizations,
   useSearchOrganizations,
   useCountOrganizations,
@@ -40,6 +44,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
+      case 'internalUser':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllPublicUsers}
+            displayField="login"
+            primaryKey="id"
+            multiple={false}
+            label="PublicUsers"
+          />
+        );
+        
       case 'organizations':
         return (
           <RelationshipDisplayValue

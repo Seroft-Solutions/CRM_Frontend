@@ -66,7 +66,7 @@ export interface MeetingDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  organizer: UserProfileDTO;
+  organizer?: UserProfileDTO;
   assignedCustomer?: CustomerDTO;
   call?: CallDTO;
 }

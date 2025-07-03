@@ -139,6 +139,24 @@ export function UserProfileTableRow({
             // Render relationship column
             (() => {
               
+              if (column.id === 'internalUser') {
+                return (
+                  <RelationshipCell
+                    entityId={userProfile.id || 0}
+                    relationshipName="internalUser"
+                    currentValue={userProfile.internalUser}
+                    options={relationshipConfigs.find(config => config.name === "internalUser")?.options || []}
+                    displayField="login"
+                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    isEditable={relationshipConfigs.find(config => config.name === "internalUser")?.isEditable || false}
+                    isLoading={isUpdating}
+                    className="min-w-[150px]"
+                    relatedEntityRoute="users"
+                    showNavigationIcon={true}
+                  />
+                );
+              }
+              
               if (column.id === 'channelType') {
                 return (
                   <RelationshipCell

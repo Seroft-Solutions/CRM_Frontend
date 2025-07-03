@@ -7,6 +7,10 @@ import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox
 // Import all hooks statically for the specific entity
 
 import {
+  useGetAllPublicUsers,
+  useSearchPublicUsers,
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+import {
   useGetAllOrganizations,
   useSearchOrganizations,
   useCountOrganizations,
@@ -49,6 +53,44 @@ export function RelationshipRenderer({
   // Use hooks based on relationship name - this ensures hooks are called consistently
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
+      case 'internalUser':
+        return (
+          <PaginatedRelationshipCombobox
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (relConfig.cascadingFilter) {
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
+                );
+                dependentRelationships.forEach((depRel: any) => {
+                  form.setValue(depRel.name, undefined);
+                });
+              }
+            }}
+            displayField={relConfig.displayField}
+            placeholder={relConfig.ui.placeholder}
+            multiple={relConfig.multiple}
+            useGetAllHook={useGetAllPublicUsers}
+            useSearchHook={useSearchPublicUsers}
+            useCountHook={undefined}
+            entityName={relConfig.api.entityName}
+            searchField={relConfig.displayField}
+            canCreate={relConfig.creation?.canCreate}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
+            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
+            parentField={relConfig.cascadingFilter?.parentField}
+            disabled={
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
+                : relConfig.ui.disabled
+            }
+            {...actions.getNavigationProps(relConfig.name)}
+          />
+        );
+        
       case 'organizations':
         return (
           <PaginatedRelationshipCombobox

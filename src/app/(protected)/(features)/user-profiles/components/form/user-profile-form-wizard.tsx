@@ -130,6 +130,7 @@ function UserProfileFormContent({ id }: UserProfileFormProps) {
           'email': '',
           'phone': '',
           'displayName': '',
+          'internalUser': 'Internal User',
           'organizations': 'Organizations',
           'groups': 'Groups',
           'roles': 'Roles',

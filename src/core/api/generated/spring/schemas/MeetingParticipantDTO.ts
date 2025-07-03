@@ -36,5 +36,5 @@ export interface MeetingParticipantDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  meeting: MeetingDTO;
+  meeting?: MeetingDTO;
 }

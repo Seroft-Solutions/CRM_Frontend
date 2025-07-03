@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { UserDTO } from './UserDTO';
 import type { OrganizationDTO } from './OrganizationDTO';
 import type { GroupDTO } from './GroupDTO';
 import type { RoleDTO } from './RoleDTO';
@@ -14,7 +15,7 @@ import type { ChannelTypeDTO } from './ChannelTypeDTO';
  * Extended user profile linked to Keycloak.
  */
 export interface UserProfileDTO {
-  id?: number;
+  id?: string;
   /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ */
   keycloakId?: string;
   /**
@@ -52,6 +53,7 @@ export interface UserProfileDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
+  internalUser?: UserDTO;
   organizations?: OrganizationDTO[];
   groups?: GroupDTO[];
   roles?: RoleDTO[];

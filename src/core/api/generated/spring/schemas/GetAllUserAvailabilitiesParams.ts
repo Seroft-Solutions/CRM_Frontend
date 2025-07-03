@@ -101,15 +101,13 @@ export type GetAllUserAvailabilitiesParams = {
 'lastModifiedDate.specified'?: boolean;
 'lastModifiedDate.in'?: string[];
 'lastModifiedDate.notIn'?: string[];
-'userId.greaterThan'?: number;
-'userId.lessThan'?: number;
-'userId.greaterThanOrEqual'?: number;
-'userId.lessThanOrEqual'?: number;
-'userId.equals'?: number;
-'userId.notEquals'?: number;
+'userId.contains'?: string;
+'userId.doesNotContain'?: string;
+'userId.equals'?: string;
+'userId.notEquals'?: string;
 'userId.specified'?: boolean;
-'userId.in'?: number[];
-'userId.notIn'?: number[];
+'userId.in'?: string[];
+'userId.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

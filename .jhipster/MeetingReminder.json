@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250702155243"
+    "changelogDate": "20250703202803"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -62,8 +62,7 @@
       "otherEntityRelationshipName": "reminders",
       "relationshipName": "meeting",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
+      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "elasticsearch",

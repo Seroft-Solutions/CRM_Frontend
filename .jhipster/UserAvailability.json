@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250702155242"
+    "changelogDate": "20250703202802"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -73,8 +73,7 @@
       "otherEntityRelationshipName": "availabilitySlots",
       "relationshipName": "user",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
+      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "elasticsearch",

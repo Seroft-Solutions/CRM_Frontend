@@ -19,6 +19,7 @@ import {
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 import { callToast, handleCallError } from "../call-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+import { MeetingSchedulerDialog } from "../../schedule-meeting/components/meeting-scheduler-dialog";
 
 interface CallFormProps {
   id?: number;
@@ -174,6 +175,10 @@ export function CallForm({ id }: CallFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  // Meeting scheduler dialog state
+  const [showMeetingDialog, setShowMeetingDialog] = useState(false);
+  const [createdCallData, setCreatedCallData] = useState<any>(null);
 
   // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateCall({
@@ -186,9 +191,10 @@ export function CallForm({ id }: CallFormProps) {
           setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Call');
         } else {
-          setIsRedirecting(true);
+          // Store the created call data and show meeting scheduler dialog
+          setCreatedCallData(data);
+          setShowMeetingDialog(true);
           callToast.created();
-          router.push("/calls");
         }
       },
       onError: (error) => {
@@ -199,16 +205,37 @@ export function CallForm({ id }: CallFormProps) {
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
     mutation: {
-      onSuccess: () => {
-        setIsRedirecting(true);
+      onSuccess: (data) => {
+        // For updates, optionally show meeting scheduler dialog too
+        setCreatedCallData(data);
+        setShowMeetingDialog(true);
         callToast.updated();
-        router.push("/calls");
       },
       onError: (error) => {
         handleCallError(error);
       },
     },
   });
+
+  const handleMeetingScheduled = (meetingData: any) => {
+    // Meeting was successfully scheduled, now redirect
+    setShowMeetingDialog(false);
+    setIsRedirecting(true);
+    router.push("/calls");
+  };
+
+  const handleMeetingDialogClose = () => {
+    // User declined to schedule meeting, just redirect
+    setShowMeetingDialog(false);
+    setIsRedirecting(true);
+    router.push("/calls");
+  };
+
+  const handleMeetingError = (error: any) => {
+    // Error will be handled by the meeting scheduler's error dialog
+    // Just log it here for debugging
+    console.error('Meeting scheduling error from call form:', error);
+  };
 
   // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
@@ -223,23 +250,58 @@ export function CallForm({ id }: CallFormProps) {
   }
 
   return (
-    <CallFormProvider 
-      id={id}
-      onSuccess={async (transformedData) => {
-        // This callback receives the properly transformed data from the form provider
-        
-        // Make the actual API call with the transformed data
-        if (isNew) {
-          createEntity({ data: transformedData as any });
-        } else if (id) {
-          updateEntity({ id, data: transformedData as any });
-        }
-      }}
-      onError={(error) => {
-        handleCallError(error);
-      }}
-    >
-      <CallFormContent id={id} />
-    </CallFormProvider>
+    <>
+      {/* Only show call form when dialog is not open */}
+      {!showMeetingDialog && (
+        <CallFormProvider 
+          id={id}
+          onSuccess={async (transformedData) => {
+            // This callback receives the properly transformed data from the form provider
+            
+            // Make the actual API call with the transformed data
+            if (isNew) {
+              createEntity({ data: transformedData as any });
+            } else if (id) {
+              updateEntity({ id, data: transformedData as any });
+            }
+          }}
+          onError={(error) => {
+            handleCallError(error);
+          }}
+        >
+          <CallFormContent id={id} />
+        </CallFormProvider>
+      )}
+
+      {/* Show success message when dialog is open */}
+      {showMeetingDialog && (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="bg-card p-8 rounded-lg shadow-lg text-center border max-w-md mx-auto">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Call {isNew ? 'Created' : 'Updated'} Successfully!
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Your call has been saved. Would you like to schedule a follow-up meeting?
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Meeting Scheduler Dialog */}
+      <MeetingSchedulerDialog
+        open={showMeetingDialog}
+        onOpenChangeAction={handleMeetingDialogClose}
+        customerId={createdCallData?.customer?.id}
+        assignedUserId={createdCallData?.assignedTo?.id}
+        callId={createdCallData?.id}
+        onMeetingScheduledAction={handleMeetingScheduled}
+        onError={handleMeetingError}
+      />
+    </>
   );
 }

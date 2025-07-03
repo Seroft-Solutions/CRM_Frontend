@@ -91,6 +91,9 @@ export function UserProfileSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
+      if (relationName === 'internalUser') {
+        return 'Internal User';
+      }
       if (relationName === 'channelType') {
         return 'Channel Type';
       }
@@ -174,6 +177,18 @@ export function UserProfileSearchAndFilters({
               <div>
                 <DropdownMenuLabel className="px-0 text-sm font-medium">People & Relationships</DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Internal User
+                    </label>
+                    <Input
+                      placeholder="Filter by internal user..."
+                      value={filters["internalUser.login"] as string || ""}
+                      onChange={(e) => onFilterChange("internalUser.login", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
