@@ -1,6 +1,7 @@
 /**
- * Organization Members API Route
+ * Organization Members API Route with Dual Storage Support
  * Uses the unified Keycloak admin service with generated endpoints
+ * Integrates with Spring Database for comprehensive user management
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -19,6 +20,14 @@ import {
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
+// Spring Database Integration
+import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
+import {
+  createUserProfile,
+  getAllUserProfiles,
+  getAllGroups as getSpringGroups,
+} from '@/core/api/generated/spring';
+import type { UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type {
   GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
@@ -255,6 +264,32 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing user to organization');
 
+        // DUAL STORAGE: Create/Update user profile in Spring Database for existing user
+        try {
+          // Check if user profile already exists in Spring
+          const existingProfiles = await getAllUserProfiles();
+          const existingProfile = existingProfiles.find(profile => profile.keycloakId === userId);
+
+          if (!existingProfile) {
+            const springUserProfile: UserProfileDTO = {
+              keycloakId: userId,
+              firstName: existingUsers[0].firstName || '',
+              lastName: existingUsers[0].lastName || '',
+              email: existingUsers[0].email || '',
+              phone: body.phone || '',
+              displayName: `${existingUsers[0].firstName || ''} ${existingUsers[0].lastName || ''}`.trim() || existingUsers[0].email || '',
+            };
+
+            await createUserProfile({ data: springUserProfile });
+            console.log('✅ Created user profile in Spring Database for existing user');
+          } else {
+            console.log('✅ User profile already exists in Spring Database');
+          }
+        } catch (springError) {
+          console.error('❌ Failed to handle Spring user profile for existing user:', springError);
+          // Continue with Keycloak flow - Spring profile can be created later
+        }
+
         // Ensure proper group assignment for existing user too
         const groupResult = await ensureProperGroupAssignment(realm, userId);
         groupManagement.usersGroupAssigned =
@@ -325,6 +360,26 @@ export async function POST(
 
         userId = createdUsers[0].id!;
         console.log('Found created user ID:', userId);
+
+        // DUAL STORAGE: Create user profile in Spring Database
+        try {
+          const springUserProfile: UserProfileDTO = {
+            keycloakId: userId,
+            firstName: inviteData.firstName || '',
+            lastName: inviteData.lastName || '',
+            email: inviteData.email,
+            phone: body.phone || '',
+            displayName: `${inviteData.firstName || ''} ${inviteData.lastName || ''}`.trim() || inviteData.email,
+            // Organizations, groups, and roles will be handled by Spring backend
+          };
+
+          await createUserProfile({ data: springUserProfile });
+          console.log('✅ Created user profile in Spring Database');
+        } catch (springError) {
+          console.error('❌ Failed to create user profile in Spring:', springError);
+          // Continue with Keycloak flow - Spring profile can be created later
+          // Don't fail the entire invitation process for Spring issues
+        }
 
         // 2. Ensure proper group assignment (Users group + remove Admins if present)
         const groupResult1 = await ensureProperGroupAssignment(realm, userId);
