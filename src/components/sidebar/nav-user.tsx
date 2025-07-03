@@ -1,8 +1,9 @@
 'use client';
 
-import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User } from 'lucide-react';
+import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { logoutAction } from '@/core/auth';
+import { useGetAccount } from '@/core/api/generated/spring/endpoints/account-resource/account-resource.gen';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -20,10 +21,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { data: session, status } = useSession();
+  
+  // Fetch account details from the API
+  const { 
+    data: accountData, 
+    isLoading: isAccountLoading, 
+    error: accountError 
+  } = useGetAccount({
+    query: {
+      enabled: status === 'authenticated', // Only fetch when authenticated
+    }
+  });
 
   const getInitials = (name: string) => {
     if (!name) return 'U';
@@ -32,14 +45,41 @@ export function NavUser() {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   };
 
-  const user = {
-    name: session?.user?.name || 'User',
-    email: session?.user?.email || '',
-    image: session?.user?.image || '',
-    initials: session?.user?.name ? getInitials(session.user.name) : 'U',
+  const getFullName = () => {
+    if (accountData?.firstName && accountData?.lastName) {
+      return `${accountData.firstName} ${accountData.lastName}`;
+    }
+    return session?.user?.name || 'User';
   };
 
-  if (status === 'loading') {
+  const getEmail = () => {
+    return accountData?.email || session?.user?.email || '';
+  };
+
+  const getImageUrl = () => {
+    return accountData?.imageUrl || session?.user?.image || '';
+  };
+
+  const getPrimaryRole = () => {
+    if (accountData?.authorities && accountData.authorities.length > 0) {
+      // Remove 'ROLE_' prefix if present and capitalize
+      return accountData.authorities[0].replace('ROLE_', '').toLowerCase();
+    }
+    return null;
+  };
+
+  const user = {
+    name: getFullName(),
+    email: getEmail(),
+    image: getImageUrl(),
+    initials: getInitials(getFullName()),
+    role: getPrimaryRole(),
+    authorities: accountData?.authorities || [],
+    activated: accountData?.activated,
+    login: accountData?.login,
+  };
+
+  if (status === 'loading' || isAccountLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -54,6 +94,11 @@ export function NavUser() {
         </SidebarMenuItem>
       </SidebarMenu>
     );
+  }
+
+  // Handle account API error gracefully
+  if (accountError) {
+    console.warn('Failed to fetch account data:', accountError);
   }
 
   return (
@@ -91,6 +136,18 @@ export function NavUser() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
+                  {user.role && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                        {user.role}
+                      </Badge>
+                      {user.activated === false && (
+                        <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                          Inactive
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -105,6 +162,12 @@ export function NavUser() {
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </DropdownMenuItem>
+              {user.authorities.includes('ROLE_ADMIN') && (
+                <DropdownMenuItem>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin Panel
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
