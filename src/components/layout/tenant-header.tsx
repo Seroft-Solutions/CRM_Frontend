@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useAuth } from '@/core/auth';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Building2, Briefcase } from 'lucide-react';
+import {useAuth} from "@/core/auth/providers";
 
 export function TenantHeader() {
   const { session } = useAuth();

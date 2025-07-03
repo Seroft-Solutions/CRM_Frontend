@@ -294,22 +294,6 @@ export class KeycloakService extends BaseService {
           return { authorized: false, error: 'Not authenticated' };
         }
 
-        // Check if user has manage-users role or is admin
-        const hasPermission =
-          session.user.roles?.includes('manage-users') ||
-          session.user.roles?.includes('admin') ||
-          session.user.roles?.includes('realm-admin') ||
-          session.user.roles?.includes('realm-management') ||
-          false;
-
-        if (!hasPermission) {
-          return {
-            authorized: false,
-            error:
-              'Insufficient permissions. Required: manage-users, admin, realm-admin, or realm-management role',
-          };
-        }
-
         return { authorized: true };
       } else {
         // Client-side - redirect to proper auth check
