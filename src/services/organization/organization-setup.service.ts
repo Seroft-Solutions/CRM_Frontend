@@ -2,12 +2,9 @@
 
 import { Session } from 'next-auth';
 
-// Spring APIs
-import { createUserProfile } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
 // Types
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
-import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
+import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
 import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 
 export interface OrganizationSetupRequest {
@@ -18,7 +15,6 @@ export interface OrganizationSetupRequest {
 export interface OrganizationSetupResult {
   keycloakOrgId: string;
   springOrgId: number;
-  userProfileId: number;
 }
 
 /**
@@ -64,21 +60,11 @@ export class OrganizationSetupService {
       try {
         const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
         console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
-
-        // Step 5: Create/update user profile
-        console.log('Step 5: Creating user profile...');
-        const userProfileId = await this.createUserProfile(session, keycloakUserId);
-        console.log('✓ Step 5 completed - User profile ID:', userProfileId);
-
-        // Step 6: Associate user with organization in Spring
-        console.log('Step 6: Associating user with organization...');
-        await this.associateUserWithOrganization(userProfileId, springOrgId);
-        console.log('✓ Step 6 completed - All steps successful');
+        console.log('✓ All steps completed successfully');
 
         return {
           keycloakOrgId,
           springOrgId,
-          userProfileId,
         };
       } catch (error: any) {
         if (error.message === 'SETUP_TIMEOUT') {
@@ -89,7 +75,6 @@ export class OrganizationSetupService {
           return {
             keycloakOrgId,
             springOrgId: 0, // Placeholder - actual ID will be retrieved by progress tracking
-            userProfileId: 0, // Placeholder - will be created after schema setup completes
           };
         }
         throw error;
@@ -234,62 +219,20 @@ export class OrganizationSetupService {
   }
 
   /**
-   * Create user profile in Spring backend
-   */
-  private async createUserProfile(session: Session, keycloakUserId: string): Promise<number> {
-    console.log('Creating user profile with:', {
-      keycloakId: keycloakUserId,
-      email: session.user.email,
-      firstName: session.user.name?.split(' ')[0],
-      lastName: session.user.name?.split(' ').slice(1).join(' '),
-    });
-
-    const userProfileDTO: UserProfileDTO = {
-      keycloakId: keycloakUserId,
-      email: session.user.email!,
-      isActive: true,
-      ...(session.user.name?.split(' ')[0] && { firstName: session.user.name.split(' ')[0] }),
-      ...(session.user.name?.split(' ').slice(1).join(' ') && {
-        lastName: session.user.name.split(' ').slice(1).join(' '),
-      }),
-    };
-
-    console.log('Sending UserProfileDTO to Spring:', userProfileDTO);
-
-    const response = await createUserProfile(userProfileDTO);
-
-    if (!response.id) {
-      throw new Error('Failed to create user profile: no ID returned');
-    }
-
-    return response.id;
-  }
-
-  /**
-   * Associate user with organization in Spring
-   * Note: This would require an API endpoint to handle the many-to-many relationship
-   * For now, we'll assume this is handled automatically based on organization creation
-   */
-  private async associateUserWithOrganization(
-    userProfileId: number,
-    organizationId: number
-  ): Promise<void> {
-    // TODO: Implement organization-user association API
-    // This might be handled automatically based on organization membership
-    console.log('User-Organization association:', { userProfileId, organizationId });
-  }
-
-  /**
    * Check if user has existing organization
+   * TODO: Implement proper organization checking logic
    */
   static hasOrganization(session: Session | null): boolean {
-    return !!session?.user?.organizations?.length;
+    // TODO: Implement organization checking logic
+    return false;
   }
 
   /**
    * Get user's primary organization
+   * TODO: Implement proper organization retrieval logic
    */
   static getPrimaryOrganization(session: Session | null) {
-    return session?.user?.organizations?.[0] || null;
+    // TODO: Implement organization retrieval logic
+    return null;
   }
 }

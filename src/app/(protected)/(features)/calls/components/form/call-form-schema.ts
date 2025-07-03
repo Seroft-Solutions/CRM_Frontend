@@ -50,10 +50,6 @@ export const callFieldSchemas = {
 export const callStepSchemas = {
   basic: z.object({
     callDateTime: callFieldSchemas.callDateTime,
-    createdBy: callFieldSchemas.createdBy,
-    createdDate: callFieldSchemas.createdDate,
-    lastModifiedBy: callFieldSchemas.lastModifiedBy,
-    lastModifiedDate: callFieldSchemas.lastModifiedDate,
   }),
   
   review: callFormSchema,

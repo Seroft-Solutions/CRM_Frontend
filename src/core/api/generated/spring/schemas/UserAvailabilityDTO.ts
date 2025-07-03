@@ -35,5 +35,5 @@ export interface UserAvailabilityDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  user: UserProfileDTO;
+  user?: UserProfileDTO;
 }

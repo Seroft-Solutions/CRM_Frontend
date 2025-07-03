@@ -80,6 +80,10 @@ import {
 
 // Relationship data imports
 
+import {
+  useGetAllPublicUsers
+} from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
+
 
 
 import {
@@ -173,6 +177,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
     sortable: true,
   },
   
+  
+  {
+    id: 'internalUser',
+    label: 'Internal User',
+    accessor: 'internalUser',
+    type: 'relationship',
+    visible: true,
+    sortable: false,
+  },
   
   {
     id: 'channelType',
@@ -335,6 +348,11 @@ export function UserProfileTable() {
             const relationship = item[col.accessor as keyof typeof item] as any;
             
             
+            if (col.id === 'internalUser' && relationship) {
+              value = relationship.login || '';
+            }
+            
+            
             if (col.id === 'channelType' && relationship) {
               value = relationship.name || '';
             }
@@ -369,6 +387,11 @@ export function UserProfileTable() {
   
   // Fetch relationship data for dropdowns
   
+  const { data: userOptions = [] } = useGetAllPublicUsers(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
   const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -389,6 +412,12 @@ export function UserProfileTable() {
     
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
+      
+      'internalUser.login': { 
+        apiParam: 'internalUserId.equals', 
+        options: userOptions, 
+        displayField: 'login' 
+      },
       
       'channelType.name': { 
         apiParam: 'channelTypeId.equals', 
@@ -770,6 +799,14 @@ export function UserProfileTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
+    
+    {
+      name: "internalUser",
+      displayName: "InternalUser",
+      options: userOptions || [],
+      displayField: "login",
+      isEditable: false, // Disabled by default
+    },
     
     {
       name: "channelType",

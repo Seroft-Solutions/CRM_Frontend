@@ -39,7 +39,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 export const getUserProfile = (
-    id: number,
+    id: string,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {
       
@@ -51,12 +51,12 @@ export const getUserProfile = (
     }
   
 
-export const getGetUserProfileQueryKey = (id: number,) => {
+export const getGetUserProfileQueryKey = (id: string,) => {
     return [`/api/user-profiles/${id}`] as const;
     }
 
     
-export const getGetUserProfileQueryOptions = <TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetUserProfileQueryOptions = <TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -79,7 +79,7 @@ export type GetUserProfileQueryError = unknown
 
 
 export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(
- id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserProfile>>,
           TError,
@@ -89,7 +89,7 @@ export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfi
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserProfile>>,
           TError,
@@ -99,12 +99,12 @@ export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfi
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfile>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -120,7 +120,7 @@ export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfi
 
 
 export const updateUserProfile = (
-    id: number,
+    id: string,
     userProfileDTO: UserProfileDTO,
  options?: SecondParameter<typeof springServiceMutator>,) => {
       
@@ -136,8 +136,8 @@ export const updateUserProfile = (
 
 
 export const getUpdateUserProfileMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext> => {
     
 const mutationKey = ['updateUserProfile'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -149,7 +149,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserProfile>>, {id: number;data: UserProfileDTO}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserProfile>>, {id: string;data: UserProfileDTO}> = (props) => {
           const {id,data} = props ?? {};
 
           return  updateUserProfile(id,data,requestOptions)
@@ -165,11 +165,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UpdateUserProfileMutationError = unknown
 
     export const useUpdateUserProfile = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateUserProfile>>,
         TError,
-        {id: number;data: UserProfileDTO},
+        {id: string;data: UserProfileDTO},
         TContext
       > => {
 
@@ -178,7 +178,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(mutationOptions , queryClient);
     }
     export const deleteUserProfile = (
-    id: number,
+    id: string,
  options?: SecondParameter<typeof springServiceMutator>,) => {
       
       
@@ -191,8 +191,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 export const getDeleteUserProfileMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: string}, TContext> => {
     
 const mutationKey = ['deleteUserProfile'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -204,7 +204,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUserProfile>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUserProfile>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
           return  deleteUserProfile(id,requestOptions)
@@ -220,11 +220,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DeleteUserProfileMutationError = unknown
 
     export const useDeleteUserProfile = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserProfile>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteUserProfile>>,
         TError,
-        {id: number},
+        {id: string},
         TContext
       > => {
 
@@ -233,7 +233,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(mutationOptions , queryClient);
     }
     export const partialUpdateUserProfile = (
-    id: number,
+    id: string,
     userProfileDTO: UserProfileDTO,
  options?: SecondParameter<typeof springServiceMutator>,) => {
       
@@ -249,8 +249,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 export const getPartialUpdateUserProfileMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext> => {
     
 const mutationKey = ['partialUpdateUserProfile'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -262,7 +262,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof partialUpdateUserProfile>>, {id: number;data: UserProfileDTO}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof partialUpdateUserProfile>>, {id: string;data: UserProfileDTO}> = (props) => {
           const {id,data} = props ?? {};
 
           return  partialUpdateUserProfile(id,data,requestOptions)
@@ -278,11 +278,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PartialUpdateUserProfileMutationError = unknown
 
     export const usePartialUpdateUserProfile = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: number;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserProfile>>, TError,{id: string;data: UserProfileDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateUserProfile>>,
         TError,
-        {id: number;data: UserProfileDTO},
+        {id: string;data: UserProfileDTO},
         TContext
       > => {
 

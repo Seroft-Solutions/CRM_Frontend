@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export interface UserVM {
+export interface UserDTO {
+  id?: string;
   login?: string;
-  authorities?: string[];
-  activated?: boolean;
 }

@@ -7,15 +7,13 @@
  */
 
 export type GetAllUserProfilesParams = {
-'id.greaterThan'?: number;
-'id.lessThan'?: number;
-'id.greaterThanOrEqual'?: number;
-'id.lessThanOrEqual'?: number;
-'id.equals'?: number;
-'id.notEquals'?: number;
+'id.contains'?: string;
+'id.doesNotContain'?: string;
+'id.equals'?: string;
+'id.notEquals'?: string;
 'id.specified'?: boolean;
-'id.in'?: number[];
-'id.notIn'?: number[];
+'id.in'?: string[];
+'id.notIn'?: string[];
 'keycloakId.contains'?: string;
 'keycloakId.doesNotContain'?: string;
 'keycloakId.equals'?: string;
@@ -90,6 +88,13 @@ export type GetAllUserProfilesParams = {
 'lastModifiedDate.specified'?: boolean;
 'lastModifiedDate.in'?: string[];
 'lastModifiedDate.notIn'?: string[];
+'internalUserId.contains'?: string;
+'internalUserId.doesNotContain'?: string;
+'internalUserId.equals'?: string;
+'internalUserId.notEquals'?: string;
+'internalUserId.specified'?: boolean;
+'internalUserId.in'?: string[];
+'internalUserId.notIn'?: string[];
 'availabilitySlotsId.greaterThan'?: number;
 'availabilitySlotsId.lessThan'?: number;
 'availabilitySlotsId.greaterThanOrEqual'?: number;

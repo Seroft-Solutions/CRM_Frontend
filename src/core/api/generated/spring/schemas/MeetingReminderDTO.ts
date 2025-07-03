@@ -35,5 +35,5 @@ export interface MeetingReminderDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  meeting: MeetingDTO;
+  meeting?: MeetingDTO;
 }

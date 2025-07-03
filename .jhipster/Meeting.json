@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250702155241"
+    "changelogDate": "20250703202801"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -128,8 +128,7 @@
       "otherEntityName": "userProfile",
       "relationshipName": "organizer",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": "required"
+      "relationshipType": "many-to-one"
     },
     {
       "otherEntityField": "customerBusinessName",

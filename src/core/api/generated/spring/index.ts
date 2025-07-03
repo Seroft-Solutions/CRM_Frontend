@@ -32,3 +32,5 @@ export * from './endpoints/account-resource/account-resource.gen';
 export * from './endpoints/auth-info-resource/auth-info-resource.gen';
 export * from './schemas';
 export * from './endpoints/user-draft-resource/user-draft-resource.gen';
+export * from './endpoints/authority-resource/authority-resource.gen';
+export * from './endpoints/public-user-resource/public-user-resource.gen';

@@ -170,7 +170,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       targetEntity: 'meeting',
       displayField: 'name',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'other',
       api: {

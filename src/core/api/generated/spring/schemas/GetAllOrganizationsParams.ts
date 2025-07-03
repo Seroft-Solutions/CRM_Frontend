@@ -81,15 +81,13 @@ export type GetAllOrganizationsParams = {
 'lastModifiedDate.specified'?: boolean;
 'lastModifiedDate.in'?: string[];
 'lastModifiedDate.notIn'?: string[];
-'membersId.greaterThan'?: number;
-'membersId.lessThan'?: number;
-'membersId.greaterThanOrEqual'?: number;
-'membersId.lessThanOrEqual'?: number;
-'membersId.equals'?: number;
-'membersId.notEquals'?: number;
+'membersId.contains'?: string;
+'membersId.doesNotContain'?: string;
+'membersId.equals'?: string;
+'membersId.notEquals'?: string;
 'membersId.specified'?: boolean;
-'membersId.in'?: number[];
-'membersId.notIn'?: number[];
+'membersId.in'?: string[];
+'membersId.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

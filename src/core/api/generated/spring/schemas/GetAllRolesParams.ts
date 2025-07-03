@@ -83,15 +83,13 @@ export type GetAllRolesParams = {
 'organizationId.specified'?: boolean;
 'organizationId.in'?: number[];
 'organizationId.notIn'?: number[];
-'usersId.greaterThan'?: number;
-'usersId.lessThan'?: number;
-'usersId.greaterThanOrEqual'?: number;
-'usersId.lessThanOrEqual'?: number;
-'usersId.equals'?: number;
-'usersId.notEquals'?: number;
+'usersId.contains'?: string;
+'usersId.doesNotContain'?: string;
+'usersId.equals'?: string;
+'usersId.notEquals'?: string;
 'usersId.specified'?: boolean;
-'usersId.in'?: number[];
-'usersId.notIn'?: number[];
+'usersId.in'?: string[];
+'usersId.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

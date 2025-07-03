@@ -71,15 +71,13 @@ export type GetAllChannelTypesParams = {
 'lastModifiedDate.specified'?: boolean;
 'lastModifiedDate.in'?: string[];
 'lastModifiedDate.notIn'?: string[];
-'channelPartiesId.greaterThan'?: number;
-'channelPartiesId.lessThan'?: number;
-'channelPartiesId.greaterThanOrEqual'?: number;
-'channelPartiesId.lessThanOrEqual'?: number;
-'channelPartiesId.equals'?: number;
-'channelPartiesId.notEquals'?: number;
+'channelPartiesId.contains'?: string;
+'channelPartiesId.doesNotContain'?: string;
+'channelPartiesId.equals'?: string;
+'channelPartiesId.notEquals'?: string;
 'channelPartiesId.specified'?: boolean;
-'channelPartiesId.in'?: number[];
-'channelPartiesId.notIn'?: number[];
+'channelPartiesId.in'?: string[];
+'channelPartiesId.notIn'?: string[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

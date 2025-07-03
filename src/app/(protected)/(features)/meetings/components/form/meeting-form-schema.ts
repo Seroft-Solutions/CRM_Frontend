@@ -32,7 +32,7 @@ export const meetingFormSchemaFields = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  organizer: z.number({ message: "Please select organizer from the dropdown" }),
+  organizer: z.number().optional(),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
 };
@@ -71,7 +71,7 @@ export const meetingFieldSchemas = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  organizer: z.number({ message: "Please select organizer from the dropdown" }),
+  organizer: z.number().optional(),
   assignedCustomer: z.number().optional(),
   call: z.number().optional(),
 };

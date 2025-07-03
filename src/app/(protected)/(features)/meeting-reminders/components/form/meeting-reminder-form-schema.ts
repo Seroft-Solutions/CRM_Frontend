@@ -14,7 +14,7 @@ export const meetingReminderFormSchemaFields = {
     message: "Please select a valid date and time"
   }).optional(),
   failureReason: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
-  meeting: z.number({ message: "Please select meeting from the dropdown" }),
+  meeting: z.number().optional(),
 };
 
 export const meetingReminderFormSchema = z.object(meetingReminderFormSchemaFields);
@@ -33,7 +33,7 @@ export const meetingReminderFieldSchemas = {
     message: "Please select a valid date and time"
   }).optional(),
   failureReason: z.string().max(500, { message: "Please enter no more than 500 characters" }).optional(),
-  meeting: z.number({ message: "Please select meeting from the dropdown" }),
+  meeting: z.number().optional(),
 };
 
 // Step-specific validation schemas

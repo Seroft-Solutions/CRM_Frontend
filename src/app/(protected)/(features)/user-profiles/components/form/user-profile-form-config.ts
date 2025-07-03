@@ -43,6 +43,20 @@ export const userProfileFormConfig: FormConfig = {
       }
     },
     {
+      id: 'users',
+      title: 'People & Users',
+      description: 'Assign users and responsibilities',
+      fields: [
+      ],
+      relationships: [
+        'internalUser',
+      ],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true
+      }
+    },
+    {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
@@ -160,6 +174,29 @@ export const userProfileFormConfig: FormConfig = {
 
   // Relationship definitions
   relationships: [
+    {
+      name: 'internalUser',
+      type: 'one-to-one',
+      targetEntity: 'user',
+      displayField: 'login',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'user',
+      api: {
+        useGetAllHook: 'useGetAllPublicUsers',
+        useSearchHook: 'useSearchPublicUsers',
+        entityName: 'PublicUsers',
+      },
+      creation: {
+        canCreate: false,
+      },
+      ui: {
+        label: 'Internal User',
+        placeholder: 'Select internal user',
+        icon: '👥',
+      }
+    },
     {
       name: 'organizations',
       type: 'many-to-many',

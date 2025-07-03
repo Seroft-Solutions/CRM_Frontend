@@ -296,7 +296,7 @@ export const meetingFormConfig: FormConfig = {
       targetEntity: 'userProfile',
       displayField: 'displayName',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'user',
       api: {

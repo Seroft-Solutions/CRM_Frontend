@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './AdminUserDTO';
 export * from './AreaDTO';
 export * from './AuthInfoVM';
+export * from './Authority';
 export * from './AvailableTimeSlotDTO';
 export * from './CallCategoryDTO';
 export * from './CallDTO';
@@ -90,6 +92,7 @@ export * from './GetAllMeetingsParams';
 export * from './GetAllOrganizationsParams';
 export * from './GetAllPrioritiesParams';
 export * from './GetAllProductsParams';
+export * from './GetAllPublicUsersParams';
 export * from './GetAllRolesParams';
 export * from './GetAllSourcesParams';
 export * from './GetAllStatesParams';
@@ -152,8 +155,8 @@ export * from './SubCallTypeDTO';
 export * from './TriggerOrganizationSchemaSetupParams';
 export * from './UserAvailabilityDTO';
 export * from './UserAvailabilityDTODayOfWeek';
+export * from './UserDTO';
 export * from './UserDraftDTO';
 export * from './UserProfileDTO';
-export * from './UserVM';
 export * from './WhatsappRequest';
 export * from './WhatsappRequestMessageContent';
