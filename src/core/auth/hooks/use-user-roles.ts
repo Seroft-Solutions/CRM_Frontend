@@ -1,7 +1,17 @@
 /**
- * Hook to fetch user roles dynamically
- * This avoids storing roles in session to prevent size limits
- * Fetches roles from the backend API instead of parsing from JWT
+ * Hook to fetch user roles dynamically from backend API
+ * 
+ * This hook replaces the previous approach of storing roles in the NextAuth session,
+ * which had size limitations (4KB max). Instead, it fetches user authorities from
+ * the backend /api/account endpoint and normalizes them for permission checking.
+ * 
+ * Features:
+ * - Fetches roles from backend API instead of JWT token parsing
+ * - Handles 500+ roles without session size issues
+ * - Automatic role normalization (removes ROLE_ prefix)
+ * - Integrated with React Query for caching and loading states
+ * 
+ * @returns {Object} Object containing roles array, loading state, and hasRole helper
  */
 
 'use client';
@@ -43,10 +53,6 @@ export function useUserRoles() {
       try {
         // Normalize the roles from authorities
         const userRoles = accountData.authorities.map(normalizeRole);
-        console.log('🔧 [useUserRoles] Fetched authorities from API:', {
-          rawAuthorities: accountData.authorities,
-          normalizedRoles: userRoles
-        });
         setRoles(userRoles);
       } catch (error) {
         console.error('Failed to process user authorities:', error);
