@@ -8,14 +8,63 @@
 import { cache } from 'react';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { normalizeRole } from '@/core/auth/utils';
 import {
   organizationApiService,
   type UserOrganization,
 } from '@/services/organization/organization-api.service';
 
+// Server-side function to fetch user account data
+async function fetchUserAccount(): Promise<{ authorities?: string[] } | null> {
+  try {
+    const session = await getAuthSession();
+    if (!session?.access_token) {
+      return null;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com';
+    const response = await fetch(`${baseUrl}/api/account`, {
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch user account:', response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user account:', error);
+    return null;
+  }
+}
+
 // Cached auth() call to avoid repeated session lookups within a request
 const getAuthSession = cache(async () => {
   return auth();
+});
+
+/**
+ * Get user roles dynamically from backend API
+ * This avoids storing roles in session to prevent size limits
+ */
+const getUserRolesFromAPI = cache(async (): Promise<string[]> => {
+  try {
+    const accountData = await fetchUserAccount();
+    
+    if (!accountData?.authorities) {
+      return [];
+    }
+
+    // Normalize the authorities
+    return accountData.authorities.map(normalizeRole);
+  } catch (error) {
+    console.error('Failed to fetch roles from API:', error);
+    return [];
+  }
 });
 
 /**
@@ -31,11 +80,14 @@ export const verifySession = cache(async () => {
     redirect('/');
   }
 
+  // Get roles dynamically from backend API
+  const roles = await getUserRolesFromAPI();
+
   return {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    roles: session.user.roles || [],
+    roles,
   };
 });
 
@@ -49,11 +101,14 @@ export const getSession = cache(async () => {
     return null;
   }
 
+  // Get roles dynamically from backend API
+  const roles = await getUserRolesFromAPI();
+
   return {
     isAuth: true,
     userId: session.user.id,
     user: session.user,
-    roles: session.user.roles || [],
+    roles,
   };
 });
 
@@ -62,7 +117,13 @@ export const getSession = cache(async () => {
  */
 export const hasRole = async (requiredRole: string): Promise<boolean> => {
   const session = await getSession();
-  return session?.roles?.includes(requiredRole) ?? false;
+  if (!session?.roles) return false;
+  
+  // Normalize user roles and required role
+  const normalizedUserRoles = session.roles.map(normalizeRole);
+  const normalizedRequiredRole = normalizeRole(requiredRole);
+  
+  return normalizedUserRoles.includes(normalizedRequiredRole);
 };
 
 /**
@@ -72,15 +133,18 @@ export const hasAnyRole = async (requiredRoles: string[]): Promise<boolean> => {
   const session = await getSession();
   if (!session?.roles) return false;
 
-  return requiredRoles.some((role) => session.roles.includes(role));
+  // Normalize user roles and required roles
+  const normalizedUserRoles = session.roles.map(normalizeRole);
+  const normalizedRequiredRoles = requiredRoles.map(normalizeRole);
+
+  return normalizedRequiredRoles.some((role) => normalizedUserRoles.includes(role));
 };
 
 /**
  * Get current user's roles
  */
 export const getUserRoles = async (): Promise<string[]> => {
-  const session = await getSession();
-  return session?.roles || [];
+  return getUserRolesFromAPI();
 };
 
 /**

@@ -38,8 +38,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       refresh_token: data.refresh_token ?? token.refresh_token,
       id_token: data.id_token ?? token.id_token,
       expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-      roles: parseRoles(data.access_token),
-      groups: parseGroups(data.access_token),
+      // No longer store roles and groups in JWT token to avoid session size limits
     };
   } catch (error) {
     console.error('Error refreshing access token:', error);
@@ -70,11 +69,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         console.log(account.access_token);
         if (account.access_token && token.sub) {
-          // Store roles and groups in JWT token for client access
+          // No longer store roles and groups in JWT token to avoid session size limits
+          // Roles will be fetched dynamically when needed using fetchUserRoles()
+          // Still keep roles manager for backward compatibility with existing code
           const roles = parseRoles(account.access_token);
-          const groups = parseGroups(account.access_token);
-          token.roles = roles;
-          token.groups = groups;
           rolesManager.setUserRoles(token.sub, roles);
         }
       }
@@ -95,13 +93,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.sub;
       }
 
-      if (token.roles && Array.isArray(token.roles)) {
-        session.user.roles = token.roles;
-      }
-
-      if (token.groups && Array.isArray(token.groups)) {
-        session.user.groups = token.groups;
-      }
+      // No longer include roles and groups in session to avoid size limits
+      // Roles will be fetched dynamically when needed using fetchUserRoles()
 
       if (token.access_token && typeof token.access_token === 'string') {
         session.access_token = token.access_token;

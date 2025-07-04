@@ -117,24 +117,10 @@ export function usePermission(permission: string): boolean {
     return false;
   }
 
-  // If no permission is required, always return true
-  if (!permission || permission === '') {
-    return true;
-  }
-
-  // Roles from useUserRoles are already normalized
+  // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedPermission = normalizeRole(permission);
-  const hasPermission = userRoles.includes(normalizedPermission);
   
-  console.log('🔍 [usePermission] Check:', {
-    permission,
-    normalizedPermission,
-    userRoles: userRoles.slice(0, 10), // Show first 10 roles
-    totalRoles: userRoles.length,
-    hasPermission
-  });
-  
-  return hasPermission;
+  return userRoles.includes(normalizedPermission);
 }
 
 /**

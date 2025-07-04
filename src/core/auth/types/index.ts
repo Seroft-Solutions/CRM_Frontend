@@ -8,6 +8,8 @@ export interface KeycloakTokenPayload {
   realm_access?: { roles?: string[] };
   resource_access?: Record<string, { roles?: string[] }>;
   groups?: string[];
+  roles?: string[]; // Sometimes roles are directly in the token
+  authorities?: string[]; // Add authorities field for Keycloak tokens
   exp: number;
   iat: number;
   [key: string]: any;
@@ -92,8 +94,7 @@ declare module 'next-auth' {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      roles?: string[];
-      groups?: string[];
+      // roles and groups removed from session to prevent size limits
     };
     access_token?: string;
     refresh_token?: string;
@@ -105,7 +106,6 @@ declare module 'next-auth' {
     refresh_token?: string;
     expires_at?: number;
     error?: string;
-    roles?: string[];
-    groups?: string[];
+    // roles and groups removed from JWT to prevent size limits
   }
 }

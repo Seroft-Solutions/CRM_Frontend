@@ -10,6 +10,14 @@ import type { KeycloakTokenPayload } from '../types';
 export { logoutAction } from './actions';
 
 /**
+ * Normalize role name by removing ROLE_ prefix if present
+ * This ensures consistent role checking across the application
+ */
+export function normalizeRole(role: string): string {
+  return role.startsWith('ROLE_') ? role.substring(5) : role;
+}
+
+/**
  * Parse roles from Keycloak access token
  */
 export function parseRoles(accessToken: string): string[] {
@@ -18,23 +26,41 @@ export function parseRoles(accessToken: string): string[] {
     if (!payload) return [];
 
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
+    
+    console.log('🔧 [parseRoles] Token payload structure:', {
+      realm_access: decoded.realm_access,
+      resource_access: decoded.resource_access,
+      roles: decoded.roles,
+      groups: decoded.groups,
+      allKeys: Object.keys(decoded)
+    });
 
     const roles: string[] = [];
 
     // Get realm roles
     if (decoded.realm_access?.roles) {
-      roles.push(...decoded.realm_access.roles);
+      console.log('🔧 [parseRoles] Found realm roles:', decoded.realm_access.roles);
+      roles.push(...decoded.realm_access.roles.map(normalizeRole));
     }
 
     // Get client roles (resource_access)
     if (decoded.resource_access) {
+      console.log('🔧 [parseRoles] Found resource_access:', decoded.resource_access);
       Object.values(decoded.resource_access).forEach((client) => {
         if (client.roles) {
-          roles.push(...client.roles);
+          console.log('🔧 [parseRoles] Found client roles:', client.roles);
+          roles.push(...client.roles.map(normalizeRole));
         }
       });
     }
 
+    // Check if roles are in a different location
+    if (decoded.roles && Array.isArray(decoded.roles)) {
+      console.log('🔧 [parseRoles] Found direct roles:', decoded.roles);
+      roles.push(...decoded.roles.map(normalizeRole));
+    }
+
+    console.log('🔧 [parseRoles] Final roles:', roles);
     return [...new Set(roles)]; // Remove duplicates
   } catch (error) {
     console.error('Failed to parse roles from token:', error);
@@ -89,6 +115,48 @@ export async function silentLogout() {
     });
   } catch (error) {
     console.error('Silent logout error:', error);
+  }
+}
+
+/**
+ * Fetch user roles dynamically from the current session's access token
+ * This is used instead of storing roles in the session to avoid size limits
+ */
+export async function fetchUserRoles(): Promise<string[]> {
+  try {
+    // Import auth dynamically to avoid circular dependencies
+    const { auth } = await import('../config/nextauth');
+    const session = await auth();
+
+    if (!session?.access_token) {
+      return [];
+    }
+
+    return parseRoles(session.access_token);
+  } catch (error) {
+    console.error('Failed to fetch user roles:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch user groups dynamically from the current session's access token
+ * This is used instead of storing groups in the session to avoid size limits
+ */
+export async function fetchUserGroups(): Promise<string[]> {
+  try {
+    // Import auth dynamically to avoid circular dependencies
+    const { auth } = await import('../config/nextauth');
+    const session = await auth();
+
+    if (!session?.access_token) {
+      return [];
+    }
+
+    return parseGroups(session.access_token);
+  } catch (error) {
+    console.error('Failed to fetch user groups:', error);
+    return [];
   }
 }
 
