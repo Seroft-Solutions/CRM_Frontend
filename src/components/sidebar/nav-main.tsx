@@ -22,12 +22,6 @@ import { type SidebarItem } from './sidebar-items';
 export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
   const { roles: userRoles, isLoading: rolesLoading } = useUserRoles();
-  
-  console.log('🔧 [NavMain] Rendering with items:', items.map(item => ({
-    key: item.key,
-    label: item.label,
-    requiredPermission: item.requiredPermission
-  })));
 
   // Helper function to check if the current path matches or is a child of the given path
   const isActive = (item: SidebarItem): boolean => {
@@ -86,14 +80,6 @@ function NavItem({
   hasPermission: (requiredPermission?: string) => boolean;
 }) {
   const itemHasPermission = hasPermission(item.requiredPermission);
-  
-  console.log('🔧 [NavItem]', {
-    itemKey: item.key,
-    itemLabel: item.label,
-    requiredPermission: item.requiredPermission,
-    hasPermission: itemHasPermission,
-    shouldRender: !item.requiredPermission || itemHasPermission
-  });
 
   // If permission is required and user doesn't have it, don't render
   if (item.requiredPermission && !itemHasPermission) {

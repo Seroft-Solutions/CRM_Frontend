@@ -124,17 +124,7 @@ export function usePermission(permission: string): boolean {
 
   // Roles from useUserRoles are already normalized
   const normalizedPermission = normalizeRole(permission);
-  const hasPermission = userRoles.includes(normalizedPermission);
-  
-  console.log('🔍 [usePermission] Check:', {
-    permission,
-    normalizedPermission,
-    userRoles: userRoles.slice(0, 10), // Show first 10 roles
-    totalRoles: userRoles.length,
-    hasPermission
-  });
-  
-  return hasPermission;
+  return userRoles.includes(normalizedPermission);
 }
 
 /**
