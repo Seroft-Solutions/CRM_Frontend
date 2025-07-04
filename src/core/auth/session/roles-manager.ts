@@ -4,6 +4,7 @@
  */
 
 import type { RoleManagerInterface } from '../types';
+import { normalizeRole } from '../utils';
 
 class RolesManager implements RoleManagerInterface {
   private userRoles = new Map<string, string[]>();
@@ -27,7 +28,12 @@ class RolesManager implements RoleManagerInterface {
    */
   hasRole(userId: string, roleOrPermission: string): boolean {
     const roles = this.getUserRoles(userId);
-    return roles.includes(roleOrPermission);
+    
+    // Normalize user roles and check permission
+    const normalizedUserRoles = roles.map(normalizeRole);
+    const normalizedPermission = normalizeRole(roleOrPermission);
+    
+    return normalizedUserRoles.includes(normalizedPermission);
   }
 
   /**
@@ -36,8 +42,12 @@ class RolesManager implements RoleManagerInterface {
   hasAccess(userId: string, requiredPermission: string): boolean {
     const userRoles = this.getUserRoles(userId);
 
+    // Normalize user roles and required permission
+    const normalizedUserRoles = userRoles.map(normalizeRole);
+    const normalizedPermission = normalizeRole(requiredPermission);
+
     // Check direct permission/role match
-    if (userRoles.includes(requiredPermission)) {
+    if (normalizedUserRoles.includes(normalizedPermission)) {
       return true;
     }
 
@@ -50,7 +60,12 @@ class RolesManager implements RoleManagerInterface {
    */
   hasAnyRole(userId: string, requiredRoles: string[]): boolean {
     const userRoles = this.getUserRoles(userId);
-    return requiredRoles.some((role) => userRoles.includes(role));
+    
+    // Normalize user roles and required roles
+    const normalizedUserRoles = userRoles.map(normalizeRole);
+    const normalizedRequiredRoles = requiredRoles.map(normalizeRole);
+    
+    return normalizedRequiredRoles.some((role) => normalizedUserRoles.includes(role));
   }
 
   /**
@@ -58,7 +73,12 @@ class RolesManager implements RoleManagerInterface {
    */
   hasAllRoles(userId: string, requiredRoles: string[]): boolean {
     const userRoles = this.getUserRoles(userId);
-    return requiredRoles.every((role) => userRoles.includes(role));
+    
+    // Normalize user roles and required roles
+    const normalizedUserRoles = userRoles.map(normalizeRole);
+    const normalizedRequiredRoles = requiredRoles.map(normalizeRole);
+    
+    return normalizedRequiredRoles.every((role) => normalizedUserRoles.includes(role));
   }
 
   /**

@@ -3,7 +3,8 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { usePermission } from '@/core/auth';
+import { useUserRoles } from '@/core/auth/hooks/use-user-roles';
+import { normalizeRole } from '@/core/auth/utils';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -20,6 +21,13 @@ import { type SidebarItem } from './sidebar-items';
 
 export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
+  const { roles: userRoles, isLoading: rolesLoading } = useUserRoles();
+  
+  console.log('🔧 [NavMain] Rendering with items:', items.map(item => ({
+    key: item.key,
+    label: item.label,
+    requiredPermission: item.requiredPermission
+  })));
 
   // Helper function to check if the current path matches or is a child of the given path
   const isActive = (item: SidebarItem): boolean => {
@@ -39,12 +47,26 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
     return false;
   };
 
+  // Helper function to check permission
+  const hasPermission = (requiredPermission?: string): boolean => {
+    if (!requiredPermission) return true;
+    if (rolesLoading) return false;
+    const normalizedPermission = normalizeRole(requiredPermission);
+    return userRoles.includes(normalizedPermission);
+  };
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>CRM Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <NavItem key={item.key} item={item} pathname={pathname} isActive={isActive} />
+          <NavItem 
+            key={item.key} 
+            item={item} 
+            pathname={pathname} 
+            isActive={isActive}
+            hasPermission={hasPermission}
+          />
         ))}
       </SidebarMenu>
     </SidebarGroup>
@@ -56,15 +78,25 @@ function NavItem({
   item,
   pathname,
   isActive,
+  hasPermission,
 }: {
   item: SidebarItem;
   pathname: string;
   isActive: (item: SidebarItem) => boolean;
+  hasPermission: (requiredPermission?: string) => boolean;
 }) {
-  const hasPermission = usePermission(item.requiredPermission || '');
+  const itemHasPermission = hasPermission(item.requiredPermission);
+  
+  console.log('🔧 [NavItem]', {
+    itemKey: item.key,
+    itemLabel: item.label,
+    requiredPermission: item.requiredPermission,
+    hasPermission: itemHasPermission,
+    shouldRender: !item.requiredPermission || itemHasPermission
+  });
 
   // If permission is required and user doesn't have it, don't render
-  if (item.requiredPermission && !hasPermission) {
+  if (item.requiredPermission && !itemHasPermission) {
     return null;
   }
 
@@ -72,7 +104,7 @@ function NavItem({
 
   // Filter children based on permissions
   const visibleChildren = item.children?.filter((child) => {
-    const childHasPermission = usePermission(child.requiredPermission || '');
+    const childHasPermission = hasPermission(child.requiredPermission);
     return !child.requiredPermission || childHasPermission;
   });
 
