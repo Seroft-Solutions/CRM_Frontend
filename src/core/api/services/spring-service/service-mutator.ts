@@ -58,11 +58,47 @@ export const springServiceMutator = async <T>(
     }
   }
 
+  // Fix sort parameter serialization for Spring Boot
+  let processedParams = params;
+  if (params && params.sort && Array.isArray(params.sort)) {
+    processedParams = {
+      ...params,
+      // Convert array to multiple sort parameters for Spring Boot
+      sort: params.sort
+    };
+    
+    // Log the sort parameter processing for debugging
+    if (url?.includes('/calls')) {
+      console.log('🔍 Sort parameter processing:');
+      console.log('Original sort:', params.sort);
+      console.log('Processed params:', processedParams);
+    }
+  }
+
   // Use long-running config for organization setup operations
   const config =
     url && isLongRunningOperation(url) ? SPRING_SERVICE_LONG_RUNNING_CONFIG : SPRING_SERVICE_CONFIG;
 
   const instance = axios.create(config);
+
+  // Add custom parameter serialization for Spring Boot compatibility
+  instance.defaults.paramsSerializer = (params) => {
+    const searchParams = new URLSearchParams();
+    
+    Object.keys(params).forEach(key => {
+      const value = params[key];
+      if (Array.isArray(value)) {
+        // For arrays, add each value as a separate parameter (Spring Boot format)
+        value.forEach(item => {
+          searchParams.append(key, item);
+        });
+      } else if (value !== undefined && value !== null) {
+        searchParams.append(key, value);
+      }
+    });
+    
+    return searchParams.toString();
+  };
 
   // Add auth and tenant interceptor
   instance.interceptors.request.use(async (config) => {
@@ -84,7 +120,7 @@ export const springServiceMutator = async <T>(
     url,
     method: method as any,
     data,
-    params,
+    params: processedParams,
     ...options,
   });
 
