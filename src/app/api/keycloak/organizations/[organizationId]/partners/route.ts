@@ -17,6 +17,7 @@ import {
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserIdGroups,
+  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
 } from '@/core/api/generated/keycloak';
 import type {
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
@@ -29,6 +30,7 @@ interface PartnerInvitation {
   firstName: string;
   lastName: string;
   organizationId: string;
+  channelTypeId: number; // Add channelTypeId
   sendWelcomeEmail: boolean;
   sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email
   invitationNote?: string;
@@ -95,7 +97,10 @@ function generateInvitationId(): string {
 }
 
 // Helper function to store partner invitation metadata in user attributes
-function createPartnerInvitationUserAttributes(invitation: PendingPartnerInvitation) {
+function createPartnerInvitationUserAttributes(
+  invitation: PendingPartnerInvitation,
+  channelTypeId: number
+) {
   return {
     partner_invitation_id: invitation.id,
     partner_invitation_status: invitation.status,
@@ -104,6 +109,9 @@ function createPartnerInvitationUserAttributes(invitation: PendingPartnerInvitat
     partner_invitation_organization_id: invitation.organizationId,
     partner_invitation_note: invitation.invitationNote || '',
     partner_invitation_expires_at: invitation.expiresAt?.toString() || '',
+    channel_type_id: channelTypeId.toString(), // Ensure channelType is always stored
+    user_type: 'partner',
+    invited_as: 'business_partner',
   };
 }
 
@@ -123,25 +131,46 @@ export async function GET(
     // Get organization members
     const members = await getAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId);
 
-    // Filter for business partners (users with "Business Partners" group)
-    const businessPartners = [];
-
-    for (const member of members) {
-      if (member.id) {
+    // ENHANCED: Parallel processing to fetch groups and roles for all members
+    const enhancedMembers = await Promise.all(
+      members.map(async (member) => {
         try {
-          const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, member.id);
-          const hasBusinessPartnersGroup = userGroups.some(
-            (group) => group.name === 'Business Partners'
-          );
+          if (!member.id) return member;
 
-          if (hasBusinessPartnersGroup) {
-            businessPartners.push(member);
-          }
+          // Fetch groups and roles in parallel for each member
+          const [memberGroups, memberRoles] = await Promise.all([
+            getAdminRealmsRealmUsersUserIdGroups(realm, member.id).catch((error) => {
+              console.warn(`Failed to fetch groups for user ${member.id}:`, error);
+              return [];
+            }),
+            getAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, member.id).catch((error) => {
+              console.warn(`Failed to fetch roles for user ${member.id}:`, error);
+              return [];
+            }),
+          ]);
+
+          // Add groups and roles to member object
+          return {
+            ...member,
+            groups: memberGroups.map(g => g.name).filter(Boolean), // Array of group names
+            groupDetails: memberGroups, // Full group objects
+            realmRoles: memberRoles.map(r => r.name).filter(Boolean), // Array of role names
+            roleDetails: memberRoles, // Full role objects
+          };
         } catch (error) {
-          console.warn(`Failed to get groups for user ${member.id}:`, error);
+          console.warn(`Failed to enhance member data for ${member.id}:`, error);
+          return member;
         }
-      }
-    }
+      })
+    );
+
+    // Filter for business partners (users with "Business Partners" group)
+    const businessPartners = enhancedMembers.filter((member) => {
+      const memberGroups = member.groups || [];
+      return memberGroups.includes('Business Partners');
+    });
+
+    console.log(`Enhanced partners API: ${members.length} total members, ${businessPartners.length} business partners`);
 
     return NextResponse.json(businessPartners);
   } catch (error: any) {
@@ -172,6 +201,7 @@ export async function POST(
       firstName: body.firstName,
       lastName: body.lastName,
       organizationId,
+      channelTypeId: body.channelTypeId,
       invitationNote: body.invitationNote,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
       sendPasswordReset: body.sendPasswordReset !== false, // Default to true
@@ -181,6 +211,10 @@ export async function POST(
     // Validate required fields
     if (!inviteData.email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
+    if (!inviteData.channelTypeId) {
+      return NextResponse.json({ error: 'Channel Type is required' }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -209,6 +243,26 @@ export async function POST(
         // SCENARIO 2: User exists - add to org then invite
         userId = existingUsers[0].id!;
         console.log('Found existing partner user:', userId);
+
+        // Try to update existing user attributes to include channelType (gracefully handle failures)
+        try {
+          const updatedUserAttributes: UserRepresentation = {
+            ...existingUsers[0],
+            attributes: {
+              ...existingUsers[0].attributes,
+              organization: [organizationId],
+              user_type: ['partner'],
+              channel_type_id: [inviteData.channelTypeId.toString()],
+              invited_as: ['business_partner'],
+            },
+          };
+
+          await putAdminRealmsRealmUsersUserId(realm, userId, updatedUserAttributes);
+          console.log('Updated existing user with partner attributes');
+        } catch (attributeError) {
+          console.warn('Failed to update user attributes, but continuing with invitation:', attributeError);
+          // Continue with the flow - user exists, just without updated custom attributes
+        }
 
         // First add user to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
@@ -257,7 +311,7 @@ export async function POST(
       } else {
         // SCENARIO 1: User doesn't exist - create then invite
 
-        // 1. Create Partner User first
+        // 1. Create Partner User first (without custom attributes initially)
         const newUser: UserRepresentation = {
           username: inviteData.email,
           email: inviteData.email,
@@ -265,10 +319,6 @@ export async function POST(
           lastName: inviteData.lastName || '',
           enabled: true,
           emailVerified: false,
-          attributes: {
-            organization: [organizationId],
-            user_type: ['partner'], // Mark as partner user
-          },
         };
 
         await postAdminRealmsRealmUsers(realm, newUser);
@@ -286,6 +336,26 @@ export async function POST(
 
         userId = createdUsers[0].id!;
         console.log('Found created partner user ID:', userId);
+
+        // 2. Try to update user with custom attributes (gracefully handle failures)
+        try {
+          const updatedUser: UserRepresentation = {
+            ...createdUsers[0],
+            attributes: {
+              ...createdUsers[0].attributes,
+              organization: [organizationId],
+              user_type: ['partner'],
+              channel_type_id: [inviteData.channelTypeId.toString()],
+              invited_as: ['business_partner'],
+            },
+          };
+
+          await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
+          console.log('Successfully updated user with custom attributes');
+        } catch (attributeError) {
+          console.warn('Failed to set custom attributes, but user creation succeeded:', attributeError);
+          // Continue with the flow - user is created, just without custom attributes
+        }
 
         // 2. Ensure proper group assignment (Business Partners group + remove Admins if present)
         const groupResult1 = await ensureProperPartnerGroupAssignment(realm, userId);
@@ -349,25 +419,33 @@ export async function POST(
         invitationNote: inviteData.invitationNote,
       };
 
-      const invitationAttributes = createPartnerInvitationUserAttributes(pendingInvitation);
+      const invitationAttributes = createPartnerInvitationUserAttributes(
+        pendingInvitation,
+        inviteData.channelTypeId
+      );
 
-      // Update user with partner invitation metadata
+      // Update user with partner invitation metadata (gracefully handle failures)
       const currentUser = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
         exact: true,
       });
 
       if (currentUser.length > 0) {
-        const updatedUser: UserRepresentation = {
-          ...currentUser[0],
-          attributes: {
-            ...currentUser[0].attributes,
-            ...invitationAttributes,
-          },
-        };
+        try {
+          const updatedUser: UserRepresentation = {
+            ...currentUser[0],
+            attributes: {
+              ...currentUser[0].attributes,
+              ...invitationAttributes,
+            },
+          };
 
-        await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
-        console.log('Added partner invitation metadata');
+          await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
+          console.log('Added partner invitation metadata');
+        } catch (metadataError) {
+          console.warn('Failed to add invitation metadata, but invitation succeeded:', metadataError);
+          // Continue - the core invitation worked, just missing some metadata
+        }
       }
     } catch (error: any) {
       console.error('Partner invitation flow failed:', error);
@@ -394,6 +472,7 @@ export async function POST(
       userId,
       invitationId,
       partnerGroup: 'Business Partners',
+      channelTypeId: inviteData.channelTypeId,
       emailType: inviteData.sendPasswordReset !== false ? 'password_reset' : 'organization_invite',
       groupManagement: {
         businessPartnersGroupAssigned: groupManagement.businessPartnersGroupAssigned,

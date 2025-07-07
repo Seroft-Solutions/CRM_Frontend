@@ -1,5 +1,6 @@
 /**
  * Business Partners Management Page
+ * Pure Keycloak integration with parallel channel type resolution
  */
 
 'use client';
@@ -46,10 +47,13 @@ import {
   Mail,
   ArrowLeft,
   Users,
+  AlertCircle,
+  Edit,
 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 interface BusinessPartner {
   id: string;
@@ -63,6 +67,13 @@ interface BusinessPartner {
   attributes?: Record<string, string[]>;
 }
 
+interface ChannelTypeInfo {
+  id: number;
+  name: string;
+  commissionRate?: number;
+  source: 'keycloak' | 'unknown';
+}
+
 export default function BusinessPartnersPage() {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
@@ -73,10 +84,50 @@ export default function BusinessPartnersPage() {
   const [partnerToRemove, setPartnerToRemove] = useState<BusinessPartner | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Fetch user profiles to get channel type information
-  const { data: userProfiles } = useGetAllUserProfiles();
+  // Fetch channel types for parallel resolution
+  const { data: channelTypes } = useGetAllChannelTypes();
 
-  // Fetch business partners
+  // Helper function to get channel type information from Keycloak attributes
+  const getChannelTypeInfo = (partner: BusinessPartner): ChannelTypeInfo | null => {
+    // Get channel type ID from Keycloak attributes
+    const channelTypeId = partner.attributes?.channel_type_id?.[0];
+    
+    if (!channelTypeId) {
+      return null;
+    }
+
+    // Try to resolve with channel types API data (parallel processing)
+    if (channelTypes) {
+      const channelType = channelTypes.find(ct => ct.id === parseInt(channelTypeId));
+      if (channelType) {
+        return {
+          id: channelType.id!,
+          name: channelType.name!,
+          commissionRate: channelType.commissionRate,
+          source: 'keycloak'
+        };
+      }
+    }
+
+    // Fallback for unknown channel type ID
+    return {
+      id: parseInt(channelTypeId),
+      name: `Channel Type ${channelTypeId}`,
+      commissionRate: undefined,
+      source: 'unknown'
+    };
+  };
+
+  // Helper function to determine partner status (directly from Keycloak)
+  const getPartnerStatus = (partner: BusinessPartner) => {
+    // Show exactly what Keycloak says - enabled or disabled
+    return {
+      status: partner.enabled ? 'Active' : 'Inactive',
+      variant: partner.enabled ? 'default' : 'secondary' as const
+    };
+  };
+
+  // Fetch business partners from Keycloak
   const fetchPartners = async () => {
     if (!organizationId) return;
 
@@ -87,6 +138,8 @@ export default function BusinessPartnersPage() {
         throw new Error('Failed to fetch business partners');
       }
       const data = await response.json();
+      
+      // Show all business partners (verification status affects status, not visibility)
       setPartners(data);
     } catch (error) {
       console.error('Failed to fetch partners:', error);
@@ -100,17 +153,17 @@ export default function BusinessPartnersPage() {
     fetchPartners();
   }, [organizationId]);
 
-  // Helper function to get profile for a partner
-  const getPartnerProfile = (partnerId: string) => {
-    return userProfiles?.find((profile) => profile.keycloakId === partnerId);
-  };
-
   // Filter partners based on search
   const filteredPartners = partners.filter(
     (partner) =>
       partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${partner.firstName} ${partner.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Navigate to edit partner page
+  const handleEditPartner = (partner: BusinessPartner) => {
+    router.push(`/business-partners/${partner.id}/edit`);
+  };
 
   // Remove partner
   const handleRemovePartner = async () => {
@@ -169,6 +222,19 @@ export default function BusinessPartnersPage() {
           </InlinePermissionGuard>
         </div>
 
+        {/* Business Partners Info */}
+        <Alert className="border-blue-200 bg-blue-50">
+          <Users className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-800">Partner Management</AlertTitle>
+          <AlertDescription className="text-blue-700">
+            <div className="space-y-1 mt-2">
+              <p>• View and manage all your business partners in one place</p>
+              <p>• Edit partner details including names, email, and channel types</p>
+              <p>• Track partner status and email verification</p>
+              <p>• Invite new partners to expand your network</p>
+            </div>
+          </AlertDescription>
+        </Alert>
         {/* Partners Management */}
         <Card>
           <CardHeader>
@@ -177,7 +243,7 @@ export default function BusinessPartnersPage() {
               Partner Management
             </CardTitle>
             <CardDescription>
-              View and manage all business partners in your organization
+              View and manage all business partners from Keycloak identity provider
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -199,24 +265,25 @@ export default function BusinessPartnersPage() {
                   <TableRow>
                     <TableHead>Partner</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Channel Type</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Email Verified</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead className="w-12"></TableHead>
+                    <TableHead className="w-12">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         <div className="flex items-center justify-center gap-2">
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                           Loading business partners...
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ) : filteredPartners.length === 0 ? (
+                    </TableRow>                  ) : filteredPartners.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
                           <Building2 className="h-8 w-8 text-muted-foreground" />
                           <p className="text-muted-foreground">
@@ -236,95 +303,115 @@ export default function BusinessPartnersPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredPartners.map((partner) => (
-                      <TableRow key={partner.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                              {partner.firstName?.[0] || partner.email[0].toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                {partner.firstName} {partner.lastName}
+                    filteredPartners.map((partner) => {
+                      const channelTypeInfo = getChannelTypeInfo(partner);
+                      const statusInfo = getPartnerStatus(partner);
+                      
+                      return (
+                        <TableRow key={partner.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                                {partner.firstName?.[0] || partner.email[0].toUpperCase()}
                               </div>
+                              <div>
+                                <div className="font-medium">
+                                  {partner.firstName} {partner.lastName}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  @{partner.username}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              {partner.email}
+                            </div>
+                          </TableCell>                          <TableCell>
+                            {channelTypeInfo ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <Badge 
+                                    variant="outline"
+                                    className={
+                                      channelTypeInfo.source === 'keycloak'
+                                        ? 'bg-green-50 border-green-200 text-green-800'
+                                        : 'bg-orange-50 border-orange-200 text-orange-800'
+                                    }
+                                  >
+                                    {channelTypeInfo.name}
+                                  </Badge>
+                                </div>
+                                {channelTypeInfo.commissionRate !== undefined && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {channelTypeInfo.commissionRate}% Commission
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
                               <div className="text-sm text-muted-foreground">
-                                @{partner.username}
+                                No channel type
                               </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            {partner.email}
-                          </div>
-                          {(() => {
-                            const profile = getPartnerProfile(partner.id);
-                            const channelType = profile?.channelType;
-                            return (
-                              <div className="mt-1 space-y-1">
-                                {channelType ? (
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-xs">
-                                      {channelType.name}
-                                    </Badge>
-                                    {channelType.commissionRate && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        {channelType.commissionRate}%
-                                      </Badge>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <div className="text-xs text-muted-foreground">
-                                    No channel type
-                                  </div>
-                                )}
-                                {profile && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Profile ID: {profile.id}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={partner.enabled ? 'default' : 'secondary'}>
-                              {partner.enabled ? 'Active' : 'Inactive'}
-                            </Badge>
-                            {partner.emailVerified && (
-                              <Badge variant="outline" className="text-xs">
-                                Verified
-                              </Badge>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatDate(partner.createdTimestamp)}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => setPartnerToRemove(partner)}
-                                className="text-red-600"
-                              >
-                                <UserX className="h-4 w-4 mr-2" />
-                                Remove Partner
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={statusInfo.variant}
+                              className={
+                                partner.enabled 
+                                  ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-200'
+                                  : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                              }
+                            >
+                              {statusInfo.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={partner.emailVerified ? 'default' : 'outline'}
+                              className={
+                                partner.emailVerified
+                                  ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200'
+                                  : 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                              }
+                            >
+                              {partner.emailVerified ? 'Verified' : 'Unverified'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatDate(partner.createdTimestamp)}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleEditPartner(partner)}
+                                  className="text-blue-600"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit Partner
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => setPartnerToRemove(partner)}
+                                  className="text-red-600"
+                                >
+                                  <UserX className="h-4 w-4 mr-2" />
+                                  Remove Partner
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
