@@ -300,6 +300,10 @@ export const callFormConfig: FormConfig = {
       required: false,
       multiple: false,
       category: 'channel',
+      cascadingFilter: {
+        parentField: 'channelType',
+        filterField: 'channelType',
+      },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
