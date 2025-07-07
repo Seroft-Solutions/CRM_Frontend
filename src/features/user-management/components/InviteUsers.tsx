@@ -1,17 +1,16 @@
 /**
  * Invite Users Component
- * Dedicated workflow for inviting users to the organization
+ * Simplified workflow for inviting a single user to the organization
  */
 
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  useInviteUser,
   useInviteUserWithGroups,
   useOrganizationContext,
   useAvailableGroups,
@@ -21,80 +20,36 @@ import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import {
   UserPlus,
   Mail,
-  Plus,
-  Trash2,
-  Upload,
-  FileText,
   ArrowLeft,
   Send,
   Users,
   CheckCircle,
   AlertCircle,
+  X,
 } from 'lucide-react';
-import type {
-  InviteUserFormData,
-  BulkInviteFormData,
-  InviteUserFormDataWithGroups,
-  BulkInviteFormDataWithGroups,
-} from '../types';
+import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 
-// Form validation schemas
+// Form validation schema
 const inviteUserSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  firstName: z.string().min(1, 'First name is required').min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(1, 'Last name is required').min(2, 'Last name must be at least 2 characters'),
   selectedGroups: z.array(z.string()).default([]),
   invitationNote: z.string().optional(),
-});
-
-const inviteUserWithGroupsSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  selectedGroups: z.array(z.string()).default([]),
-  invitationNote: z.string().optional(),
-});
-
-const bulkInviteSchema = z.object({
-  manualInvitations: z
-    .array(inviteUserWithGroupsSchema)
-    .min(1, 'At least one invitation is required'),
-  defaultGroups: z.array(z.string()).default([]),
 });
 
 interface InviteUsersProps {
@@ -108,28 +63,19 @@ export function InviteUsers({ className }: InviteUsersProps) {
     inviteUserWithGroups,
     inviteUserWithGroupsAsync,
     isInviting: isInvitingWithGroups,
-    isSuccess,
   } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
   const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
 
   // Local state
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
   const [invitationStatus, setInvitationStatus] = useState<{
     sent: InviteUserFormDataWithGroups[];
     failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
   }>({ sent: [], failed: [] });
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  // Group options for MultiSelect
-  const groupOptions = groups.map((group) => ({
-    value: group.id!,
-    label: group.name || '',
-  }));
-
-  // Single invitation form with groups
-  const singleForm = useForm<InviteUserFormDataWithGroups>({
-    resolver: zodResolver(inviteUserWithGroupsSchema),
+  // Single invitation form
+  const form = useForm<InviteUserFormDataWithGroups>({
+    resolver: zodResolver(inviteUserSchema),
     defaultValues: {
       email: '',
       firstName: '',
@@ -137,26 +83,18 @@ export function InviteUsers({ className }: InviteUsersProps) {
       selectedGroups: [],
       invitationNote: '',
     },
+    mode: 'onChange', // Enable real-time validation
   });
 
-  // Bulk invitation form with groups
-  const bulkForm = useForm<BulkInviteFormDataWithGroups>({
-    resolver: zodResolver(bulkInviteSchema),
-    defaultValues: {
-      manualInvitations: [
-        { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' },
-      ],
-      defaultGroups: [],
-    },
-  });
+  // Watch form values to enable/disable button
+  const watchedValues = form.watch();
+  const isFormValid = form.formState.isValid && 
+    watchedValues.email?.trim() !== '' && 
+    watchedValues.firstName?.trim() !== '' && 
+    watchedValues.lastName?.trim() !== '';
 
-  const { fields, append, remove } = useFieldArray({
-    control: bulkForm.control,
-    name: 'manualInvitations',
-  });
-
-  // Handle single user invitation with groups
-  const handleSingleInvite = async (data: InviteUserFormDataWithGroups) => {
+  // Handle user invitation
+  const handleInvite = async (data: InviteUserFormDataWithGroups) => {
     const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
 
     try {
@@ -166,24 +104,22 @@ export function InviteUsers({ className }: InviteUsersProps) {
         selectedGroups,
       });
 
-      // Reset form on success
-      singleForm.reset();
+      // Clear form and update status
+      form.reset();
       setInvitationStatus((prev) => ({
         ...prev,
         sent: [...prev.sent, data],
       }));
 
-      // Force refresh of organization users data
-      await refreshAllUserData(organizationId);
+      // Show clear success message
+      toast.success(
+        `Invitation sent to ${data.firstName} ${data.lastName} (${data.email})`
+      );
 
-      // Show success dialog and auto-navigate after delay
-      setShowSuccessDialog(true);
-      setTimeout(() => {
-        setShowSuccessDialog(false);
-        router.push('/user-management/organization-users');
-      }, 2000);
+      // Refresh data in background (no UI blocking)
+      refreshAllUserData(organizationId);
+      
     } catch (error) {
-      // Error handling is done by the hook, just update local status
       setInvitationStatus((prev) => ({
         ...prev,
         failed: [
@@ -194,67 +130,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
           },
         ],
       }));
-    }
-  };
-
-  // Handle bulk invitations with groups
-  const handleBulkInvite = async (data: BulkInviteFormDataWithGroups) => {
-    const sent: InviteUserFormDataWithGroups[] = [];
-    const failed: { invitation: InviteUserFormDataWithGroups; error: string }[] = [];
-
-    // Process invitations sequentially for better error handling
-    for (const invitation of data.manualInvitations) {
-      const selectedGroups = groups.filter((g) => invitation.selectedGroups.includes(g.id!));
-
-      try {
-        await inviteUserWithGroupsAsync({
-          ...invitation,
-          organizationId,
-          selectedGroups,
-        });
-
-        sent.push(invitation);
-      } catch (error) {
-        failed.push({
-          invitation,
-          error: error instanceof Error ? error.message : 'Failed to send invitation',
-        });
-      }
-    }
-
-    setInvitationStatus({ sent, failed });
-
-    // Reset form if all succeeded
-    if (failed.length === 0) {
-      bulkForm.reset({
-        manualInvitations: [
-          { email: '', firstName: '', lastName: '', selectedGroups: [], invitationNote: '' },
-        ],
-        defaultGroups: [],
-      });
-
-      // Force refresh of organization users data
-      await refreshAllUserData(organizationId);
-
-      // Show success message and navigate back
-      setTimeout(() => {
-        router.push('/user-management/organization-users');
-      }, 1500);
-    } else {
-      // Even if some failed, refresh to show successful additions
-      await refreshAllUserData(organizationId);
-    }
-  };
-
-  // Add invitation row
-  const addInvitationRow = () => {
-    append({ email: '', firstName: '', lastName: '', selectedGroups: [] });
-  };
-
-  // Remove invitation row
-  const removeInvitationRow = (index: number) => {
-    if (fields.length > 1) {
-      remove(index);
     }
   };
 
@@ -272,283 +147,155 @@ export function InviteUsers({ className }: InviteUsersProps) {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Invite Users</h1>
-            <p className="text-muted-foreground">Add new users to {organizationName}</p>
+            <h1 className="text-3xl font-bold tracking-tight">Invite User</h1>
+            <p className="text-muted-foreground">Add a new user to {organizationName}</p>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'bulk')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="single">Single Invitation</TabsTrigger>
-            <TabsTrigger value="bulk">Bulk Invitations</TabsTrigger>
-          </TabsList>
+        {/* How it works info */}
+        <Alert className="border-blue-200 bg-blue-50">
+          <Mail className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-800">How User Invitations Work</AlertTitle>
+          <AlertDescription className="text-blue-700">
+            <div className="space-y-1 mt-2">
+              <p>• Invited user receives an email with account setup instructions</p>
+              <p>• They'll set their password and can immediately access the organization</p>
+              <p>• You can view all users (including pending invitations) in the Organization Users page</p>
+            </div>
+          </AlertDescription>
+        </Alert>
 
-          {/* Single User Invitation */}
-          <TabsContent value="single">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5" />
-                  Invite Single User
-                </CardTitle>
-                <CardDescription>
-                  Send an invitation to a single user to join your organization
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...singleForm}>
-                  <form
-                    onSubmit={singleForm.handleSubmit(handleSingleInvite)}
-                    className="space-y-4"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={singleForm.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="John"
-                                disabled={isInvitingWithGroups}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={singleForm.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Invite User to Organization
+            </CardTitle>
+            <CardDescription>
+              Send an invitation to a user to join your organization. 
+              They'll receive an email with setup instructions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="John"
+                            disabled={isInvitingWithGroups}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Doe" 
+                            disabled={isInvitingWithGroups} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                    <FormField
-                      control={singleForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="john.doe@example.com"
-                              disabled={isInvitingWithGroups}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={isInvitingWithGroups}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        {isInvitingWithGroups ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                            Sending Invitation...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4 mr-2" />
-                            Send Invitation
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => singleForm.reset()}
-                        disabled={isInvitingWithGroups}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Bulk User Invitations */}
-          <TabsContent value="bulk">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Bulk Invitations
-                </CardTitle>
-                <CardDescription>
-                  Invite multiple users to your organization at once
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...bulkForm}>
-                  <form onSubmit={bulkForm.handleSubmit(handleBulkInvite)} className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-base font-medium">User Invitations</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={addInvitationRow}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
                           disabled={isInvitingWithGroups}
-                          className="gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add Row
-                        </Button>
-                      </div>
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                      <div className="border rounded-lg">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>First Name</TableHead>
-                              <TableHead>Last Name</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead className="w-12"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {fields.map((field, index) => (
-                              <TableRow key={field.id}>
-                                <TableCell>
-                                  <FormField
-                                    control={bulkForm.control}
-                                    name={`manualInvitations.${index}.firstName`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="First name"
-                                            disabled={isInvitingWithGroups}
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <FormField
-                                    control={bulkForm.control}
-                                    name={`manualInvitations.${index}.lastName`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            placeholder="Last name"
-                                            disabled={isInvitingWithGroups}
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <FormField
-                                    control={bulkForm.control}
-                                    name={`manualInvitations.${index}.email`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            type="email"
-                                            placeholder="email@example.com"
-                                            disabled={isInvitingWithGroups}
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeInvitationRow(index)}
-                                    disabled={fields.length === 1 || isInvitingWithGroups}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="submit"
+                    disabled={!isFormValid || isInvitingWithGroups}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    {isInvitingWithGroups ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                        Sending Invitation...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Send Invitation
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      form.reset();
+                      setInvitationStatus({ sent: [], failed: [] }); // Clear status when clearing form
+                    }}
+                    disabled={isInvitingWithGroups}
+                  >
+                    Clear
+                  </Button>
+                </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={isInvitingWithGroups}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {isInvitingWithGroups ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                            Sending Invitations...
-                          </>
-                        ) : (
-                          <>
-                            <Users className="h-4 w-4 mr-2" />
-                            Send All Invitations
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          bulkForm.reset({
-                            manualInvitations: [
-                              { email: '', firstName: '', lastName: '', selectedGroups: [] },
-                            ],
-                          })
-                        }
-                        disabled={isInvitingWithGroups}
-                      >
-                        Clear All
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                {/* Helper text */}
+                <div className="text-sm text-muted-foreground">
+                  <p>
+                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all required fields (* fields) are properly filled.
+                  </p>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
 
-        {/* Invitation Status */}
+        {/* Invitation Status - Only show when there are results */}
         {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
           <Card>
             <CardHeader>
-              <CardTitle>Invitation Status</CardTitle>
-              <CardDescription>Review the status of your recent invitations</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Invitation Results</CardTitle>
+                  <CardDescription>Status of your recent invitations</CardDescription>
+                </div>
+                {invitationStatus.sent.length > 0 && (
+                  <Button 
+                    onClick={() => router.push('/user-management/organization-users')}
+                    className="gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    View Organization Users
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {invitationStatus.sent.length > 0 && (
@@ -562,14 +309,27 @@ export function InviteUsers({ className }: InviteUsersProps) {
                       {invitationStatus.sent.map((invitation, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-2 bg-green-100 rounded-md"
+                          className="flex items-center justify-between p-3 bg-green-100 rounded-md"
                         >
-                          <span className="text-sm font-medium">
-                            {invitation.firstName} {invitation.lastName} ({invitation.email})
-                          </span>
-                          <Badge className="bg-green-600 hover:bg-green-700">Sent</Badge>
+                          <div>
+                            <span className="text-sm font-medium text-green-900">
+                              {invitation.firstName} {invitation.lastName}
+                            </span>
+                            <span className="text-sm text-green-700 ml-2">
+                              ({invitation.email})
+                            </span>
+                          </div>
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white">
+                            Invitation Sent
+                          </Badge>
                         </div>
                       ))}
+                    </div>
+                    <div className="mt-4 p-3 bg-green-100 rounded-md">
+                      <p className="text-sm text-green-800">
+                        💡 <strong>Next step:</strong> Invited users will receive an email with setup instructions. 
+                        They'll appear in your Organization Users list once they accept.
+                      </p>
                     </div>
                   </AlertDescription>
                 </Alert>
@@ -579,63 +339,49 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 <Alert className="border-red-200 bg-red-50">
                   <AlertCircle className="h-4 w-4 text-red-600" />
                   <AlertTitle className="text-red-800">
-                    Failed ({invitationStatus.failed.length})
+                    Failed to Send ({invitationStatus.failed.length})
                   </AlertTitle>
                   <AlertDescription className="text-red-700">
                     <div className="space-y-2 mt-2">
                       {invitationStatus.failed.map((failure, index) => (
-                        <div key={index} className="p-2 bg-red-100 rounded-md">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
+                        <div key={index} className="p-3 bg-red-100 rounded-md">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-red-900">
                               {failure.invitation.firstName} {failure.invitation.lastName} (
                               {failure.invitation.email})
                             </span>
                             <Badge variant="destructive">Failed</Badge>
                           </div>
-                          <p className="text-xs text-red-600 mt-1">{failure.error}</p>
+                          <p className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                            <strong>Error:</strong> {failure.error}
+                          </p>
                         </div>
                       ))}
+                    </div>
+                    <div className="mt-4 p-3 bg-red-100 rounded-md">
+                      <p className="text-sm text-red-800">
+                        💡 <strong>Tip:</strong> Check email addresses and try again. 
+                        Users might already exist in the system.
+                      </p>
                     </div>
                   </AlertDescription>
                 </Alert>
               )}
+
+              {/* Clear results button */}
+              <div className="flex justify-center pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setInvitationStatus({ sent: [], failed: [] })}
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Results
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
-
-        {/* Success Dialog */}
-        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="h-5 w-5" />
-                Invitation Sent Successfully!
-              </DialogTitle>
-              <DialogDescription>
-                The user invitation has been sent successfully. Data is being refreshed
-                automatically. You will be redirected to the organization users page.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="sm:justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-3 w-3 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
-                Refreshing user data...
-              </div>
-              <Button
-                onClick={async () => {
-                  setShowSuccessDialog(false);
-                  // Force one more refresh before navigation
-                  await refreshAllUserData(organizationId);
-                  router.push('/user-management/organization-users');
-                }}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Go to Users Page
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </PermissionGuard>
   );
