@@ -28,8 +28,8 @@ interface CallTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function CallTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: CallTableRowProps) {
   return (
@@ -110,6 +110,7 @@ export function CallTableRow({
             (() => {
               
               if (column.id === 'priority') {
+                const cellKey = `${call.id}-priority`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -117,9 +118,11 @@ export function CallTableRow({
                     currentValue={call.priority}
                     options={relationshipConfigs.find(config => config.name === "priority")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "priority")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="priorities"
                     showNavigationIcon={true}
@@ -128,6 +131,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'callType') {
+                const cellKey = `${call.id}-callType`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -135,9 +139,11 @@ export function CallTableRow({
                     currentValue={call.callType}
                     options={relationshipConfigs.find(config => config.name === "callType")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="call-types"
                     showNavigationIcon={true}
@@ -146,6 +152,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'subCallType') {
+                const cellKey = `${call.id}-subCallType`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -153,9 +160,11 @@ export function CallTableRow({
                     currentValue={call.subCallType}
                     options={relationshipConfigs.find(config => config.name === "subCallType")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "subCallType")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="sub-call-types"
                     showNavigationIcon={true}
@@ -164,6 +173,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'callCategory') {
+                const cellKey = `${call.id}-callCategory`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -171,9 +181,11 @@ export function CallTableRow({
                     currentValue={call.callCategory}
                     options={relationshipConfigs.find(config => config.name === "callCategory")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "callCategory")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="call-categories"
                     showNavigationIcon={true}
@@ -182,6 +194,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'source') {
+                const cellKey = `${call.id}-source`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -189,9 +202,11 @@ export function CallTableRow({
                     currentValue={call.source}
                     options={relationshipConfigs.find(config => config.name === "source")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "source")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="sources"
                     showNavigationIcon={true}
@@ -200,6 +215,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'customer') {
+                const cellKey = `${call.id}-customer`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -207,9 +223,11 @@ export function CallTableRow({
                     currentValue={call.customer}
                     options={relationshipConfigs.find(config => config.name === "customer")?.options || []}
                     displayField="customerBusinessName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "customer")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="customers"
                     showNavigationIcon={true}
@@ -218,6 +236,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'channelType') {
+                const cellKey = `${call.id}-channelType`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -225,9 +244,11 @@ export function CallTableRow({
                     currentValue={call.channelType}
                     options={relationshipConfigs.find(config => config.name === "channelType")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "channelType")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="channel-types"
                     showNavigationIcon={true}
@@ -236,6 +257,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'channelParties') {
+                const cellKey = `${call.id}-channelParties`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -243,9 +265,11 @@ export function CallTableRow({
                     currentValue={call.channelParties}
                     options={relationshipConfigs.find(config => config.name === "channelParties")?.options || []}
                     displayField="displayName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "channelParties")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="user-profiles"
                     showNavigationIcon={true}
@@ -254,6 +278,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'assignedTo') {
+                const cellKey = `${call.id}-assignedTo`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -261,9 +286,11 @@ export function CallTableRow({
                     currentValue={call.assignedTo}
                     options={relationshipConfigs.find(config => config.name === "assignedTo")?.options || []}
                     displayField="displayName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "assignedTo")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="user-profiles"
                     showNavigationIcon={true}
@@ -272,6 +299,7 @@ export function CallTableRow({
               }
               
               if (column.id === 'callStatus') {
+                const cellKey = `${call.id}-callStatus`;
                 return (
                   <RelationshipCell
                     entityId={call.id || 0}
@@ -279,9 +307,11 @@ export function CallTableRow({
                     currentValue={call.callStatus}
                     options={relationshipConfigs.find(config => config.name === "callStatus")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "callStatus")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="call-statuses"
                     showNavigationIcon={true}

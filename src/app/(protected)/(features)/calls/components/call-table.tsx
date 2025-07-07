@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { callToast, handleCallError } from "./call-toast";
+import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -303,6 +304,7 @@ interface DateRange {
 }
 
 export function CallTable() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("lastModifiedDate");
   const [order, setOrder] = useState(DESC);
@@ -314,6 +316,9 @@ export function CallTable() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
+  
+  // Track individual cell updates instead of global state
+  const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
   
   // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
@@ -746,28 +751,128 @@ export function CallTable() {
     }
   );
 
-  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
     mutation: {
+      onMutate: async (variables) => {
+        // Cancel any outgoing refetches
+        await queryClient.cancelQueries({ 
+          queryKey: ['getAllCalls'] 
+        });
+        await queryClient.cancelQueries({ 
+          queryKey: ['searchCalls'] 
+        });
+
+        // Snapshot the previous value
+        const previousData = queryClient.getQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }]);
+
+        // Optimistically update the cache
+        if (previousData && Array.isArray(previousData)) {
+          queryClient.setQueryData(['getAllCalls', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old.map(call => 
+              call.id === variables.id 
+                ? { ...call, ...variables.data }
+                : call
+            )
+          );
+        }
+
+        // Also update search cache if applicable
+        if (searchTerm) {
+          queryClient.setQueryData(['searchCalls', {
+            query: searchTerm,
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old?.map(call => 
+              call.id === variables.id 
+                ? { ...call, ...variables.data }
+                : call
+            )
+          );
+        }
+
+        return { previousData };
+      },
       onSuccess: () => {
         callToast.updated();
-        refetch();
+        // No refetch needed - optimistic update handles UI
       },
-      onError: (error) => {
+      onError: (error, variables, context) => {
+        // Rollback on error
+        if (context?.previousData) {
+          queryClient.setQueryData(['getAllCalls', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], context.previousData);
+        }
         handleCallError(error);
-        throw error;
+      },
+      onSettled: () => {
+        // Invalidate to ensure we're eventually consistent (but don't refetch immediately)
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllCalls'],
+          refetchType: 'none'
+        });
       },
     },
   });
 
-  // Delete mutation
+  // Delete mutation with optimistic updates
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCall({
     mutation: {
+      onMutate: async (variables) => {
+        await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
+        
+        const previousData = queryClient.getQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }]);
+
+        // Optimistically remove the item
+        queryClient.setQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], (old: any[]) => 
+          old?.filter(call => call.id !== variables.id)
+        );
+
+        return { previousData };
+      },
       onSuccess: () => {
         callToast.deleted();
-        refetch();
+        // Update count cache
+        queryClient.setQueryData(['countCalls', filterParams], (old: number) => 
+          Math.max(0, (old || 0) - 1)
+        );
       },
-      onError: (error) => {
+      onError: (error, variables, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['getAllCalls', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], context.previousData);
+        }
         handleCallError(error);
       },
     },
@@ -859,93 +964,201 @@ export function CallTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
-    );
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
+    
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData(['getAllCalls', {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    }]);
 
     try {
+      // Optimistically remove all selected items
+      queryClient.setQueryData(['getAllCalls', {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      }], (old: any[]) => 
+        old?.filter(call => !selectedRows.has(call.id || 0))
+      );
+
+      // Process deletions
+      const deletePromises = Array.from(selectedRows).map(id => 
+        new Promise<void>((resolve, reject) => {
+          deleteEntity({ id }, {
+            onSuccess: () => resolve(),
+            onError: (error) => reject(error)
+          });
+        })
+      );
+
       await Promise.all(deletePromises);
       callToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
-      refetch();
+      
+      // Update count cache
+      queryClient.setQueryData(['countCalls', filterParams], (old: number) => 
+        Math.max(0, (old || 0) - selectedRows.size)
+      );
+      
     } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], previousData);
+      }
       callToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
 
-  // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  // Enhanced relationship update handler with individual cell tracking
+  const handleRelationshipUpdate = async (
+    entityId: number, 
+    relationshipName: string, 
+    newValue: number | null,
+    isBulkOperation: boolean = false
+  ) => {
+    const cellKey = `${entityId}-${relationshipName}`;
+    
+    // Track this specific cell as updating
+    setUpdatingCells(prev => new Set(prev).add(cellKey));
+    
     return new Promise<void>((resolve, reject) => {
-      // Get the current entity data first
       const currentEntity = data?.find(item => item.id === entityId);
       if (!currentEntity) {
+        setUpdatingCells(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cellKey);
+          return newSet;
+        });
         reject(new Error('Call not found in current data'));
         return;
       }
 
-      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
         id: entityId
       };
       
-      // Update only the specific relationship
+      // Update the specific relationship
       if (newValue) {
-        updateData[relationshipName] = { id: newValue };
+        // Find the full relationship object from options
+        const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
+        const selectedOption = relationshipConfig?.options.find(opt => opt.id === newValue);
+        updateData[relationshipName] = selectedOption || { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
-
-      console.log(`Updating ${relationshipName} for Call ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
         data: updateData
       }, {
         onSuccess: () => {
-          callToast.relationshipUpdated(relationshipName);
-          refetch(); // Refetch data to ensure UI is in sync
+          // Only show individual toast if not part of bulk operation
+          if (!isBulkOperation) {
+            callToast.relationshipUpdated(relationshipName);
+          }
           resolve();
         },
         onError: (error: any) => {
-          console.error(`Failed to update ${relationshipName}:`, error);
-          handleCallError(error);
           reject(error);
+        },
+        onSettled: () => {
+          // Remove this cell from updating state
+          setUpdatingCells(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(cellKey);
+            return newSet;
+          });
         }
       });
     });
   };
 
-  // Handle bulk relationship updates
+  // Handle bulk relationship updates with single toast message
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
-    let successCount = 0;
-    let errorCount = 0;
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
     
-    // Process updates sequentially to avoid overwhelming the server
-    for (const id of entityIds) {
-      try {
-        await handleRelationshipUpdate(id, relationshipName, newValue);
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to update entity ${id}:`, error);
-        errorCount++;
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData(['getAllCalls', {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    }]);
+
+    try {
+      // Optimistically update all selected items
+      const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
+      const selectedOption = newValue ? relationshipConfig?.options.find(opt => opt.id === newValue) : null;
+      
+      queryClient.setQueryData(['getAllCalls', {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      }], (old: any[]) => 
+        old?.map(call => 
+          entityIds.includes(call.id || 0)
+            ? { ...call, [relationshipName]: selectedOption || null }
+            : call
+        )
+      );
+
+      // Process updates sequentially with bulk operation flag
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const id of entityIds) {
+        try {
+          await handleRelationshipUpdate(id, relationshipName, newValue, true); // Pass true for bulk operation
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to update entity ${id}:`, error);
+          errorCount++;
+        }
       }
-    }
-    
-    // Refresh data after updates
-    refetch();
-    
-    // Throw error if all failed, otherwise consider it partially successful
-    if (errorCount === entityIds.length) {
-      throw new Error(`All ${errorCount} updates failed`);
-    } else if (errorCount > 0) {
-      console.warn(`${errorCount} out of ${entityIds.length} updates failed`);
+      
+      // Show single bulk success toast
+      if (successCount > 0) {
+        const action = newValue === null ? "cleared" : "updated";
+        callToast.custom.success(
+          `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
+          `${relationshipName} ${action} for ${successCount} item${successCount > 1 ? 's' : ''}`
+        );
+      }
+      
+      if (errorCount === entityIds.length) {
+        throw new Error(`All ${errorCount} updates failed`);
+      } else if (errorCount > 0) {
+        callToast.custom.warning(
+          "⚠️ Partial Success",
+          `${successCount} updated, ${errorCount} failed`
+        );
+      }
+      
+    } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], previousData);
+      }
+      throw error;
     }
   };
 
@@ -1185,7 +1398,7 @@ export function CallTable() {
                   onSelect={handleSelectRow}
                   relationshipConfigs={relationshipConfigs}
                   onRelationshipUpdate={handleRelationshipUpdate}
-                  isUpdating={isUpdating}
+                  updatingCells={updatingCells}
                   visibleColumns={visibleColumns}
                 />
               ))
