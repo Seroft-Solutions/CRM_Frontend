@@ -18,6 +18,7 @@ import {
   getAdminRealmsRealmUsersUserIdGroups,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
+  putAdminRealmsRealmUsersUserIdResetPassword,
   getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
 import type {
@@ -27,6 +28,7 @@ import type {
   MemberRepresentation,
   UserRepresentation,
   GroupRepresentation,
+  CredentialRepresentation,
 } from '@/core/api/generated/keycloak';
 import type {
   PendingInvitation,
@@ -119,6 +121,24 @@ function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInv
   } catch (error) {
     console.error('Failed to parse invitation metadata:', error);
     return null;
+  }
+}
+
+// Helper function to set default password for newly created users
+async function setDefaultPassword(realm: string, userId: string, password: string = 'temp#123') {
+  const credential: CredentialRepresentation = {
+    type: 'password',
+    value: password,
+    temporary: true, // User will be required to change password
+  };
+
+  try {
+    await putAdminRealmsRealmUsersUserIdResetPassword(realm, userId, credential);
+    console.log(`Set default password for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error(`Failed to set default password for user ${userId}:`, error);
+    return false;
   }
 }
 
@@ -401,18 +421,24 @@ export async function POST(
         userId = createdUsers[0].id!;
         console.log('Found created user ID:', userId);
 
-        // 2. Ensure proper group assignment (Users group + remove Admins if present)
+        // 2. Set default password for the new user
+        const passwordSet = await setDefaultPassword(realm, userId);
+        if (!passwordSet) {
+          console.warn('Failed to set default password, but continuing with user creation');
+        }
+
+        // 3. Ensure proper group assignment (Users group + remove Admins if present)
         const groupResult1 = await ensureProperGroupAssignment(realm, userId);
         groupManagement.usersGroupAssigned =
           groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
         groupManagement.adminsGroupRemoved =
           groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // 3. Add User to organization
+        // 4. Add User to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added user to organization');
 
-        // 4. Send appropriate email based on configuration
+        // 5. Send appropriate email based on configuration
         if (inviteData.sendPasswordReset !== false) {
           // Send UPDATE_PASSWORD email for new users to set their password
           try {

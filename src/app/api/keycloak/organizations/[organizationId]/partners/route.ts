@@ -15,6 +15,7 @@ import {
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
+  putAdminRealmsRealmUsersUserIdResetPassword,
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserIdGroups,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
@@ -23,6 +24,7 @@ import type {
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
   UserRepresentation,
   GroupRepresentation,
+  CredentialRepresentation,
 } from '@/core/api/generated/keycloak';
 
 interface PartnerInvitation {
@@ -113,6 +115,24 @@ function createPartnerInvitationUserAttributes(
     user_type: 'partner',
     invited_as: 'business_partner',
   };
+}
+
+// Helper function to set default password for newly created users
+async function setDefaultPassword(realm: string, userId: string, password: string = 'temp#123') {
+  const credential: CredentialRepresentation = {
+    type: 'password',
+    value: password,
+    temporary: true, // User will be required to change password
+  };
+
+  try {
+    await putAdminRealmsRealmUsersUserIdResetPassword(realm, userId, credential);
+    console.log(`Set default password for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error(`Failed to set default password for user ${userId}:`, error);
+    return false;
+  }
 }
 
 export async function GET(
@@ -337,6 +357,12 @@ export async function POST(
         userId = createdUsers[0].id!;
         console.log('Found created partner user ID:', userId);
 
+        // 1.5. Set default password for the new partner user
+        const passwordSet = await setDefaultPassword(realm, userId);
+        if (!passwordSet) {
+          console.warn('Failed to set default password for partner, but continuing with user creation');
+        }
+
         // 2. Try to update user with custom attributes (gracefully handle failures)
         try {
           const updatedUser: UserRepresentation = {
@@ -357,7 +383,7 @@ export async function POST(
           // Continue with the flow - user is created, just without custom attributes
         }
 
-        // 2. Ensure proper group assignment (Business Partners group + remove Admins if present)
+        // 3. Ensure proper group assignment (Business Partners group + remove Admins if present)
         const groupResult1 = await ensureProperPartnerGroupAssignment(realm, userId);
         groupManagement.businessPartnersGroupAssigned =
           groupResult1.businessPartnersGroupAssigned ||
@@ -365,11 +391,11 @@ export async function POST(
         groupManagement.adminsGroupRemoved =
           groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // 3. Add Partner to organization
+        // 4. Add Partner to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added partner to organization');
 
-        // 4. Send appropriate email based on configuration
+        // 5. Send appropriate email based on configuration
         if (inviteData.sendPasswordReset !== false) {
           // Send UPDATE_PASSWORD email for new partners to set their password
           try {
