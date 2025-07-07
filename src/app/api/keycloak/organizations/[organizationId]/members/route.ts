@@ -16,6 +16,7 @@ import {
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   getAdminRealmsRealmUsersUserIdGroups,
+  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
@@ -157,7 +158,81 @@ export async function GET(
       queryParams
     );
 
-    return NextResponse.json(members);
+    // ENHANCED: Parallel processing to fetch groups and roles for all members
+    const enhancedMembers = await Promise.all(
+      members.map(async (member) => {
+        try {
+          if (!member.id) return member;
+
+          // Fetch groups and roles in parallel for each member
+          const [memberGroups, memberRoles] = await Promise.all([
+            getAdminRealmsRealmUsersUserIdGroups(realm, member.id).catch((error) => {
+              console.warn(`Failed to fetch groups for user ${member.id}:`, error);
+              return [];
+            }),
+            getAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, member.id).catch((error) => {
+              console.warn(`Failed to fetch roles for user ${member.id}:`, error);
+              return [];
+            }),
+          ]);
+
+          // Add groups and roles to member object
+          return {
+            ...member,
+            groups: memberGroups.map(g => g.name).filter(Boolean), // Array of group names
+            groupDetails: memberGroups, // Full group objects
+            realmRoles: memberRoles.map(r => r.name).filter(Boolean), // Array of role names
+            roleDetails: memberRoles, // Full role objects
+          };
+        } catch (error) {
+          console.warn(`Failed to enhance member data for ${member.id}:`, error);
+          return member;
+        }
+      })
+    );
+
+    // FILTER: Exclude business partner users
+    const filteredMembers = enhancedMembers.filter((member) => {
+      const memberGroups = member.groups || [];
+      const memberRoles = member.realmRoles || [];
+      
+      // Check for business partner indicators
+      const hasBusinessPartnerGroup = memberGroups.some(groupName => {
+        const groupLower = groupName?.toLowerCase() || '';
+        return (
+          groupLower === 'business partners' ||
+          groupLower === 'business-partners' ||
+          groupLower === 'businesspartners' ||
+          (groupLower.includes('business') && groupLower.includes('partner'))
+        );
+      });
+      
+      const hasBusinessPartnerRole = memberRoles.some(roleName => {
+        const roleLower = roleName?.toLowerCase() || '';
+        return (
+          roleLower === 'business partners' ||
+          roleLower === 'business-partners' ||
+          roleLower === 'businesspartners' ||
+          (roleLower.includes('business') && roleLower.includes('partner'))
+        );
+      });
+      
+      const isBusinessPartner = hasBusinessPartnerGroup || hasBusinessPartnerRole;
+      
+      if (isBusinessPartner) {
+        console.log('Filtering out business partner user:', {
+          email: member.email,
+          groups: memberGroups,
+          roles: memberRoles,
+        });
+      }
+      
+      return !isBusinessPartner;
+    });
+
+    console.log(`Enhanced members API: ${members.length} total, ${filteredMembers.length} after filtering`);
+
+    return NextResponse.json(filteredMembers);
   } catch (error: any) {
     console.error('Organization members API error:', error);
 

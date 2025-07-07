@@ -16,6 +16,7 @@ import type {
   UserFilters,
   UserListResponse,
   UserDetailData,
+  EnhancedMemberRepresentation,
 } from '../types';
 
 import type {
@@ -65,9 +66,10 @@ export class UserManagementService {
         throw new Error(error.error || 'Failed to fetch organization users');
       }
 
-      const members: MemberRepresentation[] = await response.json();
+      const members: EnhancedMemberRepresentation[] = await response.json();
 
-      // Transform MemberRepresentation to OrganizationUser
+      // Transform enhanced MemberRepresentation to OrganizationUser
+      // Backend now includes groups, roles, and filters out business partners
       let users: OrganizationUser[] = members.map((member) => ({
         id: member.id,
         username: member.username,
@@ -78,8 +80,9 @@ export class UserManagementService {
         emailVerified: member.emailVerified,
         createdTimestamp: member.createdTimestamp,
         organizationId,
-        assignedRoles: [], // Will be populated when fetching details
-        assignedGroups: [], // Will be populated when fetching details
+        // Enhanced: Use groups and roles from backend response
+        assignedRoles: member.roleDetails || [],
+        assignedGroups: member.groupDetails || [],
         attributes: member.attributes,
         access: member.access,
         // Map member-specific fields

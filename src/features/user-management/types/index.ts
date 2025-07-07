@@ -11,6 +11,14 @@ import type {
   MemberRepresentation,
 } from '@/core/api/generated/keycloak';
 
+// Enhanced member representation with parallel-loaded groups and roles
+export interface EnhancedMemberRepresentation extends MemberRepresentation {
+  groups?: string[]; // Array of group names
+  groupDetails?: GroupRepresentation[]; // Full group objects
+  realmRoles?: string[]; // Array of role names  
+  roleDetails?: RoleRepresentation[]; // Full role objects
+}
+
 // Extended user representation with organization context
 export interface OrganizationUser extends MemberRepresentation {
   // User basic info
