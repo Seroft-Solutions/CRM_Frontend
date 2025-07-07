@@ -41,11 +41,26 @@ export default function InvitePartnersPage() {
   const [channelTypeId, setChannelTypeId] = useState<number | undefined>(undefined);
   const [isInviting, setIsInviting] = useState(false);
 
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    return (
+      formData.firstName.trim() !== '' &&
+      formData.lastName.trim() !== '' &&
+      formData.email.trim() !== '' &&
+      channelTypeId !== undefined
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!organizationId) {
       toast.error('No organization selected');
+      return;
+    }
+
+    if (!channelTypeId) {
+      toast.error('Channel Type is required');
       return;
     }
 
@@ -105,6 +120,9 @@ export default function InvitePartnersPage() {
         sendPasswordReset: true,
       });
       setChannelTypeId(undefined);
+
+      // Navigate to business partners page after successful invitation
+      router.push('/business-partners');
     } catch (error) {
       console.error('Failed to invite partner:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to invite partner');
@@ -191,7 +209,7 @@ export default function InvitePartnersPage() {
 
               {/* Channel Type */}
               <div className="space-y-2">
-                <Label htmlFor="channelType">Channel Type</Label>
+                <Label htmlFor="channelType">Channel Type *</Label>
                 <ChannelTypeSelector
                   value={channelTypeId}
                   onValueChange={setChannelTypeId}
@@ -201,7 +219,11 @@ export default function InvitePartnersPage() {
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
-                <Button type="submit" disabled={isInviting || isCreatingProfile} className="gap-2">
+                <Button 
+                  type="submit" 
+                  disabled={!isFormValid() || isInviting || isCreatingProfile} 
+                  className="gap-2"
+                >
                   <Mail className="h-4 w-4" />
                   {isInviting || isCreatingProfile ? 'Processing...' : 'Send Invitation'}
                 </Button>
