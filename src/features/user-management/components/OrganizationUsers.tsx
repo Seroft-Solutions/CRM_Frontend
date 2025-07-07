@@ -584,7 +584,7 @@ function OrganizationUsersContent({
                           userId={user.id!}
                           organizationId={organizationId}
                           roles={user.assignedRoles || []}
-                          enableProgressiveLoading={true}
+                          enableProgressiveLoading={false}
                         />
                       </TableCell>
                       <TableCell>
@@ -592,7 +592,7 @@ function OrganizationUsersContent({
                           userId={user.id!}
                           organizationId={organizationId}
                           groups={user.assignedGroups || []}
-                          enableProgressiveLoading={true}
+                          enableProgressiveLoading={false}
                         />
                       </TableCell>
                       <TableCell>
