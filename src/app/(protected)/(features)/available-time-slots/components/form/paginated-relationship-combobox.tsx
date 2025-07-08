@@ -22,8 +22,8 @@ import { InlinePermissionGuard } from "@/core/auth";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface PaginatedRelationshipComboboxProps {
-  value?: number | number[];
-  onValueChange: (value: number | number[] | undefined) => void;
+  value?: number | string | number[] | string[];
+  onValueChange: (value: number | string | number[] | string[] | undefined) => void;
   displayField: string;
   placeholder?: string;
   multiple?: boolean;
@@ -37,8 +37,8 @@ interface PaginatedRelationshipComboboxProps {
   canCreate?: boolean;
   createEntityPath?: string;
   createPermission?: string;
-  onEntityCreated?: (entityId: number) => void;
-  parentFilter?: number;
+  onEntityCreated?: (entityId: number | string) => void;
+  parentFilter?: number | string;
   parentField?: string;
   // Cross-form navigation props
   referrerForm?: string;
@@ -78,7 +78,7 @@ export function PaginatedRelationshipCombobox({
   const pageSize = 20;
   
   // Cross-form navigation hook
-  const { navigateToCreateEntity } = useCrossFormNavigation();
+  const { navigateWithDraftCheck } = useCrossFormNavigation();
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -178,13 +178,13 @@ export function PaginatedRelationshipCombobox({
     }
   }, [hasMorePages, isLoading, loadNextPage]);
 
-  const handleSingleSelect = (optionId: number) => {
+  const handleSingleSelect = (optionId: number | string) => {
     const newValue = value === optionId ? undefined : optionId;
     onValueChange(newValue);
     setOpen(false);
   };
 
-  const handleMultipleSelect = (optionId: number) => {
+  const handleMultipleSelect = (optionId: number | string) => {
     const currentValues = Array.isArray(value) ? value : [];
     const newValues = currentValues.includes(optionId)
       ? currentValues.filter((id) => id !== optionId)
@@ -193,7 +193,7 @@ export function PaginatedRelationshipCombobox({
     onValueChange(newValues.length > 0 ? newValues : undefined);
   };
 
-  const removeItem = (optionId: number) => {
+  const removeItem = (optionId: number | string) => {
     if (Array.isArray(value)) {
       const newValues = value.filter((id) => id !== optionId);
       onValueChange(newValues.length > 0 ? newValues : undefined);
@@ -207,7 +207,7 @@ export function PaginatedRelationshipCombobox({
       }
       return `${value.length} item${value.length === 1 ? '' : 's'} selected`;
     } else {
-      if (typeof value !== 'number') {
+      if (typeof value !== 'number' && typeof value !== 'string') {
         return placeholder;
       }
       const selectedOption = allLoadedData.find((option: any) => option.id === value);
@@ -221,8 +221,8 @@ export function PaginatedRelationshipCombobox({
   };
   const handleCreateNew = () => {
     if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
-      // Use the new cross-form navigation system
-      navigateToCreateEntity({
+      // Use the new draft-aware cross-form navigation system
+      navigateWithDraftCheck({
         entityPath: createEntityPath,
         referrerForm,
         referrerSessionId,
@@ -299,7 +299,9 @@ export function PaginatedRelationshipCombobox({
       try {
         const info = JSON.parse(relationshipInfo);
         if (info.entityName === entityName) {
-          onEntityCreated(parseInt(newEntityId));
+          // Handle both string (UUID) and number IDs
+          const entityId = isNaN(Number(newEntityId)) ? newEntityId : parseInt(newEntityId);
+          onEntityCreated(entityId);
           sessionStorage.removeItem('newlyCreatedEntityId');
           sessionStorage.removeItem('relationshipFieldInfo');
           sessionStorage.removeItem('returnUrl');

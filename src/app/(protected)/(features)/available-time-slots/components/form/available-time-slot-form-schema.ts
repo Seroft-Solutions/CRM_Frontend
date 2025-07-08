@@ -18,7 +18,7 @@ export const availableTimeSlotFormSchemaFields = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  user: z.number().optional(),
+  user: z.string().optional(),
 };
 
 export const availableTimeSlotFormSchema = z.object(availableTimeSlotFormSchemaFields);
@@ -41,7 +41,7 @@ export const availableTimeSlotFieldSchemas = {
   ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a valid date and time"
   }).optional(),
-  user: z.number().optional(),
+  user: z.string().optional(),
 };
 
 // Step-specific validation schemas

@@ -21,7 +21,7 @@ export const userAvailabilityFormSchemaFields = {
     message: "Please select a valid date and time"
   }).optional(),
   timeZone: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
-  user: z.number().optional(),
+  user: z.string().optional(),
 };
 
 export const userAvailabilityFormSchema = z.object(userAvailabilityFormSchemaFields);
@@ -47,7 +47,7 @@ export const userAvailabilityFieldSchemas = {
     message: "Please select a valid date and time"
   }).optional(),
   timeZone: z.string().max(50, { message: "Please enter no more than 50 characters" }).optional(),
-  user: z.number().optional(),
+  user: z.string().optional(),
 };
 
 // Step-specific validation schemas

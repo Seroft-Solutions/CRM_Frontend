@@ -59,57 +59,80 @@ export function RelationshipCell({
 }: RelationshipCellProps) {
   const [open, setOpen] = React.useState(false);
   const [updating, setUpdating] = React.useState(false);
+  
+  // Optimistic value for smooth UI updates
+  const [optimisticValue, setOptimisticValue] = React.useState(currentValue);
 
-  // Get current display value
+  // Update optimistic value when currentValue changes (from parent or cache)
+  React.useEffect(() => {
+    setOptimisticValue(currentValue);
+  }, [currentValue]);
+
+  // Get current display value using optimistic value
   const getCurrentDisplayValue = () => {
-    if (!currentValue) return "";
+    const valueToUse = optimisticValue;
     
-    if (typeof currentValue === 'object' && currentValue[displayField]) {
-      return currentValue[displayField];
+    if (!valueToUse) return "";
+    
+    if (typeof valueToUse === 'object' && valueToUse[displayField]) {
+      return valueToUse[displayField];
     }
     
-    if (typeof currentValue === 'object' && currentValue.id) {
-      const option = options.find(opt => opt.id === currentValue.id);
-      return option ? option[displayField] : `ID: ${currentValue.id}`;
+    if (typeof valueToUse === 'object' && valueToUse.id) {
+      const option = options.find(opt => opt.id === valueToUse.id);
+      return option ? option[displayField] : `ID: ${valueToUse.id}`;
     }
     
-    return currentValue.toString();
+    return valueToUse.toString();
   };
 
   const currentDisplayValue = getCurrentDisplayValue();
-  const currentId = currentValue?.id || currentValue;
+  const currentId = optimisticValue?.id || optimisticValue;
 
-  // Handle selection
+  // Enhanced selection handler with optimistic updates and server sync
   const handleSelect = async (optionId: number | null) => {
     if (updating) return;
     
     setUpdating(true);
     setOpen(false);
     
+    // Optimistically update the UI immediately
+    const selectedOption = optionId ? options.find(opt => opt.id === optionId) : null;
+    setOptimisticValue(selectedOption);
+    
     try {
       await onUpdate(entityId, relationshipName, optionId);
-      productToast.relationshipUpdated(relationshipName);
+      // Success - the server response will update the cache and currentValue
+      // The useEffect will sync optimisticValue with the new currentValue
     } catch (error) {
-      productToast.custom.error("❌ Update Failed", `Failed to update ${relationshipName}`);
+      // Rollback optimistic update on error
+      setOptimisticValue(currentValue);
+      
+      // Show error toast
+      toast.error("❌ Update Failed", {
+        description: `Failed to update ${relationshipName}`,
+      });
+      
       console.error('Relationship update error:', error);
     } finally {
       setUpdating(false);
     }
   };
 
+  // Show loading state during initial load or updates
+  if (isLoading && !optimisticValue) {
+    return (
+      <div className={cn("px-2 py-1", className)}>
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   // If not editable, display as clickable link or plain text
   if (!isEditable) {
-    if (isLoading) {
-      return (
-        <div className={cn("px-2 py-1", className)}>
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            <span className="text-sm text-muted-foreground">Loading...</span>
-          </div>
-        </div>
-      );
-    }
-
     // If no current value, show empty state
     if (!currentDisplayValue) {
       return (
@@ -122,7 +145,7 @@ export function RelationshipCell({
     }
 
     // If we have a route and current ID, make it clickable
-    const currentId = currentValue?.id || currentValue;
+    const currentId = optimisticValue?.id || optimisticValue;
     if (relatedEntityRoute && currentId) {
       return (
         <div className={cn("px-1 py-1", className)}>
@@ -184,7 +207,11 @@ export function RelationshipCell({
             variant="ghost"
             role="combobox"
             aria-expanded={open}
-            className="w-full h-8 px-2 py-1 justify-between text-left font-normal hover:bg-muted"
+            className={cn(
+              "w-full h-8 px-2 py-1 justify-between text-left font-normal hover:bg-muted",
+              "transition-all duration-200", // Smooth transitions
+              updating && "opacity-75" // Visual feedback during updates
+            )}
             disabled={updating || isLoading}
           >
             <span className="truncate text-sm">
@@ -202,7 +229,10 @@ export function RelationshipCell({
                 currentDisplayValue || "Select..."
               )}
             </span>
-            <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+            <ChevronDown className={cn(
+              "ml-1 h-3 w-3 shrink-0 opacity-50 transition-transform duration-200",
+              open && "rotate-180"
+            )} />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="start">

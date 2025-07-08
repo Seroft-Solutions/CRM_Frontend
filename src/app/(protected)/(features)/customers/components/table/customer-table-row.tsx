@@ -28,8 +28,8 @@ interface CustomerTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function CustomerTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: CustomerTableRowProps) {
   return (
@@ -134,6 +134,7 @@ export function CustomerTableRow({
             (() => {
               
               if (column.id === 'state') {
+                const cellKey = `${customer.id}-state`;
                 return (
                   <RelationshipCell
                     entityId={customer.id || 0}
@@ -141,9 +142,11 @@ export function CustomerTableRow({
                     currentValue={customer.state}
                     options={relationshipConfigs.find(config => config.name === "state")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "state")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="states"
                     showNavigationIcon={true}
@@ -152,6 +155,7 @@ export function CustomerTableRow({
               }
               
               if (column.id === 'district') {
+                const cellKey = `${customer.id}-district`;
                 return (
                   <RelationshipCell
                     entityId={customer.id || 0}
@@ -159,9 +163,11 @@ export function CustomerTableRow({
                     currentValue={customer.district}
                     options={relationshipConfigs.find(config => config.name === "district")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="districts"
                     showNavigationIcon={true}
@@ -170,6 +176,7 @@ export function CustomerTableRow({
               }
               
               if (column.id === 'city') {
+                const cellKey = `${customer.id}-city`;
                 return (
                   <RelationshipCell
                     entityId={customer.id || 0}
@@ -177,9 +184,11 @@ export function CustomerTableRow({
                     currentValue={customer.city}
                     options={relationshipConfigs.find(config => config.name === "city")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "city")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="cities"
                     showNavigationIcon={true}
@@ -188,6 +197,7 @@ export function CustomerTableRow({
               }
               
               if (column.id === 'area') {
+                const cellKey = `${customer.id}-area`;
                 return (
                   <RelationshipCell
                     entityId={customer.id || 0}
@@ -195,9 +205,11 @@ export function CustomerTableRow({
                     currentValue={customer.area}
                     options={relationshipConfigs.find(config => config.name === "area")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "area")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="areas"
                     showNavigationIcon={true}

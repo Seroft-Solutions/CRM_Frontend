@@ -78,7 +78,7 @@ export function PaginatedRelationshipCombobox({
   const pageSize = 20;
   
   // Cross-form navigation hook
-  const { navigateToCreateEntity } = useCrossFormNavigation();
+  const { navigateWithDraftCheck } = useCrossFormNavigation();
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -221,8 +221,8 @@ export function PaginatedRelationshipCombobox({
   };
   const handleCreateNew = () => {
     if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
-      // Use the new cross-form navigation system
-      navigateToCreateEntity({
+      // Use the new draft-aware cross-form navigation system
+      navigateWithDraftCheck({
         entityPath: createEntityPath,
         referrerForm,
         referrerSessionId,

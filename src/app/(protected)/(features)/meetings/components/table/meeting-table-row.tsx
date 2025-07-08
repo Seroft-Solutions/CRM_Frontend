@@ -28,8 +28,8 @@ interface MeetingTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function MeetingTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: MeetingTableRowProps) {
   return (
@@ -182,6 +182,7 @@ export function MeetingTableRow({
             (() => {
               
               if (column.id === 'organizer') {
+                const cellKey = `${meeting.id}-organizer`;
                 return (
                   <RelationshipCell
                     entityId={meeting.id || 0}
@@ -189,9 +190,11 @@ export function MeetingTableRow({
                     currentValue={meeting.organizer}
                     options={relationshipConfigs.find(config => config.name === "organizer")?.options || []}
                     displayField="displayName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "organizer")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="user-profiles"
                     showNavigationIcon={true}
@@ -200,6 +203,7 @@ export function MeetingTableRow({
               }
               
               if (column.id === 'assignedCustomer') {
+                const cellKey = `${meeting.id}-assignedCustomer`;
                 return (
                   <RelationshipCell
                     entityId={meeting.id || 0}
@@ -207,9 +211,11 @@ export function MeetingTableRow({
                     currentValue={meeting.assignedCustomer}
                     options={relationshipConfigs.find(config => config.name === "assignedCustomer")?.options || []}
                     displayField="customerBusinessName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "assignedCustomer")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="customers"
                     showNavigationIcon={true}
@@ -218,6 +224,7 @@ export function MeetingTableRow({
               }
               
               if (column.id === 'call') {
+                const cellKey = `${meeting.id}-call`;
                 return (
                   <RelationshipCell
                     entityId={meeting.id || 0}
@@ -225,9 +232,11 @@ export function MeetingTableRow({
                     currentValue={meeting.call}
                     options={relationshipConfigs.find(config => config.name === "call")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "call")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="calls"
                     showNavigationIcon={true}

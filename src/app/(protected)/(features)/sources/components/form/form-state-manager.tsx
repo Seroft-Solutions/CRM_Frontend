@@ -37,14 +37,41 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
     return () => subscription.unsubscribe();
   }, [form, actions, config, entity, state.isLoading]);
 
+  // Auto-save drafts when enabled
+  useEffect(() => {
+    const draftsConfig = config.behavior?.drafts;
+    if (!draftsConfig?.enabled || !draftsConfig.autoSave) return;
+    if (entity || state.isLoading) return; // Don't auto-save when editing or loading
+    
+    const subscription = form.watch(() => {
+      // Debounce the draft save operation
+      const timeoutId = setTimeout(() => {
+        if (state.isDirty) {
+          actions.saveDraft();
+        }
+      }, config.behavior.autoSave.debounceMs);
+      
+      return () => clearTimeout(timeoutId);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, actions, config, entity, state.isLoading, state.isDirty]);
+
   // Handle page beforeunload event
   useEffect(() => {
     if (!config.behavior.persistence.enabled) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (state.isDirty && !entity) {
-        // Save form state before page unload
-        actions.saveFormState();
+        // Check if drafts are enabled and should save on unload
+        const draftsConfig = config.behavior?.drafts;
+        if (draftsConfig?.enabled && (draftsConfig.saveBehavior === 'onUnload' || draftsConfig.saveBehavior === 'both')) {
+          // For drafts, we can't show a dialog on beforeunload, so save automatically
+          actions.saveDraft();
+        } else {
+          // Save form state before page unload (legacy behavior)
+          actions.saveFormState();
+        }
         
         if (config.behavior.navigation.confirmOnCancel) {
           event.preventDefault();

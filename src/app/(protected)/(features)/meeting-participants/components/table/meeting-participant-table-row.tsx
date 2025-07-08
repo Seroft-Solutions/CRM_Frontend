@@ -28,8 +28,8 @@ interface MeetingParticipantTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function MeetingParticipantTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: MeetingParticipantTableRowProps) {
   return (
@@ -140,6 +140,7 @@ export function MeetingParticipantTableRow({
             (() => {
               
               if (column.id === 'meeting') {
+                const cellKey = `${meetingParticipant.id}-meeting`;
                 return (
                   <RelationshipCell
                     entityId={meetingParticipant.id || 0}
@@ -147,9 +148,11 @@ export function MeetingParticipantTableRow({
                     currentValue={meetingParticipant.meeting}
                     options={relationshipConfigs.find(config => config.name === "meeting")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "meeting")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="meetings"
                     showNavigationIcon={true}

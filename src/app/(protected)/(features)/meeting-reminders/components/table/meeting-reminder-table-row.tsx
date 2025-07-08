@@ -28,8 +28,8 @@ interface MeetingReminderTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function MeetingReminderTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: MeetingReminderTableRowProps) {
   return (
@@ -134,6 +134,7 @@ export function MeetingReminderTableRow({
             (() => {
               
               if (column.id === 'meeting') {
+                const cellKey = `${meetingReminder.id}-meeting`;
                 return (
                   <RelationshipCell
                     entityId={meetingReminder.id || 0}
@@ -141,9 +142,11 @@ export function MeetingReminderTableRow({
                     currentValue={meetingReminder.meeting}
                     options={relationshipConfigs.find(config => config.name === "meeting")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "meeting")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="meetings"
                     showNavigationIcon={true}

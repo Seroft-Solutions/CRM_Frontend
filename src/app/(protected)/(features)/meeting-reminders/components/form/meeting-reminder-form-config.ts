@@ -227,6 +227,14 @@ export const meetingReminderFormConfig: FormConfig = {
     },
     rendering: {
       useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+    },
+    drafts: {
+      enabled: true,
+      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      confirmDialog: true,
+      autoSave: false,
+      maxDrafts: 5, // limit number of drafts per entity type per user
+      showRestorationDialog: true,
     }
   }
 };

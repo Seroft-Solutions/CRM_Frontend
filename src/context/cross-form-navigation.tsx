@@ -13,6 +13,11 @@ interface NavigationState {
   isRedirecting?: boolean;
 }
 
+interface DraftCheckHandler {
+  checkDrafts: (onProceed: () => void) => void;
+  formId: string;
+}
+
 interface NavigationContextType {
   navigationState: NavigationState;
   setNavigationState: (state: NavigationState) => void;
@@ -26,6 +31,16 @@ interface NavigationContextType {
   navigateBackToReferrer: (createdEntityId?: number, createdEntityType?: string) => void;
   clearNavigation: () => void;
   hasReferrer: () => boolean;
+  // Draft-related methods
+  registerDraftCheck: (handler: DraftCheckHandler) => void;
+  unregisterDraftCheck: (formId: string) => void;
+  navigateWithDraftCheck: (params: {
+    entityPath: string;
+    referrerForm: string;
+    referrerSessionId: string;
+    referrerField: string;
+    referrerUrl: string;
+  }) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
@@ -33,6 +48,23 @@ const NavigationContext = createContext<NavigationContextType | null>(null);
 export function CrossFormNavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [navigationState, setNavigationState] = useState<NavigationState>({});
+  const [draftHandlers, setDraftHandlers] = useState<Map<string, DraftCheckHandler>>(new Map());
+
+  const registerDraftCheck = useCallback((handler: DraftCheckHandler) => {
+    setDraftHandlers(prev => {
+      const newMap = new Map(prev);
+      newMap.set(handler.formId, handler);
+      return newMap;
+    });
+  }, []);
+
+  const unregisterDraftCheck = useCallback((formId: string) => {
+    setDraftHandlers(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(formId);
+      return newMap;
+    });
+  }, []);
 
   const navigateToCreateEntity = useCallback(
     (params: {
@@ -76,6 +108,31 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
       router.push(url.pathname + url.search);
     },
     [router]
+  );
+
+  const navigateWithDraftCheck = useCallback(
+    (params: {
+      entityPath: string;
+      referrerForm: string;
+      referrerSessionId: string;
+      referrerField: string;
+      referrerUrl: string;
+    }) => {
+      // Check if there's an active draft handler for the current form
+      const handler = draftHandlers.get(params.referrerForm);
+      
+      if (handler) {
+        // Let the form handle the draft check
+        handler.checkDrafts(() => {
+          // Proceed with navigation after draft check
+          navigateToCreateEntity(params);
+        });
+      } else {
+        // No draft handler, proceed with normal navigation
+        navigateToCreateEntity(params);
+      }
+    },
+    [draftHandlers, navigateToCreateEntity]
   );
   const navigateBackToReferrer = useCallback(
     (createdEntityId?: number, createdEntityType?: string) => {
@@ -157,6 +214,10 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
         navigateBackToReferrer,
         clearNavigation,
         hasReferrer,
+        // Draft-related methods
+        registerDraftCheck,
+        unregisterDraftCheck,
+        navigateWithDraftCheck,
       }}
     >
       {children}

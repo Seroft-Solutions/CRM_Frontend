@@ -10,7 +10,7 @@ export const groupFormSchemaFields = {
   description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
   isActive: z.boolean(),
   organization: z.number().optional(),
-  members: z.number().optional(),
+  members: z.string().optional(),
 };
 
 export const groupFormSchema = z.object(groupFormSchemaFields);
@@ -25,7 +25,7 @@ export const groupFieldSchemas = {
   description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
   isActive: z.boolean(),
   organization: z.number().optional(),
-  members: z.number().optional(),
+  members: z.string().optional(),
 };
 
 // Step-specific validation schemas
