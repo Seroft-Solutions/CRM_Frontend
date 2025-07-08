@@ -3,7 +3,7 @@
 import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { logoutAction } from '@/core/auth';
-import { useGetAccount } from '@/core/api/generated/spring/endpoints/account-resource/account-resource.gen';
+import { useAccount } from '@/core/auth/hooks/use-account';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -25,61 +25,15 @@ import { Badge } from '@/components/ui/badge';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   
-  // Fetch account details from the API
-  const { 
-    data: accountData, 
-    isLoading: isAccountLoading, 
-    error: accountError 
-  } = useGetAccount({
-    query: {
-      enabled: status === 'authenticated', // Only fetch when authenticated
-    }
+  // Use the enhanced account hook with optimized caching and error handling
+  const { user, isLoading, error } = useAccount({
+    refetchInBackground: true, // Keep user data fresh in background
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-  };
-
-  const getFullName = () => {
-    if (accountData?.firstName && accountData?.lastName) {
-      return `${accountData.firstName} ${accountData.lastName}`;
-    }
-    return session?.user?.name || 'User';
-  };
-
-  const getEmail = () => {
-    return accountData?.email || session?.user?.email || '';
-  };
-
-  const getImageUrl = () => {
-    return accountData?.imageUrl || session?.user?.image || '';
-  };
-
-  const getPrimaryRole = () => {
-    if (accountData?.authorities && accountData.authorities.length > 0) {
-      // Remove 'ROLE_' prefix if present and capitalize
-      return accountData.authorities[0].replace('ROLE_', '').toLowerCase();
-    }
-    return null;
-  };
-
-  const user = {
-    name: getFullName(),
-    email: getEmail(),
-    image: getImageUrl(),
-    initials: getInitials(getFullName()),
-    role: getPrimaryRole(),
-    authorities: accountData?.authorities || [],
-    activated: accountData?.activated,
-    login: accountData?.login,
-  };
-
-  if (status === 'loading' || isAccountLoading) {
+  if (status === 'loading' || isLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -97,9 +51,21 @@ export function NavUser() {
   }
 
   // Handle account API error gracefully
-  if (accountError) {
-    console.warn('Failed to fetch account data:', accountError);
+  if (error) {
+    console.warn('Failed to fetch account data:', error);
   }
+
+  // Fallback user data if account API fails but session exists
+  const displayUser = user || {
+    name: 'User',
+    email: '',
+    image: '',
+    initials: 'U',
+    role: null,
+    authorities: [],
+    activated: undefined,
+    login: undefined,
+  };
 
   return (
     <SidebarMenu>
@@ -111,12 +77,12 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
-                <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
+                {displayUser.image ? <AvatarImage src={displayUser.image} alt={displayUser.name} /> : null}
+                <AvatarFallback className="rounded-lg">{displayUser.initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{displayUser.name}</span>
+                <span className="truncate text-xs">{displayUser.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -130,18 +96,18 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
-                  <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
+                  {displayUser.image ? <AvatarImage src={displayUser.image} alt={displayUser.name} /> : null}
+                  <AvatarFallback className="rounded-lg">{displayUser.initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
-                  {user.role && (
+                  <span className="truncate font-medium">{displayUser.name}</span>
+                  <span className="truncate text-xs">{displayUser.email}</span>
+                  {displayUser.role && (
                     <div className="flex items-center gap-1 mt-1">
                       <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                        {user.role}
+                        {displayUser.role}
                       </Badge>
-                      {user.activated === false && (
+                      {displayUser.activated === false && (
                         <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
                           Inactive
                         </Badge>
@@ -162,7 +128,7 @@ export function NavUser() {
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </DropdownMenuItem>
-              {user.authorities.includes('ROLE_ADMIN') && (
+              {displayUser.authorities.includes('ROLE_ADMIN') && (
                 <DropdownMenuItem>
                   <Shield className="h-4 w-4 mr-2" />
                   Admin Panel
