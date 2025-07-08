@@ -28,8 +28,8 @@ interface SubCallTypeTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function SubCallTypeTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: SubCallTypeTableRowProps) {
   return (
@@ -122,6 +122,7 @@ export function SubCallTypeTableRow({
             (() => {
               
               if (column.id === 'callType') {
+                const cellKey = `${subCallType.id}-callType`;
                 return (
                   <RelationshipCell
                     entityId={subCallType.id || 0}
@@ -129,9 +130,11 @@ export function SubCallTypeTableRow({
                     currentValue={subCallType.callType}
                     options={relationshipConfigs.find(config => config.name === "callType")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "callType")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="call-types"
                     showNavigationIcon={true}

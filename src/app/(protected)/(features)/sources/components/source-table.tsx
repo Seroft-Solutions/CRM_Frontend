@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { sourceToast, handleSourceError } from "./source-toast";
+import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -190,6 +191,7 @@ interface DateRange {
 }
 
 export function SourceTable() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("id");
   const [order, setOrder] = useState(ASC);
@@ -201,6 +203,9 @@ export function SourceTable() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
+  
+  // Track individual cell updates instead of global state
+  const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
   
   // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
@@ -466,28 +471,164 @@ export function SourceTable() {
     }
   );
 
-  // Full update mutation for relationship editing (avoids Hibernate ID conflicts)
+  // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateSource({
     mutation: {
-      onSuccess: () => {
-        sourceToast.updated();
-        refetch();
+      onMutate: async (variables) => {
+        // Cancel any outgoing refetches
+        await queryClient.cancelQueries({ 
+          queryKey: ['getAllSources'] 
+        });
+        
+        await queryClient.cancelQueries({ 
+          queryKey: ['searchSources'] 
+        });
+        
+
+        // Snapshot the previous value
+        const previousData = queryClient.getQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }]);
+
+        // Optimistically update the cache
+        if (previousData && Array.isArray(previousData)) {
+          queryClient.setQueryData(['getAllSources', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old.map(source => 
+              source.id === variables.id 
+                ? { ...source, ...variables.data }
+                : source
+            )
+          );
+        }
+
+        
+        // Also update search cache if applicable
+        if (searchTerm) {
+          queryClient.setQueryData(['searchSources', {
+            query: searchTerm,
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old?.map(source => 
+              source.id === variables.id 
+                ? { ...source, ...variables.data }
+                : source
+            )
+          );
+        }
+        
+
+        return { previousData };
       },
-      onError: (error) => {
+      onSuccess: (data, variables) => {
+        // CRITICAL: Update cache with server response to ensure UI reflects actual data
+        queryClient.setQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], (old: any[]) => 
+          old?.map(source => 
+            source.id === variables.id 
+              ? data // Use complete server response
+              : source
+          )
+        );
+
+        
+        // Also update search cache if applicable
+        if (searchTerm) {
+          queryClient.setQueryData(['searchSources', {
+            query: searchTerm,
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old?.map(source => 
+              source.id === variables.id 
+                ? data // Use complete server response
+                : source
+            )
+          );
+        }
+        
+
+        sourceToast.updated();
+      },
+      onError: (error, variables, context) => {
+        // Rollback on error
+        if (context?.previousData) {
+          queryClient.setQueryData(['getAllSources', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], context.previousData);
+        }
         handleSourceError(error);
-        throw error;
+      },
+      onSettled: () => {
+        // Force a background refetch to ensure eventual consistency
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllSources'],
+          refetchType: 'none' // Don't refetch immediately, just mark as stale
+        });
       },
     },
   });
 
-  // Delete mutation
+  // Delete mutation with optimistic updates
   const { mutate: deleteEntity, isPending: isDeleting } = useDeleteSource({
     mutation: {
+      onMutate: async (variables) => {
+        await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
+        
+        const previousData = queryClient.getQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }]);
+
+        // Optimistically remove the item
+        queryClient.setQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], (old: any[]) => 
+          old?.filter(source => source.id !== variables.id)
+        );
+
+        return { previousData };
+      },
       onSuccess: () => {
         sourceToast.deleted();
-        refetch();
+        // Update count cache
+        queryClient.setQueryData(['countSources', filterParams], (old: number) => 
+          Math.max(0, (old || 0) - 1)
+        );
       },
-      onError: (error) => {
+      onError: (error, variables, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['getAllSources', {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], context.previousData);
+        }
         handleSourceError(error);
       },
     },
@@ -579,32 +720,83 @@ export function SourceTable() {
   };
 
   const confirmBulkDelete = async () => {
-    const deletePromises = Array.from(selectedRows).map(id => 
-      new Promise<void>((resolve, reject) => {
-        deleteEntity({ id }, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
-        });
-      })
-    );
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
+    
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData(['getAllSources', {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    }]);
 
     try {
+      // Optimistically remove all selected items
+      queryClient.setQueryData(['getAllSources', {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      }], (old: any[]) => 
+        old?.filter(source => !selectedRows.has(source.id || 0))
+      );
+
+      // Process deletions
+      const deletePromises = Array.from(selectedRows).map(id => 
+        new Promise<void>((resolve, reject) => {
+          deleteEntity({ id }, {
+            onSuccess: () => resolve(),
+            onError: (error) => reject(error)
+          });
+        })
+      );
+
       await Promise.all(deletePromises);
       sourceToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
-      refetch();
+      
+      // Update count cache
+      queryClient.setQueryData(['countSources', filterParams], (old: number) => 
+        Math.max(0, (old || 0) - selectedRows.size)
+      );
+      
     } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], previousData);
+      }
       sourceToast.bulkDeleteError();
     }
     setShowBulkDeleteDialog(false);
   };
 
-  // Handle relationship updates
-  const handleRelationshipUpdate = async (entityId: number, relationshipName: string, newValue: number | null) => {
+  // Enhanced relationship update handler with individual cell tracking
+  const handleRelationshipUpdate = async (
+    entityId: number, 
+    relationshipName: string, 
+    newValue: number | null,
+    isBulkOperation: boolean = false
+  ) => {
+    const cellKey = `${entityId}-${relationshipName}`;
+    
+    // Track this specific cell as updating
+    setUpdatingCells(prev => new Set(prev).add(cellKey));
+    
     return new Promise<void>((resolve, reject) => {
       // Get the current entity data first
       const currentEntity = data?.find(item => item.id === entityId);
       if (!currentEntity) {
+        setUpdatingCells(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cellKey);
+          return newSet;
+        });
         reject(new Error('Source not found in current data'));
         return;
       }
@@ -617,55 +809,134 @@ export function SourceTable() {
       
       // Update only the specific relationship
       if (newValue) {
-        updateData[relationshipName] = { id: newValue };
+        // Find the full relationship object from options
+        const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
+        const selectedOption = relationshipConfig?.options.find(opt => opt.id === newValue);
+        updateData[relationshipName] = selectedOption || { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
-
-      console.log(`Updating ${relationshipName} for Source ${entityId}:`, updateData);
 
       updateEntity({ 
         id: entityId,
         data: updateData
       }, {
-        onSuccess: () => {
-          sourceToast.relationshipUpdated(relationshipName);
-          refetch(); // Refetch data to ensure UI is in sync
+        onSuccess: (serverResponse) => {
+          // CRITICAL: Ensure individual cache updates with server response for bulk operations
+          if (isBulkOperation) {
+            // Update cache with server response for this specific entity
+            queryClient.setQueryData(['getAllSources', {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            }], (old: any[]) => 
+              old?.map(source => 
+                source.id === entityId 
+                  ? serverResponse // Use server response
+                  : source
+              )
+            );
+
+            
+            // Also update search cache if applicable
+            if (searchTerm) {
+              queryClient.setQueryData(['searchSources', {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              }], (old: any[]) => 
+                old?.map(source => 
+                  source.id === entityId 
+                    ? serverResponse // Use server response
+                    : source
+                )
+              );
+            }
+            
+          }
+
+          // Only show individual toast if not part of bulk operation
+          if (!isBulkOperation) {
+            sourceToast.relationshipUpdated(relationshipName);
+          }
           resolve();
         },
         onError: (error: any) => {
-          console.error(`Failed to update ${relationshipName}:`, error);
-          handleSourceError(error);
           reject(error);
+        },
+        onSettled: () => {
+          // Remove this cell from updating state
+          setUpdatingCells(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(cellKey);
+            return newSet;
+          });
         }
       });
     });
   };
 
-  // Handle bulk relationship updates
+  // Handle bulk relationship updates with individual server response syncing
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
-    let successCount = 0;
-    let errorCount = 0;
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
     
-    // Process updates sequentially to avoid overwhelming the server
-    for (const id of entityIds) {
-      try {
-        await handleRelationshipUpdate(id, relationshipName, newValue);
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to update entity ${id}:`, error);
-        errorCount++;
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData(['getAllSources', {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    }]);
+
+    try {
+      // Process updates sequentially with bulk operation flag
+      // Each individual update will handle its own cache update with server response
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const id of entityIds) {
+        try {
+          await handleRelationshipUpdate(id, relationshipName, newValue, true); // Pass true for bulk operation
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to update entity ${id}:`, error);
+          errorCount++;
+        }
       }
-    }
-    
-    // Refresh data after updates
-    refetch();
-    
-    // Throw error if all failed, otherwise consider it partially successful
-    if (errorCount === entityIds.length) {
-      throw new Error(`All ${errorCount} updates failed`);
-    } else if (errorCount > 0) {
-      console.warn(`${errorCount} out of ${entityIds.length} updates failed`);
+      
+      // Show single bulk success toast
+      if (successCount > 0) {
+        const action = newValue === null ? "cleared" : "updated";
+        sourceToast.custom.success(
+          `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
+          `${relationshipName} ${action} for ${successCount} item${successCount > 1 ? 's' : ''}`
+        );
+      }
+      
+      if (errorCount === entityIds.length) {
+        throw new Error(`All ${errorCount} updates failed`);
+      } else if (errorCount > 0) {
+        sourceToast.custom.warning(
+          "⚠️ Partial Success",
+          `${successCount} updated, ${errorCount} failed`
+        );
+      }
+      
+    } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(['getAllSources', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], previousData);
+      }
+      throw error;
     }
   };
 
@@ -825,7 +1096,7 @@ export function SourceTable() {
                   onSelect={handleSelectRow}
                   relationshipConfigs={relationshipConfigs}
                   onRelationshipUpdate={handleRelationshipUpdate}
-                  isUpdating={isUpdating}
+                  updatingCells={updatingCells}
                   visibleColumns={visibleColumns}
                 />
               ))

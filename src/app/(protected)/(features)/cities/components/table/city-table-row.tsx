@@ -28,8 +28,8 @@ interface CityTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function CityTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: CityTableRowProps) {
   return (
@@ -110,6 +110,7 @@ export function CityTableRow({
             (() => {
               
               if (column.id === 'district') {
+                const cellKey = `${city.id}-district`;
                 return (
                   <RelationshipCell
                     entityId={city.id || 0}
@@ -117,9 +118,11 @@ export function CityTableRow({
                     currentValue={city.district}
                     options={relationshipConfigs.find(config => config.name === "district")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "district")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="districts"
                     showNavigationIcon={true}

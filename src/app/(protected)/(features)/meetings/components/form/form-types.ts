@@ -143,6 +143,7 @@ export interface BehaviorConfig {
   navigation: NavigationConfig;
   crossEntity: CrossEntityConfig;
   rendering?: RenderingConfig;
+  drafts?: DraftsConfig;
 }
 
 export interface AutoSaveConfig {
@@ -173,6 +174,15 @@ export interface RenderingConfig {
   useGeneratedSteps: boolean;
 }
 
+export interface DraftsConfig {
+  enabled: boolean;
+  saveBehavior: 'onNavigation' | 'onUnload' | 'both';
+  confirmDialog: boolean;
+  autoSave: boolean;
+  maxDrafts: number;
+  showRestorationDialog: boolean;
+}
+
 export type ValidationFunction = (value: any, allValues: Record<string, any>) => string | undefined;
 
 // Form state interfaces
@@ -185,6 +195,15 @@ export interface FormState {
   values: Record<string, any>;
   touchedFields: Record<string, boolean>;
   isAutoPopulating: boolean;
+  // Draft-related state
+  drafts: any[];
+  isLoadingDrafts: boolean;
+  isSavingDraft: boolean;
+  isDeletingDraft: boolean;
+  showDraftDialog: boolean;
+  showRestorationDialog: boolean;
+  currentDraftId?: number;
+  draftRestorationInProgress: boolean;
 }
 
 export interface FormActions {
@@ -202,6 +221,11 @@ export interface FormActions {
     referrerSessionId: string;
     referrerField: string;
   };
+  // Draft-related actions
+  saveDraft: () => Promise<boolean>;
+  loadDraft: (draftId: number) => Promise<boolean>;
+  deleteDraft: (draftId: number) => Promise<boolean>;
+  checkForDrafts: () => void;
 }
 
 export interface NavigationInfo {

@@ -306,8 +306,8 @@ interface DateRange {
 export function CallTable() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("lastModifiedDate");
-  const [order, setOrder] = useState(DESC);
+  const [sort, setSort] = useState("id");
+  const [order, setOrder] = useState(ASC);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -759,9 +759,11 @@ export function CallTable() {
         await queryClient.cancelQueries({ 
           queryKey: ['getAllCalls'] 
         });
+        
         await queryClient.cancelQueries({ 
           queryKey: ['searchCalls'] 
         });
+        
 
         // Snapshot the previous value
         const previousData = queryClient.getQueryData(['getAllCalls', {
@@ -787,6 +789,7 @@ export function CallTable() {
           );
         }
 
+        
         // Also update search cache if applicable
         if (searchTerm) {
           queryClient.setQueryData(['searchCalls', {
@@ -803,12 +806,45 @@ export function CallTable() {
             )
           );
         }
+        
 
         return { previousData };
       },
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        // CRITICAL: Update cache with server response to ensure UI reflects actual data
+        queryClient.setQueryData(['getAllCalls', {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        }], (old: any[]) => 
+          old?.map(call => 
+            call.id === variables.id 
+              ? data // Use complete server response
+              : call
+          )
+        );
+
+        
+        // Also update search cache if applicable
+        if (searchTerm) {
+          queryClient.setQueryData(['searchCalls', {
+            query: searchTerm,
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          }], (old: any[]) => 
+            old?.map(call => 
+              call.id === variables.id 
+                ? data // Use complete server response
+                : call
+            )
+          );
+        }
+        
+
         callToast.updated();
-        // No refetch needed - optimistic update handles UI
       },
       onError: (error, variables, context) => {
         // Rollback on error
@@ -823,10 +859,10 @@ export function CallTable() {
         handleCallError(error);
       },
       onSettled: () => {
-        // Invalidate to ensure we're eventually consistent (but don't refetch immediately)
+        // Force a background refetch to ensure eventual consistency
         queryClient.invalidateQueries({ 
           queryKey: ['getAllCalls'],
-          refetchType: 'none'
+          refetchType: 'none' // Don't refetch immediately, just mark as stale
         });
       },
     },
@@ -1033,6 +1069,7 @@ export function CallTable() {
     setUpdatingCells(prev => new Set(prev).add(cellKey));
     
     return new Promise<void>((resolve, reject) => {
+      // Get the current entity data first
       const currentEntity = data?.find(item => item.id === entityId);
       if (!currentEntity) {
         setUpdatingCells(prev => {
@@ -1044,12 +1081,13 @@ export function CallTable() {
         return;
       }
 
+      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
         id: entityId
       };
       
-      // Update the specific relationship
+      // Update only the specific relationship
       if (newValue) {
         // Find the full relationship object from options
         const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
@@ -1063,7 +1101,43 @@ export function CallTable() {
         id: entityId,
         data: updateData
       }, {
-        onSuccess: () => {
+        onSuccess: (serverResponse) => {
+          // CRITICAL: Ensure individual cache updates with server response for bulk operations
+          if (isBulkOperation) {
+            // Update cache with server response for this specific entity
+            queryClient.setQueryData(['getAllCalls', {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            }], (old: any[]) => 
+              old?.map(call => 
+                call.id === entityId 
+                  ? serverResponse // Use server response
+                  : call
+              )
+            );
+
+            
+            // Also update search cache if applicable
+            if (searchTerm) {
+              queryClient.setQueryData(['searchCalls', {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              }], (old: any[]) => 
+                old?.map(call => 
+                  call.id === entityId 
+                    ? serverResponse // Use server response
+                    : call
+                )
+              );
+            }
+            
+          }
+
           // Only show individual toast if not part of bulk operation
           if (!isBulkOperation) {
             callToast.relationshipUpdated(relationshipName);
@@ -1085,7 +1159,7 @@ export function CallTable() {
     });
   };
 
-  // Handle bulk relationship updates with single toast message
+  // Handle bulk relationship updates with individual server response syncing
   const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
     // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
@@ -1099,24 +1173,8 @@ export function CallTable() {
     }]);
 
     try {
-      // Optimistically update all selected items
-      const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
-      const selectedOption = newValue ? relationshipConfig?.options.find(opt => opt.id === newValue) : null;
-      
-      queryClient.setQueryData(['getAllCalls', {
-        page: apiPage,
-        size: pageSize,
-        sort: [`${sort},${order}`],
-        ...filterParams,
-      }], (old: any[]) => 
-        old?.map(call => 
-          entityIds.includes(call.id || 0)
-            ? { ...call, [relationshipName]: selectedOption || null }
-            : call
-        )
-      );
-
       // Process updates sequentially with bulk operation flag
+      // Each individual update will handle its own cache update with server response
       let successCount = 0;
       let errorCount = 0;
       
@@ -1170,7 +1228,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {
@@ -1234,7 +1292,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {

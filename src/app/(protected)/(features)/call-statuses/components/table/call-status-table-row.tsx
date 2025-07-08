@@ -28,8 +28,8 @@ interface CallStatusTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function CallStatusTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: CallStatusTableRowProps) {
   return (

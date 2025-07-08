@@ -28,8 +28,8 @@ interface UserAvailabilityTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function UserAvailabilityTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: UserAvailabilityTableRowProps) {
   return (
@@ -146,6 +146,7 @@ export function UserAvailabilityTableRow({
             (() => {
               
               if (column.id === 'user') {
+                const cellKey = `${userAvailability.id}-user`;
                 return (
                   <RelationshipCell
                     entityId={userAvailability.id || 0}
@@ -153,9 +154,11 @@ export function UserAvailabilityTableRow({
                     currentValue={userAvailability.user}
                     options={relationshipConfigs.find(config => config.name === "user")?.options || []}
                     displayField="displayName"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "user")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="user-profiles"
                     showNavigationIcon={true}

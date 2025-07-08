@@ -28,8 +28,8 @@ interface UserProfileTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function UserProfileTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: UserProfileTableRowProps) {
   return (
@@ -140,6 +140,7 @@ export function UserProfileTableRow({
             (() => {
               
               if (column.id === 'internalUser') {
+                const cellKey = `${userProfile.id}-internalUser`;
                 return (
                   <RelationshipCell
                     entityId={userProfile.id || 0}
@@ -147,9 +148,11 @@ export function UserProfileTableRow({
                     currentValue={userProfile.internalUser}
                     options={relationshipConfigs.find(config => config.name === "internalUser")?.options || []}
                     displayField="login"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "internalUser")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="users"
                     showNavigationIcon={true}
@@ -158,6 +161,7 @@ export function UserProfileTableRow({
               }
               
               if (column.id === 'channelType') {
+                const cellKey = `${userProfile.id}-channelType`;
                 return (
                   <RelationshipCell
                     entityId={userProfile.id || 0}
@@ -165,9 +169,11 @@ export function UserProfileTableRow({
                     currentValue={userProfile.channelType}
                     options={relationshipConfigs.find(config => config.name === "channelType")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "channelType")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="channel-types"
                     showNavigationIcon={true}

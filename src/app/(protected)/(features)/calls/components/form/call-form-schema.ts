@@ -17,8 +17,8 @@ export const callFormSchemaFields = {
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
   channelType: z.number({ message: "Please select channel type from the dropdown" }),
-  channelParties: z.string().optional(), // Changed from z.number() to z.string()
-  assignedTo: z.string().optional(), // Changed from z.number() to z.string()
+  channelParties: z.string().optional(),
+  assignedTo: z.string().optional(),
   callStatus: z.number({ message: "Please select call status from the dropdown" }),
 };
 
@@ -41,8 +41,8 @@ export const callFieldSchemas = {
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
   channelType: z.number({ message: "Please select channel type from the dropdown" }),
-  channelParties: z.string().optional(), // Changed from z.number() to z.string()
-  assignedTo: z.string().optional(), // Changed from z.number() to z.string()
+  channelParties: z.string().optional(),
+  assignedTo: z.string().optional(),
   callStatus: z.number({ message: "Please select call status from the dropdown" }),
 };
 
@@ -50,6 +50,10 @@ export const callFieldSchemas = {
 export const callStepSchemas = {
   basic: z.object({
     callDateTime: callFieldSchemas.callDateTime,
+    createdBy: callFieldSchemas.createdBy,
+    createdDate: callFieldSchemas.createdDate,
+    lastModifiedBy: callFieldSchemas.lastModifiedBy,
+    lastModifiedDate: callFieldSchemas.lastModifiedDate,
   }),
   
   review: callFormSchema,

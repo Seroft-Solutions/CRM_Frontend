@@ -33,7 +33,8 @@ export const groupToast = {
     
   relationshipUpdated: (relationshipName: string) => 
     toast.success("🔗 Updated!", {
-      description: `${relationshipName} updated successfully`
+      description: `${relationshipName} updated successfully`,
+      duration: 2000, // Shorter duration for less interruption
     }),
     
   exported: (format: string) => 

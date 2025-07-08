@@ -28,8 +28,8 @@ interface CallRemarkTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
-  isUpdating?: boolean;
+  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -48,7 +48,7 @@ export function CallRemarkTableRow({
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
-  isUpdating = false,
+  updatingCells = new Set(),
   visibleColumns,
 }: CallRemarkTableRowProps) {
   return (
@@ -116,6 +116,7 @@ export function CallRemarkTableRow({
             (() => {
               
               if (column.id === 'call') {
+                const cellKey = `${callRemark.id}-call`;
                 return (
                   <RelationshipCell
                     entityId={callRemark.id || 0}
@@ -123,9 +124,11 @@ export function CallRemarkTableRow({
                     currentValue={callRemark.call}
                     options={relationshipConfigs.find(config => config.name === "call")?.options || []}
                     displayField="name"
-                    onUpdate={onRelationshipUpdate || (() => Promise.resolve())}
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
                     isEditable={relationshipConfigs.find(config => config.name === "call")?.isEditable || false}
-                    isLoading={isUpdating}
+                    isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="calls"
                     showNavigationIcon={true}

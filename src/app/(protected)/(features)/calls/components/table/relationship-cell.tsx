@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { callToast } from "../call-toast";
 
 
 
@@ -64,10 +65,8 @@ export function RelationshipCell({
 
   // Update optimistic value when currentValue changes (from parent or cache)
   React.useEffect(() => {
-    if (!updating) {
-      setOptimisticValue(currentValue);
-    }
-  }, [currentValue, updating]);
+    setOptimisticValue(currentValue);
+  }, [currentValue]);
 
   // Get current display value using optimistic value
   const getCurrentDisplayValue = () => {
@@ -90,7 +89,7 @@ export function RelationshipCell({
   const currentDisplayValue = getCurrentDisplayValue();
   const currentId = optimisticValue?.id || optimisticValue;
 
-  // Enhanced selection handler with optimistic updates
+  // Enhanced selection handler with optimistic updates and server sync
   const handleSelect = async (optionId: number | null) => {
     if (updating) return;
     
@@ -103,7 +102,8 @@ export function RelationshipCell({
     
     try {
       await onUpdate(entityId, relationshipName, optionId);
-      // Success - the optimistic value should match server response
+      // Success - the server response will update the cache and currentValue
+      // The useEffect will sync optimisticValue with the new currentValue
     } catch (error) {
       // Rollback optimistic update on error
       setOptimisticValue(currentValue);

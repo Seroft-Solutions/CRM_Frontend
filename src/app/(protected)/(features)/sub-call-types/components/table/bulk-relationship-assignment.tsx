@@ -82,7 +82,7 @@ export function BulkRelationshipAssignment({
     return option ? option[currentRelationshipConfig.displayField] : "Select value...";
   };
 
-  // Handle bulk update
+  // Handle bulk update with smooth transitions (no individual toasts)
   const handleBulkUpdate = async () => {
     if (!selectedRelationship) {
       subCallTypeToast.validationError(["relationship field"]);
@@ -94,15 +94,7 @@ export function BulkRelationshipAssignment({
     try {
       await onBulkUpdate(selectedEntityIds, selectedRelationship, selectedValue);
       
-      const action = selectedValue === null ? "cleared" : "updated";
-      subCallTypeToast.custom.success(
-        `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
-        `${selectedRelationship} ${action} for ${selectedEntityIds.length} item${
-          selectedEntityIds.length > 1 ? 's' : ''
-        }`
-      );
-      
-      // Close dialog and reset state
+      // Close dialog and reset state - toast will be handled by parent
       onOpenChange(false);
     } catch (error) {
       console.error('Bulk update error:', error);
@@ -156,7 +148,7 @@ export function BulkRelationshipAssignment({
                         variant="outline"
                         role="combobox"
                         aria-expanded={relationshipOpen}
-                        className="w-full justify-between"
+                        className="w-full justify-between transition-all duration-200"
                         disabled={isUpdating}
                       >
                         <span className="truncate">{getRelationshipDisplayValue()}</span>
@@ -208,7 +200,7 @@ export function BulkRelationshipAssignment({
                         variant="outline"
                         role="combobox"
                         aria-expanded={valueOpen}
-                        className="w-full justify-between"
+                        className="w-full justify-between transition-all duration-200"
                         disabled={isUpdating || !currentRelationshipConfig}
                       >
                         <span className="truncate">{getValueDisplayValue()}</span>

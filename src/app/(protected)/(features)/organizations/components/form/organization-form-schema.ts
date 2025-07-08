@@ -9,7 +9,7 @@ export const organizationFormSchemaFields = {
   displayName: z.string().max(150, { message: "Please enter no more than 150 characters" }).optional(),
   domain: z.string().max(100, { message: "Please enter no more than 100 characters" }).regex(/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/, { message: "Please enter valid domain" }).optional(),
   isActive: z.boolean(),
-  members: z.number().optional(),
+  members: z.string().optional(),
 };
 
 export const organizationFormSchema = z.object(organizationFormSchemaFields);
@@ -23,7 +23,7 @@ export const organizationFieldSchemas = {
   displayName: z.string().max(150, { message: "Please enter no more than 150 characters" }).optional(),
   domain: z.string().max(100, { message: "Please enter no more than 100 characters" }).regex(/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/, { message: "Please enter valid domain" }).optional(),
   isActive: z.boolean(),
-  members: z.number().optional(),
+  members: z.string().optional(),
 };
 
 // Step-specific validation schemas

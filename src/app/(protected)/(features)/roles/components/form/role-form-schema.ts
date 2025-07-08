@@ -9,7 +9,7 @@ export const roleFormSchemaFields = {
   description: z.string().max(200, { message: "Please enter no more than 200 characters" }).optional(),
   isActive: z.boolean(),
   organization: z.number().optional(),
-  users: z.number().optional(),
+  users: z.string().optional(),
 };
 
 export const roleFormSchema = z.object(roleFormSchemaFields);
@@ -23,7 +23,7 @@ export const roleFieldSchemas = {
   description: z.string().max(200, { message: "Please enter no more than 200 characters" }).optional(),
   isActive: z.boolean(),
   organization: z.number().optional(),
-  users: z.number().optional(),
+  users: z.string().optional(),
 };
 
 // Step-specific validation schemas

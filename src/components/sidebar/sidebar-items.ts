@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Map } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Map, FileText } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
 // Define the type for sidebar items
@@ -16,6 +16,7 @@ export type SidebarItem = {
 // Main sidebar items
 export const sidebarItems: SidebarItem[] = [
   { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
   {
     key: 'userManagement',
     label: 'User Management',

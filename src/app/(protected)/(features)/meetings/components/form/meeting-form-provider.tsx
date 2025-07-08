@@ -15,6 +15,8 @@ import { meetingFormConfig } from "./meeting-form-config";
 import { meetingFormSchema } from "./meeting-form-schema";
 import { meetingToast, handleMeetingError } from "../meeting-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
+import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
+import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -36,7 +38,7 @@ export function MeetingFormProvider({
   const config = meetingFormConfig;
   
   // Cross-form navigation hooks
-  const { navigationState, hasReferrer } = useCrossFormNavigation();
+  const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } = useCrossFormNavigation();
   const urlParams = useNavigationFromUrl();
   
   // Form state management
@@ -47,6 +49,34 @@ export function MeetingFormProvider({
   const [isRestoring, setIsRestoring] = useState(false);
   const [isAutoPopulating, setIsAutoPopulating] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
+  const [draftRestorationInProgress, setDraftRestorationInProgress] = useState(false);
+  
+  // Comprehensive form data state to track all steps
+  const [allFormData, setAllFormData] = useState<Record<string, any>>({});
+  
+  // Draft-related state
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [showRestorationDialog, setShowRestorationDialog] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+  // Initialize drafts hook
+  const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
+  const {
+    drafts,
+    hasLoadingDrafts: isLoadingDrafts,
+    saveDraft,
+    loadDraft,
+    restoreDraft,
+    deleteDraft,
+    getLatestDraft,
+    isSaving: isSavingDraft,
+    isDeleting: isDeletingDraft,
+  } = useEntityDrafts({
+    entityType: config.entity,
+    enabled: draftsEnabled && isNew,
+    maxDrafts: config.behavior?.drafts?.maxDrafts ?? 5,
+  });
 
   // Generate unique session ID for this form instance
   const [formSessionId] = useState(() => {
@@ -225,6 +255,10 @@ export function MeetingFormProvider({
 
   // Navigation actions
   const nextStep = useCallback(async (): Promise<boolean> => {
+    // Preserve current form values before moving to next step
+    const currentValues = form.getValues();
+    setAllFormData(prev => ({ ...prev, ...currentValues }));
+    
     if (!config.behavior.navigation.validateOnNext) {
       if (currentStep < config.steps.length - 1) {
         setCurrentStep(currentStep + 1);
@@ -239,19 +273,27 @@ export function MeetingFormProvider({
       return true;
     }
     return false;
-  }, [currentStep, config, validateStep]);
+  }, [currentStep, config, validateStep, form]);
 
   const prevStep = useCallback(() => {
+    // Preserve current form values before moving to previous step
+    const currentValues = form.getValues();
+    setAllFormData(prev => ({ ...prev, ...currentValues }));
+    
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       if (currentStep === config.steps.length - 1) {
         setConfirmSubmission(false);
       }
     }
-  }, [currentStep, config]);
+  }, [currentStep, config, form]);
 
   const goToStep = useCallback(async (stepIndex: number): Promise<boolean> => {
     if (stepIndex < 0 || stepIndex >= config.steps.length) return false;
+    
+    // Preserve current form values before changing step
+    const currentValues = form.getValues();
+    setAllFormData(prev => ({ ...prev, ...currentValues }));
     
     if (config.behavior.navigation.allowStepSkipping) {
       setCurrentStep(stepIndex);
@@ -266,7 +308,7 @@ export function MeetingFormProvider({
     
     setCurrentStep(stepIndex);
     return true;
-  }, [config, validateStep]);
+  }, [config, validateStep, form]);
 
   // Form submission
   const submitForm = useCallback(async () => {
@@ -503,7 +545,8 @@ export function MeetingFormProvider({
       }
       
       // Normal form restoration (only if no auto-population occurred)
-      restoreFormState();
+      // But suppress toast if draft restoration is in progress
+      restoreFormState(draftRestorationInProgress);
     }
 
     const handleSaveFormState = () => {
@@ -526,6 +569,181 @@ export function MeetingFormProvider({
     referrerField: fieldName,
   }), [config.entity, formSessionId]);
 
+  // Watch form changes and maintain comprehensive form data
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type === 'change' && name) {
+        setAllFormData(prev => ({
+          ...prev,
+          [name]: value[name]
+        }));
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  // Initialize comprehensive form data with current form values
+  useEffect(() => {
+    const currentValues = form.getValues();
+    setAllFormData(prev => ({ ...prev, ...currentValues }));
+  }, [form]);
+
+  // Draft action handlers
+  const handleSaveDraft = useCallback(async (): Promise<boolean> => {
+    if (!draftsEnabled || !isNew) return false;
+    
+    try {
+      // Use comprehensive form data instead of just current form values
+      const currentFormValues = form.getValues();
+      const completeFormData = { ...allFormData, ...currentFormValues };
+      
+      const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
+      
+      if (success) {
+        toast.success("Draft saved successfully");
+      } else {
+        toast.error("Failed to save draft");
+      }
+      
+      return success;
+    } catch (error) {
+      console.error("Failed to save draft:", error);
+      toast.error("Failed to save draft");
+      return false;
+    }
+  }, [draftsEnabled, isNew, form, allFormData, currentStep, formSessionId, currentDraftId, saveDraft]);
+
+  const handleLoadDraft = useCallback(async (draftId: number, suppressToast = false): Promise<boolean> => {
+    if (!draftsEnabled) return false;
+    
+    try {
+      // Attempt to restore draft data
+      const draftData = await restoreDraft(draftId);
+      if (!draftData) {
+        if (!suppressToast) {
+          toast.error("Draft not found or has been deleted");
+        }
+        return false;
+      }
+
+      // Restore form data to both React Hook Form and comprehensive state
+      Object.keys(draftData.formData).forEach(key => {
+        form.setValue(key, draftData.formData[key]);
+      });
+      
+      // Update comprehensive form data state
+      setAllFormData(draftData.formData);
+      
+      // Restore current step
+      if (draftData.currentStep !== undefined) {
+        setCurrentStep(draftData.currentStep);
+      }
+      
+      setCurrentDraftId(undefined); // Clear since draft restoration is complete
+      setShowRestorationDialog(false);
+      
+      // Show single success message only if not suppressed
+      if (!suppressToast) {
+        toast.success("Draft restored successfully");
+      }
+      return true;
+      
+    } catch (error) {
+      console.error("Failed to restore draft:", error);
+      if (!suppressToast) {
+        toast.error("Failed to restore draft");
+      }
+      return false;
+    }
+  }, [draftsEnabled, restoreDraft, form]);
+
+  const handleDeleteDraft = useCallback(async (draftId: number): Promise<boolean> => {
+    if (!draftsEnabled) return false;
+    
+    try {
+      const success = await deleteDraft(draftId);
+      if (success) {
+        toast.success("Draft deleted successfully");
+      } else {
+        toast.error("Failed to delete draft");
+      }
+      return success;
+    } catch (error) {
+      console.error("Failed to delete draft:", error);
+      toast.error("Failed to delete draft");
+      return false;
+    }
+  }, [draftsEnabled, deleteDraft]);
+
+  const handleCheckForDrafts = useCallback(() => {
+    if (!draftsEnabled || !isNew || !config.behavior?.drafts?.showRestorationDialog) return;
+    
+    if (drafts.length > 0 && !restorationAttempted) {
+      setShowRestorationDialog(true);
+      setRestorationAttempted(true);
+    }
+  }, [draftsEnabled, isNew, config.behavior?.drafts?.showRestorationDialog, drafts.length, restorationAttempted]);
+
+  // Check for drafts on mount and handle restoration from drafts page
+  useEffect(() => {
+    if (draftsEnabled && isNew && !isLoadingDrafts && !restorationAttempted && !draftRestorationInProgress) {
+      // First check if there's a specific draft to restore from the drafts management page
+      const draftToRestore = sessionStorage.getItem('draftToRestore');
+      if (draftToRestore) {
+        setDraftRestorationInProgress(true);
+        try {
+          const restorationData = JSON.parse(draftToRestore);
+          if (restorationData.entityType === config.entity) {
+            // Restore the specific draft (suppress toast since this is from management page)
+            handleLoadDraft(restorationData.draftId, true).then((success) => {
+              if (success) {
+                sessionStorage.removeItem('draftToRestore');
+                setRestorationAttempted(true);
+                // Show single comprehensive message for management page restoration
+                toast.success("Draft restored successfully");
+              }
+              setDraftRestorationInProgress(false);
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Failed to restore draft from management page:', error);
+          sessionStorage.removeItem('draftToRestore');
+          setDraftRestorationInProgress(false);
+        }
+      }
+      
+      // Otherwise, show restoration dialog if drafts exist
+      handleCheckForDrafts();
+    }
+  }, [draftsEnabled, isNew, isLoadingDrafts, restorationAttempted, draftRestorationInProgress, handleCheckForDrafts, handleLoadDraft, config.entity]);
+
+  // Register draft check with cross-form navigation
+  useEffect(() => {
+    if (draftsEnabled && isNew) {
+      const draftCheckHandler = {
+        formId: config.entity,
+        checkDrafts: (onProceed: () => void) => {
+          if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
+            // Show draft dialog
+            setPendingNavigation(() => onProceed);
+            setShowDraftDialog(true);
+          } else {
+            // No changes or dialog disabled, proceed directly
+            onProceed();
+          }
+        }
+      };
+      
+      registerDraftCheck(draftCheckHandler);
+      
+      return () => {
+        unregisterDraftCheck(config.entity);
+      };
+    }
+  }, [draftsEnabled, isNew, config.entity, config.behavior?.drafts?.confirmDialog, form.formState.isDirty, registerDraftCheck, unregisterDraftCheck]);
+
   // Create context value
   const contextValue: FormContextValue = {
     config,
@@ -537,7 +755,16 @@ export function MeetingFormProvider({
       errors: form.formState.errors,
       values: form.getValues(),
       touchedFields: form.formState.touchedFields as Record<string, boolean>,
-      isAutoPopulating
+      isAutoPopulating,
+      // Draft-related state
+      drafts,
+      isLoadingDrafts,
+      isSavingDraft,
+      isDeletingDraft,
+      showDraftDialog,
+      showRestorationDialog,
+      currentDraftId,
+      draftRestorationInProgress,
     },
     actions: {
       nextStep,
@@ -549,7 +776,12 @@ export function MeetingFormProvider({
       saveFormState,
       restoreFormState,
       handleEntityCreated,
-      getNavigationProps
+      getNavigationProps,
+      // Draft-related actions
+      saveDraft: handleSaveDraft,
+      loadDraft: handleLoadDraft,
+      deleteDraft: handleDeleteDraft,
+      checkForDrafts: handleCheckForDrafts,
     },
     form,
     navigation: {
@@ -562,6 +794,48 @@ export function MeetingFormProvider({
   return (
     <FormContext.Provider value={contextValue}>
       {children}
+      
+      {/* Draft Dialogs */}
+      {draftsEnabled && (
+        <>
+          <SaveDraftDialog
+            open={showDraftDialog}
+            onOpenChange={setShowDraftDialog}
+            entityType={config.entity}
+            onSaveDraft={async () => {
+              const success = await handleSaveDraft();
+              if (success && pendingNavigation) {
+                pendingNavigation();
+                setPendingNavigation(null);
+              }
+              return success;
+            }}
+            onDiscardChanges={() => {
+              if (pendingNavigation) {
+                pendingNavigation();
+                setPendingNavigation(null);
+              }
+            }}
+            onCancel={() => {
+              setPendingNavigation(null);
+            }}
+            isDirty={form.formState.isDirty}
+          />
+          
+          <DraftRestorationDialog
+            open={showRestorationDialog}
+            onOpenChange={setShowRestorationDialog}
+            entityType={config.entity}
+            drafts={drafts}
+            onRestoreDraft={handleLoadDraft}
+            onDeleteDraft={handleDeleteDraft}
+            onStartFresh={() => {
+              setShowRestorationDialog(false);
+            }}
+            isLoading={isLoadingDrafts}
+          />
+        </>
+      )}
     </FormContext.Provider>
   );
 }
