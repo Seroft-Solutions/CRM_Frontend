@@ -9,7 +9,8 @@
  * - Fetches roles from backend API instead of JWT token parsing
  * - Handles 500+ roles without session size issues
  * - Automatic role normalization (removes ROLE_ prefix)
- * - Integrated with React Query for caching and loading states
+ * - Integrated with enhanced caching and error handling
+ * - Background refetching to keep roles in sync
  * 
  * @returns {Object} Object containing roles array, loading state, and hasRole helper
  */
@@ -18,7 +19,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useGetAccount } from '@/core/api/generated/spring/endpoints/account-resource/account-resource.gen';
+import { useAccount } from './use-account';
 import { normalizeRole } from '../utils';
 
 export function useUserRoles() {
@@ -26,15 +27,14 @@ export function useUserRoles() {
   const [roles, setRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use the generated API hook to fetch account data
+  // Use the enhanced account hook with optimized caching
   const { 
     data: accountData, 
     isLoading: accountLoading, 
     error: accountError 
-  } = useGetAccount({
-    query: {
-      enabled: !!session?.user, // Only fetch when user is authenticated
-    }
+  } = useAccount({
+    refetchInBackground: true, // Keep roles fresh in background
+    staleTime: 5 * 60 * 1000, // 5 minutes stale time for role data
   });
 
   useEffect(() => {

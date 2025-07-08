@@ -26,3 +26,6 @@ export * from './components';
 
 // Providers
 export * from './providers';
+
+// Queries & Cache Management
+export * from './queries';
