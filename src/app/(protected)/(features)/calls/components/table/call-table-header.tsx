@@ -230,17 +230,6 @@ export function CallTableHeader({
                   );
                 }
                 
-                if (column.accessor === 'callCategory') {
-                  return (
-                    <Input
-                      placeholder="Filter..."
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                      value={filters["callCategory.name"] as string || ""}
-                      onChange={(e) => onFilterChange("callCategory.name", e.target.value || undefined)}
-                    />
-                  );
-                }
-                
                 if (column.accessor === 'source') {
                   return (
                     <Input

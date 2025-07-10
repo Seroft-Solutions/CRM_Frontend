@@ -96,12 +96,6 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'subCallType:sidebar',
       },
       {
-        key: 'callCategory',
-        label: 'Call Category Master',
-        path: '/call-categories',
-        requiredPermission: 'callCategory:sidebar',
-      },
-      {
         key: 'callStatus',
         label: 'Call Status Master',
         path: '/call-statuses',

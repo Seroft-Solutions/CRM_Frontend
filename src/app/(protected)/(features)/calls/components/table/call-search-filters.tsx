@@ -100,9 +100,6 @@ export function CallSearchAndFilters({
       if (relationName === 'subCallType') {
         return 'Sub Call Type';
       }
-      if (relationName === 'callCategory') {
-        return 'Call Category';
-      }
       if (relationName === 'source') {
         return 'Source';
       }
@@ -219,18 +216,6 @@ export function CallSearchAndFilters({
                       placeholder="Filter by sub call type..."
                       value={filters["subCallType.name"] as string || ""}
                       onChange={(e) => onFilterChange("subCallType.name", e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Call Category
-                    </label>
-                    <Input
-                      placeholder="Filter by call category..."
-                      value={filters["callCategory.name"] as string || ""}
-                      onChange={(e) => onFilterChange("callCategory.name", e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

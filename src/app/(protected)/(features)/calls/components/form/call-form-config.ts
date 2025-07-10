@@ -19,7 +19,6 @@ export const callFormConfig: FormConfig = {
         'priority',
         'callType',
         'subCallType',
-        'callCategory',
         'callStatus',
       ],
       validation: {
@@ -49,8 +48,8 @@ export const callFormConfig: FormConfig = {
       fields: [
       ],
       relationships: [
-        'channelType',
         'channelParties',
+        'channelType',
       ],
       validation: {
         mode: 'onBlur',
@@ -188,32 +187,6 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
-      name: 'callCategory',
-      type: 'many-to-one',
-      targetEntity: 'callCategory',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'classification',
-      api: {
-        useGetAllHook: 'useGetAllCallCategories',
-        useSearchHook: 'useSearchCallCategories',
-        useCountHook: 'useCountCallCategories',
-        entityName: 'CallCategories',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/call-categories/new',
-        createPermission: 'callCategory:create:inline',
-      },
-      ui: {
-        label: 'Call Category',
-        placeholder: 'Select call category',
-        icon: '🏷️',
-      }
-    },
-    {
       name: 'source',
       type: 'many-to-one',
       targetEntity: 'source',
@@ -266,38 +239,12 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
-      name: 'channelType',
-      type: 'many-to-one',
-      targetEntity: 'channelType',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'channel',
-      api: {
-        useGetAllHook: 'useGetAllChannelTypes',
-        useSearchHook: 'useSearchChannelTypes',
-        useCountHook: 'useCountChannelTypes',
-        entityName: 'ChannelTypes',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/channel-types/new',
-        createPermission: 'channelType:create:inline',
-      },
-      ui: {
-        label: 'Channel Type',
-        placeholder: 'Select channel type',
-        icon: '📞',
-      }
-    },
-    {
       name: 'channelParties',
       type: 'many-to-one',
       targetEntity: 'userProfile',
       displayField: 'displayName',
       primaryKey: 'id',
-      required: false,
+      required: true,
       multiple: false,
       category: 'channel',
       api: {
@@ -314,6 +261,36 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Parties',
         placeholder: 'Select channel parties',
+        icon: '📞',
+      }
+    },
+    {
+      name: 'channelType',
+      type: 'many-to-one',
+      targetEntity: 'channelType',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: true,
+      multiple: false,
+      category: 'channel',
+      cascadingFilter: {
+        parentField: 'channelParties',
+        filterField: 'userProfileId',
+      },
+      api: {
+        useGetAllHook: 'useGetAllChannelTypes',
+        useSearchHook: 'useSearchChannelTypes',
+        useCountHook: 'useCountChannelTypes',
+        entityName: 'ChannelTypes',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/channel-types/new',
+        createPermission: 'channelType:create:inline',
+      },
+      ui: {
+        label: 'Channel Type',
+        placeholder: 'Select channel type',
         icon: '📞',
       }
     },

@@ -8,7 +8,6 @@
 import type { PriorityDTO } from './PriorityDTO';
 import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
-import type { CallCategoryDTO } from './CallCategoryDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
@@ -33,7 +32,6 @@ export interface CallDTO {
   priority: PriorityDTO;
   callType: CallTypeDTO;
   subCallType: SubCallTypeDTO;
-  callCategory: CallCategoryDTO;
   source: SourceDTO;
   customer: CustomerDTO;
   channelType: ChannelTypeDTO;

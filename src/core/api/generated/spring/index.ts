@@ -19,7 +19,6 @@ export * from './endpoints/call-resource/call-resource.gen';
 export * from './endpoints/call-type-resource/call-type-resource.gen';
 export * from './endpoints/call-status-resource/call-status-resource.gen';
 export * from './endpoints/call-remark-resource/call-remark-resource.gen';
-export * from './endpoints/call-category-resource/call-category-resource.gen';
 export * from './endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 export * from './endpoints/area-resource/area-resource.gen';
 export * from './endpoints/whats-app-controller/whats-app-controller.gen';

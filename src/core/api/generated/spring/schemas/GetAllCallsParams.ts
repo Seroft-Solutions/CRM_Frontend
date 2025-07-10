@@ -102,15 +102,6 @@ export type GetAllCallsParams = {
 'subCallTypeId.specified'?: boolean;
 'subCallTypeId.in'?: number[];
 'subCallTypeId.notIn'?: number[];
-'callCategoryId.greaterThan'?: number;
-'callCategoryId.lessThan'?: number;
-'callCategoryId.greaterThanOrEqual'?: number;
-'callCategoryId.lessThanOrEqual'?: number;
-'callCategoryId.equals'?: number;
-'callCategoryId.notEquals'?: number;
-'callCategoryId.specified'?: boolean;
-'callCategoryId.in'?: number[];
-'callCategoryId.notIn'?: number[];
 'sourceId.greaterThan'?: number;
 'sourceId.lessThan'?: number;
 'sourceId.greaterThanOrEqual'?: number;

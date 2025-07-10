@@ -26,11 +26,6 @@ import {
   useCountSubCallTypes,
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
 import {
-  useGetAllCallCategories,
-  useSearchCallCategories,
-  useCountCallCategories,
-} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
-import {
   useGetAllSources,
   useSearchSources,
   useCountSources,
@@ -98,18 +93,6 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             primaryKey="id"
             multiple={false}
             label="SubCallTypes"
-          />
-        );
-        
-      case 'callCategory':
-        return (
-          <RelationshipDisplayValue
-            value={value}
-            useGetAllHook={useGetAllCallCategories}
-            displayField="name"
-            primaryKey="id"
-            multiple={false}
-            label="CallCategories"
           />
         );
         

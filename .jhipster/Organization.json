@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250703202742"
+    "changelogDate": "20250710162207"
   },
   "applications": ["crmBackend"],
   "documentation": "Organization is a tenant and maps to a DB schema.",
