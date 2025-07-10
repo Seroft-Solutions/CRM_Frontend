@@ -96,10 +96,6 @@ import {
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
 
 import {
-  useGetAllCallCategories
-} from "@/core/api/generated/spring/endpoints/call-category-resource/call-category-resource.gen";
-
-import {
   useGetAllSources
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
 
@@ -184,15 +180,6 @@ const ALL_COLUMNS: ColumnConfig[] = [
     id: 'subCallType',
     label: 'Sub Call Type',
     accessor: 'subCallType',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-  
-  {
-    id: 'callCategory',
-    label: 'Call Category',
-    accessor: 'callCategory',
     type: 'relationship',
     visible: true,
     sortable: false,
@@ -306,8 +293,8 @@ interface DateRange {
 export function CallTable() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState("lastModifiedDate");
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -423,11 +410,6 @@ export function CallTable() {
             }
             
             
-            if (col.id === 'callCategory' && relationship) {
-              value = relationship.name || '';
-            }
-            
-            
             if (col.id === 'source' && relationship) {
               value = relationship.name || '';
             }
@@ -502,11 +484,6 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
-  const { data: callcategoryOptions = [] } = useGetAllCallCategories(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-  
   const { data: sourceOptions = [] } = useGetAllSources(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -563,12 +540,6 @@ export function CallTable() {
       'subCallType.name': { 
         apiParam: 'subCallTypeId.equals', 
         options: subcalltypeOptions, 
-        displayField: 'name' 
-      },
-      
-      'callCategory.name': { 
-        apiParam: 'callCategoryId.equals', 
-        options: callcategoryOptions, 
         displayField: 'name' 
       },
       
@@ -1228,7 +1199,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {
@@ -1243,14 +1214,6 @@ export function CallTable() {
       name: "subCallType",
       displayName: "SubCallType",
       options: subcalltypeOptions || [],
-      displayField: "name",
-      isEditable: false, // Disabled by default
-    },
-    
-    {
-      name: "callCategory",
-      displayName: "CallCategory",
-      options: callcategoryOptions || [],
       displayField: "name",
       isEditable: false, // Disabled by default
     },
@@ -1292,7 +1255,7 @@ export function CallTable() {
       displayName: "AssignedTo",
       options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
     
     {

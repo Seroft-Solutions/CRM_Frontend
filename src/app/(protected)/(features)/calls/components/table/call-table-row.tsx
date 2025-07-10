@@ -172,27 +172,6 @@ export function CallTableRow({
                 );
               }
               
-              if (column.id === 'callCategory') {
-                const cellKey = `${call.id}-callCategory`;
-                return (
-                  <RelationshipCell
-                    entityId={call.id || 0}
-                    relationshipName="callCategory"
-                    currentValue={call.callCategory}
-                    options={relationshipConfigs.find(config => config.name === "callCategory")?.options || []}
-                    displayField="name"
-                    onUpdate={(entityId, relationshipName, newValue) => 
-                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
-                    }
-                    isEditable={relationshipConfigs.find(config => config.name === "callCategory")?.isEditable || false}
-                    isLoading={updatingCells.has(cellKey)}
-                    className="min-w-[150px]"
-                    relatedEntityRoute="call-categories"
-                    showNavigationIcon={true}
-                  />
-                );
-              }
-              
               if (column.id === 'source') {
                 const cellKey = `${call.id}-source`;
                 return (

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250703202754"
+    "changelogDate": "20250710162218"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
