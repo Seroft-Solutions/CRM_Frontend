@@ -378,7 +378,7 @@ export const callFormConfig: FormConfig = {
       debounceMs: 2000,
     },
     persistence: {
-      enabled: true,
+      enabled: false,
       sessionTimeoutMinutes: 30,
       storagePrefix: 'CallFormState_',
     },
