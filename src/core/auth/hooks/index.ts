@@ -1,10 +1,7 @@
 /**
- * Authentication Hooks
- * Central exports for all auth-related hooks
+ * Export all authentication hooks
  */
 
-export { useActivityTracker } from './use-activity-tracker';
-export { useSessionMonitor } from './use-session-monitor';
-export { useIdleTimeout } from './use-idle-timeout';
-export { useUserRoles } from './use-user-roles';
 export { useAccount } from './use-account';
+export { useUserRoles } from './use-user-roles';
+export { useUserAuthorities } from './use-user-authorities';

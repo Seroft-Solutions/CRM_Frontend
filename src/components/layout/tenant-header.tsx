@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import {InlinePermissionGuard, PermissionGuard, useAuth} from '@/core/auth';
+import { useUserAuthorities } from '@/core/auth/hooks';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Building2, Briefcase } from 'lucide-react';
 
 export function TenantHeader() {
   const { session } = useAuth();
+  const { hasGroup } = useUserAuthorities();
   const { data: organizations } = useUserOrganizations();
 
   // State for selected organization
@@ -61,12 +63,12 @@ export function TenantHeader() {
       localStorage.setItem = originalSetItem;
     };
   }, [getSelectedOrganization]);
-
+  // Don't render if user doesn't have Business Partners group
+  if (!hasGroup('Business Partners')) {
+    return null;
+  }
 
   return (
-      <InlinePermissionGuard
-          requiredPermission="customer:read"
-      >
         <div className="mx-auto mt-2 max-w-md w-full">
           <div className="flex items-center justify-between px-4 py-3 rounded-xl shadow-md bg-gradient-to-r from-blue-600 to-blue-700 border border-blue-800/50">
             {/* Left Icon */}
@@ -89,7 +91,5 @@ export function TenantHeader() {
             </div>
           </div>
         </div>
-
-      </InlinePermissionGuard>
   );
 }

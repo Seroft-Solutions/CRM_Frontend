@@ -18,6 +18,28 @@ export function normalizeRole(role: string): string {
 }
 
 /**
+ * Normalize group name by removing GROUP_ prefix if present
+ * This ensures consistent group checking across the application
+ */
+export function normalizeGroup(group: string): string {
+  return group.startsWith('GROUP_') ? group.substring(6) : group;
+}
+
+/**
+ * Normalize authority (role or group) by removing prefixes
+ * This function handles both ROLE_ and GROUP_ prefixes
+ */
+export function normalizeAuthority(authority: string): string {
+  if (authority.startsWith('ROLE_')) {
+    return authority.substring(5);
+  }
+  if (authority.startsWith('GROUP_')) {
+    return authority.substring(6);
+  }
+  return authority;
+}
+
+/**
  * Parse roles from Keycloak access token
  * @deprecated - Use backend API /api/account instead for role fetching
  * This function is kept for backward compatibility only
@@ -63,7 +85,7 @@ export function parseGroups(accessToken: string): string[] {
 
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
     const groups = decoded.groups || [];
-    return [...new Set(groups)]; // Remove duplicates
+    return [...new Set(groups.map(normalizeGroup))]; // Remove duplicates and normalize
   } catch (error) {
     console.error('Failed to parse groups from token:', error);
     return [];
