@@ -273,10 +273,6 @@ export const callFormConfig: FormConfig = {
       required: true,
       multiple: false,
       category: 'channel',
-      cascadingFilter: {
-        parentField: 'channelParties',
-        filterField: 'userProfileId',
-      },
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
