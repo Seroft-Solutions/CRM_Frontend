@@ -102,18 +102,6 @@ export function NavUser() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{displayUser.name}</span>
                   <span className="truncate text-xs">{displayUser.email}</span>
-                  {displayUser.role && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                        {displayUser.role}
-                      </Badge>
-                      {displayUser.activated === false && (
-                        <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
-                          Inactive
-                        </Badge>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             </DropdownMenuLabel>
