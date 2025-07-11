@@ -59,7 +59,7 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
   
   const {
     refetchInBackground = true,
-    staleTime = 5 * 60 * 1000, // 5 minutes
+    staleTime = 3 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus = true,
   } = options;
 

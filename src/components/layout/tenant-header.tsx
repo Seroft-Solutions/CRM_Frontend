@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useAuth } from '@/core/auth';
+import {InlinePermissionGuard, PermissionGuard, useAuth} from '@/core/auth';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Building2, Briefcase } from 'lucide-react';
 
@@ -62,31 +62,34 @@ export function TenantHeader() {
     };
   }, [getSelectedOrganization]);
 
-  // Check if user belongs to Business Partners group
-  const isBusinessPartner =
-    session?.user?.roles?.includes('/Business Partners') ||
-    session?.user?.groups?.includes('/Business Partners');
-
-  // Only show for business partners with selected organization
-  if (!isBusinessPartner || !selectedOrganization) {
-    return null;
-  }
 
   return (
-    <div className="bg-blue-600 text-white rounded-lg shadow-md px-4 py-2 max-w-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-          <Building2 className="h-4 w-4 text-white" />
+      <InlinePermissionGuard
+          requiredPermission="customer:read"
+      >
+        <div className="mx-auto mt-2 max-w-md w-full">
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl shadow-md bg-gradient-to-r from-blue-600 to-blue-700 border border-blue-800/50">
+            {/* Left Icon */}
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-500/80 p-2 rounded-lg">
+                <Building2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-[0.65rem] text-blue-100 uppercase font-semibold tracking-wide">
+                  Currently working with
+                </p>
+                <h2 className="text-base font-bold text-white truncate">{selectedOrganization}</h2>
+              </div>
+            </div>
+
+            {/* Role Badge */}
+            <div className="px-3 py-1 bg-white/10 border border-white/20 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+              <Briefcase className="w-3.5 h-3.5" />
+              Partner
+            </div>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs text-blue-200 font-medium">Currently working with</div>
-          <div className="text-sm font-bold text-white truncate">{selectedOrganization}</div>
-        </div>
-        <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 rounded-full">
-          <Briefcase className="h-3 w-3 text-white" />
-          <span className="text-xs font-semibold text-white">Partner</span>
-        </div>
-      </div>
-    </div>
+
+      </InlinePermissionGuard>
   );
 }
