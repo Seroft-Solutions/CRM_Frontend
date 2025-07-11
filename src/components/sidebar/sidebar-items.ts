@@ -15,7 +15,7 @@ export type SidebarItem = {
 
 // Main sidebar items
 export const sidebarItems: SidebarItem[] = [
-  { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, requiredPermission: 'dashboard' },
   { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
   {
     key: 'userManagement',
