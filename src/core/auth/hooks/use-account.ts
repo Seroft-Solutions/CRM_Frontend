@@ -50,7 +50,8 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
     image: string;
     initials: string;
     role: string | null;
-    authorities: string[];
+    authorities: string[]; // Normalized authorities (without ROLE_/GROUP_ prefixes)
+    rawAuthorities: string[]; // Original authorities with prefixes
     activated: boolean | undefined;
     login: string | undefined;
   } | null;
@@ -110,10 +111,30 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
 
   const getPrimaryRole = () => {
     if (queryResult.data?.authorities && queryResult.data.authorities.length > 0) {
-      // Remove 'ROLE_' prefix if present and lowercase
-      return queryResult.data.authorities[0].replace('ROLE_', '').toLowerCase();
+      // Find the first role (starts with ROLE_) and normalize it
+      const firstRole = queryResult.data.authorities.find(auth => auth.startsWith('ROLE_'));
+      if (firstRole) {
+        return firstRole.replace('ROLE_', '').toLowerCase();
+      }
+      // Fallback: use first authority and normalize it
+      return queryResult.data.authorities[0].replace(/^(ROLE_|GROUP_)/, '').toLowerCase();
     }
     return null;
+  };
+
+  const getNormalizedAuthorities = () => {
+    if (queryResult.data?.authorities) {
+      return queryResult.data.authorities.map(auth => {
+        if (auth.startsWith('ROLE_')) {
+          return auth.replace('ROLE_', '');
+        }
+        if (auth.startsWith('GROUP_')) {
+          return auth.replace('GROUP_', '');
+        }
+        return auth;
+      });
+    }
+    return [];
   };
 
   // Create user object with all necessary data
@@ -123,7 +144,8 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
     image: getImageUrl(),
     initials: getInitials(getFullName()),
     role: getPrimaryRole(),
-    authorities: queryResult.data?.authorities || [],
+    authorities: getNormalizedAuthorities(), // Now includes normalized roles and groups
+    rawAuthorities: queryResult.data?.authorities || [], // Keep original authorities for debugging
     activated: queryResult.data?.activated,
     login: queryResult.data?.login,
   } : null;

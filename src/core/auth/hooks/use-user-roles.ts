@@ -12,6 +12,7 @@
  * - Integrated with enhanced caching and error handling
  * - Background refetching to keep roles in sync
  * 
+ * @deprecated Consider using useUserAuthorities for both roles and groups
  * @returns {Object} Object containing roles array, loading state, and hasRole helper
  */
 
@@ -20,7 +21,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAccount } from './use-account';
-import { normalizeRole } from '../utils';
+import { normalizeRole, normalizeAuthority } from '../utils';
 
 export function useUserRoles() {
   const { data: session, status } = useSession();
@@ -51,8 +52,10 @@ export function useUserRoles() {
 
     if (accountData?.authorities) {
       try {
-        // Normalize the roles from authorities
-        const userRoles = accountData.authorities.map(normalizeRole);
+        // Filter and normalize only role authorities
+        const userRoles = accountData.authorities
+          .filter((authority: string) => authority.startsWith('ROLE_') || !authority.startsWith('GROUP_'))
+          .map((authority: string) => normalizeAuthority(authority));
         setRoles(userRoles);
       } catch (error) {
         console.error('Failed to process user authorities:', error);
