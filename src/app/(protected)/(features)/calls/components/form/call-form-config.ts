@@ -255,7 +255,7 @@ export const callFormConfig: FormConfig = {
       },
       creation: {
         canCreate: true,
-        createPath: '/user-profiles/new',
+        createPath: '/invite-partners',
         createPermission: 'userProfile:create:inline',
       },
       ui: {
