@@ -43,6 +43,25 @@ export function OrganizationSetupProgress({
   const [isComplete, setIsComplete] = useState(false);
   const [hasError, setHasError] = useState(false);
 
+  /**
+   * Format progress message for better display
+   */
+  const formatProgressMessage = (message: string | undefined): string => {
+    if (!message) return '';
+    
+    // If message contains changeset details, clean it up
+    if (message.includes(' - ')) {
+      const [mainPart, changesetPart] = message.split(' - ');
+      // Remove long changeset paths and just show a clean message
+      if (changesetPart && changesetPart.length > 30) {
+        return mainPart + ' • Processing database changes...';
+      }
+      return mainPart + ' • ' + changesetPart;
+    }
+    
+    return message;
+  };
+
   // Poll for setup progress using the correct hook
   const {
     data: progressData,
@@ -50,12 +69,12 @@ export function OrganizationSetupProgress({
     error,
   } = useGetOrganizationSetupProgress(organizationName, {
     query: {
-      refetchInterval: 2000, // Poll every 2 seconds
+      refetchInterval: 1000, // Poll every 1 second for more responsive updates
       refetchIntervalInBackground: true,
       retry: (failureCount, error: any) => {
         // Retry up to 5 times for network errors, but not for 404s (organization not found)
         if (error?.response?.status === 404) {
-          return failureCount < 30; // Retry 404s for up to 1 minute (30 * 2s)
+          return failureCount < 60; // Retry 404s for up to 1 minute (60 * 1s)
         }
         return failureCount < 5;
       },
@@ -86,11 +105,11 @@ export function OrganizationSetupProgress({
         progressData.includes('Running Changeset')
       ) {
         stepIndex = 1;
-        // Handle migration percentage updates
+        // Handle migration percentage updates - use actual percentage from backend
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(25 + percentage * 0.35); // 25% base + up to 35% for migrations (25% to 60%)
+          setProgress(percentage); // Use actual percentage directly (backend sends 25-60%)
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -100,11 +119,11 @@ export function OrganizationSetupProgress({
         progressData.includes('Creating organization record')
       ) {
         stepIndex = 2;
-        // Handle data loading percentage updates
+        // Handle data loading percentage updates - use actual percentage from backend
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(85 + percentage * 0.1); // 85% base + up to 10% for loading
+          setProgress(percentage); // Use actual percentage directly (backend sends 60-95%)
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -260,7 +279,7 @@ export function OrganizationSetupProgress({
             })}
           </div>
 
-          {/* Status Message - Compact */}
+          {/* Status Message - Enhanced for migration details */}
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center justify-center space-x-2 mb-1">
               {!isComplete && (
@@ -273,12 +292,13 @@ export function OrganizationSetupProgress({
               <p className="text-sm text-muted-foreground">
                 {isComplete
                   ? '🎉 Your workspace is ready!'
-                  : progressData || 'Initializing setup...'}
+                  : formatProgressMessage(progressData) || 'Initializing setup...'}
               </p>
             </div>
             {!isComplete && (
               <p className="text-xs text-muted-foreground/70">
-                ⚡ Setting up your personalized CRM workspace (2-5 minutes)
+                ⚡ Setting up your personalized CRM workspace
+                {progressData?.includes(' - ') ? ' • Processing database changes...' : ' (2-5 minutes)'}
               </p>
             )}
           </div>
