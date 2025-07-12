@@ -247,6 +247,9 @@ export const callFormConfig: FormConfig = {
       required: true,
       multiple: false,
       category: 'channel',
+      customFilters: {
+        'channelTypeId.specified': true
+      },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',

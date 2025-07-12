@@ -40,6 +40,7 @@ interface PaginatedRelationshipComboboxProps {
   onEntityCreated?: (entityId: number | string) => void;
   parentFilter?: number | string;
   parentField?: string;
+  customFilters?: Record<string, any>;
   // Cross-form navigation props
   referrerForm?: string;
   referrerSessionId?: string;
@@ -65,6 +66,7 @@ export function PaginatedRelationshipCombobox({
   onEntityCreated,
   parentFilter,
   parentField,
+  customFilters,
   referrerForm,
   referrerSessionId,
   referrerField,
@@ -97,7 +99,7 @@ export function PaginatedRelationshipCombobox({
 
   // Build filter parameters for queries
   const buildFilterParams = React.useCallback((pageParam: number, searchTerm: string) => {
-    const params = { 
+    const params: any = { 
       page: pageParam, 
       size: pageSize, 
       sort: `${displayField},asc`
@@ -113,8 +115,15 @@ export function PaginatedRelationshipCombobox({
       params[`${searchField}.contains`] = searchTerm;
     }
     
+    // Add custom filters if provided
+    if (customFilters) {
+      Object.keys(customFilters).forEach(key => {
+        params[key] = customFilters[key];
+      });
+    }
+    
     return params;
-  }, [displayField, parentFilter, parentField, searchField, pageSize]);
+  }, [displayField, parentFilter, parentField, searchField, pageSize, customFilters]);
 
   // Get current query parameters
   const currentParams = buildFilterParams(currentPage, deferredSearchQuery);
