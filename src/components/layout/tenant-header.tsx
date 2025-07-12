@@ -4,7 +4,30 @@ import * as React from 'react';
 import {InlinePermissionGuard, PermissionGuard, useAuth} from '@/core/auth';
 import { useUserAuthorities } from '@/core/auth/hooks';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
-import { Building2, Briefcase } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
+
+// Custom Coffee/Tea Cup Icon Component (same as organization-switcher)
+const CupIcon = ({ className = "size-4" }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Coffee/Tea Cup */}
+    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+    {/* Handle */}
+    <path d="M17 8v4" />
+    {/* Steam lines */}
+    <path d="M7 4v1" />
+    <path d="M10 4v2" />
+    <path d="M13 4v1" />
+  </svg>
+);
 
 export function TenantHeader() {
   const { session } = useAuth();
@@ -77,7 +100,7 @@ export function TenantHeader() {
             {/* Enhanced Icon */}
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl shadow-sm">
-                <Building2 className="w-5 h-5 text-white" />
+                <CupIcon className="w-5 h-5 text-white" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
             </div>
