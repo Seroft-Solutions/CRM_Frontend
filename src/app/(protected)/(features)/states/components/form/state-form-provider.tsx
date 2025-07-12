@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { stateFormConfig } from "./state-form-config";
-import { stateFormSchema } from "./state-form-schema";
-import { stateToast, handleStateError } from "../state-toast";
+import { stateFormConfig } from "@/app/(protected)/(features)/states/components/form/state-form-config";
+import { stateFormSchema } from "@/app/(protected)/(features)/states/components/form/state-form-schema";
+import { stateToast, handleStateError } from "@/app/(protected)/(features)/states/components/state-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

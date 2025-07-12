@@ -13,7 +13,7 @@ import {
   useOrganizationContext,
   useBulkUserOperations,
   useUserManagementRefresh,
-} from '../hooks';
+} from "@/features/user-management/hooks";
 import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -88,10 +88,10 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import type { OrganizationUser, UserFilters } from '../types';
-import { UserAvatar } from './UserAvatar';
-import { UserStatusBadge } from './UserStatusBadge';
-import { ClickableRolesBadge } from './ClickableRolesBadge';
-import { ClickableGroupsBadge } from './ClickableGroupsBadge';
+import { UserAvatar } from "@/features/user-management/components/UserAvatar";
+import { UserStatusBadge } from "@/features/user-management/components/UserStatusBadge";
+import { ClickableRolesBadge } from "@/features/user-management/components/ClickableRolesBadge";
+import { ClickableGroupsBadge } from "@/features/user-management/components/ClickableGroupsBadge";
 import { toast } from 'sonner';
 
 interface OrganizationUsersProps {

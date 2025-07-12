@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { stateToast } from "../components/state-toast";
+import { stateToast } from "@/app/(protected)/(features)/states/components/state-toast";
 
 export async function createStateAction(formData: FormData) {
   try {

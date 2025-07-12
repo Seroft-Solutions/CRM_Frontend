@@ -15,7 +15,7 @@ import {
   useRef,
 } from 'react';
 import { signOut } from 'next-auth/react';
-import { SessionExpiredModal } from '../components/session-expired-modal';
+import { SessionExpiredModal } from "@/core/auth/components/session-expired-modal";
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;

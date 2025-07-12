@@ -5,7 +5,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { RelationshipRenderer } from "../relationship-renderer";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/customers/components/form/relationship-renderer";
 
 interface CustomerBasicStepProps {
   form: any;

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { groupToast, handleGroupError } from "./group-toast";
+import { groupToast, handleGroupError } from "@/app/(protected)/(features)/groups/components/group-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +89,10 @@ import {
 
 
 
-import { GroupSearchAndFilters } from "./table/group-search-filters";
-import { GroupTableHeader } from "./table/group-table-header";
-import { GroupTableRow } from "./table/group-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { GroupSearchAndFilters } from "@/app/(protected)/(features)/groups/components/table/group-search-filters";
+import { GroupTableHeader } from "@/app/(protected)/(features)/groups/components/table/group-table-header";
+import { GroupTableRow } from "@/app/(protected)/(features)/groups/components/table/group-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/groups/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

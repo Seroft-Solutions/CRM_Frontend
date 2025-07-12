@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { ServiceRequestConfig } from '../base/types';
-import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './config';
+import { ServiceRequestConfig } from "@/core/api/services/base/types";
+import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
 

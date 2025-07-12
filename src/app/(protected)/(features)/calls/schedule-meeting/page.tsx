@@ -4,7 +4,7 @@ import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CalendarDays } from 'lucide-react';
-import { MeetingScheduler } from './components/meeting-scheduler';
+import { MeetingScheduler } from "@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-scheduler";
 import { useGetCustomer } from '@/core/api/generated/spring';
 
 function ScheduleMeetingContent() {

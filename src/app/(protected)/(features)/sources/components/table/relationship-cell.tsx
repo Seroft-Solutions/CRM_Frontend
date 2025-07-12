@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { sourceToast } from "../source-toast";
+import { sourceToast } from "@/app/(protected)/(features)/sources/components/source-toast";
 
 
 

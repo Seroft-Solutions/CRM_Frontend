@@ -5,8 +5,8 @@
 
 import NextAuth from 'next-auth';
 import Keycloak from 'next-auth/providers/keycloak';
-import { parseRoles, parseGroups } from '../utils';
-import { rolesManager } from '../session/roles-manager';
+import { parseRoles, parseGroups } from "@/core/auth/utils";
+import { rolesManager } from "@/core/auth/session/roles-manager";
 import type { JWT } from 'next-auth/jwt';
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {

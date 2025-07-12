@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AvailableTimeSlotForm } from "./form/available-time-slot-form-wizard";
+import { AvailableTimeSlotForm } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-wizard";
 
 interface AvailableTimeSlotFormProps {
   id?: number;

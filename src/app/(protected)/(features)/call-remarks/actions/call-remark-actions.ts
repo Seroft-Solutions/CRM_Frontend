@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { callRemarkToast } from "../components/call-remark-toast";
+import { callRemarkToast } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
 
 export async function createCallRemarkAction(formData: FormData) {
   try {

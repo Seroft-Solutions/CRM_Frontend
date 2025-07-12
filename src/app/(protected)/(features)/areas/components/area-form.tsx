@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AreaForm } from "./form/area-form-wizard";
+import { AreaForm } from "@/app/(protected)/(features)/areas/components/form/area-form-wizard";
 
 interface AreaFormProps {
   id?: number;

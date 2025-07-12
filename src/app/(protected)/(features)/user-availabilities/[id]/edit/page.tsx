@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { UserAvailabilityForm } from "../../components/user-availability-form";
+import { UserAvailabilityForm } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

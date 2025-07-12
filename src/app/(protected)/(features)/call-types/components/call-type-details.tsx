@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { callTypeToast, handleCallTypeError } from "./call-type-toast";
-import { callTypeFormConfig } from "./form/call-type-form-config";
+import { callTypeToast, handleCallTypeError } from "@/app/(protected)/(features)/call-types/components/call-type-toast";
+import { callTypeFormConfig } from "@/app/(protected)/(features)/call-types/components/form/call-type-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

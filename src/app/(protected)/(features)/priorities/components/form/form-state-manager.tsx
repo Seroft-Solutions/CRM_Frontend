@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "./priority-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/priorities/components/form/priority-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

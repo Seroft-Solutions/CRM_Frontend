@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
+import { PaginatedRelationshipCombobox } from "@/app/(protected)/(features)/districts/components/form/paginated-relationship-combobox";
 
 // Import all hooks statically for the specific entity
 

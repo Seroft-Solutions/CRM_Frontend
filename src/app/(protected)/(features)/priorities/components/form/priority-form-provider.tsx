@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { priorityFormConfig } from "./priority-form-config";
-import { priorityFormSchema } from "./priority-form-schema";
-import { priorityToast, handlePriorityError } from "../priority-toast";
+import { priorityFormConfig } from "@/app/(protected)/(features)/priorities/components/form/priority-form-config";
+import { priorityFormSchema } from "@/app/(protected)/(features)/priorities/components/form/priority-form-schema";
+import { priorityToast, handlePriorityError } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

@@ -4,7 +4,7 @@
  */
 
 import type { RoleManagerInterface } from '../types';
-import { normalizeRole } from '../utils';
+import { normalizeRole } from "@/core/auth/utils";
 
 class RolesManager implements RoleManagerInterface {
   private userRoles = new Map<string, string[]>();

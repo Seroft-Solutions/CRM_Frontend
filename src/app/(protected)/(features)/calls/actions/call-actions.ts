@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { callToast } from "../components/call-toast";
+import { callToast } from "@/app/(protected)/(features)/calls/components/call-toast";
 
 export async function createCallAction(formData: FormData) {
   try {

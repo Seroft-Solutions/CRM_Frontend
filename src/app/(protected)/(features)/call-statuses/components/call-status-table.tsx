@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { callStatusToast, handleCallStatusError } from "./call-status-toast";
+import { callStatusToast, handleCallStatusError } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,10 +80,10 @@ import {
 
 
 
-import { CallStatusSearchAndFilters } from "./table/call-status-search-filters";
-import { CallStatusTableHeader } from "./table/call-status-table-header";
-import { CallStatusTableRow } from "./table/call-status-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { CallStatusSearchAndFilters } from "@/app/(protected)/(features)/call-statuses/components/table/call-status-search-filters";
+import { CallStatusTableHeader } from "@/app/(protected)/(features)/call-statuses/components/table/call-status-table-header";
+import { CallStatusTableRow } from "@/app/(protected)/(features)/call-statuses/components/table/call-status-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/call-statuses/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

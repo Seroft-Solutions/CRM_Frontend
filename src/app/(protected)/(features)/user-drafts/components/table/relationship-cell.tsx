@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { userDraftToast } from "../user-draft-toast";
+import { userDraftToast } from "@/app/(protected)/(features)/user-drafts/components/user-draft-toast";
 
 
 

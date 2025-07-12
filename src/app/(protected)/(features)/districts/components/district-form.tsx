@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { DistrictForm } from "./form/district-form-wizard";
+import { DistrictForm } from "@/app/(protected)/(features)/districts/components/form/district-form-wizard";
 
 interface DistrictFormProps {
   id?: number;

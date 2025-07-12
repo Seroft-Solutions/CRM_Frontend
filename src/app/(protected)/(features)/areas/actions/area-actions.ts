@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { areaToast } from "../components/area-toast";
+import { areaToast } from "@/app/(protected)/(features)/areas/components/area-toast";
 
 export async function createAreaAction(formData: FormData) {
   try {

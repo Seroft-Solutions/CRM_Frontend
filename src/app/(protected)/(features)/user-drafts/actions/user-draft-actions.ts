@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { userDraftToast } from "../components/user-draft-toast";
+import { userDraftToast } from "@/app/(protected)/(features)/user-drafts/components/user-draft-toast";
 
 export async function createUserDraftAction(formData: FormData) {
   try {

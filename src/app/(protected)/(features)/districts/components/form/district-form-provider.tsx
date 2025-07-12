@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { districtFormConfig } from "./district-form-config";
-import { districtFormSchema } from "./district-form-schema";
-import { districtToast, handleDistrictError } from "../district-toast";
+import { districtFormConfig } from "@/app/(protected)/(features)/districts/components/form/district-form-config";
+import { districtFormSchema } from "@/app/(protected)/(features)/districts/components/form/district-form-schema";
+import { districtToast, handleDistrictError } from "@/app/(protected)/(features)/districts/components/district-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

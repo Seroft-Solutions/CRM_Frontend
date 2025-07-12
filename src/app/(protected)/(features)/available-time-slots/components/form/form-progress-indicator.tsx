@@ -4,7 +4,7 @@ import React from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { useEntityForm } from "./available-time-slot-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-provider";
 
 export function FormProgressIndicator() {
   const { config, state, actions } = useEntityForm();

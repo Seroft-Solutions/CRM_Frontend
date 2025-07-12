@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { channelTypeFormConfig } from "./channel-type-form-config";
-import { channelTypeFormSchema } from "./channel-type-form-schema";
-import { channelTypeToast, handleChannelTypeError } from "../channel-type-toast";
+import { channelTypeFormConfig } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-config";
+import { channelTypeFormSchema } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-schema";
+import { channelTypeToast, handleChannelTypeError } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

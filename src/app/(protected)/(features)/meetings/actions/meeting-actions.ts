@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { meetingToast } from "../components/meeting-toast";
+import { meetingToast } from "@/app/(protected)/(features)/meetings/components/meeting-toast";
 
 export async function createMeetingAction(formData: FormData) {
   try {

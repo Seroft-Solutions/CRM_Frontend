@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { productToast } from "../components/product-toast";
+import { productToast } from "@/app/(protected)/(features)/products/components/product-toast";
 
 export async function createProductAction(formData: FormData) {
   try {

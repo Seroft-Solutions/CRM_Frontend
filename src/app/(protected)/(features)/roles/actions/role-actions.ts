@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { roleToast } from "../components/role-toast";
+import { roleToast } from "@/app/(protected)/(features)/roles/components/role-toast";
 
 export async function createRoleAction(formData: FormData) {
   try {

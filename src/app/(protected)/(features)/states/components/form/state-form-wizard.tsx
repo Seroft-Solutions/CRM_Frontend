@@ -2,22 +2,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { StateFormProvider, useEntityForm } from "./state-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { StateFormProvider, useEntityForm } from "@/app/(protected)/(features)/states/components/form/state-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/states/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/states/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/states/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/states/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+// import { stepComponents } from "@/app/(protected)/(features)/states/components/form/steps";
 import { 
   useCreateState,
   useUpdateState,
   useGetState,
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-import { stateToast, handleStateError } from "../state-toast";
+import { stateToast, handleStateError } from "@/app/(protected)/(features)/states/components/state-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface StateFormProps {

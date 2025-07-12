@@ -2,22 +2,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CallRemarkFormProvider, useEntityForm } from "./call-remark-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { CallRemarkFormProvider, useEntityForm } from "@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/call-remarks/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/call-remarks/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/call-remarks/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/call-remarks/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+// import { stepComponents } from "@/app/(protected)/(features)/call-remarks/components/form/steps";
 import { 
   useCreateCallRemark,
   useUpdateCallRemark,
   useGetCallRemark,
 } from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
-import { callRemarkToast, handleCallRemarkError } from "../call-remark-toast";
+import { callRemarkToast, handleCallRemarkError } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface CallRemarkFormProps {

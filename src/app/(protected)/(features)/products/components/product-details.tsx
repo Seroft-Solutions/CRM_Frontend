@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { productToast, handleProductError } from "./product-toast";
-import { productFormConfig } from "./form/product-form-config";
+import { productToast, handleProductError } from "@/app/(protected)/(features)/products/components/product-toast";
+import { productFormConfig } from "@/app/(protected)/(features)/products/components/form/product-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

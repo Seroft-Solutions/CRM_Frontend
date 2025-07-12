@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { ChannelTypeForm } from "../components/channel-type-form";
+import { ChannelTypeForm } from "@/app/(protected)/(features)/channel-types/components/channel-type-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

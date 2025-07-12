@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { customerToast, handleCustomerError } from "./customer-toast";
+import { customerToast, handleCustomerError } from "@/app/(protected)/(features)/customers/components/customer-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,10 +101,10 @@ import {
 
 
 
-import { CustomerSearchAndFilters } from "./table/customer-search-filters";
-import { CustomerTableHeader } from "./table/customer-table-header";
-import { CustomerTableRow } from "./table/customer-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { CustomerSearchAndFilters } from "@/app/(protected)/(features)/customers/components/table/customer-search-filters";
+import { CustomerTableHeader } from "@/app/(protected)/(features)/customers/components/table/customer-table-header";
+import { CustomerTableRow } from "@/app/(protected)/(features)/customers/components/table/customer-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/customers/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

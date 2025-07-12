@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { userAvailabilityFormConfig } from "./user-availability-form-config";
-import { userAvailabilityFormSchema } from "./user-availability-form-schema";
-import { userAvailabilityToast, handleUserAvailabilityError } from "../user-availability-toast";
+import { userAvailabilityFormConfig } from "@/app/(protected)/(features)/user-availabilities/components/form/user-availability-form-config";
+import { userAvailabilityFormSchema } from "@/app/(protected)/(features)/user-availabilities/components/form/user-availability-form-schema";
+import { userAvailabilityToast, handleUserAvailabilityError } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";
