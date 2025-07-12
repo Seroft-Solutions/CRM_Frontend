@@ -7,7 +7,6 @@ import {
   MutationCache,
 } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { signOut } from 'next-auth/react';
 
 interface QueryClientProviderProps {
   children: ReactNode;
@@ -54,19 +53,17 @@ export function QueryClientProvider({
         },
         mutationCache: new MutationCache({
           onError: (error: any) => {
-            // Handle 401 errors globally for mutations
+            // Handle 401 errors - just log, no automatic logout
             if (error?.status === 401) {
-              console.warn('Authentication expired during mutation, signing out...');
-              signOut({ callbackUrl: '/auth/signin' });
+              console.warn('Authentication expired during mutation - continuing without logout');
             }
           },
         }),
         queryCache: new QueryCache({
           onError: (error: any) => {
-            // Handle 401 errors globally for queries
+            // Handle 401 errors - just log, no automatic logout  
             if (error?.status === 401) {
-              console.warn('Authentication expired during query, signing out...');
-              signOut({ callbackUrl: '/auth/signin' });
+              console.warn('Authentication expired during query - continuing without logout');
             }
           },
         }),
