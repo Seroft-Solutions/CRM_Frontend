@@ -409,6 +409,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
