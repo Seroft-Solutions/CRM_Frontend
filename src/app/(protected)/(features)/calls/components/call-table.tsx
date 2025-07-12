@@ -504,6 +504,16 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
+  // Separate API call for assignable users (those without channelType)
+  const { data: assignableUserProfiles = [] } = useGetAllUserProfiles(
+    { 
+      page: 0, 
+      size: 1000,
+      'channelTypeId.specified': false  // Only users without channelType
+    },
+    { query: { enabled: true } }
+  );
+  
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -569,7 +579,7 @@ export function CallTable() {
       
       'assignedTo.displayName': { 
         apiParam: 'assignedToId.equals', 
-        options: userprofileOptions, 
+        options: assignableUserProfiles, // Use filtered assignable users
         displayField: 'displayName' 
       },
       
@@ -1253,7 +1263,7 @@ export function CallTable() {
     {
       name: "assignedTo",
       displayName: "AssignedTo",
-      options: userprofileOptions || [],
+      options: assignableUserProfiles || [], // Use filtered list for assignable users
       displayField: "displayName",
       isEditable: true, // Disabled by default
     },
