@@ -298,7 +298,6 @@ export function RelationshipRenderer({
         );
         
       case 'channelParties':
-      case 'assignedTo':
         return (
           <PaginatedRelationshipCombobox
             value={field.value}
@@ -327,6 +326,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             disabled={
               relConfig.cascadingFilter 
                 ? !form.watch(relConfig.cascadingFilter.parentField) 
@@ -337,7 +337,6 @@ export function RelationshipRenderer({
         );
         
       case 'assignedTo':
-      case 'channelParties':
         return (
           <PaginatedRelationshipCombobox
             value={field.value}
