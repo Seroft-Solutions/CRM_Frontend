@@ -14,7 +14,7 @@ interface MeetingSchedulerDialogProps {
   open: boolean;
   onOpenChangeAction: (open: boolean) => void;
   customerId?: number;
-  assignedUserId?: number;
+  assignedUserId?: number | string; // Can be either number ID or string UUID
   callId?: number;
   onMeetingScheduledAction?: (meetingData: any) => void;
   onError?: (error: any) => void;

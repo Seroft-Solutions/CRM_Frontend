@@ -38,6 +38,7 @@ import { format, addMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import './meeting-scheduler.css';
 import { MeetingErrorDialog } from "@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog";
+import { useUserAvailabilityCreation } from "@/app/(protected)/(features)/shared/services/customer-availability-service";
 
 // Backend imports
 import {
@@ -46,7 +47,10 @@ import {
 } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 import { useCreateMeetingParticipant } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 import { useCreateMeetingReminder } from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
-import { useGetAllAvailableTimeSlots } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { 
+  useGetAllAvailableTimeSlots,
+  useUpdateAvailableTimeSlot 
+} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
 import {
@@ -84,7 +88,7 @@ interface ReminderDetails {
 
 interface MeetingSchedulerProps {
   customerId?: number;
-  assignedUserId?: number;
+  assignedUserId?: number | string; // Can be either number ID or string UUID
   callId?: number;
   onMeetingScheduledAction: (meetingData: any) => void;
   onError?: (error: any) => void;
@@ -101,6 +105,8 @@ export function MeetingScheduler({
   onError,
   disabled = false,
 }: MeetingSchedulerProps) {
+  const { ensureUserHasAvailability } = useUserAvailabilityCreation();
+  
   const [currentStep, setCurrentStep] = useState<Step>('datetime');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -118,6 +124,7 @@ export function MeetingScheduler({
   ]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
+  const [bookedTimeSlots, setBookedTimeSlots] = useState<string[]>([]); // New state for booked time slots
   
   // Error handling state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -132,6 +139,35 @@ export function MeetingScheduler({
     mutation: {
       onSuccess: async (meetingData) => {
         try {
+          // Mark the corresponding time slot as booked
+          if (selectedDate && selectedTime && assignedUserId && timeSlots) {
+            const meetingDateTime = new Date(selectedDate);
+            const [hours, minutes] = selectedTime.split(':').map(Number);
+            meetingDateTime.setHours(hours, minutes, 0, 0);
+            
+            // Find the matching time slot
+            const matchingSlot = timeSlots.find(slot => {
+              const slotDateTime = new Date(slot.slotDateTime);
+              const userIdMatch = slot.user?.id?.toString() === assignedUserId?.toString();
+              return slotDateTime.getTime() === meetingDateTime.getTime() && userIdMatch;
+            });
+            
+            if (matchingSlot) {
+              // Update the slot to mark it as booked
+              updateAvailableTimeSlot({
+                id: matchingSlot.id!,
+                data: {
+                  ...matchingSlot,
+                  isBooked: true,
+                  bookedAt: new Date().toISOString(),
+                }
+              });
+              console.log('✅ Time slot marked as booked:', matchingSlot.id);
+            } else {
+              console.warn('⚠️ Could not find matching time slot to mark as booked');
+            }
+          }
+
           if (participants.length > 0) {
             await Promise.all(
               participants.map((participant) =>
@@ -187,20 +223,21 @@ export function MeetingScheduler({
 
   const { mutate: createMeetingParticipant } = useCreateMeetingParticipant();
   const { mutate: createMeetingReminder } = useCreateMeetingReminder();
+  const { mutate: updateAvailableTimeSlot } = useUpdateAvailableTimeSlot();
 
   // Get data from backend
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
-    assignedUserId ? { 'userId.equals': assignedUserId, 'isBooked.equals': false } : undefined,
+    assignedUserId ? { 'userId.equals': assignedUserId.toString(), 'isBooked.equals': false } : undefined,
     { query: { enabled: !!assignedUserId } }
   );
 
   const { data: userAvailabilities } = useGetAllUserAvailabilities(
-    assignedUserId ? { 'userId.equals': assignedUserId } : undefined,
+    assignedUserId ? { 'userId.equals': assignedUserId.toString() } : undefined,
     { query: { enabled: !!assignedUserId } }
   );
 
   const { data: existingMeetings } = useGetAllMeetings(
-    assignedUserId ? { 'organizerId.equals': assignedUserId } : undefined,
+    assignedUserId ? { 'organizerId.equals': assignedUserId.toString() } : undefined,
     { query: { enabled: !!assignedUserId } }
   );
 
@@ -223,6 +260,19 @@ export function MeetingScheduler({
       }));
     }
   }, [customerData, participants.length, meetingDetails.title]);
+
+  // Ensure assigned user has availability
+  useEffect(() => {
+    if (assignedUserId) {
+      ensureUserHasAvailability(assignedUserId).then(success => {
+        if (success) {
+          console.log('✅ User availability confirmed for:', assignedUserId);
+        } else {
+          console.error('❌ Failed to ensure user availability for:', assignedUserId);
+        }
+      });
+    }
+  }, [assignedUserId, ensureUserHasAvailability]);
 
   // Process available time slots
   useEffect(() => {
@@ -263,8 +313,17 @@ export function MeetingScheduler({
       });
     }
 
-    // Default time slots if none from backend
+    // Log what data sources we're using
+    console.log('📊 Time slot sources:', {
+      fromAvailableTimeSlots: timeSlots?.length || 0,
+      fromUserAvailabilities: userAvailabilities?.length || 0,
+      totalGenerated: slots.length,
+      assignedUserId
+    });
+
+    // Only use default time slots if absolutely no data exists
     if (slots.length === 0) {
+      console.warn('⚠️ No availability data found in database - using fallback slots');
       for (let hour = 9; hour <= 17; hour++) {
         for (let minute = 0; minute < 60; minute += 30) {
           if (hour === 17 && minute > 0) break;
@@ -272,6 +331,8 @@ export function MeetingScheduler({
           slots.push(timeSlot);
         }
       }
+    } else {
+      console.log('✅ Using real availability data from database');
     }
 
     setAvailableTimeSlots(slots.sort());
@@ -291,6 +352,30 @@ export function MeetingScheduler({
       setBookedDates(booked);
     }
   }, [existingMeetings]);
+
+  // Process booked time slots for the selected date
+  useEffect(() => {
+    if (existingMeetings && selectedDate) {
+      const selectedDateStr = selectedDate.toDateString();
+      const bookedSlotsForDate = existingMeetings
+        .filter((meeting) => {
+          if (!meeting.meetingDateTime) return false;
+          const meetingDate = new Date(meeting.meetingDateTime);
+          const isScheduledOrConfirmed = 
+            meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED ||
+            meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED;
+          return isScheduledOrConfirmed && meetingDate.toDateString() === selectedDateStr;
+        })
+        .map((meeting) => {
+          const meetingDate = new Date(meeting.meetingDateTime);
+          return format(meetingDate, 'HH:mm');
+        });
+
+      setBookedTimeSlots(bookedSlotsForDate);
+    } else {
+      setBookedTimeSlots([]);
+    }
+  }, [existingMeetings, selectedDate]);
 
   const scheduleMeeting = async () => {
     if (!selectedDate || !selectedTime || !assignedUserId || !callId) return;
@@ -400,6 +485,7 @@ export function MeetingScheduler({
                 }}
                 bookedDates={bookedDates}
                 availableTimeSlots={availableTimeSlots}
+                bookedTimeSlots={bookedTimeSlots} // Pass booked time slots
                 initialDate={selectedDate}
                 initialTime={selectedTime}
                 showContinueButton={false}

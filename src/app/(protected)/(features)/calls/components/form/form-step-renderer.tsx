@@ -414,7 +414,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
-          {config.steps.slice(0, -1).map((step, index) => {
+          {config.steps.slice(0, -1).map((step, index) => { // Exclude review step
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
             
