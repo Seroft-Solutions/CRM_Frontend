@@ -1,19 +1,18 @@
 "use client";
 
-import { DashboardOverview } from '@/features/dashboard/components/DashboardOverview';
-import {useUserAuthorities} from "@/core/auth";
+import {DashboardOverview} from '@/features/dashboard/components/DashboardOverview';
+import {useUserAuthorities, useUserRoles} from "@/core/auth";
 import {useRouter} from "next/navigation";
 
 
 export default function DashboardPage() {
-  const router = useRouter();
+    const router = useRouter();
+    const {roles: userRoles, isLoading: rolesLoading} = useUserRoles();
 
-  const { hasRole } = useUserAuthorities();
+    if (!userRoles.includes('dashboard')) {
+        router.push('/calls');
+        return null;
+    }
 
-  if (!hasRole('dashboard')) {
-    router.push('/calls');
-    return null ;
-  }
-
-  return <DashboardOverview />;
+    return <DashboardOverview/>;
 }

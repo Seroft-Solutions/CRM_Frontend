@@ -37,7 +37,7 @@ export function useUserAuthorities() {
     error: accountError 
   } = useAccount({
     refetchInBackground: true, // Keep authorities fresh in background
-    staleTime: 5 * 60 * 1000, // 5 minutes stale time for authority data
+    staleTime: 10 * 60 * 1000, // 5 minutes stale time for authority data
   });
 
   useEffect(() => {
