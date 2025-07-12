@@ -15,7 +15,7 @@ function ScheduleMeetingContent() {
     ? parseInt(searchParams.get('customerId')!)
     : undefined;
   const assignedUserId = searchParams.get('assignedUserId')
-    ? parseInt(searchParams.get('assignedUserId')!)
+    ? searchParams.get('assignedUserId')! // Keep as string for UUID
     : undefined;
   const callId = searchParams.get('callId') ? parseInt(searchParams.get('callId')!) : undefined;
 

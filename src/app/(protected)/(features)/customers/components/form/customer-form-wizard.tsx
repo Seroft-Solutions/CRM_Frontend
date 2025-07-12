@@ -19,6 +19,7 @@ import {
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 import { customerToast, handleCustomerError } from "@/app/(protected)/(features)/customers/components/customer-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+import { useCustomerAvailabilityCreation } from "@/app/(protected)/(features)/shared/services/customer-availability-service";
 
 interface CustomerFormProps {
   id?: number;
@@ -171,12 +172,25 @@ export function CustomerForm({ id }: CustomerFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  // Use the real availability creation hook
+  const { createAvailabilityForCustomer } = useCustomerAvailabilityCreation();
 
   // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateCustomer({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         const entityId = data?.id || data?.id;
+        
+        // Create real availability records after customer creation
+        if (entityId) {
+          try {
+            await createAvailabilityForCustomer(entityId);
+          } catch (error) {
+            console.warn('Non-critical: Customer availability creation failed:', error);
+            // This is non-critical and shouldn't block the customer creation success flow
+          }
+        }
         
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form

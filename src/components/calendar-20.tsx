@@ -9,6 +9,7 @@ interface Calendar20Props {
   onDateTimeSelected?: (date: Date, time: string) => void;
   bookedDates?: Date[];
   availableTimeSlots?: string[];
+  bookedTimeSlots?: string[]; // New prop for booked time slots
   initialDate?: Date;
   initialTime?: string;
   showContinueButton?: boolean;
@@ -21,6 +22,7 @@ export default function Calendar20({
   onDateTimeSelected,
   bookedDates = [],
   availableTimeSlots,
+  bookedTimeSlots = [], // New prop with default empty array
   initialDate,
   initialTime,
   showContinueButton = true,
@@ -87,17 +89,33 @@ export default function Calendar20({
         </div>
         <div className="no-scrollbar inset-y-0 right-0 flex max-h-72 w-full scroll-pb-6 flex-col gap-4 overflow-y-auto border-t p-6 md:absolute md:max-h-none md:w-48 md:border-t-0 md:border-l">
           <div className="grid gap-2">
-            {timeSlots.map((time) => (
-              <Button
-                key={time}
-                variant={selectedTime === time ? 'default' : 'outline'}
-                onClick={() => handleTimeSelect(time)}
-                disabled={disabled}
-                className="w-full shadow-none"
-              >
-                {time}
-              </Button>
-            ))}
+            {timeSlots.map((time) => {
+              const isBooked = bookedTimeSlots.includes(time);
+              const isSelected = selectedTime === time;
+              
+              return (
+                <Button
+                  key={time}
+                  variant={isSelected ? 'default' : 'outline'}
+                  onClick={() => handleTimeSelect(time)}
+                  disabled={disabled || isBooked}
+                  className={`w-full shadow-none ${
+                    isBooked 
+                      ? 'bg-red-50 border-red-200 text-red-500 opacity-60 cursor-not-allowed' 
+                      : ''
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {time}
+                    {isBooked && (
+                      <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                        Booked
+                      </span>
+                    )}
+                  </span>
+                </Button>
+              );
+            })}
           </div>
         </div>
       </CardContent>
