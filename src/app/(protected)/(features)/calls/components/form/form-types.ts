@@ -45,6 +45,7 @@ export interface RelationshipConfig {
   multiple: boolean;
   category: 'geographic' | 'user' | 'classification' | 'business' | 'channel' | 'assignment' | 'other';
   cascadingFilter?: CascadingFilter;
+  autoPopulate?: AutoPopulateConfig;
   customFilters?: Record<string, any>;
   api: RelationshipAPI;
   creation: CreationConfig;
@@ -87,6 +88,13 @@ export interface CascadingFilter {
   parentField: string;
   filterField: string;
   dependentFields?: string[];
+}
+
+export interface AutoPopulateConfig {
+  sourceField: string;
+  targetField: string;
+  sourceProperty: string;
+  allowOverride?: boolean;
 }
 
 export interface RelationshipAPI {

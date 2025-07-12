@@ -41,6 +41,7 @@ interface PaginatedRelationshipComboboxProps {
   parentFilter?: number | string;
   parentField?: string;
   customFilters?: Record<string, any>;
+  onDataLoaded?: (data: any[]) => void;
   // Cross-form navigation props
   referrerForm?: string;
   referrerSessionId?: string;
@@ -67,6 +68,7 @@ export function PaginatedRelationshipCombobox({
   parentFilter,
   parentField,
   customFilters,
+  onDataLoaded,
   referrerForm,
   referrerSessionId,
   referrerField,
@@ -168,6 +170,13 @@ export function PaginatedRelationshipCombobox({
       setHasMorePages(dataArray.length === pageSize);
     }
   }, [currentData, isLoading, currentPage, isQueryEnabled]);
+
+  // Notify parent component when data is loaded (for auto-population)
+  React.useEffect(() => {
+    if (onDataLoaded && allLoadedData.length > 0) {
+      onDataLoaded(allLoadedData);
+    }
+  }, [allLoadedData, onDataLoaded]);
 
   // Load next page
   const loadNextPage = React.useCallback(() => {
