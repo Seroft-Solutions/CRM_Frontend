@@ -276,6 +276,12 @@ export const callFormConfig: FormConfig = {
       required: true,
       multiple: false,
       category: 'channel',
+      autoPopulate: {
+        sourceField: 'channelParties',
+        targetField: 'channelType',
+        sourceProperty: 'channelType',
+        allowOverride: true
+      },
       api: {
         useGetAllHook: 'useGetAllChannelTypes',
         useSearchHook: 'useSearchChannelTypes',
