@@ -308,6 +308,9 @@ export const callFormConfig: FormConfig = {
       required: false,
       multiple: false,
       category: 'assignment',
+      customFilters: {
+        'channelTypeId.specified': false
+      },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
         useSearchHook: 'useSearchUserProfiles',
