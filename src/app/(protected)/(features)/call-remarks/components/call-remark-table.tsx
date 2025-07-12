@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { callRemarkToast, handleCallRemarkError } from "./call-remark-toast";
+import { callRemarkToast, handleCallRemarkError } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +89,10 @@ import {
 
 
 
-import { CallRemarkSearchAndFilters } from "./table/call-remark-search-filters";
-import { CallRemarkTableHeader } from "./table/call-remark-table-header";
-import { CallRemarkTableRow } from "./table/call-remark-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { CallRemarkSearchAndFilters } from "@/app/(protected)/(features)/call-remarks/components/table/call-remark-search-filters";
+import { CallRemarkTableHeader } from "@/app/(protected)/(features)/call-remarks/components/table/call-remark-table-header";
+import { CallRemarkTableRow } from "@/app/(protected)/(features)/call-remarks/components/table/call-remark-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/call-remarks/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

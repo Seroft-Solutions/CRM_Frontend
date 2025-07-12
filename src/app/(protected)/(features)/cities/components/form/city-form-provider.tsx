@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { cityFormConfig } from "./city-form-config";
-import { cityFormSchema } from "./city-form-schema";
-import { cityToast, handleCityError } from "../city-toast";
+import { cityFormConfig } from "@/app/(protected)/(features)/cities/components/form/city-form-config";
+import { cityFormSchema } from "@/app/(protected)/(features)/cities/components/form/city-form-schema";
+import { cityToast, handleCityError } from "@/app/(protected)/(features)/cities/components/city-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

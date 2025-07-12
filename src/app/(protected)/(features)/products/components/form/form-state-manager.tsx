@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "./product-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/products/components/form/product-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { cityToast } from "../components/city-toast";
+import { cityToast } from "@/app/(protected)/(features)/cities/components/city-toast";
 
 export async function createCityAction(formData: FormData) {
   try {

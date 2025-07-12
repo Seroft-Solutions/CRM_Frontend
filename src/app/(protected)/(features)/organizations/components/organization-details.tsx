@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { organizationToast, handleOrganizationError } from "./organization-toast";
-import { organizationFormConfig } from "./form/organization-form-config";
+import { organizationToast, handleOrganizationError } from "@/app/(protected)/(features)/organizations/components/organization-toast";
+import { organizationFormConfig } from "@/app/(protected)/(features)/organizations/components/form/organization-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

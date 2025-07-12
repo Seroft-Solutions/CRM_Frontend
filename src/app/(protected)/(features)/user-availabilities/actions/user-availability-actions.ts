@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { userAvailabilityToast } from "../components/user-availability-toast";
+import { userAvailabilityToast } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 
 export async function createUserAvailabilityAction(formData: FormData) {
   try {

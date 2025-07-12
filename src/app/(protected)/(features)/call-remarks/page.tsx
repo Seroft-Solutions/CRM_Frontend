@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { CallRemarkTable } from "./components/call-remark-table";
+import { CallRemarkTable } from "@/app/(protected)/(features)/call-remarks/components/call-remark-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { userAvailabilityToast } from "../user-availability-toast";
+import { userAvailabilityToast } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 
 
 

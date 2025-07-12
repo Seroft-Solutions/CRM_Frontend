@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
-import { userManagementService } from '../services/user-management.service';
+import { userManagementService } from "@/features/user-management/services/user-management.service";
 import type {
   OrganizationUser,
   UserInvitation,

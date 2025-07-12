@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { districtToast } from "../components/district-toast";
+import { districtToast } from "@/app/(protected)/(features)/districts/components/district-toast";
 
 export async function createDistrictAction(formData: FormData) {
   try {

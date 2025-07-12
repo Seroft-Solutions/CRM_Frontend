@@ -11,9 +11,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { userProfileFormConfig } from "./user-profile-form-config";
-import { userProfileFormSchema } from "./user-profile-form-schema";
-import { userProfileToast, handleUserProfileError } from "../user-profile-toast";
+import { userProfileFormConfig } from "@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-config";
+import { userProfileFormSchema } from "@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-schema";
+import { userProfileToast, handleUserProfileError } from "@/app/(protected)/(features)/user-profiles/components/user-profile-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

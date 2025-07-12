@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { roleToast } from "../role-toast";
+import { roleToast } from "@/app/(protected)/(features)/roles/components/role-toast";
 
 
 

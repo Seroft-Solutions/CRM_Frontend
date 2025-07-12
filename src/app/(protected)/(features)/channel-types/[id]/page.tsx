@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { ChannelTypeDetails } from "../components/channel-type-details";
+import { ChannelTypeDetails } from "@/app/(protected)/(features)/channel-types/components/channel-type-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { groupToast } from "../components/group-toast";
+import { groupToast } from "@/app/(protected)/(features)/groups/components/group-toast";
 
 export async function createGroupAction(formData: FormData) {
   try {

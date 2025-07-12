@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { subCallTypeToast } from "../sub-call-type-toast";
+import { subCallTypeToast } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
 
 
 

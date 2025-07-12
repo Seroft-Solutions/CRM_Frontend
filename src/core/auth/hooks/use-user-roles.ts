@@ -20,8 +20,8 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useAccount } from './use-account';
-import { normalizeRole, normalizeAuthority } from '../utils';
+import { useAccount } from "@/core/auth/hooks/use-account";
+import { normalizeRole, normalizeAuthority } from "@/core/auth/utils";
 
 export function useUserRoles() {
   const { data: session, status } = useSession();

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { userProfileToast, handleUserProfileError } from "./user-profile-toast";
+import { userProfileToast, handleUserProfileError } from "@/app/(protected)/(features)/user-profiles/components/user-profile-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,10 +93,10 @@ import {
 
 
 
-import { UserProfileSearchAndFilters } from "./table/user-profile-search-filters";
-import { UserProfileTableHeader } from "./table/user-profile-table-header";
-import { UserProfileTableRow } from "./table/user-profile-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { UserProfileSearchAndFilters } from "@/app/(protected)/(features)/user-profiles/components/table/user-profile-search-filters";
+import { UserProfileTableHeader } from "@/app/(protected)/(features)/user-profiles/components/table/user-profile-table-header";
+import { UserProfileTableRow } from "@/app/(protected)/(features)/user-profiles/components/table/user-profile-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/user-profiles/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

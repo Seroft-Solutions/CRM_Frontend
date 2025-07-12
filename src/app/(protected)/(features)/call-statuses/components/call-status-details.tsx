@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { callStatusToast, handleCallStatusError } from "./call-status-toast";
-import { callStatusFormConfig } from "./form/call-status-form-config";
+import { callStatusToast, handleCallStatusError } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
+import { callStatusFormConfig } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

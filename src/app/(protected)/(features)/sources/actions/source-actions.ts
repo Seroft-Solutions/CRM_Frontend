@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { sourceToast } from "../components/source-toast";
+import { sourceToast } from "@/app/(protected)/(features)/sources/components/source-toast";
 
 export async function createSourceAction(formData: FormData) {
   try {

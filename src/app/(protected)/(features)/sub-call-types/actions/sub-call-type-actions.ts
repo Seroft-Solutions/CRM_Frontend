@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { subCallTypeToast } from "../components/sub-call-type-toast";
+import { subCallTypeToast } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
 
 export async function createSubCallTypeAction(formData: FormData) {
   try {

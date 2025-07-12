@@ -6,7 +6,7 @@
  */
 
 import { QueryClient } from '@tanstack/react-query';
-import { accountQueryKeys } from './account-keys';
+import { accountQueryKeys } from "@/core/auth/queries/account-keys";
 
 /**
  * Invalidates all account-related queries

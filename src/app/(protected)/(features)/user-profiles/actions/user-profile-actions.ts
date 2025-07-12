@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { userProfileToast } from "../components/user-profile-toast";
+import { userProfileToast } from "@/app/(protected)/(features)/user-profiles/components/user-profile-toast";
 
 export async function createUserProfileAction(formData: FormData) {
   try {

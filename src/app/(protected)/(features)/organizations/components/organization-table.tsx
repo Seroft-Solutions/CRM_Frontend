@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { organizationToast, handleOrganizationError } from "./organization-toast";
+import { organizationToast, handleOrganizationError } from "@/app/(protected)/(features)/organizations/components/organization-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,10 +80,10 @@ import {
 
 
 
-import { OrganizationSearchAndFilters } from "./table/organization-search-filters";
-import { OrganizationTableHeader } from "./table/organization-table-header";
-import { OrganizationTableRow } from "./table/organization-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { OrganizationSearchAndFilters } from "@/app/(protected)/(features)/organizations/components/table/organization-search-filters";
+import { OrganizationTableHeader } from "@/app/(protected)/(features)/organizations/components/table/organization-table-header";
+import { OrganizationTableRow } from "@/app/(protected)/(features)/organizations/components/table/organization-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/organizations/components/table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

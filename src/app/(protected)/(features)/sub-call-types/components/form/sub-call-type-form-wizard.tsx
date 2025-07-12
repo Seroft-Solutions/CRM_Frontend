@@ -2,22 +2,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SubCallTypeFormProvider, useEntityForm } from "./sub-call-type-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { SubCallTypeFormProvider, useEntityForm } from "@/app/(protected)/(features)/sub-call-types/components/form/sub-call-type-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/sub-call-types/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/sub-call-types/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/sub-call-types/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/sub-call-types/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+// import { stepComponents } from "@/app/(protected)/(features)/sub-call-types/components/form/steps";
 import { 
   useCreateSubCallType,
   useUpdateSubCallType,
   useGetSubCallType,
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
-import { subCallTypeToast, handleSubCallTypeError } from "../sub-call-type-toast";
+import { subCallTypeToast, handleSubCallTypeError } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface SubCallTypeFormProps {

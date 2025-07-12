@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "./available-time-slot-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

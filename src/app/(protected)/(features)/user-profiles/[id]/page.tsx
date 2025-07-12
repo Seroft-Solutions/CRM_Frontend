@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { UserProfileDetails } from "../components/user-profile-details";
+import { UserProfileDetails } from "@/app/(protected)/(features)/user-profiles/components/user-profile-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

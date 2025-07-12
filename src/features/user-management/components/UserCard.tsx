@@ -17,10 +17,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Settings, UserX, Mail, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { UserAvatar } from './UserAvatar';
-import { UserStatusBadge } from './UserStatusBadge';
-import { RolesBadgesList } from './RolesBadgesList';
-import { GroupsBadgesList } from './GroupsBadgesList';
+import { UserAvatar } from "@/features/user-management/components/UserAvatar";
+import { UserStatusBadge } from "@/features/user-management/components/UserStatusBadge";
+import { RolesBadgesList } from "@/features/user-management/components/RolesBadgesList";
+import { GroupsBadgesList } from "@/features/user-management/components/GroupsBadgesList";
 import type { OrganizationUser } from '../types';
 
 interface UserCardProps {

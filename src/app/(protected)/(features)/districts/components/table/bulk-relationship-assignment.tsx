@@ -27,7 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { districtToast } from "../district-toast";
+import { districtToast } from "@/app/(protected)/(features)/districts/components/district-toast";
 
 
 

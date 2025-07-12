@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { SubCallTypeForm } from "../components/sub-call-type-form";
+import { SubCallTypeForm } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

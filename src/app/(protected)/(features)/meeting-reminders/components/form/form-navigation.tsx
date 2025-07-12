@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEntityForm } from "./meeting-reminder-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/meeting-reminders/components/form/meeting-reminder-form-provider";
 
 interface FormNavigationProps {
   onCancel: () => void;

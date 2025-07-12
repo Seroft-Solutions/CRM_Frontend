@@ -6,8 +6,8 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "./priority-form-provider";
-import { RelationshipRenderer } from "./relationship-renderer";
+import { useEntityForm } from "@/app/(protected)/(features)/priorities/components/form/priority-form-provider";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/priorities/components/form/relationship-renderer";
 
 
 

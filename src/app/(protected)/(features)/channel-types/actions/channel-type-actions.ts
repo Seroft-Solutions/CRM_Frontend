@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { channelTypeToast } from "../components/channel-type-toast";
+import { channelTypeToast } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
 
 export async function createChannelTypeAction(formData: FormData) {
   try {

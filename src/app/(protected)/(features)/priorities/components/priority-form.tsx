@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PriorityForm } from "./form/priority-form-wizard";
+import { PriorityForm } from "@/app/(protected)/(features)/priorities/components/form/priority-form-wizard";
 
 interface PriorityFormProps {
   id?: number;

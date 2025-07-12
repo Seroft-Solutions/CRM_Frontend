@@ -7,7 +7,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useCallback, useRef } from 'react';
-import { useActivityTracker } from './use-activity-tracker';
+import { useActivityTracker } from "@/core/auth/hooks/use-activity-tracker";
 import type { SessionMonitorOptions } from '../types';
 
 export function useSessionMonitor(options: SessionMonitorOptions = {}) {

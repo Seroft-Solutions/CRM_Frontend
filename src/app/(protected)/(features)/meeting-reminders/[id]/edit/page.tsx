@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { MeetingReminderForm } from "../../components/meeting-reminder-form";
+import { MeetingReminderForm } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

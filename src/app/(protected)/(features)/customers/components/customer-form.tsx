@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CustomerForm } from "./form/customer-form-wizard";
+import { CustomerForm } from "@/app/(protected)/(features)/customers/components/form/customer-form-wizard";
 
 interface CustomerFormProps {
   id?: number;

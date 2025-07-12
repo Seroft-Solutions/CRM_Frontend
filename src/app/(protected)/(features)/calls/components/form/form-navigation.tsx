@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEntityForm } from "./call-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
 
 interface FormNavigationProps {
   onCancel: () => void;

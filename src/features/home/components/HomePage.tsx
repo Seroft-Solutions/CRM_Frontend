@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coffee } from 'lucide-react';
 import { signIn } from 'next-auth/react';
-import HeroSection from './HeroSection';
-import FeatureSection from './FeatureSection';
-import CtaSection from './CtaSection';
-import Footer from './Footer';
+import HeroSection from "@/features/home/components/HeroSection";
+import FeatureSection from "@/features/home/components/FeatureSection";
+import CtaSection from "@/features/home/components/CtaSection";
+import Footer from "@/features/home/components/Footer";
 
 export default function HomePage() {
   const router = useRouter();

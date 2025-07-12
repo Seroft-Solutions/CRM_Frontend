@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { availableTimeSlotToast } from "../components/available-time-slot-toast";
+import { availableTimeSlotToast } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
 
 export async function createAvailableTimeSlotAction(formData: FormData) {
   try {

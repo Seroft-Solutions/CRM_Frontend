@@ -15,9 +15,9 @@ import {
   Database,
   LogOut,
 } from 'lucide-react';
-import { OrganizationSetupForm } from './OrganizationSetupForm';
-import { OrganizationWelcomePage } from './OrganizationWelcomePage';
-import { OrganizationSetupProgress } from './OrganizationSetupProgress';
+import { OrganizationSetupForm } from "@/components/organization-setup/OrganizationSetupForm";
+import { OrganizationWelcomePage } from "@/components/organization-setup/OrganizationWelcomePage";
+import { OrganizationSetupProgress } from "@/components/organization-setup/OrganizationSetupProgress";
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { useOrganizationSetup } from '@/hooks/useOrganizationSetup';
 import { logoutAction } from '@/core/auth';

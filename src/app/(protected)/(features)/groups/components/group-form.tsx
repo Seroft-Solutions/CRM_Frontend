@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { GroupForm } from "./form/group-form-wizard";
+import { GroupForm } from "@/app/(protected)/(features)/groups/components/form/group-form-wizard";
 
 interface GroupFormProps {
   id?: number;

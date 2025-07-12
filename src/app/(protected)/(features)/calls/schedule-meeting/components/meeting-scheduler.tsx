@@ -37,7 +37,7 @@ import {
 import { format, addMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import './meeting-scheduler.css';
-import { MeetingErrorDialog } from './meeting-error-dialog';
+import { MeetingErrorDialog } from "@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog";
 
 // Backend imports
 import {

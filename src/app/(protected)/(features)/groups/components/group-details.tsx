@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { groupToast, handleGroupError } from "./group-toast";
-import { groupFormConfig } from "./form/group-form-config";
+import { groupToast, handleGroupError } from "@/app/(protected)/(features)/groups/components/group-toast";
+import { groupFormConfig } from "@/app/(protected)/(features)/groups/components/form/group-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

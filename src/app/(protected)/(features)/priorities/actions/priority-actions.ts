@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
-import { priorityToast } from "../components/priority-toast";
+import { priorityToast } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 
 export async function createPriorityAction(formData: FormData) {
   try {

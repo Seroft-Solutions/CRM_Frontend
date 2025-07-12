@@ -14,8 +14,8 @@ export { keycloakServiceMutator } from './services/keycloak-service/service-muta
 export { QueryClientProvider } from './providers/QueryClientProvider';
 
 // Import services for default export
-import { springService } from './services/spring-service';
-import { keycloakService } from './services/keycloak-service';
+import { springService } from "@/core/api/services/spring-service";
+import { keycloakService } from "@/core/api/services/keycloak-service";
 
 // Default export for convenience
 export default {

@@ -27,7 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { roleToast } from "../role-toast";
+import { roleToast } from "@/app/(protected)/(features)/roles/components/role-toast";
 
 
 

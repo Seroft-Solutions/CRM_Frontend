@@ -27,7 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { priorityToast } from "../priority-toast";
+import { priorityToast } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 
 
 

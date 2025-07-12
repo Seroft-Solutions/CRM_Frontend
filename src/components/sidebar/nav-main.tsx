@@ -17,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { type SidebarItem } from './sidebar-items';
+import { type SidebarItem } from "@/components/sidebar/sidebar-items";
 
 export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();

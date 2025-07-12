@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { callRemarkToast } from "../call-remark-toast";
+import { callRemarkToast } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
 
 
 

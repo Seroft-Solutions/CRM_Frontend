@@ -27,7 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { meetingReminderToast } from "../meeting-reminder-toast";
+import { meetingReminderToast } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast";
 
 
 

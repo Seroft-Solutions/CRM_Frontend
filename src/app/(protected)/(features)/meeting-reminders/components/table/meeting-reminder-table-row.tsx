@@ -8,7 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/core/auth";
-import { RelationshipCell } from "./relationship-cell";
+import { RelationshipCell } from "@/app/(protected)/(features)/meeting-reminders/components/table/relationship-cell";
 import type { MeetingReminderDTO } from "@/core/api/generated/spring/schemas/MeetingReminderDTO";
 
 

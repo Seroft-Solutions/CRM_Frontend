@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MeetingReminderForm } from "./form/meeting-reminder-form-wizard";
+import { MeetingReminderForm } from "@/app/(protected)/(features)/meeting-reminders/components/form/meeting-reminder-form-wizard";
 
 interface MeetingReminderFormProps {
   id?: number;
