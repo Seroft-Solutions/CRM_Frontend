@@ -73,6 +73,10 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
+                cascadingFilter: {
+                  parentField: 'state',
+                  filterField: 'state',
+                },
                 api: {
                   useGetAllHook: 'useGetAllDistricts',
                   useSearchHook: 'useSearchDistricts',
@@ -112,6 +116,10 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
+                  cascadingFilter: {
+                      parentField: 'district',
+                      filterField: 'district',
+                  },
                 api: {
                   useGetAllHook: 'useGetAllCitys',
                   useSearchHook: 'useSearchCitys',
@@ -151,6 +159,10 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
+                  cascadingFilter: {
+                      parentField: 'city',
+                      filterField: 'city',
+                  },
                 api: {
                   useGetAllHook: 'useGetAllAreas',
                   useSearchHook: 'useSearchAreas',
