@@ -27,6 +27,7 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Customer Business Name
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -52,6 +53,7 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Email
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -104,6 +106,7 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 WhatsApp
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <PhoneInput
@@ -128,6 +131,7 @@ export function CustomerBasicStep({ form, config, actions }: CustomerBasicStepPr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Contact Person
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Input
