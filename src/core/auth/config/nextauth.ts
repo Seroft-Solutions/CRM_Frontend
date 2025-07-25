@@ -5,8 +5,6 @@
 
 import NextAuth from 'next-auth';
 import Keycloak from 'next-auth/providers/keycloak';
-import { parseRoles, parseGroups } from "@/core/auth/utils";
-import { rolesManager } from "@/core/auth/session/roles-manager";
 import type { JWT } from 'next-auth/jwt';
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
@@ -67,14 +65,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.refresh_token = account.refresh_token;
         token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
 
-        console.log(account.access_token);
-        if (account.access_token && token.sub) {
-          // No longer store roles and groups in JWT token to avoid session size limits
-          // Roles will be fetched dynamically when needed using fetchUserRoles()
-          // Still keep roles manager for backward compatibility with existing code
-          const roles = parseRoles(account.access_token);
-          rolesManager.setUserRoles(token.sub, roles);
-        }
+        // Roles and authorities are now fetched dynamically from backend API
+        // This avoids JWT token size limits and keeps session lightweight
       }
 
       // Refresh token if expired
@@ -149,10 +141,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Handle both token and session based signout
       const token = 'token' in params ? params.token : null;
 
-      // Clear roles from roles manager on signout
-      if (token?.sub) {
-        rolesManager.clearUserRoles(token.sub);
-      }
+      // Roles are managed by backend API, no client-side cleanup needed
 
       if (token?.id_token && typeof token.id_token === 'string') {
         try {

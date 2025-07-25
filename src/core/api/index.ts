@@ -1,16 +1,19 @@
-// Export base service classes and types
+// Configuration
+export * from './config/api-config';
+
+// Base service classes and types
 export { BaseService, type BaseServiceConfig } from './services/base/base-service';
 export * from './services/base/types';
 
-// Export specific services
+// Services
 export { SpringService, springService } from './services/spring-service';
 export { KeycloakService, keycloakService } from './services/keycloak-service';
 
-// Export service mutators for Orval
+// Service mutators for Orval
 export { springServiceMutator } from './services/spring-service/service-mutator';
 export { keycloakServiceMutator } from './services/keycloak-service/service-mutator';
 
-// Export React Query provider
+// React Query provider
 export { QueryClientProvider } from './providers/QueryClientProvider';
 
 // Import services for default export

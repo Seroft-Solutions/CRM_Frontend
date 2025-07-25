@@ -40,17 +40,6 @@ export interface ActivityTrackerOptions {
   immediate?: boolean; // whether to start tracking immediately
 }
 
-export interface RoleManagerInterface {
-  setUserRoles(userId: string, roles: string[]): void;
-  getUserRoles(userId: string): string[];
-  hasRole(userId: string, roleOrPermission: string): boolean;
-  hasAccess(userId: string, requiredPermission: string): boolean;
-  hasAnyRole(userId: string, requiredRoles: string[]): boolean;
-  hasAllRoles(userId: string, requiredRoles: string[]): boolean;
-  clearUserRoles(userId: string): void;
-  clearAllRoles(): void;
-  getAllUsers(): string[];
-}
 
 export interface AuthConfig {
   keycloak: {
