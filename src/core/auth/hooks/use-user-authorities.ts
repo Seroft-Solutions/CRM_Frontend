@@ -21,6 +21,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAccount } from "@/core/auth/hooks/use-account";
+import { AUTH_CACHE_CONFIG } from '../config/cache-config';
 import { normalizeRole, normalizeGroup, normalizeAuthority } from "@/core/auth/utils";
 
 export function useUserAuthorities() {
@@ -37,7 +38,7 @@ export function useUserAuthorities() {
     error: accountError 
   } = useAccount({
     refetchInBackground: true, // Keep authorities fresh in background
-    staleTime: 10 * 60 * 1000, // 5 minutes stale time for authority data
+    staleTime: AUTH_CACHE_CONFIG.authorities.staleTime,
   });
 
   useEffect(() => {

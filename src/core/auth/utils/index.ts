@@ -40,64 +40,10 @@ export function normalizeAuthority(authority: string): string {
 }
 
 /**
- * Parse roles from Keycloak access token
- * @deprecated - Use backend API /api/account instead for role fetching
- * This function is kept for backward compatibility only
- */
-export function parseRoles(accessToken: string): string[] {
-  try {
-    const [, payload] = accessToken.split('.');
-    if (!payload) return [];
-
-    const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
-    const roles: string[] = [];
-
-    // Get realm roles
-    if (decoded.realm_access?.roles) {
-      roles.push(...decoded.realm_access.roles.map(normalizeRole));
-    }
-
-    // Get client roles (resource_access)
-    if (decoded.resource_access) {
-      Object.values(decoded.resource_access).forEach((client) => {
-        if (client.roles) {
-          roles.push(...client.roles.map(normalizeRole));
-        }
-      });
-    }
-
-    return [...new Set(roles)]; // Remove duplicates
-  } catch (error) {
-    console.error('Failed to parse roles from token:', error);
-    return [];
-  }
-}
-
-/**
- * Parse groups from Keycloak access token
- * @deprecated - Use backend API /api/account instead for group fetching
- * This function is kept for backward compatibility only
- */
-export function parseGroups(accessToken: string): string[] {
-  try {
-    const [, payload] = accessToken.split('.');
-    if (!payload) return [];
-
-    const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
-    const groups = decoded.groups || [];
-    return [...new Set(groups.map(normalizeGroup))]; // Remove duplicates and normalize
-  } catch (error) {
-    console.error('Failed to parse groups from token:', error);
-    return [];
-  }
-}
-
-/**
  * Logout utility function that handles both NextAuth and Keycloak logout
  */
 export async function logout() {
   try {
-    // NextAuth v5 will automatically handle Keycloak logout via the signOut event
     await signOut({
       callbackUrl: '/',
       redirect: true,
@@ -123,72 +69,23 @@ export async function silentLogout() {
 }
 
 /**
- * Fetch user roles dynamically from the current session's access token
- * @deprecated - Use useUserRoles hook or backend API /api/account instead
- * This is used instead of storing roles in the session to avoid size limits
- */
-export async function fetchUserRoles(): Promise<string[]> {
-  try {
-    // Import auth dynamically to avoid circular dependencies
-    const { auth } = await import('../config/nextauth');
-    const session = await auth();
-
-    if (!session?.access_token) {
-      return [];
-    }
-
-    return parseRoles(session.access_token);
-  } catch (error) {
-    console.error('Failed to fetch user roles:', error);
-    return [];
-  }
-}
-
-/**
- * Fetch user groups dynamically from the current session's access token
- * @deprecated - Use useUserRoles hook or backend API /api/account instead
- * This is used instead of storing groups in the session to avoid size limits
- */
-export async function fetchUserGroups(): Promise<string[]> {
-  try {
-    // Import auth dynamically to avoid circular dependencies
-    const { auth } = await import('../config/nextauth');
-    const session = await auth();
-
-    if (!session?.access_token) {
-      return [];
-    }
-
-    return parseGroups(session.access_token);
-  } catch (error) {
-    console.error('Failed to fetch user groups:', error);
-    return [];
-  }
-}
-
-/**
  * Get access token from various sources
  */
 export async function fetchAccessToken(): Promise<string | null> {
   try {
     if (typeof window !== 'undefined') {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const session = await response.json();
-          if (session?.access_token) {
-            return session.access_token as string;
-          }
-        }
-      } catch (error) {
-        console.warn('Auth session fetch failed:', error);
+      const response = await fetch('/api/auth/session');
+      if (response.ok) {
+        const session = await response.json();
+        return session?.access_token || null;
       }
+      
       const { tokenStorage } = await import('../tokens');
       return tokenStorage.getToken() || tokenStorage.getTokenSession();
     }
+    
     const { getAccessToken } = await import('@/lib/dal');
-    const token = await getAccessToken();
-    return token;
+    return await getAccessToken();
   } catch (error) {
     console.error('Error getting access token:', error);
     return null;

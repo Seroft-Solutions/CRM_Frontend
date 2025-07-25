@@ -20,6 +20,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useGetAccount } from '@/core/api/generated/spring/endpoints/account-resource/account-resource.gen';
+import { AUTH_CACHE_CONFIG } from '../config/cache-config';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { AdminUserDTO } from '@/core/api/generated/spring/schemas';
 
@@ -60,7 +61,7 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
   
   const {
     refetchInBackground = true,
-    staleTime = 3 * 60 * 1000, // 5 minutes
+    staleTime = AUTH_CACHE_CONFIG.account.staleTime,
     refetchOnWindowFocus = true,
   } = options;
 
@@ -68,20 +69,22 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<Admi
     query: {
       enabled: status === 'authenticated' && !!session?.user,
       staleTime,
-      gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+      gcTime: AUTH_CACHE_CONFIG.account.gcTime,
       refetchOnWindowFocus,
       refetchOnReconnect: true,
-      refetchInterval: refetchInBackground ? 10 * 60 * 1000 : false, // Refetch every 10 minutes in background
+      refetchInterval: refetchInBackground ? AUTH_CACHE_CONFIG.account.refetchInterval : false,
       retry: (failureCount, error: any) => {
-        // Be more aggressive with retries for account data since it's critical
+        // Don't retry auth errors
         if (error?.status === 401 || error?.status === 403) {
-          return false; // Don't retry auth errors
+          return false;
         }
-        return failureCount < 5; // Retry up to 5 times for other errors
+        return failureCount < AUTH_CACHE_CONFIG.retry.maxAttempts;
       },
       retryDelay: (attemptIndex) => {
-        // Faster initial retries for critical account data
-        return Math.min(500 * 2 ** attemptIndex, 10000);
+        return Math.min(
+          AUTH_CACHE_CONFIG.retry.baseDelay * 2 ** attemptIndex, 
+          AUTH_CACHE_CONFIG.retry.maxDelay
+        );
       },
     },
   });

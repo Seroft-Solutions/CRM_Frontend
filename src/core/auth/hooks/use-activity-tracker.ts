@@ -6,12 +6,13 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { AUTH_CACHE_CONFIG } from '../config/cache-config';
 import type { ActivityTrackerOptions } from '../types';
 
 export function useActivityTracker(options: ActivityTrackerOptions = {}) {
   const {
-    timeout = 5 * 60 * 1000, // 5 minutes default
-    events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'],
+    timeout = AUTH_CACHE_CONFIG.activity.timeout,
+    events = AUTH_CACHE_CONFIG.activity.events,
     immediate = true,
   } = options;
 

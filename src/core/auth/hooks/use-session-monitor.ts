@@ -8,19 +8,20 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useCallback, useRef } from 'react';
 import { useActivityTracker } from "@/core/auth/hooks/use-activity-tracker";
+import { AUTH_CACHE_CONFIG } from '../config/cache-config';
 import type { SessionMonitorOptions } from '../types';
 
 export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   const { data: session, status, update } = useSession();
   const {
-    checkInterval = 60000, // Check every minute
+    checkInterval = AUTH_CACHE_CONFIG.session.checkInterval,
     onSessionExpired,
     onSessionRestored,
-    warningThreshold = 2, // Warn 2 minutes before expiry
+    warningThreshold = AUTH_CACHE_CONFIG.session.warningThreshold,
     onSessionWarning,
-    gracePeriod = 3, // Wait 3 minutes after login before starting checks
-    idleTimeout = 3, // Only show warnings after 3 minutes of inactivity
-    autoRefreshOnActivity = true, // Auto-refresh session when user is active
+    gracePeriod = AUTH_CACHE_CONFIG.session.gracePeriod,
+    idleTimeout = AUTH_CACHE_CONFIG.session.idleTimeout,
+    autoRefreshOnActivity = true,
   } = options;
 
   const { isIdle, minutesIdle, resetActivity } = useActivityTracker({

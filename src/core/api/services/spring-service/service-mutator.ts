@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from "@/core/api/services/base/types";
 import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
+import { isLongRunningOperation } from '../../config/api-config';
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
 
@@ -23,14 +24,6 @@ const getTenantHeader = (): string | undefined => {
   return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 };
 
-// Check if the request is a long-running operation
-const isLongRunningOperation = (url: string): boolean => {
-  return (
-    url.includes('/tenants/organizations/setup') ||
-    url.includes('/setup-progress') ||
-    (url.includes('/schemas/') && url.includes('/setup'))
-  );
-};
 
 export const springServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
@@ -38,41 +31,13 @@ export const springServiceMutator = async <T>(
 ): Promise<T> => {
   const { url, method = 'GET', data, params } = requestConfig;
 
-  // Log API calls to debug data transformation
-  if (method === 'POST' && url?.includes('sub-call-types')) {
-    console.log('🚀 API MUTATOR - About to send POST request:');
-    console.log('🚀 URL:', url);
-    console.log('🚀 Method:', method);
-    console.log('🚀 Data received by mutator:', data);
-    console.log('🚀 Data type:', typeof data);
-    console.log('🚀 Data constructor:', data?.constructor?.name);
-    console.log('🚀 Stringified Data:', JSON.stringify(data, null, 2));
-
-    if (data && typeof data === 'object') {
-      console.log('🚀 Data keys:', Object.keys(data));
-      if (data.callType) {
-        console.log('🚀 callType value:', data.callType);
-        console.log('🚀 callType type:', typeof data.callType);
-        console.log('🚀 callType stringified:', JSON.stringify(data.callType, null, 2));
-      }
-    }
-  }
-
   // Fix sort parameter serialization for Spring Boot
   let processedParams = params;
   if (params && params.sort && Array.isArray(params.sort)) {
     processedParams = {
       ...params,
-      // Convert array to multiple sort parameters for Spring Boot
-      sort: params.sort
+      sort: params.sort, // Keep array format for proper serialization
     };
-    
-    // Log the sort parameter processing for debugging
-    if (url?.includes('/calls')) {
-      console.log('🔍 Sort parameter processing:');
-      console.log('Original sort:', params.sort);
-      console.log('Processed params:', processedParams);
-    }
   }
 
   // Use long-running config for organization setup operations
