@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
-  OrganizationSetupService,
   type OrganizationSetupRequest,
   type OrganizationSetupResult,
 } from '@/services/organization/organization-setup.service';
@@ -67,15 +66,26 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     adminGroupAssignmentResult: null,
   });
 
-  // Initialize services
-  const setupService = new OrganizationSetupService();
   const syncService = new OrganizationSyncService();
 
   // Setup mutation for new organizations
   const setupMutation = useMutation({
     mutationFn: async (request: OrganizationSetupRequest): Promise<OrganizationSetupResult> => {
-      if (!session) throw new Error('No active session');
-      return setupService.setupOrganization(request, session);
+      const response = await fetch('/api/organization-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        if (response.status === 409) {
+          throw new Error('ORGANIZATION_EXISTS');
+        }
+        throw new Error(error.error || 'Failed to setup organization');
+      }
+
+      return response.json();
     },
     onMutate: () => {
       setState((prev) => ({ ...prev, isSetupInProgress: true, error: null }));

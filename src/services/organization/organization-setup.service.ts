@@ -1,12 +1,15 @@
-'use client';
-
 import { Session } from 'next-auth';
-
-// Types
+import {
+  createOrganization,
+  getOrganizations,
+  addOrganizationMember,
+} from '@/core/api/generated/keycloak';
+import { keycloakService } from '@/core/api/services/keycloak-service';
+import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
-import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 import { AdminGroupAssignmentResult } from './admin-group.service';
+import { AdminGroupService } from './admin-group.service';
 
 export interface OrganizationSetupRequest {
   organizationName: string;
@@ -25,9 +28,11 @@ export interface OrganizationSetupResult {
  */
 export class OrganizationSetupService {
   private realm: string;
+  private adminGroupService: AdminGroupService;
 
   constructor() {
-    this.realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'crm-cup';
+    this.realm = keycloakService.getRealm();
+    this.adminGroupService = new AdminGroupService();
   }
 
   /**
@@ -37,29 +42,32 @@ export class OrganizationSetupService {
     request: OrganizationSetupRequest,
     session: Session
   ): Promise<OrganizationSetupResult> {
-    if (!session.user?.email) {
-      throw new Error('Invalid session: missing user email');
+    if (!session.user?.id) {
+      throw new Error('Invalid session: missing user ID');
     }
+    const keycloakUserId = session.user.id;
 
     try {
-      // Step 1: Get correct Keycloak user ID
-      console.log('Step 1: Getting Keycloak user ID...');
-      const keycloakUserId = await this.getKeycloakUserId();
-      console.log('✓ Step 1 completed - Keycloak user ID:', keycloakUserId);
-
-      // Step 2: Create Keycloak organization
-      console.log('Step 2: Creating Keycloak organization...');
+      // Step 1: Create Keycloak organization
+      console.log('Step 1: Creating Keycloak organization...');
       const keycloakOrgId = await this.createKeycloakOrganization(request);
-      console.log('✓ Step 2 completed - Keycloak org ID:', keycloakOrgId);
+      console.log('✓ Step 1 completed - Keycloak org ID:', keycloakOrgId);
 
-      // Step 3: Add user as organization member and assign to admin group
-      console.log('Step 3: Adding user to organization and assigning to admin group...');
-      const { adminGroupAssignment } = await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
-      console.log('✓ Step 3 completed - User added to organization');
-      if (adminGroupAssignment?.success) {
-        console.log('✓ Admin group assignment successful');
+      // Step 2: Add user as organization member
+      console.log('Step 2: Adding user to organization...');
+      await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
+      console.log('✓ Step 2 completed - User added to organization');
+
+      // Step 3: Assign user to Admin group
+      console.log('Step 3: Assigning user to Admin group...');
+      const adminGroupAssignment = await this.adminGroupService.assignUserToAdminGroup(
+        keycloakOrgId,
+        keycloakUserId
+      );
+      if (adminGroupAssignment.success) {
+        console.log('✓ Step 3 completed - User assigned to Admin group');
       } else {
-        console.warn('⚠️ Admin group assignment failed:', adminGroupAssignment?.error);
+        console.warn('⚠️ Step 3 failed - Could not assign user to Admin group:', adminGroupAssignment.error);
       }
 
       // Step 4: Create Spring organization record and setup tenant schema
@@ -95,65 +103,31 @@ export class OrganizationSetupService {
   }
 
   /**
-   * Get correct Keycloak user ID for current session
-   */
-  private async getKeycloakUserId(): Promise<string> {
-    const response = await fetch('/api/keycloak/user/current');
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to get Keycloak user ID');
-    }
-
-    const userData = await response.json();
-
-    if (!userData.keycloakUserId) {
-      throw new Error('No Keycloak user ID found');
-    }
-
-    return userData.keycloakUserId;
-  }
-
-  /**
    * Create organization in Keycloak
    */
   private async createKeycloakOrganization(request: OrganizationSetupRequest): Promise<string> {
-    const organizationData = {
-      organizationName: request.organizationName,
-      displayName: request.organizationName, // Use organization name as display name
-      description: `CRM organization for ${request.organizationName}`,
-      domain: request.domain,
+    const organizationData: OrganizationRepresentation = {
+      name: request.organizationName,
+      attributes: {
+        displayName: [request.organizationName],
+        description: [`CRM organization for ${request.organizationName}`],
+        domain: request.domain ? [request.domain] : [],
+      },
     };
 
-    // Create the organization via API route
-    const createResponse = await fetch('/api/keycloak/organizations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(organizationData),
-    });
-
-    if (!createResponse.ok) {
-      const error = await createResponse.json();
-
-      // Handle 409 conflict error specifically
-      if (createResponse.status === 409) {
+    try {
+      await createOrganization(this.realm, organizationData);
+    } catch (error: any) {
+      if (error.status === 409) {
         throw new Error('ORGANIZATION_EXISTS');
       }
-
-      throw new Error(error.error || 'Failed to create organization');
+      throw error;
     }
 
-    // Fetch organizations to get the created one's ID
-    const listResponse = await fetch(
-      `/api/keycloak/organizations?search=${encodeURIComponent(request.organizationName)}`
-    );
-
-    if (!listResponse.ok) {
-      throw new Error('Failed to retrieve created organization');
-    }
-
-    const { organizations } = await listResponse.json();
-    const createdOrg = organizations.find((org: any) => org.name === request.organizationName);
+    const organizations = await getOrganizations(this.realm, {
+      search: request.organizationName,
+    });
+    const createdOrg = organizations.find((org) => org.name === request.organizationName);
 
     if (!createdOrg?.id) {
       throw new Error('Failed to retrieve created organization ID');
@@ -165,20 +139,8 @@ export class OrganizationSetupService {
   /**
    * Add user as member of Keycloak organization
    */
-  private async addUserToOrganization(orgId: string, userId: string): Promise<{ adminGroupAssignment: AdminGroupAssignmentResult | null }> {
-    const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, assignAdminRole: true }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to add user to organization');
-    }
-
-    const result = await response.json();
-    return { adminGroupAssignment: result.adminGroupAssignment };
+  private async addUserToOrganization(orgId: string, userId: string): Promise<void> {
+    await addOrganizationMember(this.realm, orgId, userId);
   }
 
   /**
