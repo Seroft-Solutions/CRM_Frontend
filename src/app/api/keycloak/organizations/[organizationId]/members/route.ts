@@ -96,6 +96,46 @@ async function ensureProperGroupAssignment(
   return { usersGroupAssigned, adminsGroupRemoved };
 }
 
+// Helper function to ensure organization owner gets both Users and Admins group assignment
+async function ensureOrganizationOwnerGroupAssignment(
+  realm: string,
+  userId: string
+): Promise<{
+  usersGroupAssigned: boolean;
+  adminsGroupAssigned: boolean;
+}> {
+  let usersGroupAssigned = false;
+  let adminsGroupAssigned = false;
+
+  try {
+    // Get all groups
+    const allGroups = await getAdminRealmsRealmGroups(realm);
+    const usersGroup = allGroups.find((g) => g.name === 'Users');
+    const adminsGroup = allGroups.find((g) => g.name === 'Admins');
+
+    // Get user's current groups
+    const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
+
+    // Assign Users group if not already assigned
+    if (usersGroup && !userGroups.some((g) => g.id === usersGroup.id)) {
+      await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, usersGroup.id!);
+      usersGroupAssigned = true;
+      console.log('Assigned Users group to organization owner:', userId);
+    }
+
+    // Assign Admins group if not already assigned (this is the key difference)
+    if (adminsGroup && !userGroups.some((g) => g.id === adminsGroup.id)) {
+      await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
+      adminsGroupAssigned = true;
+      console.log('Assigned Admins group to organization owner:', userId);
+    }
+  } catch (error) {
+    console.warn('Failed to manage group assignments for organization owner:', userId, error);
+  }
+
+  return { usersGroupAssigned, adminsGroupAssigned };
+}
+
 // Helper function to parse invitation metadata from user attributes
 function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInvitation | null {
   const attributes = user.attributes;
@@ -297,6 +337,29 @@ export async function POST(
 
       // Add existing user to organization using generated endpoint
       await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, body.userId);
+
+      // Check if this is organization owner setup (indicated by isOrganizationOwner flag)
+      if (body.isOrganizationOwner) {
+        console.log('Setting up organization owner with admin privileges:', body.userId);
+        
+        // Use the organization owner group assignment function
+        const ownerGroupResult = await ensureOrganizationOwnerGroupAssignment(realm, body.userId);
+        
+        return NextResponse.json({
+          message: 'Organization owner added successfully with admin privileges',
+          organizationId,
+          userId: body.userId,
+          groupAssignment: {
+            usersGroupAssigned: ownerGroupResult.usersGroupAssigned,
+            adminsGroupAssigned: ownerGroupResult.adminsGroupAssigned,
+            message: ownerGroupResult.adminsGroupAssigned
+              ? 'Organization owner was assigned to both Users and Admins groups'
+              : ownerGroupResult.usersGroupAssigned
+                ? 'Organization owner was assigned to Users group'
+                : 'Organization owner group assignments unchanged',
+          },
+        });
+      }
 
       return NextResponse.json({
         message: 'User added to organization successfully',

@@ -160,13 +160,18 @@ export class OrganizationSetupService {
     const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ 
+        userId,
+        isOrganizationOwner: true // Flag to indicate this user should get admin privileges
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Failed to add user to organization');
     }
+
+    console.log('✓ Organization owner added with admin privileges');
   }
 
   /**
