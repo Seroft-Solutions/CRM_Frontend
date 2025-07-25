@@ -16,6 +16,7 @@ import {
 } from 'react';
 import { signOut } from 'next-auth/react';
 import { SessionExpiredModal } from "@/core/auth/components/session-expired-modal";
+import { useSessionEvents } from "@/core/auth/session/events";
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -59,6 +60,9 @@ export function SessionManagerProvider({
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
   const activityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Session events for handling API 401 errors
+  const { onSessionExpired } = useSessionEvents();
 
   // Events to track for user activity
   const activityEvents = [
@@ -190,6 +194,16 @@ export function SessionManagerProvider({
       }
     };
   }, [lastActivity]);
+
+  // Set up session event listener for API 401 errors
+  useEffect(() => {
+    const unsubscribe = onSessionExpired((event) => {
+      console.log('Session expired from API call:', event.message);
+      showSessionExpiredModal();
+    });
+
+    return unsubscribe;
+  }, [onSessionExpired, showSessionExpiredModal]);
 
   // Set up activity listeners
   useEffect(() => {
