@@ -14,6 +14,8 @@ import {
 import { OrganizationSyncService } from '@/services/organization/organization-sync.service';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 
+import { AdminGroupAssignmentResult } from '@/services/organization/admin-group.service';
+
 export interface OrganizationSetupState {
   isSetupRequired: boolean;
   isSetupInProgress: boolean;
@@ -22,6 +24,7 @@ export interface OrganizationSetupState {
   showWelcome: boolean;
   error: string | null;
   organizationName: string | null;
+  adminGroupAssignmentResult: AdminGroupAssignmentResult | null;
 }
 
 export interface OrganizationSetupActions {
@@ -61,6 +64,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     showWelcome: false,
     error: null,
     organizationName: null,
+    adminGroupAssignmentResult: null,
   });
 
   // Initialize services
@@ -83,7 +87,13 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
         isSetupInProgress: true, // Keep true to trigger progress tracking
         error: null,
         organizationName: variables.organizationName, // Set organization name for progress tracking
+        adminGroupAssignmentResult: result.adminGroupAssignment || null,
       }));
+      if (result.adminGroupAssignment?.success === false) {
+        toast.warning('Admin privileges not assigned', {
+          description: 'There was an issue assigning admin privileges. You can assign them later in the user management section.',
+        });
+      }
       // Don't refetch organizations here - wait for progress to complete
     },
     onError: (error: Error, variables) => {
