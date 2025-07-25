@@ -6,6 +6,7 @@ import { Session } from 'next-auth';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
 import { createOrganizationWithSchema } from '@/core/api/generated/spring';
+import { AdminGroupService, AdminGroupAssignmentResult } from './admin-group.service';
 
 export interface OrganizationSetupRequest {
   organizationName: string;
@@ -15,6 +16,7 @@ export interface OrganizationSetupRequest {
 export interface OrganizationSetupResult {
   keycloakOrgId: string;
   springOrgId: number;
+  adminGroupAssignment?: AdminGroupAssignmentResult;
 }
 
 /**
@@ -23,9 +25,11 @@ export interface OrganizationSetupResult {
  */
 export class OrganizationSetupService {
   private realm: string;
+  private adminGroupService: AdminGroupService;
 
   constructor() {
     this.realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'crm-cup';
+    this.adminGroupService = new AdminGroupService();
   }
 
   /**
@@ -55,6 +59,15 @@ export class OrganizationSetupService {
       await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
       console.log('✓ Step 3 completed - User added to organization');
 
+      // Step 3.5: Assign user to Admin group
+      console.log('Step 3.5: Assigning user to Admin group...');
+      const adminGroupAssignment = await this.assignUserToAdminGroup(keycloakOrgId, keycloakUserId);
+      if (adminGroupAssignment.success) {
+        console.log('✓ Step 3.5 completed - User assigned to Admin group');
+      } else {
+        console.warn('⚠️ Step 3.5 failed - Could not assign user to Admin group:', adminGroupAssignment.error);
+      }
+
       // Step 4: Create Spring organization record and setup tenant schema
       console.log('Step 4: Creating Spring organization with schema setup...');
       try {
@@ -65,6 +78,7 @@ export class OrganizationSetupService {
         return {
           keycloakOrgId,
           springOrgId,
+          adminGroupAssignment,
         };
       } catch (error: any) {
         if (error.message === 'SETUP_TIMEOUT') {
@@ -75,6 +89,7 @@ export class OrganizationSetupService {
           return {
             keycloakOrgId,
             springOrgId: 0, // Placeholder - actual ID will be retrieved by progress tracking
+            adminGroupAssignment,
           };
         }
         throw error;
@@ -83,6 +98,16 @@ export class OrganizationSetupService {
       console.error('❌ Organization setup failed at step:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to setup organization');
     }
+  }
+
+  /**
+   * Assign user to Admin group for the organization
+   */
+  private async assignUserToAdminGroup(
+    orgId: string,
+    userId: string
+  ): Promise<AdminGroupAssignmentResult> {
+    return this.adminGroupService.assignUserToAdminGroup(orgId, userId);
   }
 
   /**
@@ -160,7 +185,7 @@ export class OrganizationSetupService {
     const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId, assignAdminRole: true }),
     });
 
     if (!response.ok) {

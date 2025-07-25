@@ -21,6 +21,7 @@ import {
   putAdminRealmsRealmUsersUserIdResetPassword,
   getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
+import { AdminGroupService } from '@/services/organization/admin-group.service';
 import type {
   GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
@@ -293,15 +294,22 @@ export async function POST(
 
     // Check if this is a simple member addition (for organization setup)
     if (body.userId && !body.email) {
-      console.log('Simple member addition:', { organizationId, userId: body.userId });
+      console.log('Simple member addition:', { organizationId, userId: body.userId, assignAdminRole: body.assignAdminRole });
 
       // Add existing user to organization using generated endpoint
       await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, body.userId);
+
+      let adminGroupAssignment = null;
+      if (body.assignAdminRole) {
+        const adminGroupService = new AdminGroupService();
+        adminGroupAssignment = await adminGroupService.assignUserToAdminGroup(organizationId, body.userId);
+      }
 
       return NextResponse.json({
         message: 'User added to organization successfully',
         organizationId,
         userId: body.userId,
+        adminGroupAssignment,
       });
     }
 
