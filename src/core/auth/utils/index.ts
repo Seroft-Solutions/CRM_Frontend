@@ -9,6 +9,9 @@ import type { KeycloakTokenPayload } from '../types';
 // Re-export server actions
 export { logoutAction } from './actions';
 
+// Re-export local storage cleanup utilities
+export { localStorageCleanup } from './local-storage-cleanup';
+
 /**
  * Normalize role name by removing ROLE_ prefix if present
  * This ensures consistent role checking across the application
@@ -50,6 +53,30 @@ export async function logout() {
     });
   } catch (error) {
     console.error('Logout error:', error);
+    // Fallback: redirect to home page
+    window.location.href = '/';
+  }
+}
+
+/**
+ * Enhanced logout function that cleans up local storage before logging out
+ * Use this function when you need to ensure proper cleanup of tenant context
+ */
+export async function logoutWithCleanup() {
+  try {
+    // Import cleanup utility dynamically to avoid SSR issues
+    const { localStorageCleanup } = await import('./local-storage-cleanup');
+    
+    // Clean up all local storage data
+    localStorageCleanup.logout();
+    
+    // Proceed with normal logout
+    await signOut({
+      callbackUrl: '/',
+      redirect: true,
+    });
+  } catch (error) {
+    console.error('Logout with cleanup error:', error);
     // Fallback: redirect to home page
     window.location.href = '/';
   }

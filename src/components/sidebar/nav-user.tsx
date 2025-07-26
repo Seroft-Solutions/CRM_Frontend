@@ -3,6 +3,7 @@
 import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { logoutAction } from '@/core/auth';
+import { logoutWithCleanup } from '@/core/auth';
 import { useAccount } from '@/core/auth/hooks/use-account';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,6 +33,21 @@ export function NavUser() {
     refetchInBackground: true, // Keep user data fresh in background
     refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
+
+  // Handle logout with proper cleanup
+  const handleLogout = async () => {
+    try {
+      await logoutWithCleanup();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback to server action if client-side logout fails
+      const form = document.createElement('form');
+      form.action = '/api/auth/signout';
+      form.method = 'POST';
+      document.body.appendChild(form);
+      form.submit();
+    }
+  };
 
   if (status === 'loading' || isLoading) {
     return (
@@ -124,13 +140,9 @@ export function NavUser() {
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <form action={logoutAction}>
-                <button type="submit" className="flex w-full items-center">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Log out
-                </button>
-              </form>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

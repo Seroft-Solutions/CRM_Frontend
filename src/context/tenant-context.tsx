@@ -1,11 +1,13 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { localStorageCleanup } from '@/core/auth';
 
 interface TenantContextType {
   selectedOrgName: string | null;
   setSelectedOrgName: (orgName: string | null) => void;
   getTenantHeader: () => string | undefined;
+  clearOrganizationData: () => void;
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -44,12 +46,20 @@ export function TenantProvider({ children }: TenantProviderProps) {
     return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
   };
 
+  // Clear all organization-related data
+  const clearOrganizationData = () => {
+    console.log('Clearing organization data via tenant context');
+    localStorageCleanup.organization();
+    setSelectedOrgNameState(null);
+  };
+
   return (
     <TenantContext.Provider
       value={{
         selectedOrgName,
         setSelectedOrgName,
         getTenantHeader,
+        clearOrganizationData,
       }}
     >
       {children}
