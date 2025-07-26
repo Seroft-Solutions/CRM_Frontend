@@ -8,64 +8,61 @@
 "use client";
 
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RelationshipRenderer } from "../relationship-renderer";
+import {FormField, FormItem, FormLabel, FormControl, FormMessage} from "@/components/ui/form";
+import {Input} from "@/components/ui/input";
+import {Textarea} from "@/components/ui/textarea";
+import {RelationshipRenderer} from "../relationship-renderer";
 
 interface CallAssignmentStepProps {
-  form: any;
-  config: any;
-  actions: any;
+    form: any;
+    config: any;
+    actions: any;
 }
 
-export function CallAssignmentStep({ form, config, actions }: CallAssignmentStepProps) {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {/* Generated Form Fields */}
-        
-        {/* Generated Relationship Fields */}
-        
-        {/* Assigned To Relationship */}
-        <FormField
-          control={form.control}
-          name="assignedTo"
-          render={({ field }) => (
-            <RelationshipRenderer
-              relConfig={{
-                name: 'assignedTo',
-                type: 'many-to-one',
-                targetEntity: 'userProfile',
-                displayField: 'displayName',
-                primaryKey: 'id',
-                required: false,
-                multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllUserProfiles',
-                  useSearchHook: 'useSearchUserProfiles',
-                  useCountHook: 'useCountUserProfiles',
-                  entityName: 'UserProfiles',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/user-profiles/new',
-                  createPermission: 'user-profile:create:inline',
-                },
-                ui: {
-                  label: 'Assigned To',
-                  placeholder: 'Select assigned to',
-                  icon: '🔗',
-                }
-              }}
-              field={field}
-              form={form}
-              actions={actions}
-              config={config}
-            />
-          )}
-        />
-      </div>
-    </div>
-  );
+export function CallAssignmentStep({form, config, actions}: CallAssignmentStepProps) {
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {/* Generated Form Fields */}
+
+                {/* Generated Relationship Fields */}
+
+                {/* Assigned To Relationship */}
+                <FormField
+                    control={form.control}
+                    name="assignedTo"
+                    render={({field}) => (
+                        <RelationshipRenderer
+                            relConfig={{
+                                name: 'assignedTo',
+                                type: 'many-to-one',
+                                targetEntity: 'userProfile',
+                                displayField: 'displayName',
+                                primaryKey: 'id',
+                                required: false,
+                                multiple: false,
+                                customFilters: {"activated.equals": true},
+                                api: {
+                                    "useGetAllHook": "useGetAllUserProfiles",
+                                    "useSearchHook": "useSearchUserProfiles",
+                                    "useCountHook": "useCountUserProfiles",
+                                    "entityName": "UserProfiles"
+                                },
+                                creation: {
+                                    "canCreate": true,
+                                    "createPath": "/user-profiles/new",
+                                    "createPermission": "userProfile:create:inline"
+                                },
+                                ui: {"label": "Assigned To", "placeholder": "Select assigned to", "icon": "👤"},
+                            }}
+                            field={field}
+                            form={form}
+                            actions={actions}
+                            config={config}
+                        />
+                    )}
+                />
+            </div>
+        </div>
+    );
 }

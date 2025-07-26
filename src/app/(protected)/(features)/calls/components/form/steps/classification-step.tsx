@@ -41,22 +41,9 @@ export function CallClassificationStep({ form, config, actions }: CallClassifica
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllPriorities',
-                  useSearchHook: 'useSearchPriorities',
-                  useCountHook: 'useCountPriorities',
-                  entityName: 'Priorities',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/priorities/new',
-                  createPermission: 'priority:create:inline',
-                },
-                ui: {
-                  label: 'Priority',
-                  placeholder: 'Select priority',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllPriorities","useSearchHook":"useSearchPriorities","useCountHook":"useCountPriorities","entityName":"Priorities"},
+                creation: {"canCreate":true,"createPath":"/priorities/new","createPermission":"priority:create:inline"},
+                ui: {"label":"Priority","placeholder":"Select priority","icon":"🏷️"},
               }}
               field={field}
               form={form}
@@ -80,22 +67,9 @@ export function CallClassificationStep({ form, config, actions }: CallClassifica
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllCallTypes',
-                  useSearchHook: 'useSearchCallTypes',
-                  useCountHook: 'useCountCallTypes',
-                  entityName: 'CallTypes',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/call-types/new',
-                  createPermission: 'call-type:create:inline',
-                },
-                ui: {
-                  label: 'Call Type',
-                  placeholder: 'Select call type',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllCallTypes","useSearchHook":"useSearchCallTypes","useCountHook":"useCountCallTypes","entityName":"CallTypes"},
+                creation: {"canCreate":true,"createPath":"/call-types/new","createPermission":"callType:create:inline"},
+                ui: {"label":"Call Type","placeholder":"Select call type","icon":"🏷️"},
               }}
               field={field}
               form={form}
@@ -119,22 +93,10 @@ export function CallClassificationStep({ form, config, actions }: CallClassifica
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllSubCallTypes',
-                  useSearchHook: 'useSearchSubCallTypes',
-                  useCountHook: 'useCountSubCallTypes',
-                  entityName: 'SubCallTypes',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/sub-call-types/new',
-                  createPermission: 'sub-call-type:create:inline',
-                },
-                ui: {
-                  label: 'Sub Call Type',
-                  placeholder: 'Select sub call type',
-                  icon: '🔗',
-                }
+                cascadingFilter: {"parentField":"callType","filterField":"callType"},
+                api: {"useGetAllHook":"useGetAllSubCallTypes","useSearchHook":"useSearchSubCallTypes","useCountHook":"useCountSubCallTypes","entityName":"SubCallTypes"},
+                creation: {"canCreate":true,"createPath":"/sub-call-types/new","createPermission":"subCallType:create:inline"},
+                ui: {"label":"Sub Call Type","placeholder":"Select sub call type","icon":"🏷️"},
               }}
               field={field}
               form={form}
@@ -158,22 +120,9 @@ export function CallClassificationStep({ form, config, actions }: CallClassifica
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllCallStatuses',
-                  useSearchHook: 'useSearchCallStatuses',
-                  useCountHook: 'useCountCallStatuses',
-                  entityName: 'CallStatuses',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/call-statuses/new',
-                  createPermission: 'call-status:create:inline',
-                },
-                ui: {
-                  label: 'Call Status',
-                  placeholder: 'Select call status',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllCallStatuses","useSearchHook":"useSearchCallStatuses","useCountHook":"useCountCallStatuses","entityName":"CallStatuses"},
+                creation: {"canCreate":true,"createPath":"/call-statuses/new","createPermission":"callStatus:create:inline"},
+                ui: {"label":"Call Status","placeholder":"Select call status","icon":"🏷️"},
               }}
               field={field}
               form={form}

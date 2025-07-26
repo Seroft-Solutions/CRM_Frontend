@@ -41,22 +41,9 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllSources',
-                  useSearchHook: 'useSearchSources',
-                  useCountHook: 'useCountSources',
-                  entityName: 'Sources',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/sources/new',
-                  createPermission: 'source:create:inline',
-                },
-                ui: {
-                  label: 'Source',
-                  placeholder: 'Select source',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllSources","useSearchHook":"useSearchSources","useCountHook":"useCountSources","entityName":"Sources"},
+                creation: {"canCreate":true,"createPath":"/sources/new","createPermission":"source:create:inline"},
+                ui: {"label":"Source","placeholder":"Select source","icon":"🏢"},
               }}
               field={field}
               form={form}
@@ -80,22 +67,9 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllCustomers',
-                  useSearchHook: 'useSearchCustomers',
-                  useCountHook: 'useCountCustomers',
-                  entityName: 'Customers',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/customers/new',
-                  createPermission: 'customer:create:inline',
-                },
-                ui: {
-                  label: 'Customer',
-                  placeholder: 'Select customer',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllCustomers","useSearchHook":"useSearchCustomers","useCountHook":"useCountCustomers","entityName":"Customers"},
+                creation: {"canCreate":true,"createPath":"/customers/new","createPermission":"customer:create:inline"},
+                ui: {"label":"Customer","placeholder":"Select customer","icon":"🏢"},
               }}
               field={field}
               form={form}
@@ -119,22 +93,9 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllProducts',
-                  useSearchHook: 'useSearchProducts',
-                  useCountHook: 'useCountProducts',
-                  entityName: 'Products',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/products/new',
-                  createPermission: 'product:create:inline',
-                },
-                ui: {
-                  label: 'Product',
-                  placeholder: 'Select product',
-                  icon: '🔗',
-                }
+                api: {"useGetAllHook":"useGetAllProducts","useSearchHook":"useSearchProducts","useCountHook":"useCountProducts","entityName":"Products"},
+                creation: {"canCreate":true,"createPath":"/products/new","createPermission":"product:create:inline"},
+                ui: {"label":"Product","placeholder":"Select product","icon":"🏢"},
               }}
               field={field}
               form={form}

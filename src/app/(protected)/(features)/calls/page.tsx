@@ -5,7 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -14,19 +17,61 @@ import { CallTable } from "./components/call-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
-
-export const metadata = {
-  title: "Calls",
-};
+import { MeetingSchedulerDialog } from "./schedule-meeting/components/meeting-scheduler-dialog";
 
 export default function CallPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [showMeetingDialog, setShowMeetingDialog] = useState(false);
+  const [callData, setCallData] = useState<{
+    callId: string;
+    customerId: string;
+    assignedUserId: string;
+  } | null>(null);
+
+  // Check if we just created a call and should show meeting dialog
+  useEffect(() => {
+    const created = searchParams.get('created');
+    const callId = searchParams.get('callId');
+    const customerId = searchParams.get('customerId');
+    const assignedUserId = searchParams.get('assignedUserId');
+
+    if (created === 'true' && callId) {
+      setCallData({
+        callId,
+        customerId: customerId || '',
+        assignedUserId: assignedUserId || ''
+      });
+      setShowMeetingDialog(true);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams]);
+
+  const handleMeetingDialogChange = (open: boolean) => {
+    setShowMeetingDialog(open);
+    if (!open) {
+      setCallData(null);
+    }
+  };
+
+  const handleMeetingScheduled = () => {
+    setShowMeetingDialog(false);
+    setCallData(null);
+  };
+
+  const handleMeetingError = (error: any) => {
+    console.error('Meeting scheduling error:', error);
+  };
   return (
     <PermissionGuard 
       requiredPermission="call:read"
       unauthorizedTitle="Access Denied to Calls"
       unauthorizedDescription="You don't have permission to view calls."
     >
-      <div className="space-y-4">
+      <div className={`space-y-4 transition-all duration-300 ${showMeetingDialog ? 'blur-sm pointer-events-none' : ''}`}>
         <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -62,6 +107,19 @@ export default function CallPage() {
           <CallTable />
         </Suspense>
       </div>
+
+      {/* Meeting Scheduler Dialog */}
+      {callData && (
+        <MeetingSchedulerDialog
+          open={showMeetingDialog}
+          onOpenChangeAction={handleMeetingDialogChange}
+          customerId={callData.customerId ? parseInt(callData.customerId) : undefined}
+          assignedUserId={callData.assignedUserId}
+          callId={callData.callId ? parseInt(callData.callId) : undefined}
+          onMeetingScheduledAction={handleMeetingScheduled}
+          onError={handleMeetingError}
+        />
+      )}
     </PermissionGuard>
   );
 }

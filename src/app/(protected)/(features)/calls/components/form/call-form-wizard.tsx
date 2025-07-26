@@ -18,7 +18,7 @@ import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+import { stepComponents } from './steps';
 import { 
   useCreateCall,
   useUpdateCall,
@@ -59,12 +59,11 @@ function CallFormContent({ id }: CallFormProps) {
 
     // Use imported step components (requires manual import after generation)
     try {
-      // STEP_GENERATOR_START
-      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      // if (StepComponent) {
-      //   return <StepComponent {...stepProps} />;
-      // }
-      // STEP_GENERATOR_END
+      const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
+      if (StepComponent) {
+        return <StepComponent {...stepProps} />;
+      }
+      
     } catch (error) {
       // Steps not imported yet
     }
@@ -228,9 +227,19 @@ export function CallForm({ id }: CallFormProps) {
           setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Call');
         } else {
-          setIsRedirecting(true);
+          // Redirect immediately to calls list with meeting dialog data
           callToast.created();
-          router.push("/calls");
+          setIsRedirecting(true);
+          
+          // Pass call data via URL parameters for meeting dialog
+          const params = new URLSearchParams({
+            created: 'true',
+            callId: data?.id?.toString() || '',
+            customerId: data?.customer?.id?.toString() || '',
+            assignedUserId: data?.assignedTo?.id?.toString() || ''
+          });
+          
+          router.push(`/calls?${params.toString()}`);
         }
       },
       onError: (error) => {
@@ -267,6 +276,7 @@ export function CallForm({ id }: CallFormProps) {
       },
     },
   });
+
 
   // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
