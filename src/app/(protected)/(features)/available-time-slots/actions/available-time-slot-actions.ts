@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { availableTimeSlotToast } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
+// Import the generated API functions directly
+import { 
+  createAvailableTimeSlot,
+  updateAvailableTimeSlot, 
+  deleteAvailableTimeSlot 
+} from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
+import { availableTimeSlotToast } from "../components/available-time-slot-toast";
 
-export async function createAvailableTimeSlotAction(formData: FormData) {
+export async function createAvailableTimeSlotAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createAvailableTimeSlot(formData);
+    // Create entity using the generated API function
+    const result = await createAvailableTimeSlot(data);
     
     revalidatePath("/available-time-slots");
     availableTimeSlotToast.created();
@@ -21,9 +33,10 @@ export async function createAvailableTimeSlotAction(formData: FormData) {
   }
 }
 
-export async function updateAvailableTimeSlotAction(id: number, formData: FormData) {
+export async function updateAvailableTimeSlotAction(id: number, data: any) {
   try {
-    const result = await updateAvailableTimeSlot(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateAvailableTimeSlot(id, data);
     
     revalidatePath("/available-time-slots");
     revalidatePath(`/available-time-slots/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteAvailableTimeSlotAction(ids: number[]) {
     
     if (errorCount === 0) {
       availableTimeSlotToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       availableTimeSlotToast.bulkDeleteError();
     }

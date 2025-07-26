@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import { useState } from "react";
@@ -6,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { meetingToast, handleMeetingError } from "@/app/(protected)/(features)/meetings/components/meeting-toast";
-import { meetingFormConfig } from "@/app/(protected)/(features)/meetings/components/form/meeting-form-config";
+import { meetingToast, handleMeetingError } from "./meeting-toast";
+import { meetingFormConfig } from "./form/meeting-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

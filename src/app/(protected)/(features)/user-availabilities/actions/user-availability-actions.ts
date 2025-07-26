@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { userAvailabilityToast } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
+// Import the generated API functions directly
+import { 
+  createUserAvailability,
+  updateUserAvailability, 
+  deleteUserAvailability 
+} from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
+import { userAvailabilityToast } from "../components/user-availability-toast";
 
-export async function createUserAvailabilityAction(formData: FormData) {
+export async function createUserAvailabilityAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createUserAvailability(formData);
+    // Create entity using the generated API function
+    const result = await createUserAvailability(data);
     
     revalidatePath("/user-availabilities");
     userAvailabilityToast.created();
@@ -21,9 +33,10 @@ export async function createUserAvailabilityAction(formData: FormData) {
   }
 }
 
-export async function updateUserAvailabilityAction(id: number, formData: FormData) {
+export async function updateUserAvailabilityAction(id: number, data: any) {
   try {
-    const result = await updateUserAvailability(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateUserAvailability(id, data);
     
     revalidatePath("/user-availabilities");
     revalidatePath(`/user-availabilities/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteUserAvailabilityAction(ids: number[]) {
     
     if (errorCount === 0) {
       userAvailabilityToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       userAvailabilityToast.bulkDeleteError();
     }

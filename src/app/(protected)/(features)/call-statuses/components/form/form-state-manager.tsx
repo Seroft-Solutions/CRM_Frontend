@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-provider";
+import { useEntityForm } from "./call-status-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { CallStatusForm } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-wizard";
+import { CallStatusForm } from "./form/call-status-form-wizard";
 
 interface CallStatusFormProps {
   id?: number;

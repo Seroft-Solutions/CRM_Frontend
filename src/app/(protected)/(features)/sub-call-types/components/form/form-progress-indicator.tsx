@@ -1,10 +1,17 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { useEntityForm } from "@/app/(protected)/(features)/sub-call-types/components/form/sub-call-type-form-provider";
+import { useEntityForm } from "./sub-call-type-form-provider";
 
 export function FormProgressIndicator() {
   const { config, state, actions } = useEntityForm();

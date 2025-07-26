@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { RoleForm } from "@/app/(protected)/(features)/roles/components/form/role-form-wizard";
+import { RoleForm } from "./form/role-form-wizard";
 
 interface RoleFormProps {
   id?: number;

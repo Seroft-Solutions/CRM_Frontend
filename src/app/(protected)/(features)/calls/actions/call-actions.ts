@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { callToast } from "@/app/(protected)/(features)/calls/components/call-toast";
+// Import the generated API functions directly
+import { 
+  createCall,
+  updateCall, 
+  deleteCall 
+} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
+import { callToast } from "../components/call-toast";
 
-export async function createCallAction(formData: FormData) {
+export async function createCallAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createCall(formData);
+    // Create entity using the generated API function
+    const result = await createCall(data);
     
     revalidatePath("/calls");
     callToast.created();
@@ -21,9 +33,10 @@ export async function createCallAction(formData: FormData) {
   }
 }
 
-export async function updateCallAction(id: number, formData: FormData) {
+export async function updateCallAction(id: number, data: any) {
   try {
-    const result = await updateCall(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateCall(id, data);
     
     revalidatePath("/calls");
     revalidatePath(`/calls/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteCallAction(ids: number[]) {
     
     if (errorCount === 0) {
       callToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       callToast.bulkDeleteError();
     }

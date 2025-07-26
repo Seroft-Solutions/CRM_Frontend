@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { subCallTypeToast } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
+// Import the generated API functions directly
+import { 
+  createSubCallType,
+  updateSubCallType, 
+  deleteSubCallType 
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+import { subCallTypeToast } from "../components/sub-call-type-toast";
 
-export async function createSubCallTypeAction(formData: FormData) {
+export async function createSubCallTypeAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createSubCallType(formData);
+    // Create entity using the generated API function
+    const result = await createSubCallType(data);
     
     revalidatePath("/sub-call-types");
     subCallTypeToast.created();
@@ -21,9 +33,10 @@ export async function createSubCallTypeAction(formData: FormData) {
   }
 }
 
-export async function updateSubCallTypeAction(id: number, formData: FormData) {
+export async function updateSubCallTypeAction(id: number, data: any) {
   try {
-    const result = await updateSubCallType(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateSubCallType(id, data);
     
     revalidatePath("/sub-call-types");
     revalidatePath(`/sub-call-types/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteSubCallTypeAction(ids: number[]) {
     
     if (errorCount === 0) {
       subCallTypeToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       subCallTypeToast.bulkDeleteError();
     }

@@ -1,8 +1,15 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useCallback } from "react";
 import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "@/app/(protected)/(features)/calls/components/form/paginated-relationship-combobox";
+import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox";
 
 // Import all hooks statically for the specific entity
 
@@ -135,6 +142,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -174,6 +182,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -213,6 +222,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -252,6 +262,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -291,6 +302,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -330,6 +342,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 
@@ -341,6 +354,7 @@ export function RelationshipRenderer({
         );
         
       case 'channelParties':
+      case 'assignedTo':
         return (
           <PaginatedRelationshipCombobox
             value={field.value}
@@ -381,6 +395,7 @@ export function RelationshipRenderer({
         );
         
       case 'assignedTo':
+      case 'channelParties':
         return (
           <PaginatedRelationshipCombobox
             value={field.value}
@@ -449,6 +464,7 @@ export function RelationshipRenderer({
             onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
             parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
             parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
             onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
             disabled={
               relConfig.cascadingFilter 

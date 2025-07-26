@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { availableTimeSlotToast, handleAvailableTimeSlotError } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
+import { availableTimeSlotToast, handleAvailableTimeSlotError } from "./available-time-slot-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +96,10 @@ import {
 
 
 
-import { AvailableTimeSlotSearchAndFilters } from "@/app/(protected)/(features)/available-time-slots/components/table/available-time-slot-search-filters";
-import { AvailableTimeSlotTableHeader } from "@/app/(protected)/(features)/available-time-slots/components/table/available-time-slot-table-header";
-import { AvailableTimeSlotTableRow } from "@/app/(protected)/(features)/available-time-slots/components/table/available-time-slot-table-row";
-import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/available-time-slots/components/table/bulk-relationship-assignment";
+import { AvailableTimeSlotSearchAndFilters } from "./table/available-time-slot-search-filters";
+import { AvailableTimeSlotTableHeader } from "./table/available-time-slot-table-header";
+import { AvailableTimeSlotTableRow } from "./table/available-time-slot-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

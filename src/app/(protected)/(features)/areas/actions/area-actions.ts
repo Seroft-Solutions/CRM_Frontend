@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { areaToast } from "@/app/(protected)/(features)/areas/components/area-toast";
+// Import the generated API functions directly
+import { 
+  createArea,
+  updateArea, 
+  deleteArea 
+} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+import { areaToast } from "../components/area-toast";
 
-export async function createAreaAction(formData: FormData) {
+export async function createAreaAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createArea(formData);
+    // Create entity using the generated API function
+    const result = await createArea(data);
     
     revalidatePath("/areas");
     areaToast.created();
@@ -21,9 +33,10 @@ export async function createAreaAction(formData: FormData) {
   }
 }
 
-export async function updateAreaAction(id: number, formData: FormData) {
+export async function updateAreaAction(id: number, data: any) {
   try {
-    const result = await updateArea(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateArea(id, data);
     
     revalidatePath("/areas");
     revalidatePath(`/areas/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteAreaAction(ids: number[]) {
     
     if (errorCount === 0) {
       areaToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       areaToast.bulkDeleteError();
     }

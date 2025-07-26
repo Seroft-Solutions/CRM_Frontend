@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { sourceToast } from "@/app/(protected)/(features)/sources/components/source-toast";
+// Import the generated API functions directly
+import { 
+  createSource,
+  updateSource, 
+  deleteSource 
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+import { sourceToast } from "../components/source-toast";
 
-export async function createSourceAction(formData: FormData) {
+export async function createSourceAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createSource(formData);
+    // Create entity using the generated API function
+    const result = await createSource(data);
     
     revalidatePath("/sources");
     sourceToast.created();
@@ -21,9 +33,10 @@ export async function createSourceAction(formData: FormData) {
   }
 }
 
-export async function updateSourceAction(id: number, formData: FormData) {
+export async function updateSourceAction(id: number, data: any) {
   try {
-    const result = await updateSource(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateSource(id, data);
     
     revalidatePath("/sources");
     revalidatePath(`/sources/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteSourceAction(ids: number[]) {
     
     if (errorCount === 0) {
       sourceToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       sourceToast.bulkDeleteError();
     }

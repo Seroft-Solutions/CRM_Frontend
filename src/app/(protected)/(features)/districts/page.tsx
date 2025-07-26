@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { DistrictTable } from "@/app/(protected)/(features)/districts/components/district-table";
+import { DistrictTable } from "./components/district-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

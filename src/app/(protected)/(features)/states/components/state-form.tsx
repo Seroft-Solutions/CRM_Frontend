@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { StateForm } from "@/app/(protected)/(features)/states/components/form/state-form-wizard";
+import { StateForm } from "./form/state-form-wizard";
 
 interface StateFormProps {
   id?: number;

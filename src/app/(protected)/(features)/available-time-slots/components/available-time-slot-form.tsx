@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { AvailableTimeSlotForm } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-wizard";
+import { AvailableTimeSlotForm } from "./form/available-time-slot-form-wizard";
 
 interface AvailableTimeSlotFormProps {
   id?: number;

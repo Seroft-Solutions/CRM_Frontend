@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { callToast, handleCallError } from "@/app/(protected)/(features)/calls/components/call-toast";
+import { callToast, handleCallError } from "./call-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -117,10 +124,10 @@ import {
 
 
 
-import { CallSearchAndFilters } from "@/app/(protected)/(features)/calls/components/table/call-search-filters";
-import { CallTableHeader } from "@/app/(protected)/(features)/calls/components/table/call-table-header";
-import { CallTableRow } from "@/app/(protected)/(features)/calls/components/table/call-table-row";
-import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/calls/components/table/bulk-relationship-assignment";
+import { CallSearchAndFilters } from "./table/call-search-filters";
+import { CallTableHeader } from "./table/call-table-header";
+import { CallTableRow } from "./table/call-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -293,8 +300,8 @@ interface DateRange {
 export function CallTable() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("lastModifiedDate");
-  const [order, setOrder] = useState(DESC);
+  const [sort, setSort] = useState("id");
+  const [order, setOrder] = useState(ASC);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -504,16 +511,6 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
-  // Separate API call for assignable users (those without channelType)
-  const { data: assignableUserProfiles = [] } = useGetAllUserProfiles(
-    { 
-      page: 0, 
-      size: 1000,
-      'channelTypeId.specified': false  // Only users without channelType
-    },
-    { query: { enabled: true } }
-  );
-  
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -579,7 +576,7 @@ export function CallTable() {
       
       'assignedTo.displayName': { 
         apiParam: 'assignedToId.equals', 
-        options: assignableUserProfiles, // Use filtered assignable users
+        options: userprofileOptions, 
         displayField: 'displayName' 
       },
       
@@ -1209,7 +1206,7 @@ export function CallTable() {
       displayName: "Priority",
       options: priorityOptions || [],
       displayField: "name",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {
@@ -1263,9 +1260,9 @@ export function CallTable() {
     {
       name: "assignedTo",
       displayName: "AssignedTo",
-      options: assignableUserProfiles || [], // Use filtered list for assignable users
+      options: userprofileOptions || [],
       displayField: "displayName",
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
     
     {

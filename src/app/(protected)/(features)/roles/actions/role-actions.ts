@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { roleToast } from "@/app/(protected)/(features)/roles/components/role-toast";
+// Import the generated API functions directly
+import { 
+  createRole,
+  updateRole, 
+  deleteRole 
+} from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
+import { roleToast } from "../components/role-toast";
 
-export async function createRoleAction(formData: FormData) {
+export async function createRoleAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createRole(formData);
+    // Create entity using the generated API function
+    const result = await createRole(data);
     
     revalidatePath("/roles");
     roleToast.created();
@@ -21,9 +33,10 @@ export async function createRoleAction(formData: FormData) {
   }
 }
 
-export async function updateRoleAction(id: number, formData: FormData) {
+export async function updateRoleAction(id: number, data: any) {
   try {
-    const result = await updateRole(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateRole(id, data);
     
     revalidatePath("/roles");
     revalidatePath(`/roles/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteRoleAction(ids: number[]) {
     
     if (errorCount === 0) {
       roleToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       roleToast.bulkDeleteError();
     }

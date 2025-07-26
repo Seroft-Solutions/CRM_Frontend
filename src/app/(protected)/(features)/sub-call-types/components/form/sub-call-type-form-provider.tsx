@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
@@ -11,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { subCallTypeFormConfig } from "@/app/(protected)/(features)/sub-call-types/components/form/sub-call-type-form-config";
-import { subCallTypeFormSchema } from "@/app/(protected)/(features)/sub-call-types/components/form/sub-call-type-form-schema";
-import { subCallTypeToast, handleSubCallTypeError } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
+import { subCallTypeFormConfig } from "./sub-call-type-form-config";
+import { subCallTypeFormSchema } from "./sub-call-type-form-schema";
+import { subCallTypeToast, handleSubCallTypeError } from "../sub-call-type-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

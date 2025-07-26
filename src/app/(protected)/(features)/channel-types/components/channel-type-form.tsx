@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { ChannelTypeForm } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-wizard";
+import { ChannelTypeForm } from "./form/channel-type-form-wizard";
 
 interface ChannelTypeFormProps {
   id?: number;

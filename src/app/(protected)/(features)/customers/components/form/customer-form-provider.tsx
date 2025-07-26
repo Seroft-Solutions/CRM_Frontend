@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
@@ -11,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { customerFormConfig } from "@/app/(protected)/(features)/customers/components/form/customer-form-config";
-import { customerFormSchema } from "@/app/(protected)/(features)/customers/components/form/customer-form-schema";
-import { customerToast, handleCustomerError } from "@/app/(protected)/(features)/customers/components/customer-toast";
+import { customerFormConfig } from "./customer-form-config";
+import { customerFormSchema } from "./customer-form-schema";
+import { customerToast, handleCustomerError } from "../customer-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

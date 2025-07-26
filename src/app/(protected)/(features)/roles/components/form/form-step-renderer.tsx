@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useEffect } from "react";
@@ -6,8 +13,8 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "@/app/(protected)/(features)/roles/components/form/role-form-provider";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/roles/components/form/relationship-renderer";
+import { useEntityForm } from "./role-form-provider";
+import { RelationshipRenderer } from "./relationship-renderer";
 
 
 import {

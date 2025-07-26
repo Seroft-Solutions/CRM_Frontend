@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { roleToast, handleRoleError } from "@/app/(protected)/(features)/roles/components/role-toast";
+import { roleToast, handleRoleError } from "./role-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +96,10 @@ import {
 
 
 
-import { RoleSearchAndFilters } from "@/app/(protected)/(features)/roles/components/table/role-search-filters";
-import { RoleTableHeader } from "@/app/(protected)/(features)/roles/components/table/role-table-header";
-import { RoleTableRow } from "@/app/(protected)/(features)/roles/components/table/role-table-row";
-import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/roles/components/table/bulk-relationship-assignment";
+import { RoleSearchAndFilters } from "./table/role-search-filters";
+import { RoleTableHeader } from "./table/role-table-header";
+import { RoleTableRow } from "./table/role-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

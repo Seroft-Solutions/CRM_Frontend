@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { productToast } from "@/app/(protected)/(features)/products/components/product-toast";
+// Import the generated API functions directly
+import { 
+  createProduct,
+  updateProduct, 
+  deleteProduct 
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import { productToast } from "../components/product-toast";
 
-export async function createProductAction(formData: FormData) {
+export async function createProductAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createProduct(formData);
+    // Create entity using the generated API function
+    const result = await createProduct(data);
     
     revalidatePath("/products");
     productToast.created();
@@ -21,9 +33,10 @@ export async function createProductAction(formData: FormData) {
   }
 }
 
-export async function updateProductAction(id: number, formData: FormData) {
+export async function updateProductAction(id: number, data: any) {
   try {
-    const result = await updateProduct(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateProduct(id, data);
     
     revalidatePath("/products");
     revalidatePath(`/products/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteProductAction(ids: number[]) {
     
     if (errorCount === 0) {
       productToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       productToast.bulkDeleteError();
     }

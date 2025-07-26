@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
 
 /**
@@ -48,8 +55,8 @@ export const callFormConfig: FormConfig = {
       fields: [
       ],
       relationships: [
-        'channelParties',
         'channelType',
+        'channelParties',
       ],
       validation: {
         mode: 'onBlur',
@@ -239,35 +246,6 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
-      name: 'channelParties',
-      type: 'many-to-one',
-      targetEntity: 'userProfile',
-      displayField: 'displayName',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'channel',
-      customFilters: {
-        'channelTypeId.specified': true
-      },
-      api: {
-        useGetAllHook: 'useGetAllUserProfiles',
-        useSearchHook: 'useSearchUserProfiles',
-        useCountHook: 'useCountUserProfiles',
-        entityName: 'UserProfiles',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/invite-partners',
-        createPermission: 'userProfile:create:inline',
-      },
-      ui: {
-        label: 'Channel Parties',
-        placeholder: 'Select channel parties',
-        icon: '📞',
-      }
-    },
-    {
       name: 'channelType',
       type: 'many-to-one',
       targetEntity: 'channelType',
@@ -300,6 +278,35 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
+      name: 'channelParties',
+      type: 'many-to-one',
+      targetEntity: 'userProfile',
+      displayField: 'displayName',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'channel',
+      customFilters: {
+        'channelTypeId.specified': true
+      },
+      api: {
+        useGetAllHook: 'useGetAllUserProfiles',
+        useSearchHook: 'useSearchUserProfiles',
+        useCountHook: 'useCountUserProfiles',
+        entityName: 'UserProfiles',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/user-profiles/new',
+        createPermission: 'userProfile:create:inline',
+      },
+      ui: {
+        label: 'Channel Parties',
+        placeholder: 'Select channel parties',
+        icon: '📞',
+      }
+    },
+    {
       name: 'assignedTo',
       type: 'many-to-one',
       targetEntity: 'userProfile',
@@ -309,7 +316,7 @@ export const callFormConfig: FormConfig = {
       multiple: false,
       category: 'assignment',
       customFilters: {
-        'channelTypeId.specified': false
+        'activated.equals': true
       },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
@@ -386,7 +393,7 @@ export const callFormConfig: FormConfig = {
       debounceMs: 2000,
     },
     persistence: {
-      enabled: false,
+      enabled: true,
       sessionTimeoutMinutes: 30,
       storagePrefix: 'CallFormState_',
     },

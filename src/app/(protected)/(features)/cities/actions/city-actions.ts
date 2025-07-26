@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { cityToast } from "@/app/(protected)/(features)/cities/components/city-toast";
+// Import the generated API functions directly
+import { 
+  createCity,
+  updateCity, 
+  deleteCity 
+} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+import { cityToast } from "../components/city-toast";
 
-export async function createCityAction(formData: FormData) {
+export async function createCityAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createCity(formData);
+    // Create entity using the generated API function
+    const result = await createCity(data);
     
     revalidatePath("/cities");
     cityToast.created();
@@ -21,9 +33,10 @@ export async function createCityAction(formData: FormData) {
   }
 }
 
-export async function updateCityAction(id: number, formData: FormData) {
+export async function updateCityAction(id: number, data: any) {
   try {
-    const result = await updateCity(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateCity(id, data);
     
     revalidatePath("/cities");
     revalidatePath(`/cities/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteCityAction(ids: number[]) {
     
     if (errorCount === 0) {
       cityToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       cityToast.bulkDeleteError();
     }
