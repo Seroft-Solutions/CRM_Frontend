@@ -83,10 +83,14 @@ export function OrganizationSwitcher() {
     // Clean up organization-related data and form drafts before switching
     localStorageCleanup.organizationSwitch();
     
-    // Set new organization data
+    // Set new organization data in localStorage
     setActiveOrganization(org);
     localStorage.setItem('selectedOrganizationId', org.id);
     localStorage.setItem('selectedOrganizationName', org.name);
+    
+    // Also set cookies for SSR access
+    document.cookie = `selectedOrganizationId=${org.id}; path=/; max-age=31536000; SameSite=Lax`;
+    document.cookie = `selectedOrganizationName=${encodeURIComponent(org.name)}; path=/; max-age=31536000; SameSite=Lax`;
     
     // Reload to apply the new organization context
     window.location.reload();
