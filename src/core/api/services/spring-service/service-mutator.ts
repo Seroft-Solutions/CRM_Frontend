@@ -1,29 +1,84 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { ServiceRequestConfig } from "@/core/api/services/base/types";
-import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
-import { isLongRunningOperation } from '../../config/api-config';
-import { TokenCache } from '@/core/auth';
-import { fetchAccessToken } from '@/core/auth';
 
-const tokenCache = new TokenCache();
-
-if (typeof window !== 'undefined') {
-  window.addEventListener('token-refreshed', ((event: CustomEvent) => {
-    tokenCache.invalidate();
-  }) as EventListener);
+// Types
+interface ServiceRequestConfig {
+  url: string;
+  method?: string;
+  data?: any;
+  params?: any;
 }
 
-// Function to get tenant header from localStorage
+// Simple token cache
+class SimpleTokenCache {
+  private token: string | null = null;
+  private expiry: number = 0;
+
+  getToken(fetcher: () => Promise<string | null>): Promise<string | null> {
+    if (this.token && Date.now() < this.expiry) {
+      return Promise.resolve(this.token);
+    }
+    return fetcher().then(token => {
+      this.token = token;
+      this.expiry = Date.now() + 55 * 60 * 1000; // 55 minutes
+      return token;
+    });
+  }
+
+  invalidate() {
+    this.token = null;
+    this.expiry = 0;
+  }
+}
+
+const tokenCache = new SimpleTokenCache();
+
+// Simple token fetcher - this will need to be adapted
+const fetchAccessToken = async (): Promise<string | null> => {
+  try {
+    if (typeof window !== 'undefined') {
+      // Try to get token from session storage or make auth call
+      const token = sessionStorage.getItem('access_token');
+      return token;
+    }
+  } catch (error) {
+    console.error('Error fetching access token:', error);
+  }
+  return null;
+};
+
+// Get tenant header
 const getTenantHeader = (): string | undefined => {
   if (typeof window === 'undefined') return undefined;
-
   const selectedOrgName = localStorage.getItem('selectedOrganizationName');
   if (!selectedOrgName) return undefined;
-
-  // Convert to lowercase and replace special characters with underscores
   return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 };
 
+// Check if long-running operation
+const isLongRunningOperation = (url: string): boolean => {
+  return (
+    url.includes('/tenants/organizations/setup') ||
+    url.includes('/setup-progress') ||
+    (url.includes('/schemas/') && url.includes('/setup'))
+  );
+};
+
+// Service configs
+const SPRING_SERVICE_CONFIG = {
+  baseURL: process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-Client-Version': '1.0.0',
+    'X-Service': 'crm-frontend',
+  },
+};
+
+const SPRING_SERVICE_LONG_RUNNING_CONFIG = {
+  ...SPRING_SERVICE_CONFIG,
+  timeout: 120000,
+};
 
 export const springServiceMutator = async <T>(
   requestConfig: ServiceRequestConfig,
@@ -41,8 +96,9 @@ export const springServiceMutator = async <T>(
   }
 
   // Use long-running config for organization setup operations
-  const config =
-    url && isLongRunningOperation(url) ? SPRING_SERVICE_LONG_RUNNING_CONFIG : SPRING_SERVICE_CONFIG;
+  const config = url && isLongRunningOperation(url) 
+    ? SPRING_SERVICE_LONG_RUNNING_CONFIG 
+    : SPRING_SERVICE_CONFIG;
 
   const instance = axios.create(config);
 
@@ -53,7 +109,6 @@ export const springServiceMutator = async <T>(
     Object.keys(params).forEach(key => {
       const value = params[key];
       if (Array.isArray(value)) {
-        // For arrays, add each value as a separate parameter (Spring Boot format)
         value.forEach(item => {
           searchParams.append(key, item);
         });
@@ -86,36 +141,16 @@ export const springServiceMutator = async <T>(
     (response) => response,
     async (error) => {
       if (error.response?.status === 401) {
-        // Invalidate token cache
         tokenCache.invalidate();
-
-        // Only try refresh on client side and avoid infinite retry loops
-        if (typeof window !== 'undefined' && !error.config?._retry) {
-          try {
-            // Try to refresh the session using NextAuth
-            const { useSession } = await import('next-auth/react');
-            
-            // Since we can't use hooks here, try to get a fresh token
-            const freshToken = await fetchAccessToken();
-            if (freshToken) {
-              // Mark this request as a retry
-              error.config._retry = true;
-              error.config.headers = error.config.headers || {};
-              error.config.headers.Authorization = `Bearer ${freshToken}`;
-              
-              // Retry the original request with fresh token
-              return instance.request(error.config);
+        
+        if (typeof window !== 'undefined') {
+          // Emit session expired event
+          window.dispatchEvent(new CustomEvent('session-expired', {
+            detail: {
+              message: 'Your session has expired',
+              statusCode: 401,
             }
-          } catch (refreshError) {
-            console.error('Auto refresh failed in spring mutator:', refreshError);
-          }
-
-          // If refresh failed, emit session expired event
-          const { sessionEventEmitter } = await import('@/core/auth');
-          sessionEventEmitter.emit('session-expired', {
-            message: 'Your session has expired',
-            statusCode: 401,
-          });
+          }));
         }
       }
 

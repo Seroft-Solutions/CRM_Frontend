@@ -1,15 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250710162223"
+    "changelogDate": "20250726113035"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
   "fields": [
-    {
-      "fieldName": "callDateTime",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
     {
       "fieldName": "createdBy",
       "fieldType": "String",
@@ -85,6 +80,14 @@
       "otherEntityField": "customerBusinessName",
       "otherEntityName": "customer",
       "relationshipName": "customer",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "product",
+      "relationshipName": "product",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"

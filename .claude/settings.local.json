@@ -3,7 +3,12 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(npx:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm run openapi:generate:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

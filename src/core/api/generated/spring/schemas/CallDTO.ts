@@ -10,13 +10,13 @@ import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
 import type { SourceDTO } from './SourceDTO';
 import type { CustomerDTO } from './CustomerDTO';
+import type { ProductDTO } from './ProductDTO';
 import type { ChannelTypeDTO } from './ChannelTypeDTO';
 import type { UserProfileDTO } from './UserProfileDTO';
 import type { CallStatusDTO } from './CallStatusDTO';
 
 export interface CallDTO {
   id?: number;
-  callDateTime: string;
   /**
    * @minLength 0
    * @maxLength 50
@@ -34,6 +34,7 @@ export interface CallDTO {
   subCallType: SubCallTypeDTO;
   source: SourceDTO;
   customer: CustomerDTO;
+  product: ProductDTO;
   channelType: ChannelTypeDTO;
   channelParties?: UserProfileDTO;
   assignedTo?: UserProfileDTO;
