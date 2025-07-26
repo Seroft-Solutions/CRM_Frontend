@@ -111,7 +111,7 @@ export function PaginatedRelationshipCombobox({
     const params: any = { 
       page: pageParam, 
       size: pageSize, 
-      sort: `${displayField},asc`
+      sort: [`${displayField},asc`]
     };
     
     // Apply parent filter if both parentField and parentFilter are provided
