@@ -3,6 +3,7 @@ import { ServiceRequestConfig } from '../base/types';
 import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './config';
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
+import { getTenantHeader } from '../shared/tenant-helper';
 
 const tokenCache = new TokenCache();
 
@@ -12,16 +13,6 @@ if (typeof window !== 'undefined') {
   }) as EventListener);
 }
 
-// Function to get tenant header from localStorage
-const getTenantHeader = (): string | undefined => {
-  if (typeof window === 'undefined') return undefined;
-
-  const selectedOrgName = localStorage.getItem('selectedOrganizationName');
-  if (!selectedOrgName) return undefined;
-
-  // Convert to lowercase and replace special characters with underscores
-  return selectedOrgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-};
 
 // Check if the request is a long-running operation
 const isLongRunningOperation = (url: string): boolean => {
