@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { ServiceRequestConfig } from "@/core/api/services/base/types";
-import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
+import { ServiceRequestConfig } from '../base/types';
+import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './config';
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
 
@@ -115,48 +115,6 @@ export const springServiceMutator = async <T>(
 
     return config;
   });
-
-  // Add response interceptor for 401 error handling
-  instance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      if (error.response?.status === 401) {
-        // Invalidate token cache
-        tokenCache.invalidate();
-
-        // Only try refresh on client side and avoid infinite retry loops
-        if (typeof window !== 'undefined' && !error.config?._retry) {
-          try {
-            // Try to refresh the session using NextAuth
-            const { useSession } = await import('next-auth/react');
-            
-            // Since we can't use hooks here, try to get a fresh token
-            const freshToken = await fetchAccessToken();
-            if (freshToken) {
-              // Mark this request as a retry
-              error.config._retry = true;
-              error.config.headers = error.config.headers || {};
-              error.config.headers.Authorization = `Bearer ${freshToken}`;
-              
-              // Retry the original request with fresh token
-              return instance.request(error.config);
-            }
-          } catch (refreshError) {
-            console.error('Auto refresh failed in spring mutator:', refreshError);
-          }
-
-          // If refresh failed, emit session expired event
-          const { sessionEventEmitter } = await import('@/core/auth');
-          sessionEventEmitter.emit('session-expired', {
-            message: 'Your session has expired',
-            statusCode: 401,
-          });
-        }
-      }
-
-      return Promise.reject(error);
-    }
-  );
 
   const response = await instance.request({
     url,

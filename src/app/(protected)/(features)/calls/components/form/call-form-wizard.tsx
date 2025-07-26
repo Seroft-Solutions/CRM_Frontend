@@ -132,12 +132,12 @@ function CallFormContent({ id }: CallFormProps) {
       {/* <FormErrorsDisplay 
         errors={state.errors}
         fieldLabels={{
-          'callDateTime': '',
           'priority': 'Priority',
           'callType': 'Call Type',
           'subCallType': 'Sub Call Type',
           'source': 'Source',
           'customer': 'Customer',
+          'product': 'Product',
           'channelType': 'Channel Type',
           'channelParties': 'Channel Parties',
           'assignedTo': 'Assigned To',

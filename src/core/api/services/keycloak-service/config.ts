@@ -1,4 +1,4 @@
-import { BaseServiceConfig } from "@/core/api/services/base/base-service";
+import { BaseServiceConfig } from '../base/base-service';
 
 /**
  * Keycloak Service Configuration

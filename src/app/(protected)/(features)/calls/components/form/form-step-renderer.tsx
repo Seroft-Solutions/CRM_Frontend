@@ -43,6 +43,11 @@ import {
   useCountCustomers,
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 import {
+  useGetAllProducts,
+  useSearchProducts,
+  useCountProducts,
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import {
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes,
@@ -124,6 +129,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             primaryKey="id"
             multiple={false}
             label="Customers"
+          />
+        );
+        
+      case 'product':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllProducts}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="Products"
           />
         );
         
