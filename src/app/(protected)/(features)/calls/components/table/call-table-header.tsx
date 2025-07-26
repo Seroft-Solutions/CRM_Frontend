@@ -134,19 +134,6 @@ export function CallTableHeader({
             {column.type === 'field' ? (
               (() => {
                 
-                if (column.accessor === 'callDateTime') {
-                  
-                  return (
-                    <Input
-                      type="date"
-                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={filters["callDateTime"] as string || ""}
-                      onChange={(e) => onFilterChange("callDateTime", e.target.value || undefined)}
-                    />
-                  );
-                  
-                }
-                
                 if (column.accessor === 'createdBy') {
                   
                   return (
@@ -255,6 +242,17 @@ export function CallTableHeader({
                       className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
                       value={filters["customer.customerBusinessName"] as string || ""}
                       onChange={(e) => onFilterChange("customer.customerBusinessName", e.target.value || undefined)}
+                    />
+                  );
+                }
+                
+                if (column.accessor === 'product') {
+                  return (
+                    <Input
+                      placeholder="Filter..."
+                      className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                      value={filters["product.name"] as string || ""}
+                      onChange={(e) => onFilterChange("product.name", e.target.value || undefined)}
                     />
                   );
                 }

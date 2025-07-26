@@ -113,6 +113,9 @@ export function CallSearchAndFilters({
       if (relationName === 'customer') {
         return 'Customer';
       }
+      if (relationName === 'product') {
+        return 'Product';
+      }
       if (relationName === 'channelType') {
         return 'Channel Type';
       }
@@ -129,9 +132,6 @@ export function CallSearchAndFilters({
     }
     
     // Handle regular field filters
-    if (key === 'callDateTime') {
-      return 'callDateTime';
-    }
     if (key === 'createdDate') {
       return 'createdDate';
     }
@@ -253,6 +253,18 @@ export function CallSearchAndFilters({
                   
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
+                      Product
+                    </label>
+                    <Input
+                      placeholder="Filter by product..."
+                      value={filters["product.name"] as string || ""}
+                      onChange={(e) => onFilterChange("product.name", e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
                       Channel Type
                     </label>
                     <Input
@@ -311,7 +323,7 @@ export function CallSearchAndFilters({
                 <DropdownMenuLabel className="px-0 text-sm font-medium">Dates</DropdownMenuLabel>
                 <div className="mt-2">
                   <label className="text-xs text-muted-foreground mb-1 block">
-                    callDateTime Range
+                    createdDate Range
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>

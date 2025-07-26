@@ -11,17 +11,12 @@
 import { z } from "zod";
 
 export const callFormSchemaFields = {
-  callDateTime: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Please select a valid date and time"
-  }),
   priority: z.number({ message: "Please select priority from the dropdown" }),
   callType: z.number({ message: "Please select call type from the dropdown" }),
   subCallType: z.number({ message: "Please select sub call type from the dropdown" }),
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
+  product: z.number({ message: "Please select product from the dropdown" }),
   channelType: z.number({ message: "Please select channel type from the dropdown" }),
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
@@ -34,17 +29,12 @@ export type CallFormValues = z.infer<typeof callFormSchema>;
 
 // Individual field schemas for granular validation
 export const callFieldSchemas = {
-  callDateTime: z.union([
-    z.date(),
-    z.string().transform((str) => new Date(str))
-  ]).refine((date) => date instanceof Date && !isNaN(date.getTime()), {
-    message: "Please select a valid date and time"
-  }),
   priority: z.number({ message: "Please select priority from the dropdown" }),
   callType: z.number({ message: "Please select call type from the dropdown" }),
   subCallType: z.number({ message: "Please select sub call type from the dropdown" }),
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
+  product: z.number({ message: "Please select product from the dropdown" }),
   channelType: z.number({ message: "Please select channel type from the dropdown" }),
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
@@ -54,7 +44,6 @@ export const callFieldSchemas = {
 // Step-specific validation schemas
 export const callStepSchemas = {
   basic: z.object({
-    callDateTime: callFieldSchemas.callDateTime,
     createdBy: callFieldSchemas.createdBy,
     createdDate: callFieldSchemas.createdDate,
     lastModifiedBy: callFieldSchemas.lastModifiedBy,

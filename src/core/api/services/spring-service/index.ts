@@ -1,5 +1,5 @@
-import { BaseService } from "@/core/api/services/base/base-service";
-import { SPRING_SERVICE_CONFIG } from "@/core/api/services/spring-service/config";
+import { BaseService } from '../base/base-service';
+import { SPRING_SERVICE_CONFIG } from './config';
 
 export class SpringService extends BaseService {
   constructor() {

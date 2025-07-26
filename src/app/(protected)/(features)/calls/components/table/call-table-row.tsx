@@ -80,12 +80,6 @@ export function CallTableRow({
             (() => {
               const field = call[column.accessor as keyof typeof call];
               
-              if (column.id === 'callDateTime') {
-                
-                return field ? format(new Date(field as string), "PPP") : "";
-                
-              }
-              
               if (column.id === 'createdBy') {
                 
                 return field?.toString() || "";
@@ -216,6 +210,27 @@ export function CallTableRow({
                     isLoading={updatingCells.has(cellKey)}
                     className="min-w-[150px]"
                     relatedEntityRoute="customers"
+                    showNavigationIcon={true}
+                  />
+                );
+              }
+              
+              if (column.id === 'product') {
+                const cellKey = `${call.id}-product`;
+                return (
+                  <RelationshipCell
+                    entityId={call.id || 0}
+                    relationshipName="product"
+                    currentValue={call.product}
+                    options={relationshipConfigs.find(config => config.name === "product")?.options || []}
+                    displayField="name"
+                    onUpdate={(entityId, relationshipName, newValue) => 
+                      onRelationshipUpdate ? onRelationshipUpdate(entityId, relationshipName, newValue, false) : Promise.resolve()
+                    }
+                    isEditable={relationshipConfigs.find(config => config.name === "product")?.isEditable || false}
+                    isLoading={updatingCells.has(cellKey)}
+                    className="min-w-[150px]"
+                    relatedEntityRoute="products"
                     showNavigationIcon={true}
                   />
                 );

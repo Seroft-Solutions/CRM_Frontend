@@ -42,6 +42,7 @@ export const callFormConfig: FormConfig = {
       relationships: [
         'source',
         'customer',
+        'product',
       ],
       validation: {
         mode: 'onBlur',
@@ -68,7 +69,6 @@ export const callFormConfig: FormConfig = {
       title: 'Assignment & Date',
       description: 'Assign users, set dates and status',
       fields: [
-        'callDateTime',
       ],
       relationships: [
         'assignedTo',
@@ -95,18 +95,6 @@ export const callFormConfig: FormConfig = {
 
   // Field definitions
   fields: [
-    {
-      name: 'callDateTime',
-      type: 'date',
-      label: 'Call Date Time',
-      placeholder: 'Enter call date time',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {
-      }
-    },
   ],
 
   // Relationship definitions
@@ -242,6 +230,32 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Customer',
         placeholder: 'Select customer',
+        icon: '🏢',
+      }
+    },
+    {
+      name: 'product',
+      type: 'many-to-one',
+      targetEntity: 'product',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: true,
+      multiple: false,
+      category: 'business',
+      api: {
+        useGetAllHook: 'useGetAllProducts',
+        useSearchHook: 'useSearchProducts',
+        useCountHook: 'useCountProducts',
+        entityName: 'Products',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/products/new',
+        createPermission: 'product:create:inline',
+      },
+      ui: {
+        label: 'Product',
+        placeholder: 'Select product',
         icon: '🏢',
       }
     },

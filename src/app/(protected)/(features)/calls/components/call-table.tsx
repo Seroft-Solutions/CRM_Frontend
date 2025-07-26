@@ -111,6 +111,10 @@ import {
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 
 import {
+  useGetAllProducts
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+
+import {
   useGetAllChannelTypes
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 
@@ -155,15 +159,6 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
   
   
-  {
-    id: 'callDateTime',
-    label: 'Call Date Time',
-    accessor: 'callDateTime',
-    type: 'field',
-    visible: true,
-    sortable: true,
-  },
-  
   
   {
     id: 'priority',
@@ -205,6 +200,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
     id: 'customer',
     label: 'Customer',
     accessor: 'customer',
+    type: 'relationship',
+    visible: true,
+    sortable: false,
+  },
+  
+  {
+    id: 'product',
+    label: 'Product',
+    accessor: 'product',
     type: 'relationship',
     visible: true,
     sortable: false,
@@ -456,6 +460,11 @@ export function CallTable() {
             }
             
             
+            if (col.id === 'product' && relationship) {
+              value = relationship.name || '';
+            }
+            
+            
             if (col.id === 'channelType' && relationship) {
               value = relationship.name || '';
             }
@@ -530,6 +539,11 @@ export function CallTable() {
     { query: { enabled: true } }
   );
   
+  const { data: productOptions = [] } = useGetAllProducts(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+  
   const { data: channeltypeOptions = [] } = useGetAllChannelTypes(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -591,6 +605,12 @@ export function CallTable() {
         displayField: 'customerBusinessName' 
       },
       
+      'product.name': { 
+        apiParam: 'productId.equals', 
+        options: productOptions, 
+        displayField: 'name' 
+      },
+      
       'channelType.name': { 
         apiParam: 'channelTypeId.equals', 
         options: channeltypeOptions, 
@@ -633,15 +653,6 @@ export function CallTable() {
         
         
         
-        
-        // Handle callDateTime date filter
-        else if (key === 'callDateTime') {
-          if (value instanceof Date) {
-            params['callDateTime.equals'] = value.toISOString().split('T')[0];
-          } else if (typeof value === 'string' && value.trim() !== '') {
-            params['callDateTime.equals'] = value;
-          }
-        }
         
         // Handle createdDate date filter
         else if (key === 'createdDate') {
@@ -688,13 +699,6 @@ export function CallTable() {
     });
 
     // Add date range filters
-    
-    if (dateRange.from) {
-      params['callDateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['callDateTime.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
     
     if (dateRange.from) {
       params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
@@ -1273,6 +1277,14 @@ export function CallTable() {
       displayName: "Customer",
       options: customerOptions || [],
       displayField: "customerBusinessName",
+      isEditable: false, // Disabled by default
+    },
+    
+    {
+      name: "product",
+      displayName: "Product",
+      options: productOptions || [],
+      displayField: "name",
       isEditable: false, // Disabled by default
     },
     

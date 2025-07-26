@@ -39,6 +39,11 @@ import {
   useCountCustomers,
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 import {
+  useGetAllProducts,
+  useSearchProducts,
+  useCountProducts,
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import {
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes,
@@ -294,6 +299,46 @@ export function RelationshipRenderer({
             useGetAllHook={useGetAllCustomers}
             useSearchHook={useSearchCustomers}
             useCountHook={useCountCustomers}
+            entityName={relConfig.api.entityName}
+            searchField={relConfig.displayField}
+            canCreate={relConfig.creation?.canCreate}
+            createEntityPath={relConfig.creation?.createPath || ""}
+            createPermission={relConfig.creation?.createPermission || ""}
+            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+            parentFilter={relConfig.cascadingFilter ? form.watch(relConfig.cascadingFilter.parentField) : undefined}
+            parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
+            onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
+            disabled={
+              relConfig.cascadingFilter 
+                ? !form.watch(relConfig.cascadingFilter.parentField) 
+                : relConfig.ui.disabled
+            }
+            {...actions.getNavigationProps(relConfig.name)}
+          />
+        );
+        
+      case 'product':
+        return (
+          <PaginatedRelationshipCombobox
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (relConfig.cascadingFilter) {
+                const dependentRelationships = config.relationships.filter((depRel: any) => 
+                  depRel.cascadingFilter?.parentField === relConfig.name
+                );
+                dependentRelationships.forEach((depRel: any) => {
+                  form.setValue(depRel.name, undefined);
+                });
+              }
+            }}
+            displayField={relConfig.displayField}
+            placeholder={relConfig.ui.placeholder}
+            multiple={relConfig.multiple}
+            useGetAllHook={useGetAllProducts}
+            useSearchHook={useSearchProducts}
+            useCountHook={useCountProducts}
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
             canCreate={relConfig.creation?.canCreate}
