@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { channelTypeToast } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
+// Import the generated API functions directly
+import { 
+  createChannelType,
+  updateChannelType, 
+  deleteChannelType 
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+import { channelTypeToast } from "../components/channel-type-toast";
 
-export async function createChannelTypeAction(formData: FormData) {
+export async function createChannelTypeAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createChannelType(formData);
+    // Create entity using the generated API function
+    const result = await createChannelType(data);
     
     revalidatePath("/channel-types");
     channelTypeToast.created();
@@ -21,9 +33,10 @@ export async function createChannelTypeAction(formData: FormData) {
   }
 }
 
-export async function updateChannelTypeAction(id: number, formData: FormData) {
+export async function updateChannelTypeAction(id: number, data: any) {
   try {
-    const result = await updateChannelType(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateChannelType(id, data);
     
     revalidatePath("/channel-types");
     revalidatePath(`/channel-types/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteChannelTypeAction(ids: number[]) {
     
     if (errorCount === 0) {
       channelTypeToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       channelTypeToast.bulkDeleteError();
     }

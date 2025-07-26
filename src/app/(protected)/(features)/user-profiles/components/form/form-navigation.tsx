@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEntityForm } from "@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-provider";
+import { useEntityForm } from "./user-profile-form-provider";
 
 interface FormNavigationProps {
   onCancel: () => void;
@@ -19,7 +26,6 @@ export function FormNavigation({
   isNew 
 }: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
-  const [confirmSubmission, setConfirmSubmission] = useState(false);
   const isLastStep = state.currentStep === config.steps.length - 1;
 
   const handleNext = async () => {
@@ -31,9 +37,6 @@ export function FormNavigation({
 
   const handlePrevious = () => {
     actions.prevStep();
-    if (isLastStep) {
-      setConfirmSubmission(false);
-    }
   };
 
   const handleCancel = () => {
@@ -46,11 +49,7 @@ export function FormNavigation({
     }
   };
 
-  const handleConfirmSubmit = () => {
-    setConfirmSubmission(true);
-  };
-
-  const handleFinalSubmit = async () => {
+  const handleSubmit = async () => {
     // Use the form provider's submitForm method which includes transformation
     await actions.submitForm();
   };
@@ -79,27 +78,15 @@ export function FormNavigation({
 
       {/* Next/Submit Button */}
       {isLastStep ? (
-        !confirmSubmission ? (
-          <Button 
-            type="button"
-            onClick={handleConfirmSubmit}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 justify-center"
-            disabled={isSubmitting}
-          >
-            <Check className="h-4 w-4" />
-            Confirm {isNew ? "Create" : "Update"}
-          </Button>
-        ) : (
-          <Button 
-            type="button"
-            onClick={handleFinalSubmit}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
-          >
-            <Save className="h-4 w-4" />
-            {isSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} User Profile`}
-          </Button>
-        )
+        <Button 
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
+        >
+          <Save className="h-4 w-4" />
+          {isSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} User Profile`}
+        </Button>
       ) : (
         <Button
           type="button"

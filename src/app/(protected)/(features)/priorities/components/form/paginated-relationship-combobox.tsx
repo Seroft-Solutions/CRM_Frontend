@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import * as React from "react";
@@ -40,6 +47,8 @@ interface PaginatedRelationshipComboboxProps {
   onEntityCreated?: (entityId: number | string) => void;
   parentFilter?: number | string;
   parentField?: string;
+  customFilters?: Record<string, any>;
+  onDataLoaded?: (data: any[]) => void;
   // Cross-form navigation props
   referrerForm?: string;
   referrerSessionId?: string;
@@ -65,6 +74,8 @@ export function PaginatedRelationshipCombobox({
   onEntityCreated,
   parentFilter,
   parentField,
+  customFilters,
+  onDataLoaded,
   referrerForm,
   referrerSessionId,
   referrerField,
@@ -97,7 +108,7 @@ export function PaginatedRelationshipCombobox({
 
   // Build filter parameters for queries
   const buildFilterParams = React.useCallback((pageParam: number, searchTerm: string) => {
-    const params = { 
+    const params: any = { 
       page: pageParam, 
       size: pageSize, 
       sort: `${displayField},asc`
@@ -113,8 +124,15 @@ export function PaginatedRelationshipCombobox({
       params[`${searchField}.contains`] = searchTerm;
     }
     
+    // Add custom filters if provided
+    if (customFilters) {
+      Object.keys(customFilters).forEach(key => {
+        params[key] = customFilters[key];
+      });
+    }
+    
     return params;
-  }, [displayField, parentFilter, parentField, searchField, pageSize]);
+  }, [displayField, parentFilter, parentField, searchField, pageSize, customFilters]);
 
   // Get current query parameters
   const currentParams = buildFilterParams(currentPage, deferredSearchQuery);
@@ -159,6 +177,13 @@ export function PaginatedRelationshipCombobox({
       setHasMorePages(dataArray.length === pageSize);
     }
   }, [currentData, isLoading, currentPage, isQueryEnabled]);
+
+  // Notify parent component when data is loaded (for auto-population)
+  React.useEffect(() => {
+    if (onDataLoaded && allLoadedData.length > 0) {
+      onDataLoaded(allLoadedData);
+    }
+  }, [allLoadedData, onDataLoaded]);
 
   // Load next page
   const loadNextPage = React.useCallback(() => {

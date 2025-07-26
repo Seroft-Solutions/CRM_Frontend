@@ -1,7 +1,14 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React from "react";
-import { MeetingParticipantForm } from "@/app/(protected)/(features)/meeting-participants/components/form/meeting-participant-form-wizard";
+import { MeetingParticipantForm } from "./form/meeting-participant-form-wizard";
 
 interface MeetingParticipantFormProps {
   id?: number;

@@ -1,25 +1,31 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CustomerFormProvider, useEntityForm } from "@/app/(protected)/(features)/customers/components/form/customer-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/customers/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/customers/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/customers/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/customers/components/form/form-state-manager";
+import { CustomerFormProvider, useEntityForm } from "./customer-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-import { stepComponents } from "@/app/(protected)/(features)/customers/components/form/steps";
+// import { stepComponents } from './steps';
 import { 
   useCreateCustomer,
   useUpdateCustomer,
   useGetCustomer,
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
-import { customerToast, handleCustomerError } from "@/app/(protected)/(features)/customers/components/customer-toast";
+import { customerToast, handleCustomerError } from "../customer-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
-import { useCustomerAvailabilityCreation } from "@/app/(protected)/(features)/shared/services/customer-availability-service";
 
 interface CustomerFormProps {
   id?: number;
@@ -52,11 +58,12 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
     // Use imported step components (requires manual import after generation)
     try {
-      const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      if (StepComponent) {
-        return <StepComponent {...stepProps} />;
-      }
-      
+      // STEP_GENERATOR_START
+      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
+      // if (StepComponent) {
+      //   return <StepComponent {...stepProps} />;
+      // }
+      // STEP_GENERATOR_END
     } catch (error) {
       // Steps not imported yet
     }
@@ -172,25 +179,12 @@ export function CustomerForm({ id }: CustomerFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  
-  // Use the real availability creation hook
-  const { createAvailabilityForCustomer } = useCustomerAvailabilityCreation();
 
   // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateCustomer({
     mutation: {
-      onSuccess: async (data) => {
+      onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
-        // Create real availability records after customer creation
-        if (entityId) {
-          try {
-            await createAvailabilityForCustomer(entityId);
-          } catch (error) {
-            console.warn('Non-critical: Customer availability creation failed:', error);
-            // This is non-critical and shouldn't block the customer creation success flow
-          }
-        }
         
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
@@ -243,7 +237,9 @@ export function CustomerForm({ id }: CustomerFormProps) {
         if (isNew) {
           createEntity({ data: transformedData as any });
         } else if (id) {
-          updateEntity({ id, data: transformedData as any });
+          // Ensure the entity data includes the ID for updates
+          const entityData = { ...transformedData, id };
+          updateEntity({ id, data: entityData as any });
         }
       }}
       onError={(error) => {

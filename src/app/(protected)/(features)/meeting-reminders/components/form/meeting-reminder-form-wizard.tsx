@@ -1,23 +1,30 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MeetingReminderFormProvider, useEntityForm } from "@/app/(protected)/(features)/meeting-reminders/components/form/meeting-reminder-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/meeting-reminders/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/meeting-reminders/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/meeting-reminders/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/meeting-reminders/components/form/form-state-manager";
+import { MeetingReminderFormProvider, useEntityForm } from "./meeting-reminder-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/meeting-reminders/components/form/steps";
+// import { stepComponents } from './steps';
 import { 
   useCreateMeetingReminder,
   useUpdateMeetingReminder,
   useGetMeetingReminder,
 } from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-import { meetingReminderToast, handleMeetingReminderError } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast";
+import { meetingReminderToast, handleMeetingReminderError } from "../meeting-reminder-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface MeetingReminderFormProps {
@@ -227,7 +234,9 @@ export function MeetingReminderForm({ id }: MeetingReminderFormProps) {
         if (isNew) {
           createEntity({ data: transformedData as any });
         } else if (id) {
-          updateEntity({ id, data: transformedData as any });
+          // Ensure the entity data includes the ID for updates
+          const entityData = { ...transformedData, id };
+          updateEntity({ id, data: entityData as any });
         }
       }}
       onError={(error) => {

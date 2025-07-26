@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { meetingReminderToast } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast";
+// Import the generated API functions directly
+import { 
+  createMeetingReminder,
+  updateMeetingReminder, 
+  deleteMeetingReminder 
+} from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
+import { meetingReminderToast } from "../components/meeting-reminder-toast";
 
-export async function createMeetingReminderAction(formData: FormData) {
+export async function createMeetingReminderAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createMeetingReminder(formData);
+    // Create entity using the generated API function
+    const result = await createMeetingReminder(data);
     
     revalidatePath("/meeting-reminders");
     meetingReminderToast.created();
@@ -21,9 +33,10 @@ export async function createMeetingReminderAction(formData: FormData) {
   }
 }
 
-export async function updateMeetingReminderAction(id: number, formData: FormData) {
+export async function updateMeetingReminderAction(id: number, data: any) {
   try {
-    const result = await updateMeetingReminder(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateMeetingReminder(id, data);
     
     revalidatePath("/meeting-reminders");
     revalidatePath(`/meeting-reminders/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteMeetingReminderAction(ids: number[]) {
     
     if (errorCount === 0) {
       meetingReminderToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       meetingReminderToast.bulkDeleteError();
     }

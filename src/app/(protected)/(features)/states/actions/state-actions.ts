@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { stateToast } from "@/app/(protected)/(features)/states/components/state-toast";
+// Import the generated API functions directly
+import { 
+  createState,
+  updateState, 
+  deleteState 
+} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+import { stateToast } from "../components/state-toast";
 
-export async function createStateAction(formData: FormData) {
+export async function createStateAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createState(formData);
+    // Create entity using the generated API function
+    const result = await createState(data);
     
     revalidatePath("/states");
     stateToast.created();
@@ -21,9 +33,10 @@ export async function createStateAction(formData: FormData) {
   }
 }
 
-export async function updateStateAction(id: number, formData: FormData) {
+export async function updateStateAction(id: number, data: any) {
   try {
-    const result = await updateState(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateState(id, data);
     
     revalidatePath("/states");
     revalidatePath(`/states/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteStateAction(ids: number[]) {
     
     if (errorCount === 0) {
       stateToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       stateToast.bulkDeleteError();
     }

@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import { useState } from "react";
@@ -6,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { subCallTypeToast, handleSubCallTypeError } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
-import { subCallTypeFormConfig } from "@/app/(protected)/(features)/sub-call-types/components/form/sub-call-type-form-config";
+import { subCallTypeToast, handleSubCallTypeError } from "./sub-call-type-toast";
+import { subCallTypeFormConfig } from "./form/sub-call-type-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

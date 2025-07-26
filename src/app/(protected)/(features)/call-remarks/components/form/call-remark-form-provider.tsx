@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
@@ -11,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { callRemarkFormConfig } from "@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-config";
-import { callRemarkFormSchema } from "@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-schema";
-import { callRemarkToast, handleCallRemarkError } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
+import { callRemarkFormConfig } from "./call-remark-form-config";
+import { callRemarkFormSchema } from "./call-remark-form-schema";
+import { callRemarkToast, handleCallRemarkError } from "../call-remark-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

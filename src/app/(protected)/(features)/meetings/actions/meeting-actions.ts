@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { meetingToast } from "@/app/(protected)/(features)/meetings/components/meeting-toast";
+// Import the generated API functions directly
+import { 
+  createMeeting,
+  updateMeeting, 
+  deleteMeeting 
+} from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
+import { meetingToast } from "../components/meeting-toast";
 
-export async function createMeetingAction(formData: FormData) {
+export async function createMeetingAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createMeeting(formData);
+    // Create entity using the generated API function
+    const result = await createMeeting(data);
     
     revalidatePath("/meetings");
     meetingToast.created();
@@ -21,9 +33,10 @@ export async function createMeetingAction(formData: FormData) {
   }
 }
 
-export async function updateMeetingAction(id: number, formData: FormData) {
+export async function updateMeetingAction(id: number, data: any) {
   try {
-    const result = await updateMeeting(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateMeeting(id, data);
     
     revalidatePath("/meetings");
     revalidatePath(`/meetings/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteMeetingAction(ids: number[]) {
     
     if (errorCount === 0) {
       meetingToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       meetingToast.bulkDeleteError();
     }

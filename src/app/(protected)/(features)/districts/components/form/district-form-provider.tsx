@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
@@ -11,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { districtFormConfig } from "@/app/(protected)/(features)/districts/components/form/district-form-config";
-import { districtFormSchema } from "@/app/(protected)/(features)/districts/components/form/district-form-schema";
-import { districtToast, handleDistrictError } from "@/app/(protected)/(features)/districts/components/district-toast";
+import { districtFormConfig } from "./district-form-config";
+import { districtFormSchema } from "./district-form-schema";
+import { districtToast, handleDistrictError } from "../district-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

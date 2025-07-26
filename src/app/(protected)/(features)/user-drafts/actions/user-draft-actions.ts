@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { userDraftToast } from "@/app/(protected)/(features)/user-drafts/components/user-draft-toast";
+// Import the generated API functions directly
+import { 
+  createUserDraft,
+  updateUserDraft, 
+  deleteUserDraft 
+} from "@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen";
+import { userDraftToast } from "../components/user-draft-toast";
 
-export async function createUserDraftAction(formData: FormData) {
+export async function createUserDraftAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createUserDraft(formData);
+    // Create entity using the generated API function
+    const result = await createUserDraft(data);
     
     revalidatePath("/user-drafts");
     userDraftToast.created();
@@ -21,9 +33,10 @@ export async function createUserDraftAction(formData: FormData) {
   }
 }
 
-export async function updateUserDraftAction(id: number, formData: FormData) {
+export async function updateUserDraftAction(id: number, data: any) {
   try {
-    const result = await updateUserDraft(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateUserDraft(id, data);
     
     revalidatePath("/user-drafts");
     revalidatePath(`/user-drafts/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteUserDraftAction(ids: number[]) {
     
     if (errorCount === 0) {
       userDraftToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       userDraftToast.bulkDeleteError();
     }

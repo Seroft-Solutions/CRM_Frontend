@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useEffect } from "react";
@@ -6,8 +13,8 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
+import { useEntityForm } from "./call-form-provider";
+import { RelationshipRenderer } from "./relationship-renderer";
 
 
 import {
@@ -414,7 +421,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
-          {config.steps.slice(0, -1).map((step, index) => { // Exclude review step
+          {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
             

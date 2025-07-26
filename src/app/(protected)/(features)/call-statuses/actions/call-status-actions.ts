@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { callStatusToast } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
+// Import the generated API functions directly
+import { 
+  createCallStatus,
+  updateCallStatus, 
+  deleteCallStatus 
+} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+import { callStatusToast } from "../components/call-status-toast";
 
-export async function createCallStatusAction(formData: FormData) {
+export async function createCallStatusAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createCallStatus(formData);
+    // Create entity using the generated API function
+    const result = await createCallStatus(data);
     
     revalidatePath("/call-statuses");
     callStatusToast.created();
@@ -21,9 +33,10 @@ export async function createCallStatusAction(formData: FormData) {
   }
 }
 
-export async function updateCallStatusAction(id: number, formData: FormData) {
+export async function updateCallStatusAction(id: number, data: any) {
   try {
-    const result = await updateCallStatus(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateCallStatus(id, data);
     
     revalidatePath("/call-statuses");
     revalidatePath(`/call-statuses/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteCallStatusAction(ids: number[]) {
     
     if (errorCount === 0) {
       callStatusToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       callStatusToast.bulkDeleteError();
     }

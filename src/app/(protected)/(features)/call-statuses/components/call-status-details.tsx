@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import { useState } from "react";
@@ -6,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { callStatusToast, handleCallStatusError } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
-import { callStatusFormConfig } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-config";
+import { callStatusToast, handleCallStatusError } from "./call-status-toast";
+import { callStatusFormConfig } from "./form/call-status-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

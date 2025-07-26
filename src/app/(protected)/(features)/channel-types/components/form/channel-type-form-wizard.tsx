@@ -1,23 +1,30 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChannelTypeFormProvider, useEntityForm } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/channel-types/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/channel-types/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/channel-types/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/channel-types/components/form/form-state-manager";
+import { ChannelTypeFormProvider, useEntityForm } from "./channel-type-form-provider";
+import { FormProgressIndicator } from "./form-progress-indicator";
+import { FormStepRenderer } from "./form-step-renderer";
+import { FormNavigation } from "./form-navigation";
+import { FormStateManager } from "./form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/channel-types/components/form/steps";
+// import { stepComponents } from './steps';
 import { 
   useCreateChannelType,
   useUpdateChannelType,
   useGetChannelType,
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import { channelTypeToast, handleChannelTypeError } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
+import { channelTypeToast, handleChannelTypeError } from "../channel-type-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 
 interface ChannelTypeFormProps {
@@ -224,7 +231,9 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
         if (isNew) {
           createEntity({ data: transformedData as any });
         } else if (id) {
-          updateEntity({ id, data: transformedData as any });
+          // Ensure the entity data includes the ID for updates
+          const entityData = { ...transformedData, id };
+          updateEntity({ id, data: entityData as any });
         }
       }}
       onError={(error) => {

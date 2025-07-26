@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
@@ -11,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { meetingParticipantFormConfig } from "@/app/(protected)/(features)/meeting-participants/components/form/meeting-participant-form-config";
-import { meetingParticipantFormSchema } from "@/app/(protected)/(features)/meeting-participants/components/form/meeting-participant-form-schema";
-import { meetingParticipantToast, handleMeetingParticipantError } from "@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast";
+import { meetingParticipantFormConfig } from "./meeting-participant-form-config";
+import { meetingParticipantFormSchema } from "./meeting-participant-form-schema";
+import { meetingParticipantToast, handleMeetingParticipantError } from "../meeting-participant-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

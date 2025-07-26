@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { districtToast } from "@/app/(protected)/(features)/districts/components/district-toast";
+// Import the generated API functions directly
+import { 
+  createDistrict,
+  updateDistrict, 
+  deleteDistrict 
+} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+import { districtToast } from "../components/district-toast";
 
-export async function createDistrictAction(formData: FormData) {
+export async function createDistrictAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createDistrict(formData);
+    // Create entity using the generated API function
+    const result = await createDistrict(data);
     
     revalidatePath("/districts");
     districtToast.created();
@@ -21,9 +33,10 @@ export async function createDistrictAction(formData: FormData) {
   }
 }
 
-export async function updateDistrictAction(id: number, formData: FormData) {
+export async function updateDistrictAction(id: number, data: any) {
   try {
-    const result = await updateDistrict(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateDistrict(id, data);
     
     revalidatePath("/districts");
     revalidatePath(`/districts/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteDistrictAction(ids: number[]) {
     
     if (errorCount === 0) {
       districtToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       districtToast.bulkDeleteError();
     }

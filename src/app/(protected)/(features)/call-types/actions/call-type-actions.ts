@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { callTypeToast } from "@/app/(protected)/(features)/call-types/components/call-type-toast";
+// Import the generated API functions directly
+import { 
+  createCallType,
+  updateCallType, 
+  deleteCallType 
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+import { callTypeToast } from "../components/call-type-toast";
 
-export async function createCallTypeAction(formData: FormData) {
+export async function createCallTypeAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createCallType(formData);
+    // Create entity using the generated API function
+    const result = await createCallType(data);
     
     revalidatePath("/call-types");
     callTypeToast.created();
@@ -21,9 +33,10 @@ export async function createCallTypeAction(formData: FormData) {
   }
 }
 
-export async function updateCallTypeAction(id: number, formData: FormData) {
+export async function updateCallTypeAction(id: number, data: any) {
   try {
-    const result = await updateCallType(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateCallType(id, data);
     
     revalidatePath("/call-types");
     revalidatePath(`/call-types/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteCallTypeAction(ids: number[]) {
     
     if (errorCount === 0) {
       callTypeToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       callTypeToast.bulkDeleteError();
     }

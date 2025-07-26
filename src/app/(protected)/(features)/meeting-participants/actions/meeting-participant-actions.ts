@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { meetingParticipantToast } from "@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast";
+// Import the generated API functions directly
+import { 
+  createMeetingParticipant,
+  updateMeetingParticipant, 
+  deleteMeetingParticipant 
+} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
+import { meetingParticipantToast } from "../components/meeting-participant-toast";
 
-export async function createMeetingParticipantAction(formData: FormData) {
+export async function createMeetingParticipantAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createMeetingParticipant(formData);
+    // Create entity using the generated API function
+    const result = await createMeetingParticipant(data);
     
     revalidatePath("/meeting-participants");
     meetingParticipantToast.created();
@@ -21,9 +33,10 @@ export async function createMeetingParticipantAction(formData: FormData) {
   }
 }
 
-export async function updateMeetingParticipantAction(id: number, formData: FormData) {
+export async function updateMeetingParticipantAction(id: number, data: any) {
   try {
-    const result = await updateMeetingParticipant(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateMeetingParticipant(id, data);
     
     revalidatePath("/meeting-participants");
     revalidatePath(`/meeting-participants/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteMeetingParticipantAction(ids: number[]) {
     
     if (errorCount === 0) {
       meetingParticipantToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       meetingParticipantToast.bulkDeleteError();
     }

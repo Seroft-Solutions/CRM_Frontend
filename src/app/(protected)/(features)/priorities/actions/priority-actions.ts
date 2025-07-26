@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { priorityToast } from "@/app/(protected)/(features)/priorities/components/priority-toast";
+// Import the generated API functions directly
+import { 
+  createPriority,
+  updatePriority, 
+  deletePriority 
+} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
+import { priorityToast } from "../components/priority-toast";
 
-export async function createPriorityAction(formData: FormData) {
+export async function createPriorityAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createPriority(formData);
+    // Create entity using the generated API function
+    const result = await createPriority(data);
     
     revalidatePath("/priorities");
     priorityToast.created();
@@ -21,9 +33,10 @@ export async function createPriorityAction(formData: FormData) {
   }
 }
 
-export async function updatePriorityAction(id: number, formData: FormData) {
+export async function updatePriorityAction(id: number, data: any) {
   try {
-    const result = await updatePriority(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updatePriority(id, data);
     
     revalidatePath("/priorities");
     revalidatePath(`/priorities/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeletePriorityAction(ids: number[]) {
     
     if (errorCount === 0) {
       priorityToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       priorityToast.bulkDeleteError();
     }

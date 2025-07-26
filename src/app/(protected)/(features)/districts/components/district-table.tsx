@@ -1,9 +1,16 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { districtToast, handleDistrictError } from "@/app/(protected)/(features)/districts/components/district-toast";
+import { districtToast, handleDistrictError } from "./district-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +96,10 @@ import {
 
 
 
-import { DistrictSearchAndFilters } from "@/app/(protected)/(features)/districts/components/table/district-search-filters";
-import { DistrictTableHeader } from "@/app/(protected)/(features)/districts/components/table/district-table-header";
-import { DistrictTableRow } from "@/app/(protected)/(features)/districts/components/table/district-table-row";
-import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/districts/components/table/bulk-relationship-assignment";
+import { DistrictSearchAndFilters } from "./table/district-search-filters";
+import { DistrictTableHeader } from "./table/district-table-header";
+import { DistrictTableRow } from "./table/district-table-row";
+import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
 
 // Define sort ordering constants
 const ASC = "asc";

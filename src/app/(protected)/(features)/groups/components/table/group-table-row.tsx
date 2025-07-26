@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import Link from "next/link";
@@ -8,7 +15,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/core/auth";
-import { RelationshipCell } from "@/app/(protected)/(features)/groups/components/table/relationship-cell";
+import { RelationshipCell } from "./relationship-cell";
 import type { GroupDTO } from "@/core/api/generated/spring/schemas/GroupDTO";
 
 

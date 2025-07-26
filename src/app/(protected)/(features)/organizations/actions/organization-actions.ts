@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { organizationToast } from "@/app/(protected)/(features)/organizations/components/organization-toast";
+// Import the generated API functions directly
+import { 
+  createOrganization,
+  updateOrganization, 
+  deleteOrganization 
+} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
+import { organizationToast } from "../components/organization-toast";
 
-export async function createOrganizationAction(formData: FormData) {
+export async function createOrganizationAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createOrganization(formData);
+    // Create entity using the generated API function
+    const result = await createOrganization(data);
     
     revalidatePath("/organizations");
     organizationToast.created();
@@ -21,9 +33,10 @@ export async function createOrganizationAction(formData: FormData) {
   }
 }
 
-export async function updateOrganizationAction(id: number, formData: FormData) {
+export async function updateOrganizationAction(id: number, data: any) {
   try {
-    const result = await updateOrganization(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateOrganization(id, data);
     
     revalidatePath("/organizations");
     revalidatePath(`/organizations/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteOrganizationAction(ids: number[]) {
     
     if (errorCount === 0) {
       organizationToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       organizationToast.bulkDeleteError();
     }

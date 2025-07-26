@@ -1,14 +1,26 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { groupToast } from "@/app/(protected)/(features)/groups/components/group-toast";
+// Import the generated API functions directly
+import { 
+  createGroup,
+  updateGroup, 
+  deleteGroup 
+} from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
+import { groupToast } from "../components/group-toast";
 
-export async function createGroupAction(formData: FormData) {
+export async function createGroupAction(data: any) {
   try {
-    // Process form data and create entity
-    const result = await createGroup(formData);
+    // Create entity using the generated API function
+    const result = await createGroup(data);
     
     revalidatePath("/groups");
     groupToast.created();
@@ -21,9 +33,10 @@ export async function createGroupAction(formData: FormData) {
   }
 }
 
-export async function updateGroupAction(id: number, formData: FormData) {
+export async function updateGroupAction(id: number, data: any) {
   try {
-    const result = await updateGroup(id, formData);
+    // Update entity using the generated API function with correct signature
+    const result = await updateGroup(id, data);
     
     revalidatePath("/groups");
     revalidatePath(`/groups/${id}`);
@@ -65,8 +78,6 @@ export async function bulkDeleteGroupAction(ids: number[]) {
     
     if (errorCount === 0) {
       groupToast.bulkDeleted(successCount);
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} deleted, ${errorCount} failed`);
     } else {
       groupToast.bulkDeleteError();
     }

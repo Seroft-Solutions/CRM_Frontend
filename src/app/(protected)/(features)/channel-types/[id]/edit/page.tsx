@@ -1,8 +1,15 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { ChannelTypeForm } from "@/app/(protected)/(features)/channel-types/components/channel-type-form";
+import { ChannelTypeForm } from "../../components/channel-type-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

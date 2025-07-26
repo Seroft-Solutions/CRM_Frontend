@@ -1,3 +1,10 @@
+// ===============================================================
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
+// ===============================================================
 "use client";
 
 import { useState } from "react";
@@ -6,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { availableTimeSlotToast, handleAvailableTimeSlotError } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
-import { availableTimeSlotFormConfig } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-config";
+import { availableTimeSlotToast, handleAvailableTimeSlotError } from "./available-time-slot-toast";
+import { availableTimeSlotFormConfig } from "./form/available-time-slot-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
