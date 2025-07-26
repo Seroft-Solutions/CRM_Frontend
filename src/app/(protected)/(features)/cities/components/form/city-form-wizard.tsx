@@ -104,16 +104,11 @@ function CityFormContent({ id }: CityFormProps) {
     }
   };
 
-  // Loading state for edit mode or during submission
-  if ((id && isLoadingEntity) || state.isSubmitting) {
+  // Loading state for edit mode
+  if (id && isLoadingEntity) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="bg-card p-6 rounded-lg shadow-lg text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">
-            {id && isLoadingEntity ? 'Loading...' : 'Submitting...'}
-          </p>
-        </div>
+        <div className="text-lg">Loading...</div>
       </div>
     );
   }
@@ -163,7 +158,7 @@ function CityFormContent({ id }: CityFormProps) {
       <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={state.isSubmitting} // Pass actual form provider state
+        isSubmitting={false} // Will be handled by form provider state
         isNew={isNew}
       />
 
@@ -186,9 +181,6 @@ export function CityForm({ id }: CityFormProps) {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
         
-        // Set redirecting state IMMEDIATELY to prevent any UI flashing
-        setIsRedirecting(true);
-        
         // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({ 
           queryKey: ['getAllCities'],
@@ -207,15 +199,15 @@ export function CityForm({ id }: CityFormProps) {
         
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
+          setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'City');
         } else {
+          setIsRedirecting(true);
           cityToast.created();
           router.push("/cities");
         }
       },
       onError: (error) => {
-        // Reset redirecting state on error
-        setIsRedirecting(false);
         handleCityError(error);
       },
     },
@@ -224,9 +216,6 @@ export function CityForm({ id }: CityFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCity({
     mutation: {
       onSuccess: () => {
-        // Set redirecting state IMMEDIATELY to prevent any UI flashing
-        setIsRedirecting(true);
-        
         // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({ 
           queryKey: ['getAllCities'],
@@ -243,26 +232,23 @@ export function CityForm({ id }: CityFormProps) {
         });
         
         
+        setIsRedirecting(true);
         cityToast.updated();
         router.push("/cities");
       },
       onError: (error) => {
-        // Reset redirecting state on error
-        setIsRedirecting(false);
         handleCityError(error);
       },
     },
   });
 
-  // Show loading state when redirecting OR during API submission to prevent form validation errors
-  if (isRedirecting || isCreating || isUpdating) {
+  // Show loading state when redirecting to prevent form validation errors
+  if (isRedirecting) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="bg-card p-6 rounded-lg shadow-lg text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">
-            {isRedirecting ? 'Redirecting...' : 'Submitting...'}
-          </p>
+          <p className="text-sm text-muted-foreground">Redirecting...</p>
         </div>
       </div>
     );

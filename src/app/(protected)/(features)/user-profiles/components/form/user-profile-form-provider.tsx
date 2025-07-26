@@ -328,18 +328,15 @@ export function UserProfileFormProvider({
       return;
     }
 
-    // Set loading state IMMEDIATELY to prevent UI flashing
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // Validate form - if this fails, we'll reset the loading state
-      const isValid = await form.trigger();
-      
-      if (!isValid) {
-        setIsSubmitting(false);
-        return;
-      }
-
       const formData = form.getValues();
       
       // Transform data for submission
@@ -349,18 +346,18 @@ export function UserProfileFormProvider({
         await onSuccess(entityToSave);
       }
       
-      // Note: Don't clean up form state here anymore - let the redirect handle it
-      // cleanupFormState();
+      // Clean up form state
+      cleanupFormState();
       
     } catch (error) {
-      setIsSubmitting(false);
       if (onError) {
         onError(error);
       } else {
         handleUserProfileError(error);
       }
+    } finally {
+      setIsSubmitting(false);
     }
-    // Note: Don't reset isSubmitting in finally - let the redirect handle it
   }, [currentStep, config, form, onSuccess, onError, isAutoPopulating]);
 
   function transformFormDataForSubmission(data: Record<string, any>) {
