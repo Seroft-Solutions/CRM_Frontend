@@ -27,9 +27,6 @@ export function FormNavigation({
 }: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
   const isLastStep = state.currentStep === config.steps.length - 1;
-  
-  // Use the state from form provider which includes proper submission state
-  const isFormSubmitting = state.isSubmitting || isSubmitting;
 
   const handleNext = async () => {
     const success = await actions.nextStep();
@@ -73,7 +70,7 @@ export function FormNavigation({
         variant="outline"
         onClick={state.currentStep === 0 ? handleCancel : handlePrevious}
         className="flex items-center gap-2 justify-center"
-        disabled={isFormSubmitting}
+        disabled={isSubmitting}
       >
         <ArrowLeft className="h-4 w-4" />
         {state.currentStep === 0 ? "Cancel" : "Previous"}
@@ -84,18 +81,18 @@ export function FormNavigation({
         <Button 
           type="button"
           onClick={handleSubmit}
-          disabled={isFormSubmitting}
+          disabled={isSubmitting}
           className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
         >
           <Save className="h-4 w-4" />
-          {isFormSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} Channel Type`}
+          {isSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} Channel Type`}
         </Button>
       ) : (
         <Button
           type="button"
           onClick={handleNext}
           className="flex items-center gap-2 justify-center"
-          disabled={isFormSubmitting}
+          disabled={isSubmitting}
         >
           Next Step
           <ArrowRight className="h-4 w-4" />
