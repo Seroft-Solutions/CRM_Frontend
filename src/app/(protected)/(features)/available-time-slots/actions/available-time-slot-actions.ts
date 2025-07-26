@@ -22,7 +22,9 @@ export async function createAvailableTimeSlotAction(data: any) {
     // Create entity using the generated API function
     const result = await createAvailableTimeSlot(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/available-time-slots");
+    revalidatePath("/available-time-slots/new");
     availableTimeSlotToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateAvailableTimeSlotAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateAvailableTimeSlot(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/available-time-slots");
     revalidatePath(`/available-time-slots/${id}`);
+    revalidatePath(`/available-time-slots/${id}/edit`);
     availableTimeSlotToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteAvailableTimeSlotAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/available-time-slots");
     
     if (errorCount === 0) {

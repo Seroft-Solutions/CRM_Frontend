@@ -22,7 +22,9 @@ export async function createUserDraftAction(data: any) {
     // Create entity using the generated API function
     const result = await createUserDraft(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/user-drafts");
+    revalidatePath("/user-drafts/new");
     userDraftToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateUserDraftAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateUserDraft(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/user-drafts");
     revalidatePath(`/user-drafts/${id}`);
+    revalidatePath(`/user-drafts/${id}/edit`);
     userDraftToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteUserDraftAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/user-drafts");
     
     if (errorCount === 0) {

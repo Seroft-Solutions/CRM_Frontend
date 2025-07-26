@@ -22,7 +22,9 @@ export async function createCallStatusAction(data: any) {
     // Create entity using the generated API function
     const result = await createCallStatus(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/call-statuses");
+    revalidatePath("/call-statuses/new");
     callStatusToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateCallStatusAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateCallStatus(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/call-statuses");
     revalidatePath(`/call-statuses/${id}`);
+    revalidatePath(`/call-statuses/${id}/edit`);
     callStatusToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteCallStatusAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/call-statuses");
     
     if (errorCount === 0) {

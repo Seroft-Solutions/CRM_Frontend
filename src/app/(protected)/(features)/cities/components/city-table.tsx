@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { cityToast, handleCityError } from "./city-toast";
 import { useQueryClient } from '@tanstack/react-query';
-import { Search, X, Download, Settings2, Eye, EyeOff } from "lucide-react";
+import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -282,6 +282,35 @@ export function CityTable() {
     }));
   };
 
+  // Manual refresh functionality
+  const handleRefresh = async () => {
+    try {
+      // Invalidate all related queries to force fresh data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['getAllCities'],
+        refetchType: 'active'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['countCities'],
+        refetchType: 'active'
+      });
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ['searchCities'],
+        refetchType: 'active'
+      });
+      
+      
+      // Also manually trigger refetch
+      await refetch();
+      
+      toast.success('Data refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+      toast.error('Failed to refresh data');
+    }
+  };
+
   // Export functionality
   const exportToCSV = () => {
     if (!data || data.length === 0) {
@@ -469,6 +498,8 @@ export function CityTable() {
         {
           query: {
             enabled: true,
+            staleTime: 0, // Always consider data stale for immediate refetch
+            refetchOnWindowFocus: true,
           },
         }
       )
@@ -482,6 +513,8 @@ export function CityTable() {
         {
           query: {
             enabled: true,
+            staleTime: 0, // Always consider data stale for immediate refetch
+            refetchOnWindowFocus: true,
           },
         }
       );
@@ -493,6 +526,8 @@ export function CityTable() {
     {
       query: {
         enabled: true,
+        staleTime: 0, // Always consider data stale for immediate refetch
+        refetchOnWindowFocus: true,
       },
     }
   );
@@ -1037,6 +1072,19 @@ export function CityTable() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Refresh Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="gap-2 text-xs sm:text-sm"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+            <span className="sm:hidden">⟳</span>
+          </Button>
 
           {/* Export Button */}
           <Button

@@ -22,7 +22,9 @@ export async function createStateAction(data: any) {
     // Create entity using the generated API function
     const result = await createState(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/states");
+    revalidatePath("/states/new");
     stateToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateStateAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateState(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/states");
     revalidatePath(`/states/${id}`);
+    revalidatePath(`/states/${id}/edit`);
     stateToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteStateAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/states");
     
     if (errorCount === 0) {
