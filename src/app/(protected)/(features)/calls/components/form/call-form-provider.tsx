@@ -7,7 +7,7 @@
 // ===============================================================
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -43,6 +43,7 @@ export function CallFormProvider({
   const router = useRouter();
   const isNew = !id;
   const config = callFormConfig;
+  const formRef = useRef<HTMLDivElement>(null);
   
   // Cross-form navigation hooks
   const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } = useCrossFormNavigation();
@@ -66,6 +67,9 @@ export function CallFormProvider({
   const [showRestorationDialog, setShowRestorationDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  
+  // Navigation protection state
+  const [isInsideForm, setIsInsideForm] = useState(false);
 
   // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
@@ -138,6 +142,21 @@ export function CallFormProvider({
 
     return defaults;
   }
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    return form.formState.isDirty && isNew && draftsEnabled;
+  }, [form.formState.isDirty, isNew, draftsEnabled]);
+
+  // Show draft dialog when trying to navigate with unsaved changes
+  const showDraftDialogForNavigation = useCallback((navigationCallback: () => void) => {
+    if (hasUnsavedChanges()) {
+      setPendingNavigation(() => navigationCallback);
+      setShowDraftDialog(true);
+      return true; // Navigation blocked
+    }
+    return false; // Navigation allowed
+  }, [hasUnsavedChanges]);
 
   // Form state persistence functions - only for cross-form navigation
   const saveFormState = useCallback((forCrossNavigation = false) => {
@@ -461,6 +480,180 @@ export function CallFormProvider({
     setConfirmSubmission(false);
   }, [form]);
 
+  // Browser navigation protection (back/forward buttons, URL changes)
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        const message = 'You have unsaved changes. Are you sure you want to leave?';
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
+      }
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (hasUnsavedChanges()) {
+        // Prevent the navigation
+        window.history.pushState(null, '', window.location.href);
+        
+        // Show draft dialog
+        setPendingNavigation(() => () => {
+          // Allow the navigation to proceed
+          window.history.back();
+        });
+        setShowDraftDialog(true);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    // Push current state to handle back button
+    if (hasUnsavedChanges()) {
+      window.history.pushState(null, '', window.location.href);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled]);
+
+  // Outside click detection
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleMouseEnter = () => setIsInsideForm(true);
+    const handleMouseLeave = () => setIsInsideForm(false);
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        // User clicked outside the form
+        if (hasUnsavedChanges() && isInsideForm) {
+          // Only show dialog if user was previously inside the form
+          setPendingNavigation(() => () => {
+            // Focus is lost, but no actual navigation needed
+            setIsInsideForm(false);
+          });
+          setShowDraftDialog(true);
+        }
+      }
+    };
+
+    const formElement = formRef.current;
+    if (formElement) {
+      formElement.addEventListener('mouseenter', handleMouseEnter);
+      formElement.addEventListener('mouseleave', handleMouseLeave);
+      document.addEventListener('click', handleClickOutside, true);
+    }
+
+    return () => {
+      if (formElement) {
+        formElement.removeEventListener('mouseenter', handleMouseEnter);
+        formElement.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled]);
+
+  // Router event handling for programmatic navigation
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleRouteChangeStart = (url: string) => {
+      // Only block if we have unsaved changes and it's a different route
+      if (hasUnsavedChanges() && url !== router.asPath) {
+        // This might not work in all cases, but we'll handle it with Link interception
+        console.log('Route change detected:', url);
+      }
+    };
+
+    // Note: Next.js 13+ App Router doesn't have routeChangeStart events
+    // So we rely primarily on Link click interception
+    
+    return () => {
+      // Cleanup if needed
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
+
+  // Intercept all Link clicks and navigation attempts
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    let isNavigating = false;
+
+    // Global click handler to intercept all navigation clicks
+    const handleNavigationClick = (event: Event) => {
+      if (isNavigating) return;
+
+      const target = event.target as Element;
+      
+      // Check for Link components (anchor tags)
+      const link = target.closest('a[href]') as HTMLAnchorElement;
+      if (link && hasUnsavedChanges()) {
+        const href = link.getAttribute('href');
+        if (href && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:') && !href.startsWith('#')) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          
+          // Show draft dialog with the navigation callback
+          setPendingNavigation(() => () => {
+            isNavigating = true;
+            router.push(href);
+            setTimeout(() => { isNavigating = false; }, 100);
+          });
+          setShowDraftDialog(true);
+          return;
+        }
+      }
+
+      // Special handling for ContextAwareBackButton (contains a Link inside a Button)
+      const button = target.closest('button') as HTMLButtonElement;
+      if (button && hasUnsavedChanges()) {
+        // Check if this button contains a Link (like ContextAwareBackButton)
+        const linkInsideButton = button.querySelector('a[href]') as HTMLAnchorElement;
+        if (linkInsideButton) {
+          const href = linkInsideButton.getAttribute('href');
+          if (href && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:') && !href.startsWith('#')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            
+            // Show draft dialog with the navigation callback
+            setPendingNavigation(() => () => {
+              isNavigating = true;
+              router.push(href);
+              setTimeout(() => { isNavigating = false; }, 100);
+            });
+            setShowDraftDialog(true);
+            return;
+          }
+        }
+        
+        // Check if this is a navigation button by text content
+        const buttonText = button.textContent?.toLowerCase() || '';
+        const isNavigationButton = 
+          buttonText.includes('back') || 
+          buttonText.includes('cancel') ||
+          buttonText.includes('close');
+          
+        if (isNavigationButton && formRef.current && !formRef.current.contains(button)) {
+          // For generic navigation buttons, we can't easily determine the target
+          // So we'll just show a warning for now
+          console.log('Navigation button clicked with unsaved changes:', buttonText);
+        }
+      }
+    };
+
+    // Add capture phase listener to catch events before other handlers
+    document.addEventListener('click', handleNavigationClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleNavigationClick, true);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
+
   // Form restoration on mount and auto-population
   useEffect(() => {
     if (!restorationAttempted && isNew) {
@@ -562,12 +755,24 @@ export function CallFormProvider({
       }
     };
 
+    const handleTriggerDraftCheck = (event: CustomEvent) => {
+      const { onProceed } = event.detail;
+      if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
+        setPendingNavigation(() => onProceed);
+        setShowDraftDialog(true);
+      } else {
+        onProceed();
+      }
+    };
+
     window.addEventListener('saveFormState', handleSaveFormState);
+    window.addEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
     
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
+      window.removeEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
     };
-  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated, clearOldFormStates, config]);
+  }, [restorationAttempted, isNew, restoreFormState, saveFormState, handleEntityCreated, clearOldFormStates, config, hasUnsavedChanges]);
 
   // Helper function to get navigation props for relationship components
   const getNavigationProps = useCallback((fieldName: string) => ({
@@ -732,7 +937,7 @@ export function CallFormProvider({
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
-          if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
+          if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
             // Show draft dialog
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
@@ -749,7 +954,7 @@ export function CallFormProvider({
         unregisterDraftCheck(config.entity);
       };
     }
-  }, [draftsEnabled, isNew, config.entity, config.behavior?.drafts?.confirmDialog, form.formState.isDirty, registerDraftCheck, unregisterDraftCheck]);
+  }, [draftsEnabled, isNew, config.entity, config.behavior?.drafts?.confirmDialog, hasUnsavedChanges, registerDraftCheck, unregisterDraftCheck]);
 
   // Create context value
   const contextValue: FormContextValue = {
@@ -800,7 +1005,8 @@ export function CallFormProvider({
 
   return (
     <FormContext.Provider value={contextValue}>
-      {children}
+      <div ref={formRef} className="relative">
+        {children}
       
       {/* Draft Dialogs */}
       {draftsEnabled && (
@@ -843,6 +1049,7 @@ export function CallFormProvider({
           />
         </>
       )}
+      </div>
     </FormContext.Provider>
   );
 }
