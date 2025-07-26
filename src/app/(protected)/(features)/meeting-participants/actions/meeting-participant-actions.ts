@@ -22,7 +22,9 @@ export async function createMeetingParticipantAction(data: any) {
     // Create entity using the generated API function
     const result = await createMeetingParticipant(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/meeting-participants");
+    revalidatePath("/meeting-participants/new");
     meetingParticipantToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateMeetingParticipantAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateMeetingParticipant(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/meeting-participants");
     revalidatePath(`/meeting-participants/${id}`);
+    revalidatePath(`/meeting-participants/${id}/edit`);
     meetingParticipantToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteMeetingParticipantAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/meeting-participants");
     
     if (errorCount === 0) {

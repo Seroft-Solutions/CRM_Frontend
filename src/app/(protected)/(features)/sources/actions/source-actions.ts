@@ -22,7 +22,9 @@ export async function createSourceAction(data: any) {
     // Create entity using the generated API function
     const result = await createSource(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/sources");
+    revalidatePath("/sources/new");
     sourceToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateSourceAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateSource(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/sources");
     revalidatePath(`/sources/${id}`);
+    revalidatePath(`/sources/${id}/edit`);
     sourceToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteSourceAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/sources");
     
     if (errorCount === 0) {

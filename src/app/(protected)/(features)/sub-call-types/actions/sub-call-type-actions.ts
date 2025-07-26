@@ -22,7 +22,9 @@ export async function createSubCallTypeAction(data: any) {
     // Create entity using the generated API function
     const result = await createSubCallType(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/sub-call-types");
+    revalidatePath("/sub-call-types/new");
     subCallTypeToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateSubCallTypeAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateSubCallType(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/sub-call-types");
     revalidatePath(`/sub-call-types/${id}`);
+    revalidatePath(`/sub-call-types/${id}/edit`);
     subCallTypeToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteSubCallTypeAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/sub-call-types");
     
     if (errorCount === 0) {

@@ -26,6 +26,7 @@ import {
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
 import { groupToast, handleGroupError } from "../group-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+import { useQueryClient } from '@tanstack/react-query';
 
 interface GroupFormProps {
   id?: number;
@@ -103,11 +104,16 @@ function GroupFormContent({ id }: GroupFormProps) {
     }
   };
 
-  // Loading state for edit mode
-  if (id && isLoadingEntity) {
+  // Loading state for edit mode or during submission
+  if ((id && isLoadingEntity) || state.isSubmitting) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
+        <div className="bg-card p-6 rounded-lg shadow-lg text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">
+            {id && isLoadingEntity ? 'Loading...' : 'Submitting...'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -162,7 +168,7 @@ function GroupFormContent({ id }: GroupFormProps) {
       <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
+        isSubmitting={state.isSubmitting} // Pass actual form provider state
         isNew={isNew}
       />
 
@@ -174,6 +180,7 @@ function GroupFormContent({ id }: GroupFormProps) {
 
 export function GroupForm({ id }: GroupFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -184,17 +191,36 @@ export function GroupForm({ id }: GroupFormProps) {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
         
+        // Set redirecting state IMMEDIATELY to prevent any UI flashing
+        setIsRedirecting(true);
+        
+        // Invalidate queries to trigger table refetch
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllGroups'],
+          refetchType: 'active'
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ['countGroups'],
+          refetchType: 'active'
+        });
+        
+        queryClient.invalidateQueries({ 
+          queryKey: ['searchGroups'],
+          refetchType: 'active'
+        });
+        
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
-          setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Group');
         } else {
-          setIsRedirecting(true);
           groupToast.created();
           router.push("/groups");
         }
       },
       onError: (error) => {
+        // Reset redirecting state on error
+        setIsRedirecting(false);
         handleGroupError(error);
       },
     },
@@ -203,23 +229,45 @@ export function GroupForm({ id }: GroupFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateGroup({
     mutation: {
       onSuccess: () => {
+        // Set redirecting state IMMEDIATELY to prevent any UI flashing
         setIsRedirecting(true);
+        
+        // Invalidate queries to trigger table refetch
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllGroups'],
+          refetchType: 'active'
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ['countGroups'],
+          refetchType: 'active'
+        });
+        
+        queryClient.invalidateQueries({ 
+          queryKey: ['searchGroups'],
+          refetchType: 'active'
+        });
+        
+        
         groupToast.updated();
         router.push("/groups");
       },
       onError: (error) => {
+        // Reset redirecting state on error
+        setIsRedirecting(false);
         handleGroupError(error);
       },
     },
   });
 
-  // Show loading state when redirecting to prevent form validation errors
-  if (isRedirecting) {
+  // Show loading state when redirecting OR during API submission to prevent form validation errors
+  if (isRedirecting || isCreating || isUpdating) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="bg-card p-6 rounded-lg shadow-lg text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Redirecting...</p>
+          <p className="text-sm text-muted-foreground">
+            {isRedirecting ? 'Redirecting...' : 'Submitting...'}
+          </p>
         </div>
       </div>
     );

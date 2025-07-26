@@ -22,7 +22,9 @@ export async function createCityAction(data: any) {
     // Create entity using the generated API function
     const result = await createCity(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/cities");
+    revalidatePath("/cities/new");
     cityToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateCityAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateCity(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/cities");
     revalidatePath(`/cities/${id}`);
+    revalidatePath(`/cities/${id}/edit`);
     cityToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteCityAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/cities");
     
     if (errorCount === 0) {

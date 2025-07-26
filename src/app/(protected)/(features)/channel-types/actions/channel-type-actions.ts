@@ -22,7 +22,9 @@ export async function createChannelTypeAction(data: any) {
     // Create entity using the generated API function
     const result = await createChannelType(data);
     
+    // Revalidate both the main list page and any related pages
     revalidatePath("/channel-types");
+    revalidatePath("/channel-types/new");
     channelTypeToast.created();
     
     return { success: true, data: result };
@@ -38,8 +40,10 @@ export async function updateChannelTypeAction(id: number, data: any) {
     // Update entity using the generated API function with correct signature
     const result = await updateChannelType(id, data);
     
+    // Revalidate all related paths to ensure fresh data
     revalidatePath("/channel-types");
     revalidatePath(`/channel-types/${id}`);
+    revalidatePath(`/channel-types/${id}/edit`);
     channelTypeToast.updated();
     
     return { success: true, data: result };
@@ -74,6 +78,7 @@ export async function bulkDeleteChannelTypeAction(ids: number[]) {
     const successCount = results.filter(r => r.status === 'fulfilled').length;
     const errorCount = results.filter(r => r.status === 'rejected').length;
     
+    // Revalidate to ensure table reflects deletions
     revalidatePath("/channel-types");
     
     if (errorCount === 0) {

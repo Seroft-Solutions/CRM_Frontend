@@ -6,7 +6,7 @@
 export const AUTH_CACHE_CONFIG = {
   // Account data caching
   account: {
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   },

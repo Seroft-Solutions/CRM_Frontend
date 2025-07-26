@@ -26,6 +26,7 @@ import {
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
 import { customerToast, handleCustomerError } from "../customer-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CustomerFormProps {
   id?: number;
@@ -103,11 +104,16 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     }
   };
 
-  // Loading state for edit mode
-  if (id && isLoadingEntity) {
+  // Loading state for edit mode or during submission
+  if ((id && isLoadingEntity) || state.isSubmitting) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
+        <div className="bg-card p-6 rounded-lg shadow-lg text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">
+            {id && isLoadingEntity ? 'Loading...' : 'Submitting...'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -164,7 +170,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       <FormNavigation 
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
+        isSubmitting={state.isSubmitting} // Pass actual form provider state
         isNew={isNew}
       />
 
@@ -176,6 +182,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
 export function CustomerForm({ id }: CustomerFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -186,17 +193,36 @@ export function CustomerForm({ id }: CustomerFormProps) {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
         
+        // Set redirecting state IMMEDIATELY to prevent any UI flashing
+        setIsRedirecting(true);
+        
+        // Invalidate queries to trigger table refetch
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllCustomers'],
+          refetchType: 'active'
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ['countCustomers'],
+          refetchType: 'active'
+        });
+        
+        queryClient.invalidateQueries({ 
+          queryKey: ['searchCustomers'],
+          refetchType: 'active'
+        });
+        
+        
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
-          setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Customer');
         } else {
-          setIsRedirecting(true);
           customerToast.created();
           router.push("/customers");
         }
       },
       onError: (error) => {
+        // Reset redirecting state on error
+        setIsRedirecting(false);
         handleCustomerError(error);
       },
     },
@@ -205,23 +231,45 @@ export function CustomerForm({ id }: CustomerFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCustomer({
     mutation: {
       onSuccess: () => {
+        // Set redirecting state IMMEDIATELY to prevent any UI flashing
         setIsRedirecting(true);
+        
+        // Invalidate queries to trigger table refetch
+        queryClient.invalidateQueries({ 
+          queryKey: ['getAllCustomers'],
+          refetchType: 'active'
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ['countCustomers'],
+          refetchType: 'active'
+        });
+        
+        queryClient.invalidateQueries({ 
+          queryKey: ['searchCustomers'],
+          refetchType: 'active'
+        });
+        
+        
         customerToast.updated();
         router.push("/customers");
       },
       onError: (error) => {
+        // Reset redirecting state on error
+        setIsRedirecting(false);
         handleCustomerError(error);
       },
     },
   });
 
-  // Show loading state when redirecting to prevent form validation errors
-  if (isRedirecting) {
+  // Show loading state when redirecting OR during API submission to prevent form validation errors
+  if (isRedirecting || isCreating || isUpdating) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="bg-card p-6 rounded-lg shadow-lg text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Redirecting...</p>
+          <p className="text-sm text-muted-foreground">
+            {isRedirecting ? 'Redirecting...' : 'Submitting...'}
+          </p>
         </div>
       </div>
     );
