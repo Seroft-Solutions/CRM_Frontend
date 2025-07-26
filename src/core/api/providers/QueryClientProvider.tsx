@@ -7,18 +7,18 @@ import {
   MutationCache,
 } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { QUERY_CLIENT_CONFIG } from '../config/api-config';
 
 interface QueryClientProviderProps {
   children: ReactNode;
   defaultStaleTime?: number;
   defaultGcTime?: number;
+  includeDevtools?: boolean;
 }
 
 export function QueryClientProvider({
   children,
-  defaultStaleTime = QUERY_CLIENT_CONFIG.defaultStaleTime,
-  defaultGcTime = QUERY_CLIENT_CONFIG.defaultGcTime,
+  defaultStaleTime = 1 * 60 * 1000, // 1 minute default
+  defaultGcTime = 10 * 60 * 1000, // 10 minutes
 }: QueryClientProviderProps) {
   // Create a new QueryClient instance for each user session
   const [queryClient] = useState(
@@ -33,9 +33,10 @@ export function QueryClientProvider({
               if (error?.status === 401 || error?.status === 403 || error?.status === 404) {
                 return false;
               }
-              return failureCount < QUERY_CLIENT_CONFIG.retryAttempts;
+              // Retry up to 3 times for other errors
+              return failureCount < 3;
             },
-            retryDelay: QUERY_CLIENT_CONFIG.retryDelay,
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
             refetchOnWindowFocus: true,
             refetchOnReconnect: true,
             refetchInterval: false, // Disable automatic interval refetching by default
