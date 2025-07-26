@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, CheckCircle2, Building2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Building2, Loader2 } from 'lucide-react';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingSchedulerDialogProps {
@@ -30,6 +30,7 @@ export function MeetingSchedulerDialog({
   onError,
 }: MeetingSchedulerDialogProps) {
   const router = useRouter();
+  const [isScheduling, setIsScheduling] = useState(false);
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
     query: { enabled: !!customerId },
@@ -38,6 +39,8 @@ export function MeetingSchedulerDialog({
   if (!callId) return null;
 
   const handleScheduleMeeting = () => {
+    setIsScheduling(true);
+    
     const params = new URLSearchParams({
       customerId: customerId?.toString() || '',
       assignedUserId: assignedUserId?.toString() || '',
@@ -47,13 +50,10 @@ export function MeetingSchedulerDialog({
     const url = `/calls/schedule-meeting?${params.toString()}`;
     console.log('Navigating to:', url);
 
-    // Close dialog first, then navigate
-    onOpenChangeAction(false);
-
-    // Use setTimeout to ensure dialog closes before navigation
+    // Navigate after a brief delay to show loading state
     setTimeout(() => {
       router.push(url);
-    }, 100);
+    }, 500);
   };
 
   const handleDecline = () => {
@@ -61,8 +61,12 @@ export function MeetingSchedulerDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChangeAction}>
-      <DialogContent className="max-w-lg bg-background/95 backdrop-blur-md border-0 shadow-2xl p-0 gap-0 overflow-hidden">
+    <Dialog open={open} onOpenChange={() => {}} modal>
+      <DialogContent 
+        className="sm:max-w-lg max-w-[95vw] bg-background/95 backdrop-blur-md border-0 shadow-2xl p-0 gap-0 overflow-hidden"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-8 py-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -123,21 +127,43 @@ export function MeetingSchedulerDialog({
           </div>
         </div>
 
+        {/* Loading Overlay */}
+        {isScheduling && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-card p-6 rounded-lg shadow-lg text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+              <p className="text-sm text-muted-foreground font-medium">Opening Meeting Scheduler...</p>
+              <p className="text-xs text-muted-foreground mt-1">Please wait a moment</p>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="px-6 py-5 bg-gray-50/50 flex gap-3">
           <Button
             variant="outline"
             onClick={handleDecline}
-            className="flex-1 h-11 font-medium border-gray-300 hover:bg-gray-100"
+            disabled={isScheduling}
+            className="flex-1 h-11 font-medium border-gray-300 hover:bg-gray-100 disabled:opacity-50"
           >
             Maybe Later
           </Button>
           <Button
             onClick={handleScheduleMeeting}
-            className="flex-1 h-11 font-medium bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-sm"
+            disabled={isScheduling}
+            className="flex-1 h-11 font-medium bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-sm disabled:opacity-50"
           >
-            <CalendarDays className="w-4 h-4 mr-2" />
-            Schedule Meeting
+            {isScheduling ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Opening...
+              </>
+            ) : (
+              <>
+                <CalendarDays className="w-4 h-4 mr-2" />
+                Schedule Meeting
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>

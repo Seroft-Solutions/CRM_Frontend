@@ -41,15 +41,15 @@ import {
   useCountProducts,
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
 import {
-  useGetAllChannelTypes,
-  useSearchChannelTypes,
-  useCountChannelTypes,
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import {
   useGetAllUserProfiles,
   useSearchUserProfiles,
   useCountUserProfiles,
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+import {
+  useGetAllChannelTypes,
+  useSearchChannelTypes,
+  useCountChannelTypes,
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
 import {
   useGetAllCallStatuses,
   useSearchCallStatuses,
@@ -139,18 +139,6 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
           />
         );
         
-      case 'channelType':
-        return (
-          <RelationshipDisplayValue
-            value={value}
-            useGetAllHook={useGetAllChannelTypes}
-            displayField="name"
-            primaryKey="id"
-            multiple={false}
-            label="ChannelTypes"
-          />
-        );
-        
       case 'channelParties':
         return (
           <RelationshipDisplayValue
@@ -160,6 +148,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             primaryKey="id"
             multiple={false}
             label="UserProfiles"
+          />
+        );
+        
+      case 'channelType':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllChannelTypes}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="ChannelTypes"
           />
         );
         

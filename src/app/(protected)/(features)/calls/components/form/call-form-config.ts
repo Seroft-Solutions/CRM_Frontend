@@ -56,8 +56,8 @@ export const callFormConfig: FormConfig = {
       fields: [
       ],
       relationships: [
-        'channelType',
         'channelParties',
+        'channelType',
       ],
       validation: {
         mode: 'onBlur',
@@ -260,6 +260,35 @@ export const callFormConfig: FormConfig = {
       }
     },
     {
+      name: 'channelParties',
+      type: 'many-to-one',
+      targetEntity: 'userProfile',
+      displayField: 'displayName',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'channel',
+      customFilters: {
+        'channelTypeId.specified': true
+      },
+      api: {
+        useGetAllHook: 'useGetAllUserProfiles',
+        useSearchHook: 'useSearchUserProfiles',
+        useCountHook: 'useCountUserProfiles',
+        entityName: 'UserProfiles',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/user-profiles/new',
+        createPermission: 'userProfile:create:inline',
+      },
+      ui: {
+        label: 'Channel Parties',
+        placeholder: 'Select channel parties',
+        icon: '📞',
+      }
+    },
+    {
       name: 'channelType',
       type: 'many-to-one',
       targetEntity: 'channelType',
@@ -288,35 +317,6 @@ export const callFormConfig: FormConfig = {
       ui: {
         label: 'Channel Type',
         placeholder: 'Select channel type',
-        icon: '📞',
-      }
-    },
-    {
-      name: 'channelParties',
-      type: 'many-to-one',
-      targetEntity: 'userProfile',
-      displayField: 'displayName',
-      primaryKey: 'id',
-      required: false,
-      multiple: false,
-      category: 'channel',
-      customFilters: {
-        'channelTypeId.specified': true
-      },
-      api: {
-        useGetAllHook: 'useGetAllUserProfiles',
-        useSearchHook: 'useSearchUserProfiles',
-        useCountHook: 'useCountUserProfiles',
-        entityName: 'UserProfiles',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create:inline',
-      },
-      ui: {
-        label: 'Channel Parties',
-        placeholder: 'Select channel parties',
         icon: '📞',
       }
     },
@@ -423,7 +423,7 @@ export const callFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,
