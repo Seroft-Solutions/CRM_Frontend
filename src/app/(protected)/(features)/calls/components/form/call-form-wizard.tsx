@@ -7,7 +7,7 @@
 // ===============================================================
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CallFormProvider, useEntityForm } from "./call-form-provider";
 import { FormProgressIndicator } from "./form-progress-indicator";
@@ -27,6 +27,7 @@ import {
 import { callToast, handleCallError } from "../call-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 import { useQueryClient } from '@tanstack/react-query';
+import { saveRemarksForCall } from "../../hooks/use-call-remarks";
 
 interface CallFormProps {
   id?: number;
@@ -199,47 +200,63 @@ export function CallForm({ id }: CallFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const tempRemarksRef = useRef<any[]>([]);
 
   // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateCall({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         const entityId = data?.id || data?.id;
         
-        // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
-          queryKey: ['getAllCalls'],
-          refetchType: 'active'
-        });
-        queryClient.invalidateQueries({ 
-          queryKey: ['countCalls'],
-          refetchType: 'active'
-        });
-        
-        queryClient.invalidateQueries({ 
-          queryKey: ['searchCalls'],
-          refetchType: 'active'
-        });
-        
-        
-        if (hasReferrer() && entityId) {
-          // Don't show toast here - success will be shown on the referring form
-          setIsRedirecting(true);
-          navigateBackToReferrer(entityId, 'Call');
-        } else {
-          // Redirect immediately to calls list with meeting dialog data
-          callToast.created();
-          setIsRedirecting(true);
+        try {
+          // Save remarks FIRST if any were added - WAIT for completion
+          if (entityId && tempRemarksRef.current.length > 0) {
+            await saveRemarksForCall(entityId, tempRemarksRef.current);
+            // Clear the temp remarks after successful save
+            tempRemarksRef.current = [];
+          }
           
-          // Pass call data via URL parameters for meeting dialog
-          const params = new URLSearchParams({
-            created: 'true',
-            callId: data?.id?.toString() || '',
-            customerId: data?.customer?.id?.toString() || '',
-            assignedUserId: data?.assignedTo?.id?.toString() || ''
+          // Invalidate queries to trigger table refetch
+          queryClient.invalidateQueries({ 
+            queryKey: ['getAllCalls'],
+            refetchType: 'active'
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: ['countCalls'],
+            refetchType: 'active'
           });
           
-          router.push(`/calls?${params.toString()}`);
+          queryClient.invalidateQueries({ 
+            queryKey: ['searchCalls'],
+            refetchType: 'active'
+          });
+          
+          // Only proceed with redirection after remarks are saved
+          if (hasReferrer() && entityId) {
+            // Don't show toast here - success will be shown on the referring form
+            setIsRedirecting(true);
+            navigateBackToReferrer(entityId, 'Call');
+          } else {
+            // Redirect to calls list with meeting dialog data
+            callToast.created();
+            setIsRedirecting(true);
+            
+            // Pass call data via URL parameters for meeting dialog
+            const params = new URLSearchParams({
+              created: 'true',
+              callId: data?.id?.toString() || '',
+              customerId: data?.customer?.id?.toString() || '',
+              assignedUserId: data?.assignedTo?.id?.toString() || ''
+            });
+            
+            router.push(`/calls?${params.toString()}`);
+          }
+        } catch (error) {
+          console.error('Error in onSuccess flow:', error);
+          // Continue with normal flow even if remarks fail, but show error
+          callToast.created();
+          setIsRedirecting(true);
+          router.push("/calls");
         }
       },
       onError: (error) => {
@@ -296,13 +313,22 @@ export function CallForm({ id }: CallFormProps) {
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
         
+        // Extract temporary remarks before removing from data
+        const tempRemarks = (transformedData as any).tempRemarks || [];
+        
+        // Store remarks in ref for saving after call creation
+        tempRemarksRef.current = tempRemarks;
+        
+        // Remove tempRemarks from the data to be sent to API (as it's not a real call field)
+        const { tempRemarks: _, ...callData } = transformedData as any;
+        
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: callData });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
-          updateEntity({ id, data: entityData as any });
+          const entityData = { ...callData, id };
+          updateEntity({ id, data: entityData });
         }
       }}
       onError={(error) => {

@@ -441,6 +441,11 @@ export function CallFormProvider({
       }
     });
 
+    // Handle special fields that are not in config (like tempRemarks)
+    if (data.tempRemarks !== undefined) {
+      entityToSave.tempRemarks = data.tempRemarks;
+    }
+
     // Remove undefined values to avoid sending them to the backend
     Object.keys(entityToSave).forEach(key => {
       if (entityToSave[key] === undefined) {

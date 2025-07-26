@@ -8,7 +8,9 @@
       "Bash(node:*)",
       "Bash(ls:*)",
       "Bash(git ls-tree:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)"
     ],
     "deny": []
   }
