@@ -4,6 +4,7 @@ import * as React from 'react';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
+import { localStorageCleanup } from '@/core/auth';
 
 import {
   DropdownMenu,
@@ -77,10 +78,17 @@ export function OrganizationSwitcher() {
   }
 
   const handleOrganizationSwitch = (org: (typeof organizations)[0]) => {
+    console.log('Switching to organization:', org);
+    
+    // Clean up organization-related data and form drafts before switching
+    localStorageCleanup.organizationSwitch();
+    
+    // Set new organization data
     setActiveOrganization(org);
     localStorage.setItem('selectedOrganizationId', org.id);
     localStorage.setItem('selectedOrganizationName', org.name);
-    console.log('Switching to organization:', org);
+    
+    // Reload to apply the new organization context
     window.location.reload();
   };
 
