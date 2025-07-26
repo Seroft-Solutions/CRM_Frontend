@@ -304,7 +304,7 @@ export const customerFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,

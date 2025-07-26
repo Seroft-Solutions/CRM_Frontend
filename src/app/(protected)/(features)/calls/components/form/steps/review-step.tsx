@@ -11,27 +11,52 @@ import React from "react";
 
 
 import {
-  useGetAllStates,
-  useSearchStates,
-  useCountStates,
-} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
+  useGetAllPriorities,
+  useSearchPriorities,
+  useCountPriorities,
+} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
 import {
-  useGetAllDistricts,
-  useSearchDistricts,
-  useCountDistricts,
-} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
+  useGetAllCallTypes,
+  useSearchCallTypes,
+  useCountCallTypes,
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
 import {
-  useGetAllCities,
-  useSearchCities,
-  useCountCities,
-} from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
+  useGetAllSubCallTypes,
+  useSearchSubCallTypes,
+  useCountSubCallTypes,
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
 import {
-  useGetAllAreas,
-  useSearchAreas,
-  useCountAreas,
-} from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
+  useGetAllSources,
+  useSearchSources,
+  useCountSources,
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+import {
+  useGetAllCustomers,
+  useSearchCustomers,
+  useCountCustomers,
+} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
+import {
+  useGetAllProducts,
+  useSearchProducts,
+  useCountProducts,
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import {
+  useGetAllChannelTypes,
+  useSearchChannelTypes,
+  useCountChannelTypes,
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+import {
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useCountUserProfiles,
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+import {
+  useGetAllCallStatuses,
+  useSearchCallStatuses,
+  useCountCallStatuses,
+} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
 
-interface CustomerReviewStepProps {
+interface CallReviewStepProps {
   form: any;
   config: any;
   actions: any;
@@ -42,51 +67,123 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
-      case 'state':
+      case 'priority':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllStates}
+            useGetAllHook={useGetAllPriorities}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="States"
+            label="Priorities"
           />
         );
         
-      case 'district':
+      case 'callType':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllDistricts}
+            useGetAllHook={useGetAllCallTypes}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="Districts"
+            label="CallTypes"
           />
         );
         
-      case 'city':
+      case 'subCallType':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllCities}
+            useGetAllHook={useGetAllSubCallTypes}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="Cities"
+            label="SubCallTypes"
           />
         );
         
-      case 'area':
+      case 'source':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllAreas}
+            useGetAllHook={useGetAllSources}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="Areas"
+            label="Sources"
+          />
+        );
+        
+      case 'customer':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllCustomers}
+            displayField="customerBusinessName"
+            primaryKey="id"
+            multiple={false}
+            label="Customers"
+          />
+        );
+        
+      case 'product':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllProducts}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="Products"
+          />
+        );
+        
+      case 'channelType':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllChannelTypes}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="ChannelTypes"
+          />
+        );
+        
+      case 'channelParties':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllUserProfiles}
+            displayField="displayName"
+            primaryKey="id"
+            multiple={false}
+            label="UserProfiles"
+          />
+        );
+        
+      case 'assignedTo':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllUserProfiles}
+            displayField="displayName"
+            primaryKey="id"
+            multiple={false}
+            label="UserProfiles"
+          />
+        );
+        
+      case 'callStatus':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllCallStatuses}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="CallStatuses"
           />
         );
         
@@ -171,7 +268,7 @@ function RelationshipDisplayValue({
   }
 }
 
-export function CustomerReviewStep({ form, config, actions }: CustomerReviewStepProps) {
+export function CallReviewStep({ form, config, actions }: CallReviewStepProps) {
   return (
     <div className="space-y-6">
       {/* Review all previous steps */}

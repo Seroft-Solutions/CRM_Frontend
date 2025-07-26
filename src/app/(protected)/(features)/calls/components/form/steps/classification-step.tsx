@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RelationshipRenderer } from "../relationship-renderer";
 
-interface CustomerGeographicStepProps {
+interface CallClassificationStepProps {
   form: any;
   config: any;
   actions: any;
 }
 
-export function CustomerGeographicStep({ form, config, actions }: CustomerGeographicStepProps) {
+export function CallClassificationStep({ form, config, actions }: CallClassificationStepProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -27,34 +27,34 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
         
         {/* Generated Relationship Fields */}
         
-        {/* State Relationship */}
+        {/* Priority Relationship */}
         <FormField
           control={form.control}
-          name="state"
+          name="priority"
           render={({ field }) => (
             <RelationshipRenderer
               relConfig={{
-                name: 'state',
+                name: 'priority',
                 type: 'many-to-one',
-                targetEntity: 'state',
+                targetEntity: 'priority',
                 displayField: 'name',
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
                 api: {
-                  useGetAllHook: 'useGetAllStates',
-                  useSearchHook: 'useSearchStates',
-                  useCountHook: 'useCountStates',
-                  entityName: 'States',
+                  useGetAllHook: 'useGetAllPriorities',
+                  useSearchHook: 'useSearchPriorities',
+                  useCountHook: 'useCountPriorities',
+                  entityName: 'Priorities',
                 },
                 creation: {
                   canCreate: true,
-                  createPath: '/states/new',
-                  createPermission: 'state:create:inline',
+                  createPath: '/priorities/new',
+                  createPermission: 'priority:create:inline',
                 },
                 ui: {
-                  label: 'State',
-                  placeholder: 'Select state',
+                  label: 'Priority',
+                  placeholder: 'Select priority',
                   icon: '🔗',
                 }
               }}
@@ -66,38 +66,34 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
           )}
         />
         
-        {/* District Relationship */}
+        {/* Call Type Relationship */}
         <FormField
           control={form.control}
-          name="district"
+          name="callType"
           render={({ field }) => (
             <RelationshipRenderer
               relConfig={{
-                name: 'district',
+                name: 'callType',
                 type: 'many-to-one',
-                targetEntity: 'district',
+                targetEntity: 'callType',
                 displayField: 'name',
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                cascadingFilter: {
-                  parentField: 'state',
-                  filterField: 'state',
-                },
                 api: {
-                  useGetAllHook: 'useGetAllDistricts',
-                  useSearchHook: 'useSearchDistricts',
-                  useCountHook: 'useCountDistricts',
-                  entityName: 'Districts',
+                  useGetAllHook: 'useGetAllCallTypes',
+                  useSearchHook: 'useSearchCallTypes',
+                  useCountHook: 'useCountCallTypes',
+                  entityName: 'CallTypes',
                 },
                 creation: {
                   canCreate: true,
-                  createPath: '/districts/new',
-                  createPermission: 'district:create:inline',
+                  createPath: '/call-types/new',
+                  createPermission: 'call-type:create:inline',
                 },
                 ui: {
-                  label: 'District',
-                  placeholder: 'Select district',
+                  label: 'Call Type',
+                  placeholder: 'Select call type',
                   icon: '🔗',
                 }
               }}
@@ -109,38 +105,34 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
           )}
         />
         
-        {/* City Relationship */}
+        {/* Sub Call Type Relationship */}
         <FormField
           control={form.control}
-          name="city"
+          name="subCallType"
           render={({ field }) => (
             <RelationshipRenderer
               relConfig={{
-                name: 'city',
+                name: 'subCallType',
                 type: 'many-to-one',
-                targetEntity: 'city',
+                targetEntity: 'subCallType',
                 displayField: 'name',
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                  cascadingFilter: {
-                      parentField: 'district',
-                      filterField: 'district',
-                  },
                 api: {
-                  useGetAllHook: 'useGetAllCities',
-                  useSearchHook: 'useSearchCities',
-                  useCountHook: 'useCountCities',
-                  entityName: 'Cities',
+                  useGetAllHook: 'useGetAllSubCallTypes',
+                  useSearchHook: 'useSearchSubCallTypes',
+                  useCountHook: 'useCountSubCallTypes',
+                  entityName: 'SubCallTypes',
                 },
                 creation: {
                   canCreate: true,
-                  createPath: '/cities/new',
-                  createPermission: 'city:create:inline',
+                  createPath: '/sub-call-types/new',
+                  createPermission: 'sub-call-type:create:inline',
                 },
                 ui: {
-                  label: 'City',
-                  placeholder: 'Select city',
+                  label: 'Sub Call Type',
+                  placeholder: 'Select sub call type',
                   icon: '🔗',
                 }
               }}
@@ -152,38 +144,34 @@ export function CustomerGeographicStep({ form, config, actions }: CustomerGeogra
           )}
         />
         
-        {/* Area Relationship */}
+        {/* Call Status Relationship */}
         <FormField
           control={form.control}
-          name="area"
+          name="callStatus"
           render={({ field }) => (
             <RelationshipRenderer
               relConfig={{
-                name: 'area',
+                name: 'callStatus',
                 type: 'many-to-one',
-                targetEntity: 'area',
+                targetEntity: 'callStatus',
                 displayField: 'name',
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                  cascadingFilter: {
-                      parentField: 'city',
-                      filterField: 'city',
-                  },
                 api: {
-                  useGetAllHook: 'useGetAllAreas',
-                  useSearchHook: 'useSearchAreas',
-                  useCountHook: 'useCountAreas',
-                  entityName: 'Areas',
+                  useGetAllHook: 'useGetAllCallStatuses',
+                  useSearchHook: 'useSearchCallStatuses',
+                  useCountHook: 'useCountCallStatuses',
+                  entityName: 'CallStatuses',
                 },
                 creation: {
                   canCreate: true,
-                  createPath: '/areas/new',
-                  createPermission: 'area:create:inline',
+                  createPath: '/call-statuses/new',
+                  createPermission: 'call-status:create:inline',
                 },
                 ui: {
-                  label: 'Area',
-                  placeholder: 'Select area',
+                  label: 'Call Status',
+                  placeholder: 'Select call status',
                   icon: '🔗',
                 }
               }}
