@@ -229,10 +229,49 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     refetchOrganizations();
   }, [refetchOrganizations]);
 
+  // Ensure localStorage is synced with organizations data
+  const syncLocalStorageWithOrganizations = useCallback(() => {
+    if (!organizations?.length) return;
+
+    const currentStoredOrgId = localStorage.getItem('selectedOrganizationId');
+    const currentStoredOrgName = localStorage.getItem('selectedOrganizationName');
+    
+    // Find the organization that should be selected
+    let targetOrg = organizations[0]; // Default to first org
+    
+    // If there's a stored org ID, try to find that organization
+    if (currentStoredOrgId) {
+      const foundOrg = organizations.find(org => org.id === currentStoredOrgId);
+      if (foundOrg) {
+        targetOrg = foundOrg;
+      }
+    }
+
+    // Update localStorage if it's missing or incorrect
+    if (!currentStoredOrgId || currentStoredOrgId !== targetOrg.id) {
+      localStorage.setItem('selectedOrganizationId', targetOrg.id);
+      console.log('Updated localStorage selectedOrganizationId:', targetOrg.id);
+    }
+    
+    if (!currentStoredOrgName || currentStoredOrgName !== targetOrg.name) {
+      localStorage.setItem('selectedOrganizationName', targetOrg.name);
+      console.log('Updated localStorage selectedOrganizationName:', targetOrg.name);
+    }
+
+    // Also update cookies for SSR
+    document.cookie = `selectedOrganizationId=${targetOrg.id}; path=/; max-age=31536000; SameSite=Lax`;
+    document.cookie = `selectedOrganizationName=${encodeURIComponent(targetOrg.name)}; path=/; max-age=31536000; SameSite=Lax`;
+  }, [organizations]);
+
   // Auto-check setup status when session changes
   useEffect(() => {
     checkSetupStatus();
   }, [checkSetupStatus]);
+
+  // Auto-sync localStorage when organizations data changes
+  useEffect(() => {
+    syncLocalStorageWithOrganizations();
+  }, [syncLocalStorageWithOrganizations]);
 
   return {
     state,

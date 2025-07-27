@@ -48,18 +48,46 @@ export function OrganizationSwitcher() {
   const router = useRouter();
   const { data: organizations, isLoading } = useUserOrganizations();
 
-  // Get the selected organization from localStorage
+  // Get the selected organization from localStorage with validation and auto-sync
   const getSelectedOrganization = React.useCallback(() => {
     if (!organizations?.length) return null;
 
     const selectedOrgId = localStorage.getItem('selectedOrganizationId');
+    const selectedOrgName = localStorage.getItem('selectedOrganizationName');
+    
+    let targetOrg = organizations[0]; // Default to first organization
+    
+    // Try to find organization by ID first
     if (selectedOrgId) {
-      const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
-      if (selectedOrg) return selectedOrg;
+      const foundById = organizations.find((org) => org.id === selectedOrgId);
+      if (foundById) {
+        targetOrg = foundById;
+      }
+    }
+    
+    // Validate and sync localStorage data
+    const needsIdUpdate = !selectedOrgId || selectedOrgId !== targetOrg.id;
+    const needsNameUpdate = !selectedOrgName || selectedOrgName !== targetOrg.name;
+    
+    if (needsIdUpdate || needsNameUpdate) {
+      console.log('Organization switcher: Syncing localStorage with current org data');
+      
+      if (needsIdUpdate) {
+        localStorage.setItem('selectedOrganizationId', targetOrg.id);
+        console.log('Updated selectedOrganizationId:', targetOrg.id);
+      }
+      
+      if (needsNameUpdate) {
+        localStorage.setItem('selectedOrganizationName', targetOrg.name);
+        console.log('Updated selectedOrganizationName:', targetOrg.name);
+      }
+      
+      // Update cookies for SSR consistency
+      document.cookie = `selectedOrganizationId=${targetOrg.id}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `selectedOrganizationName=${encodeURIComponent(targetOrg.name)}; path=/; max-age=31536000; SameSite=Lax`;
     }
 
-    // Fallback to first organization if no selection found
-    return organizations[0];
+    return targetOrg;
   }, [organizations]);
 
   const [activeOrganization, setActiveOrganization] = React.useState(getSelectedOrganization);
