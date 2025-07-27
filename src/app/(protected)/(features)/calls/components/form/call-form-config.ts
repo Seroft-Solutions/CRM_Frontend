@@ -330,7 +330,7 @@ export const callFormConfig: FormConfig = {
       multiple: false,
       category: 'assignment',
       customFilters: {
-        'activated.equals': true
+        'channelTypeId.specified': false
       },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
@@ -407,7 +407,7 @@ export const callFormConfig: FormConfig = {
       debounceMs: 2000,
     },
     persistence: {
-      enabled: true,
+      enabled: false,
       sessionTimeoutMinutes: 30,
       storagePrefix: 'CallFormState_',
     },
