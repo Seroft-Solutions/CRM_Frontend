@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '../base/types';
 import { KEYCLOAK_SERVICE_CONFIG, KEYCLOAK_ADMIN_CONFIG } from './config';
+import { sessionEventEmitter } from '@/core/auth';
 
 // Admin token cache
 let adminToken: string | null = null;
@@ -54,6 +55,41 @@ export const keycloakServiceMutator = async <T>(
     }
     return config;
   });
+
+  // Add response interceptor for 401 error handling
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response?.status === 401) {
+        // Invalidate admin token cache
+        adminToken = null;
+        tokenExpiry = 0;
+
+        if (typeof window !== 'undefined' && !error.config?._retry) {
+          try {
+            // Try to get a fresh admin token
+            const token = await getAdminToken(instance.defaults.baseURL as string);
+            if (token) {
+              error.config._retry = true;
+              error.config.headers = error.config.headers || {};
+              error.config.headers.Authorization = `Bearer ${token}`;
+              return instance.request(error.config);
+            }
+          } catch (refreshError) {
+            console.error('Keycloak admin token refresh failed:', refreshError);
+          }
+
+          // Emit session expired event to trigger modal
+          sessionEventEmitter.emit('session-expired', {
+            message: 'Your admin session has expired',
+            statusCode: 401,
+          });
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   const response = await instance.request({
     url,

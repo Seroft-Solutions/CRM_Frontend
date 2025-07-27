@@ -4,6 +4,7 @@ import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './con
 import { TokenCache } from '@/core/auth';
 import { fetchAccessToken } from '@/core/auth';
 import { getTenantHeader } from '../shared/tenant-helper';
+import { sessionEventEmitter } from '@/core/auth';
 
 const tokenCache = new TokenCache();
 
@@ -68,6 +69,42 @@ export const springServiceMutator = async <T>(
 
     return config;
   });
+
+  // Add response interceptor for 401 error handling
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response?.status === 401) {
+        tokenCache.invalidate();
+
+        if (typeof window !== 'undefined' && !error.config?._retry) {
+          try {
+            const { refreshSession } = await import('@/core/auth');
+            const refreshed = await refreshSession();
+            if (refreshed) {
+              error.config._retry = true;
+              const token = await tokenCache.getToken(fetchAccessToken);
+              if (token) {
+                error.config.headers = error.config.headers || {};
+                error.config.headers.Authorization = `Bearer ${token}`;
+              }
+              return instance.request(error.config);
+            }
+          } catch (refreshError) {
+            console.error('Auto refresh failed:', refreshError);
+          }
+
+          // Emit session expired event to trigger modal
+          sessionEventEmitter.emit('session-expired', {
+            message: 'Your session has expired',
+            statusCode: 401,
+          });
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   const response = await instance.request({
     url,
