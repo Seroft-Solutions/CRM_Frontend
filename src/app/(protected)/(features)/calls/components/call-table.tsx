@@ -304,8 +304,8 @@ interface DateRange {
 export function CallTable() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("id");
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState("lastModifiedDate");
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
