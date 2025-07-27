@@ -41,7 +41,7 @@ export function CallAssignmentStep({form, config, actions}: CallAssignmentStepPr
                                 primaryKey: 'id',
                                 required: false,
                                 multiple: false,
-                                customFilters: {"activated.equals": true},
+                                customFilters: {"channelTypeId.specified": false},
                                 api: {
                                     "useGetAllHook": "useGetAllUserProfiles",
                                     "useSearchHook": "useSearchUserProfiles",
