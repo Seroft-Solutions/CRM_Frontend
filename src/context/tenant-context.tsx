@@ -8,6 +8,8 @@ interface TenantContextType {
   setSelectedOrgName: (orgName: string | null) => void;
   getTenantHeader: () => string | undefined;
   clearOrganizationData: () => void;
+  syncOrganizationData: (orgId: string, orgName: string) => void;
+  ensureOrganizationDataExists: () => { id: string | null; name: string | null };
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -19,13 +21,22 @@ interface TenantProviderProps {
 export function TenantProvider({ children }: TenantProviderProps) {
   const [selectedOrgName, setSelectedOrgNameState] = useState<string | null>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount with validation
   useEffect(() => {
     const storedOrgId = localStorage.getItem('selectedOrganizationId');
     const storedOrgName = localStorage.getItem('selectedOrganizationName');
 
+    console.log('TenantContext: Initializing from localStorage', {
+      storedOrgId,
+      storedOrgName
+    });
+
     if (storedOrgName) {
       setSelectedOrgNameState(storedOrgName);
+    } else if (storedOrgId && !storedOrgName) {
+      // Handle case where ID exists but name is missing
+      console.warn('TenantContext: Organization ID exists but name is missing from localStorage');
+      // The organization switcher or setup hook will handle syncing the missing name
     }
   }, []);
 
@@ -53,6 +64,39 @@ export function TenantProvider({ children }: TenantProviderProps) {
     setSelectedOrgNameState(null);
   };
 
+  // Sync organization data to localStorage and state
+  const syncOrganizationData = (orgId: string, orgName: string) => {
+    console.log('TenantContext: Syncing organization data', { orgId, orgName });
+    
+    // Update localStorage
+    localStorage.setItem('selectedOrganizationId', orgId);
+    localStorage.setItem('selectedOrganizationName', orgName);
+    
+    // Update cookies for SSR
+    document.cookie = `selectedOrganizationId=${orgId}; path=/; max-age=31536000; SameSite=Lax`;
+    document.cookie = `selectedOrganizationName=${encodeURIComponent(orgName)}; path=/; max-age=31536000; SameSite=Lax`;
+    
+    // Update state
+    setSelectedOrgNameState(orgName);
+  };
+
+  // Ensure organization data exists and return current values
+  const ensureOrganizationDataExists = () => {
+    const storedOrgId = localStorage.getItem('selectedOrganizationId');
+    const storedOrgName = localStorage.getItem('selectedOrganizationName');
+    
+    console.log('TenantContext: Checking organization data existence', {
+      storedOrgId,
+      storedOrgName,
+      stateOrgName: selectedOrgName
+    });
+    
+    return {
+      id: storedOrgId,
+      name: storedOrgName || selectedOrgName
+    };
+  };
+
   return (
     <TenantContext.Provider
       value={{
@@ -60,6 +104,8 @@ export function TenantProvider({ children }: TenantProviderProps) {
         setSelectedOrgName,
         getTenantHeader,
         clearOrganizationData,
+        syncOrganizationData,
+        ensureOrganizationDataExists,
       }}
     >
       {children}
