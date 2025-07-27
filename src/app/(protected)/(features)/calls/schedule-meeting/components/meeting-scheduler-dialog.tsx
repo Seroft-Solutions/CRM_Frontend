@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, CheckCircle2, Building2, Loader2 } from 'lucide-react';
-import { useGetCustomer } from '@/core/api/generated/spring';
+import {useGetCustomer} from "@/core/api/generated/spring";
 
 interface MeetingSchedulerDialogProps {
   open: boolean;

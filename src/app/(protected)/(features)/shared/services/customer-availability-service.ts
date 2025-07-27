@@ -7,6 +7,7 @@ import {
   AvailabilityService,
   DEFAULT_AVAILABILITY_CONFIG,
 } from './availability-service';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   useCreateUserAvailability,
@@ -21,9 +22,21 @@ import {
  * React hook to handle real availability creation for specific users
  */
 export function useUserAvailabilityCreation() {
+  const queryClient = useQueryClient();
   const { mutate: createUserAvailability } = useCreateUserAvailability();
   const { mutate: createAvailableTimeSlot } = useCreateAvailableTimeSlot();
-  const { data: existingAvailabilities, refetch: refetchAvailabilities } = useGetAllUserAvailabilities();
+  const { data: existingAvailabilities, refetch: refetchAvailabilities } = useGetAllUserAvailabilities(
+    undefined,
+    { 
+      query: { 
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        cacheTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchInterval: false
+      } 
+    }
+  );
   
   const ensureUserHasAvailability = async (userId: number | string): Promise<boolean> => {
     try {
@@ -97,8 +110,19 @@ export function useUserAvailabilityCreation() {
         console.log(`✅ Created batch ${Math.floor(i/batchSize) + 1} of time slots for user:`, userId);
       }
       
-      // Refetch to get the latest data
-      await refetchAvailabilities();
+      // Invalidate related caches for immediate UI updates
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ['useGetAllUserAvailabilities'],
+          exact: false 
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['useGetAllAvailableTimeSlots'],
+          exact: false 
+        }),
+        refetchAvailabilities()
+      ]);
+      console.log('✅ Availability caches invalidated after creation');
       
       console.log('🎉 Successfully created all availability records for user:', userId);
       return true;
