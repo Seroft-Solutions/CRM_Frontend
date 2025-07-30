@@ -3,6 +3,7 @@ export { CallClassificationStep } from './classification-step';
 export { CallBusinessStep } from './business-step';
 export { CallChannelStep } from './channel-step';
 export { CallAssignmentStep } from './assignment-step';
+export { CallRemarksStep } from './remarks-step';
 export { CallReviewStep } from './review-step';
 
 // Import components for the mapping
@@ -10,6 +11,7 @@ import { CallClassificationStep } from './classification-step';
 import { CallBusinessStep } from './business-step';
 import { CallChannelStep } from './channel-step';
 import { CallAssignmentStep } from './assignment-step';
+import { CallRemarksStep } from './remarks-step';
 import { CallReviewStep } from './review-step';
 
 // Step mapping for dynamic imports
@@ -18,6 +20,7 @@ export const stepComponents = {
   'business': CallBusinessStep,
   'channel': CallChannelStep,
   'assignment': CallAssignmentStep,
+  'remarks': CallRemarksStep, // Assuming CallRemarksStep is also a step
   'review': CallReviewStep,
 } as const;
 
