@@ -138,7 +138,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
   
   {
     id: 'commissionRate',
-    label: 'Commission Rate',
+    label: 'Commission Rate (%)',
     accessor: 'commissionRate',
     type: 'field',
     visible: true,
