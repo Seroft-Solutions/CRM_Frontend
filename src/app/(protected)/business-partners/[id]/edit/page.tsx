@@ -315,7 +315,7 @@ export default function EditPartnerPage() {
                             <Input
                               type="email"
                               placeholder="john.doe@example.com"
-                              disabled={isUpdating}
+                              disabled={true}
                               {...field}
                             />
                           </FormControl>
