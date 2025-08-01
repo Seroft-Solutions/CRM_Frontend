@@ -192,7 +192,7 @@ export const userProfileFormConfig: FormConfig = {
       category: 'user',
       api: {
         useGetAllHook: 'useGetAllPublicUsers',
-        useSearchHook: 'useSearchPublicUsers',
+        useSearchHook: 'useSearch',
         entityName: 'PublicUsers',
       },
       creation: {

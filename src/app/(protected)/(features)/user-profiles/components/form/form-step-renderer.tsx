@@ -19,7 +19,7 @@ import { RelationshipRenderer } from "./relationship-renderer";
 
 import {
   useGetAllPublicUsers,
-  useSearchPublicUsers,
+  useSearch,
 } from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 import {
   useGetAllOrganizations,

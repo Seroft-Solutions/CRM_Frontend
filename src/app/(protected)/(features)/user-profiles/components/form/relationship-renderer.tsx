@@ -15,7 +15,7 @@ import { PaginatedRelationshipCombobox } from "./paginated-relationship-combobox
 
 import {
   useGetAllPublicUsers,
-  useSearchPublicUsers,
+  useSearch,
 } from "@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen";
 import {
   useGetAllOrganizations,
@@ -116,7 +116,7 @@ export function RelationshipRenderer({
             placeholder={relConfig.ui.placeholder}
             multiple={relConfig.multiple}
             useGetAllHook={useGetAllPublicUsers}
-            useSearchHook={useSearchPublicUsers}
+            useSearchHook={useSearch}
             useCountHook={undefined}
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
