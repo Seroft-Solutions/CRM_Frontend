@@ -79,8 +79,8 @@ export const channelTypeFormConfig: FormConfig = {
     {
       name: 'commissionRate',
       type: 'number',
-      label: 'Commission Rate',
-      placeholder: 'Enter commission rate',
+      label: 'Commission Rate (%)',
+      placeholder: 'Enter commission rate in percentage',
       required: false,
       validation: {
         required: false,
