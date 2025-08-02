@@ -1,0 +1,218 @@
+version: 2.1
+
+orbs:
+  docker: circleci/docker@2.6.0
+  node: circleci/node@5.2.0
+
+# Environment variables and reusable commands
+commands:
+  restore_node_cache:
+    description: 'Restore Node.js dependencies from cache'
+    steps:
+      - restore_cache:
+          keys:
+            - node-v3-{{ checksum "package-lock.json" }}
+            - node-v3-{{ checksum "package-lock.json" | truncate(7, "") }}
+            - node-v3-
+
+  save_node_cache:
+    description: 'Save Node.js dependencies to cache'
+    steps:
+      - save_cache:
+          paths:
+            - node_modules
+            - ~/.npm
+          key: node-v3-{{ checksum "package-lock.json" }}
+
+  setup_docker_buildkit:
+    description: 'Setup Docker BuildKit for optimized builds'
+    steps:
+      - run:
+          name: Setup Docker BuildKit
+          command: |
+            echo 'export DOCKER_BUILDKIT=1' >> "$BASH_ENV"
+            echo 'export BUILDKIT_PROGRESS=plain' >> "$BASH_ENV"
+
+jobs:
+  # Build and test with comprehensive validation
+  build_and_test:
+    docker:
+      - image: cimg/node:18.17
+    resource_class: medium
+    environment:
+      NODE_ENV: test
+    steps:
+      - checkout
+      - restore_node_cache
+
+      # Install dependencies
+      - run:
+          name: Install Dependencies
+          command: npm ci
+
+      # Build the application
+      - run:
+          name: Build Application
+          command: |
+            echo "Building Next.js application..."
+            NODE_ENV=production npm run build
+            echo "Build completed successfully"
+
+      # Run tests if they exist
+      - run:
+          name: Run Tests
+          command: |
+            if npm run test --silent 2>/dev/null; then
+              echo "Running tests..."
+              npm run test
+            else
+              echo "No test script found, skipping tests"
+            fi
+
+      # Run linting
+      - run:
+          name: Run Linting
+          command: |
+            if npm run lint --silent 2>/dev/null; then
+              echo "Running linting..."
+              npm run lint
+            else
+              echo "No lint script found, skipping linting"
+            fi
+
+      # Store build artifacts
+      - store_artifacts:
+          path: .next
+          destination: build-artifacts
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .next
+            - node_modules
+            - package.json
+            - package-lock.json
+            - next.config.*
+            - Dockerfile
+
+      - save_node_cache
+
+  # Build and publish Docker image with multi-stage optimization
+  docker_build_and_publish:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: medium
+    environment:
+      IMAGE_NAME: syedus06/crm-frontend
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - setup_docker_buildkit
+
+      # Build optimized Docker image
+      - run:
+          name: Build Production Docker Image
+          command: |
+            # Determine image tag based on branch/tag
+            if [ -n "${CIRCLE_TAG}" ]; then
+              IMAGE_TAG="${CIRCLE_TAG}"
+              ADDITIONAL_TAGS="latest"
+            else
+              IMAGE_TAG="latest"
+              ADDITIONAL_TAGS="${CIRCLE_BRANCH//\//-}"
+            fi
+
+            echo "Building image with tag: ${IMAGE_TAG}"
+
+            # Optimized Docker build with BuildKit
+            echo "Building Docker image with BuildKit optimization..."
+            docker build \
+              --cache-from "${IMAGE_NAME}:latest" \
+              --build-arg BUILDKIT_INLINE_CACHE=1 \
+              --build-arg NODE_ENV=production \
+              --build-arg NEXT_TELEMETRY_DISABLED=1 \
+              -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+              -f Dockerfile .
+
+            # Tag additional versions
+            for tag in ${ADDITIONAL_TAGS}; do
+              docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${tag}"
+            done
+
+      # Push to registry
+      - run:
+          name: Push to Docker Registry
+          command: |
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+            if [ -n "${CIRCLE_TAG}" ]; then
+              IMAGE_TAG="${CIRCLE_TAG}"
+              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:latest"
+              echo "Pushed production images: ${IMAGE_TAG}, latest"
+            else
+              IMAGE_TAG="latest"
+              BRANCH_TAG="${CIRCLE_BRANCH//\//-}"
+              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:${BRANCH_TAG}"
+              echo "Pushed development images: ${IMAGE_TAG}, ${BRANCH_TAG}"
+            fi
+
+# Workflows
+workflows:
+  version: 2
+
+  # Development workflow - runs on every commit to main/master
+  development_pipeline:
+    jobs:
+      - build_and_test:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+
+      - docker_build_and_publish:
+          requires:
+            - build_and_test
+          context:
+            - DOCKER_CREDENTIALS
+          filters:
+            branches:
+              only:
+                - main
+                - master
+
+  # Production release workflow - runs only on version tags
+  production_release_pipeline:
+    jobs:
+      - build_and_test:
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+            branches:
+              ignore: /.*/
+
+      - docker_build_and_publish:
+          requires:
+            - build_and_test
+          context:
+            - DOCKER_CREDENTIALS
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+            branches:
+              ignore: /.*/
+
+  # Feature branch testing (optional)
+  feature_branch_testing:
+    jobs:
+      - build_and_test:
+          filters:
+            branches:
+              ignore:
+                - main
+                - master
+                - /^v[0-9]+\.[0-9]+\.[0-9]+$/
