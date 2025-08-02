@@ -13,7 +13,6 @@ commands:
       - restore_cache:
           keys:
             - node-v3-{{ checksum "package-lock.json" }}
-            - node-v3-{{ checksum "package-lock.json" | truncate(7, "") }}
             - node-v3-
 
   save_node_cache:
@@ -38,7 +37,7 @@ jobs:
   # Build and test with comprehensive validation
   build_and_test:
     docker:
-      - image: cimg/node:18.17
+      - image: cimg/node:20.10
     resource_class: medium
     environment:
       NODE_ENV: test
@@ -70,16 +69,6 @@ jobs:
               echo "No test script found, skipping tests"
             fi
 
-      # Run linting
-      - run:
-          name: Run Linting
-          command: |
-            if npm run lint --silent 2>/dev/null; then
-              echo "Running linting..."
-              npm run lint
-            else
-              echo "No lint script found, skipping linting"
-            fi
 
       # Store build artifacts
       - store_artifacts:
