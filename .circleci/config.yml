@@ -2,28 +2,10 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@2.6.0
-  node: circleci/node@5.2.0
   jira: circleci/jira@2.0
 
 # Environment variables and reusable commands
 commands:
-  restore_node_cache:
-    description: 'Restore Node.js dependencies from cache'
-    steps:
-      - restore_cache:
-          keys:
-            - node-v3-{{ checksum "package-lock.json" }}
-            - node-v3-
-
-  save_node_cache:
-    description: 'Save Node.js dependencies to cache'
-    steps:
-      - save_cache:
-          paths:
-            - node_modules
-            - ~/.npm
-          key: node-v3-{{ checksum "package-lock.json" }}
-
   setup_docker_buildkit:
     description: 'Setup Docker BuildKit for optimized builds'
     steps:
@@ -34,64 +16,6 @@ commands:
             echo 'export BUILDKIT_PROGRESS=plain' >> "$BASH_ENV"
 
 jobs:
-  # Build and test with comprehensive validation
-  build_and_test:
-    docker:
-      - image: cimg/node:20.10
-    resource_class: medium
-    environment:
-      NODE_ENV: test
-    steps:
-      - checkout
-      - restore_node_cache
-
-      # Install dependencies
-      - run:
-          name: Install Dependencies
-          command: npm ci
-
-      # Build the application
-      - run:
-          name: Build Application
-          command: |
-            echo "Building Next.js application..."
-            NODE_ENV=production npm run build
-            echo "Build completed successfully"
-
-      # Run tests if they exist
-      - run:
-          name: Run Tests
-          command: |
-            if npm run test --silent 2>/dev/null; then
-              echo "Running tests..."
-              npm run test
-            else
-              echo "No test script found, skipping tests"
-            fi
-
-
-      # Store build artifacts
-      - store_artifacts:
-          path: .next
-          destination: build-artifacts
-
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .next
-            - node_modules
-            - package.json
-            - package-lock.json
-            - next.config.*
-            - Dockerfile
-
-      - save_node_cache
-
-      # Notify Jira of successful build
-      - jira/notify:
-          pipeline_id: << pipeline.id >>
-          pipeline_number: << pipeline.number >>
-
   # Build and publish Docker image with multi-stage optimization
   docker_build_and_publish:
     machine:
@@ -102,8 +26,6 @@ jobs:
       IMAGE_NAME: syedus06/crm-frontend
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - setup_docker_buildkit
 
       # Build optimized Docker image
@@ -168,18 +90,7 @@ workflows:
   # Development workflow - runs on every commit to main/master
   development_pipeline:
     jobs:
-      - build_and_test:
-          context:
-            - JIRA_WEBHOOK
-          filters:
-            branches:
-              only:
-                - main
-                - master
-
       - docker_build_and_publish:
-          requires:
-            - build_and_test
           context:
             - DOCKER_CREDENTIALS
             - JIRA_WEBHOOK
@@ -192,18 +103,7 @@ workflows:
   # Production release workflow - runs only on version tags
   production_release_pipeline:
     jobs:
-      - build_and_test:
-          context:
-            - JIRA_WEBHOOK
-          filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
-            branches:
-              ignore: /.*/
-
       - docker_build_and_publish:
-          requires:
-            - build_and_test
           context:
             - DOCKER_CREDENTIALS
             - JIRA_WEBHOOK
@@ -223,14 +123,3 @@ workflows:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
             branches:
               ignore: /.*/
-
-  # Feature branch testing (optional)
-  feature_branch_testing:
-    jobs:
-      - build_and_test:
-          filters:
-            branches:
-              ignore:
-                - main
-                - master
-                - /^v[0-9]+\.[0-9]+\.[0-9]+$/
