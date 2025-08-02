@@ -35,7 +35,7 @@ export async function createUserProfileAction(data: any) {
   }
 }
 
-export async function updateUserProfileAction(id: number, data: any) {
+export async function updateUserProfileAction(id: string, data: any) {
   try {
     // Update entity using the generated API function with correct signature
     const result = await updateUserProfile(id, data);
