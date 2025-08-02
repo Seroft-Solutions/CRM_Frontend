@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.6.0
   node: circleci/node@5.2.0
+  jira: circleci/jira@2.0
 
 # Environment variables and reusable commands
 commands:
@@ -97,6 +98,11 @@ jobs:
 
       - save_node_cache
 
+      # Notify Jira of successful build
+      - jira/notify:
+          pipeline_id: << pipeline.id >>
+          pipeline_number: << pipeline.number >>
+
   # Build and publish Docker image with multi-stage optimization
   docker_build_and_publish:
     machine:
@@ -160,6 +166,12 @@ jobs:
               echo "Pushed development images: ${IMAGE_TAG}, ${BRANCH_TAG}"
             fi
 
+      # Notify Jira of successful Docker image publication
+      - jira/notify:
+          pipeline_id: << pipeline.id >>
+          pipeline_number: << pipeline.number >>
+          job_type: deployment
+
 # Workflows
 workflows:
   version: 2
@@ -168,6 +180,8 @@ workflows:
   development_pipeline:
     jobs:
       - build_and_test:
+          context:
+            - JIRA_WEBHOOK
           filters:
             branches:
               only:
@@ -179,6 +193,7 @@ workflows:
             - build_and_test
           context:
             - DOCKER_CREDENTIALS
+            - JIRA_WEBHOOK
           filters:
             branches:
               only:
@@ -189,6 +204,8 @@ workflows:
   production_release_pipeline:
     jobs:
       - build_and_test:
+          context:
+            - JIRA_WEBHOOK
           filters:
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
@@ -200,6 +217,18 @@ workflows:
             - build_and_test
           context:
             - DOCKER_CREDENTIALS
+            - JIRA_WEBHOOK
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+            branches:
+              ignore: /.*/
+
+      # Production deployment with manual approval
+      - hold_for_approval:
+          type: approval
+          requires:
+            - docker_build_and_publish
           filters:
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
