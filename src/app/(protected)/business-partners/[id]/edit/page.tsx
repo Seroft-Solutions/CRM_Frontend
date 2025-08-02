@@ -149,7 +149,6 @@ export default function EditPartnerPage() {
         organizationId,
         updateData: data
       });
-
       const updatePayload = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -162,26 +161,11 @@ export default function EditPartnerPage() {
 
       console.log('Update payload:', updatePayload);
 
-      // Try PATCH instead of PUT first
-      const response = await fetch(
-        `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updatePayload),
-        }
-      );
-
-      console.log('Response status:', response.status);
-
-      if (!response.ok) {
         // If PATCH fails, try PUT
-        const putResponse = await fetch(
+        const patchResponse = await fetch(
           `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
           {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -189,13 +173,11 @@ export default function EditPartnerPage() {
           }
         );
 
-        if (!putResponse.ok) {
-          const errorText = await putResponse.text();
-          console.error('PUT failed:', putResponse.status, errorText);
-          throw new Error(`Failed to update partner: ${putResponse.status} ${errorText}`);
+        if (!patchResponse.ok) {
+          const errorText = await patchResponse.text();
+          console.error('PUT failed:', patchResponse.status, errorText);
+          throw new Error(`Failed to update partner: ${patchResponse.status} ${errorText}`);
         }
-      }
-
       toast.success('Partner updated successfully');
       router.push('/business-partners');
     } catch (error) {
@@ -315,7 +297,7 @@ export default function EditPartnerPage() {
                             <Input
                               type="email"
                               placeholder="john.doe@example.com"
-                              disabled={isUpdating}
+                              disabled={true}
                               {...field}
                             />
                           </FormControl>
