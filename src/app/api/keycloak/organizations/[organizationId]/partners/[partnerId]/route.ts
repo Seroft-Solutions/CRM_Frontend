@@ -7,13 +7,10 @@ import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
   deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
   getAdminRealmsRealmUsers,
-  postAdminRealmsRealmOrganizationsOrgIdMembers, postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
-  type PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody, postAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
-  putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
   type UserRepresentation
 } from '@/core/api/generated/keycloak';
-
+import {getChannelType, updateUserProfile, UserProfileDTO} from "@/core/api/generated/spring";
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string; partnerId: string }> }
@@ -48,7 +45,7 @@ export async function DELETE(
   }
 }
 
-export async function PUT(
+export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ organizationId: string, partnerId: string }> }
 ) {
@@ -91,7 +88,6 @@ export async function PUT(
         return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
       }
     }
-
     // Get current user data
     console.log('Fetching current user data for partnerId:', partnerId);
     const currentUsers = await getAdminRealmsRealmUsers(realm, {
@@ -130,20 +126,28 @@ export async function PUT(
         invited_as: ['business_partner'],
       },
     };
-
+const channel= await getChannelType(Number(body.attributes?.channel_type_id?.[0] || body.channelTypeId || currentUser.attributes?.channel_type_id?.[0]));
     console.log('Prepared updated user data:', {
       email: updatedUser.email,
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       attributes: updatedUser.attributes,
     });
-
+    const updateProfile:UserProfileDTO= {
+      id: partnerId,
+      email: body.email,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      displayName:body.firstName+ ' ' + body.lastName,
+      channelType: channel,
+      keycloakId:partnerId
+    }
     // Update user in Keycloak
     console.log('Updating user in Keycloak for partnerId:', partnerId);
     await putAdminRealmsRealmUsersUserId(realm, partnerId, updatedUser);
     console.log(`Successfully updated partner ${partnerId} attributes`);
-
-    // Prepare response
+    await updateUserProfile(partnerId,updateProfile);
+        // Prepare response
     const response = {
       success: true,
       message: 'Partner updated successfully',
