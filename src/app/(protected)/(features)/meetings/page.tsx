@@ -27,27 +27,41 @@ export default function MeetingPage() {
       unauthorizedDescription="You don't have permission to view meetings."
     >
       <div className="space-y-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Meetings</h1>
-                <p className="text-xs text-gray-600 mt-0.5">Manage your meetings</p>
+        {/* Professional Header with Dotted Background */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg relative overflow-hidden">
+          {/* Dotted background pattern */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '20px 20px'
+          }}></div>
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              {/* Icon */}
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z M3 7l9 6 9-6" />
+                </svg>
+              </div>
+              
+              <div className="text-white">
+                <h1 className="text-2xl font-bold">Meetings</h1>
+                <p className="text-blue-100">Manage your meetings</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-2 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 border-gray-300 hover:bg-gray-50 text-xs"
+                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
                 aria-label="Refresh List"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="meeting:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button asChild size="sm" className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium">
                   <Link href="/meetings/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>

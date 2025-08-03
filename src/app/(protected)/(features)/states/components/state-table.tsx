@@ -29,14 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,6 +83,7 @@ import { StateSearchAndFilters } from "./table/state-search-filters";
 import { StateTableHeader } from "./table/state-table-header";
 import { StateTableRow } from "./table/state-table-row";
 import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";
@@ -190,7 +183,16 @@ interface DateRange {
 
 export function StateTable() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
+  
+  // Enhanced pagination state management
+  const {
+    page,
+    pageSize,
+    handlePageChange,
+    handlePageSizeChange,
+    resetPagination,
+  } = usePaginationState(1, 10); // Default to 25 items per page
+  
   const [sort, setSort] = useState("id");
   const [order, setOrder] = useState(ASC);
   const [searchTerm, setSearchTerm] = useState("");
@@ -346,7 +348,6 @@ export function StateTable() {
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
-  const pageSize = 10;
 
   
 
@@ -697,7 +698,7 @@ export function StateTable() {
       ...prev,
       [column]: value
     }));
-    setPage(1);
+    resetPagination(); // Reset to page 1 when filters change
   };
 
   // Clear all filters
@@ -705,14 +706,14 @@ export function StateTable() {
     setFilters({});
     setSearchTerm("");
     setDateRange({ from: undefined, to: undefined });
-    setPage(1);
+    resetPagination(); // Reset to page 1 when clearing filters
   };
 
   
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setPage(1);
+    resetPagination(); // Reset to page 1 when searching
   };
   
 
@@ -1159,59 +1160,23 @@ export function StateTable() {
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="table-container">
-          <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (page > 1) setPage(page - 1);
-                }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNumbers = [];
-              const startPage = Math.max(1, page - 2);
-              const endPage = Math.min(totalPages, startPage + 4);
-              
-              for (let j = startPage; j <= endPage; j++) {
-                pageNumbers.push(j);
-              }
-              
-              return pageNumbers[i];
-            }).filter(Boolean).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(p);
-                  }}
-                  isActive={page === p}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (page < totalPages) setPage(page + 1);
-                }}
-                className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-        </div>
-      )}
+      {/* Advanced Pagination */}
+      <div className="table-container">
+        <AdvancedPagination
+          currentPage={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          isLoading={isLoading}
+          pageSizeOptions={[10, 25, 50, 100]}
+          showPageSizeSelector={true}
+          showPageInput={true}
+          showItemsInfo={true}
+          showFirstLastButtons={true}
+          maxPageButtons={7}
+        />
+      </div>
 
       {/* Bulk Delete Dialog */}
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>

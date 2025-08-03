@@ -129,7 +129,7 @@ export function RelationshipCell({
   // Show loading state during initial load or updates
   if (isLoading && !optimisticValue) {
     return (
-      <div className={cn("px-2 py-1", className)}>
+      <div className={cn("h-6 flex items-center px-2", className)}>
         <div className="flex items-center gap-2">
           <Loader2 className="h-3 w-3 animate-spin" />
           <span className="text-sm text-muted-foreground">Loading...</span>
@@ -143,10 +143,8 @@ export function RelationshipCell({
     // If no current value, show empty state
     if (!currentDisplayValue) {
       return (
-        <div className={cn("px-1 py-1", className)}>
-          <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50/50 border border-slate-100">
-            <span className="text-xs text-slate-400">—</span>
-          </div>
+        <div className={cn("h-6 flex items-center px-1", className)}>
+          <span className="text-xs text-slate-400">—</span>
         </div>
       );
     }
@@ -155,7 +153,7 @@ export function RelationshipCell({
     const currentId = optimisticValue?.id || optimisticValue;
     if (relatedEntityRoute && currentId) {
       return (
-        <div className={cn("px-1 py-1", className)}>
+        <div className={cn("h-6 flex items-center px-1", className)}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -167,9 +165,8 @@ export function RelationshipCell({
                 >
                   <Link 
                     href={`/${relatedEntityRoute}/${currentId}`} 
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-blue-100 border border-slate-200 hover:border-blue-300 transition-all duration-200 hover:shadow-sm"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-slate-100 hover:bg-blue-100 border border-slate-200 hover:border-blue-300 transition-all"
                     onClick={() => {
-                      // Store the current page info for context-aware back navigation
                       if (typeof window !== 'undefined') {
                         localStorage.setItem('referrerInfo', JSON.stringify({
                           url: window.location.pathname,
@@ -180,10 +177,10 @@ export function RelationshipCell({
                       }
                     }}
                   >
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700 transition-colors">
+                    <span className="font-medium text-slate-700 group-hover:text-blue-700">
                       {currentDisplayValue}
                     </span>
-                    <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-500 opacity-60 group-hover:opacity-100 transition-all" />
+                    <ExternalLink className="h-2.5 w-2.5 text-slate-400 group-hover:text-blue-500 opacity-60" />
                   </Link>
                 </Button>
               </TooltipTrigger>
@@ -196,18 +193,18 @@ export function RelationshipCell({
       );
     }
 
-    // Fallback: display as styled badge (non-clickable)
+    // Fallback: display as compact badge
     return (
-      <div className={cn("px-1 py-1", className)}>
-        <div className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-slate-50 border border-slate-200">
-          <span className="text-sm font-medium text-slate-600">{currentDisplayValue}</span>
+      <div className={cn("h-6 flex items-center px-1", className)}>
+        <div className="inline-flex items-center px-1.5 py-0.5 rounded text-sm bg-slate-50 border border-slate-200 font-medium text-slate-600 shadow-sm">
+          {currentDisplayValue}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("h-6 flex items-center", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -215,9 +212,9 @@ export function RelationshipCell({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full h-8 px-2 py-1 justify-between text-left font-normal hover:bg-muted",
-              "transition-all duration-200", // Smooth transitions
-              updating && "opacity-75" // Visual feedback during updates
+              "w-full h-6 px-2 py-0 justify-between text-left font-normal hover:bg-muted",
+              "transition-all duration-200",
+              updating && "opacity-75"
             )}
             disabled={updating || isLoading}
           >

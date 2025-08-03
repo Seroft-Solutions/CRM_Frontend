@@ -5,10 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
-
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -17,82 +14,54 @@ import { CallTable } from "./components/call-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
-import { MeetingSchedulerDialog } from "./schedule-meeting/components/meeting-scheduler-dialog";
+
+export const metadata = {
+  title: "Calls",
+};
 
 export default function CallPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [showMeetingDialog, setShowMeetingDialog] = useState(false);
-  const [callData, setCallData] = useState<{
-    callId: string;
-    customerId: string;
-    assignedUserId: string;
-  } | null>(null);
-
-  // Check if we just created a call and should show meeting dialog
-  useEffect(() => {
-    const created = searchParams.get('created');
-    const callId = searchParams.get('callId');
-    const customerId = searchParams.get('customerId');
-    const assignedUserId = searchParams.get('assignedUserId');
-
-    if (created === 'true' && callId) {
-      setCallData({
-        callId,
-        customerId: customerId || '',
-        assignedUserId: assignedUserId || ''
-      });
-      setShowMeetingDialog(true);
-      
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, [searchParams]);
-
-  const handleMeetingDialogChange = (open: boolean) => {
-    setShowMeetingDialog(open);
-    if (!open) {
-      setCallData(null);
-    }
-  };
-
-  const handleMeetingScheduled = () => {
-    setShowMeetingDialog(false);
-    setCallData(null);
-  };
-
-  const handleMeetingError = (error: any) => {
-    console.error('Meeting scheduling error:', error);
-  };
   return (
     <PermissionGuard 
       requiredPermission="call:read"
       unauthorizedTitle="Access Denied to Calls"
       unauthorizedDescription="You don't have permission to view calls."
     >
-      <div className={`space-y-4 transition-all duration-300 ${showMeetingDialog ? 'blur-sm pointer-events-none' : ''}`}>
-        <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Calls</h1>
-                <p className="text-xs text-gray-600 mt-0.5">Manage your calls</p>
+      <div className="space-y-4">
+        {/* Professional Header with Dotted Background */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg relative overflow-hidden">
+          {/* Dotted background pattern */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '20px 20px'
+          }}></div>
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              {/* Icon */}
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z M3 7l9 6 9-6" />
+                </svg>
+              </div>
+              
+              <div className="text-white">
+                <h1 className="text-2xl font-bold">Calls</h1>
+                <p className="text-blue-100">Manage your calls</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-2 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 border-gray-300 hover:bg-gray-50 text-xs"
+                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
                 aria-label="Refresh List"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <InlinePermissionGuard requiredPermission="call:create">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs">
+                <Button asChild size="sm" className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium">
                   <Link href="/calls/new">
                     <Plus className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Create</span>
@@ -107,19 +76,6 @@ export default function CallPage() {
           <CallTable />
         </Suspense>
       </div>
-
-      {/* Meeting Scheduler Dialog */}
-      {callData && (
-        <MeetingSchedulerDialog
-          open={showMeetingDialog}
-          onOpenChangeAction={handleMeetingDialogChange}
-          customerId={callData.customerId ? parseInt(callData.customerId) : undefined}
-          assignedUserId={callData.assignedUserId}
-          callId={callData.callId ? parseInt(callData.callId) : undefined}
-          onMeetingScheduledAction={handleMeetingScheduled}
-          onError={handleMeetingError}
-        />
-      )}
     </PermissionGuard>
   );
 }
