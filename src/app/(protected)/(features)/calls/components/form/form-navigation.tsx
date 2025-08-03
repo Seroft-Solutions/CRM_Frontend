@@ -40,26 +40,7 @@ export function FormNavigation({
   };
 
   const handleCancel = () => {
-    // Check if drafts are enabled and form has unsaved changes
-    const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
-    const hasUnsavedChanges = state.isDirty && draftsEnabled;
-    
-    if (hasUnsavedChanges && config.behavior?.drafts?.confirmDialog) {
-      // Use the draft system - trigger the draft check through actions
-      if (actions.saveDraft) {
-        // Show the draft dialog by triggering a "navigation" that calls onCancel
-        const draftCheckEvent = new CustomEvent('triggerDraftCheck', { 
-          detail: { onProceed: onCancel } 
-        });
-        window.dispatchEvent(draftCheckEvent);
-      } else {
-        // Fallback to old confirmation
-        if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-          onCancel();
-        }
-      }
-    } else if (config.behavior.navigation.confirmOnCancel && state.isDirty) {
-      // Legacy confirmation for when drafts are disabled
+    if (config.behavior.navigation.confirmOnCancel && state.isDirty) {
       if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
         onCancel();
       }
