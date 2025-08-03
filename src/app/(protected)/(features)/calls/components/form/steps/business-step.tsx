@@ -2,15 +2,18 @@
 // 🛑 MANUALLY GENERATED FILE - SAFE TO EDIT 🛑
 // - Enhanced business step with integrated call remarks functionality
 // - Allows adding remarks that are saved when call is created
+// - Added business partner filtering for customers by createdBy
 // ===============================================================
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 
 import { Separator } from "@/components/ui/separator";
 
 import { RelationshipRenderer } from "../relationship-renderer";
+import { useUserAuthorities } from '@/core/auth';
+import { useAccount } from '@/core/auth';
 
 
 interface CallBusinessStepProps {
@@ -20,6 +23,21 @@ interface CallBusinessStepProps {
 }
 
 export function CallBusinessStep({ form, config, actions }: CallBusinessStepProps) {
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
+
+  // Create custom filters for customer relationship based on user group
+  const customerCustomFilters = useMemo(() => {
+    if (isBusinessPartner && accountData?.login) {
+      // For business partners, only show customers created by them
+      return {
+        "createdBy.equals": accountData.login
+      };
+    }
+    // For non-business partners, show all customers
+    return {};
+  }, [isBusinessPartner, accountData?.login]);
 
 
 
@@ -60,7 +78,7 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
           )}
         />
         
-        {/* Customer Relationship */}
+        {/* Customer Relationship - with business partner filtering */}
         <FormField
           control={form.control}
           name="customer"
@@ -74,6 +92,7 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
+                customFilters: customerCustomFilters,
                 api: {"useGetAllHook":"useGetAllCustomers","useSearchHook":"useSearchCustomers","useCountHook":"useCountCustomers","entityName":"Customers"},
                 creation: {"canCreate":true,"createPath":"/customers/new","createPermission":"customer:create:inline"},
                 ui: {"label":"Customer","placeholder":"Select customer","icon":"🏢"},

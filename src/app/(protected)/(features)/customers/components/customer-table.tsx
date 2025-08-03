@@ -1,9 +1,8 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced customer table with business partner filtering
+// - Business partners only see customers they created (filtered by createdBy)
+// - Added auth hooks for user group detection
 // ===============================================================
 
 "use client";
@@ -12,6 +11,8 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { customerToast, handleCustomerError } from "./customer-toast";
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserAuthorities } from '@/core/auth';
+import { useAccount } from '@/core/auth';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -267,6 +268,9 @@ interface DateRange {
 
 export function CustomerTable() {
   const queryClient = useQueryClient();
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
   
   // Enhanced pagination state management
   const {
@@ -630,6 +634,11 @@ export function CustomerTable() {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
     }
     
+
+    // Add business partner filter - only show customers created by the business partner
+    if (isBusinessPartner && accountData?.login) {
+      params['createdBy.equals'] = accountData.login;
+    }
 
     return params;
   };

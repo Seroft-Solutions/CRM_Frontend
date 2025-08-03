@@ -1,9 +1,8 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced channel step with business partner support
+// - This step is now filtered out for business partners in the form provider
+// - Channel data is auto-populated in the form provider instead
 // ===============================================================
 "use client";
 
@@ -20,6 +19,9 @@ interface CallChannelStepProps {
 }
 
 export function CallChannelStep({form, config, actions}: CallChannelStepProps) {
+    // Note: This step is completely filtered out for business partners 
+    // in the form provider, so it won't render at all for them.
+
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -50,8 +52,8 @@ export function CallChannelStep({form, config, actions}: CallChannelStepProps) {
                                 },
                                 creation: {
                                     "canCreate": true,
-                                    "createPath": "/user-profiles/new",
-                                    "createPermission": "userProfile:create:inline"
+                                    "createPath": "/invite-partners",
+                                    "createPermission": "invite-partners:create:inline"
                                 },
                                 ui: {"label": "Channel Parties", "placeholder": "Select channel parties", "icon": "📞"},
                             }}

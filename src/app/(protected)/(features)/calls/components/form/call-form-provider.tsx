@@ -1,9 +1,12 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced form provider with business partner support
+// - Dynamically filters out channel and assignment steps for business partners
+// - Auto-populates channel, assignment, and createdBy data for business partners
+// - Fetches user profile data to get correct channel type information
+// - Review step correctly shows only visible steps (including remarks)
+// - Fixed form submission validation and data population
+// - Added auth hooks for user group detection
 // ===============================================================
 "use client";
 
@@ -12,6 +15,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useUserAuthorities } from '@/core/auth';
+import { useAccount } from '@/core/auth';
+import { useGetUserProfile } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import type { 
   FormConfig, 
   FormState, 
@@ -42,7 +48,32 @@ export function CallFormProvider({
 }: CallFormProviderProps) {
   const router = useRouter();
   const isNew = !id;
-  const config = callFormConfig;
+  const baseConfig = callFormConfig;
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
+  
+  // Fetch user profile data to get channel type information for business partners
+  const { data: userProfile } = useGetUserProfile(
+    accountData?.id,
+    {
+      query: {
+        enabled: isBusinessPartner && !!accountData?.id,
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      }
+    }
+  );
+  
+  // Create filtered config for business partners (exclude channel and assignment steps)
+  const config = React.useMemo(() => {
+    if (isBusinessPartner) {
+      return {
+        ...baseConfig,
+        steps: baseConfig.steps.filter(step => step.id !== 'channel' && step.id !== 'assignment')
+      };
+    }
+    return baseConfig;
+  }, [isBusinessPartner, baseConfig]);
   const formRef = useRef<HTMLDivElement>(null);
   
   // Cross-form navigation hooks
@@ -114,8 +145,40 @@ export function CallFormProvider({
     defaultValues: getDefaultValues()
   });
 
+  // Auto-populate channel and assignment data when account/profile data loads for business partners
+  useEffect(() => {
+    if (isBusinessPartner && accountData && isNew) {
+      // Only set if not already set to avoid overriding user changes
+      const currentChannelParties = form.getValues('channelParties');
+      const currentChannelType = form.getValues('channelType');
+
+      if (!currentChannelParties && typeof accountData.id === 'number') {
+        form.setValue('channelParties', accountData.id);
+      }
+      
+      // Use user profile data for channel type
+      if (!currentChannelType && userProfile?.channelType?.id && typeof userProfile.channelType.id === 'number') {
+        form.setValue('channelType', userProfile.channelType.id);
+      }
+
+    }
+  }, [isBusinessPartner, accountData, userProfile, isNew, form]);
+
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
+    
+    // Auto-populate channel and assignment data for business partners
+    if (isBusinessPartner && accountData) {
+      // Channel data - ensure these are numbers
+      if (typeof accountData.id === 'number') {
+        defaults.channelParties = accountData.id;
+      }
+      // Get channel type from user profile, not account data
+      if (userProfile?.channelType?.id && typeof userProfile.channelType.id === 'number') {
+        defaults.channelType = userProfile.channelType.id;
+      }
+
+    }
     
     config.fields.forEach(field => {
       switch (field.type) {
@@ -343,7 +406,9 @@ export function CallFormProvider({
       return;
     }
     
-    if (currentStep !== config.steps.length - 1) {
+    // Check if we're on the last step (review step)
+    const reviewStepIndex = config.steps.length - 1;
+    if (currentStep !== reviewStepIndex) {
       return;
     }
 
@@ -444,6 +509,27 @@ export function CallFormProvider({
     // Handle special fields that are not in config (like tempRemarks)
     if (data.tempRemarks !== undefined) {
       entityToSave.tempRemarks = data.tempRemarks;
+    }
+
+    // Add createdBy field for business partners when creating new records
+    if (isNew && isBusinessPartner && accountData?.login) {
+      entityToSave.createdBy = accountData.login;
+    }
+
+    // Auto-populate channel and assignment data for business partners (since these steps are skipped)
+    if (isBusinessPartner && accountData) {
+      // Set the current user as the channel party
+      entityToSave.channelParties = {
+        id: accountData.id
+      };
+
+      // Set the channel type from user's profile if available
+      if (userProfile?.channelType?.id) {
+        entityToSave.channelType = {
+          id: userProfile.channelType.id
+        };
+      }
+
     }
 
     // Remove undefined values to avoid sending them to the backend
