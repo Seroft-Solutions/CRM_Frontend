@@ -298,7 +298,7 @@ export const callFormConfig: FormConfig = {
             targetEntity: 'channelType',
             displayField: 'name',
             primaryKey: 'id',
-            required: true,
+            required: false,
             multiple: false,
             category: 'channel',
             autoPopulate: {
