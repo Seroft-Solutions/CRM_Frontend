@@ -14,7 +14,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Textarea} from "@/components/ui/textarea";
 import {Button} from "@/components/ui/button";
-import { CallRemark } from "../../../hooks/use-call-remarks";
+import { CallRemark } from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
 
 interface CallRemarksStepProps {
     form: any;

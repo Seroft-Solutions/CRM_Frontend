@@ -15,7 +15,7 @@ import {
   updateProduct, 
   deleteProduct 
 } from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import { productToast } from "../components/product-toast";
+import { productToast } from "@/app/(protected)/(features)/products/components/product-toast";
 
 export async function createProductAction(data: any) {
   try {

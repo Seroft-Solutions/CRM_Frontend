@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useUserAuthorities } from './use-user-authorities';
-import { normalizeAuthority } from '../utils';
+import { useUserAuthorities } from "@/core/auth/hooks/use-user-authorities";
+import { normalizeAuthority } from "@/core/auth/utils";
 
 export function useRBAC() {
   const {

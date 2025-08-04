@@ -31,7 +31,8 @@ import type {
   SearchMeetingRemindersParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetMeetingReminderQueryKey = (id: number,) => {
     }
 
     
-export const getGetMeetingReminderQueryOptions = <TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetMeetingReminderQueryOptions = <TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetMeetingReminderQueryResult = NonNullable<Awaited<ReturnType<typeof getMeetingReminder>>>
-export type GetMeetingReminderQueryError = unknown
+export type GetMeetingReminderQueryError = ErrorType<unknown>
 
 
-export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = unknown>(
+export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMeetingReminder>>,
@@ -88,7 +89,7 @@ export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeeti
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = unknown>(
+export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMeetingReminder>>,
@@ -98,12 +99,12 @@ export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeeti
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = unknown>(
+export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = unknown>(
+export function useGetMeetingReminder<TData = Awaited<ReturnType<typeof getMeetingReminder>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeetingReminder>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateMeetingReminder = (
   
 
 
-export const getUpdateMeetingReminderMutationOptions = <TError = unknown,
+export const getUpdateMeetingReminderMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateMeetingReminderMutationResult = NonNullable<Awaited<ReturnType<typeof updateMeetingReminder>>>
     export type UpdateMeetingReminderMutationBody = MeetingReminderDTO
-    export type UpdateMeetingReminderMutationError = unknown
+    export type UpdateMeetingReminderMutationError = ErrorType<unknown>
 
-    export const useUpdateMeetingReminder = <TError = unknown,
+    export const useUpdateMeetingReminder = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateMeetingReminder>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteMeetingReminderMutationOptions = <TError = unknown,
+export const getDeleteMeetingReminderMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeetingReminder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteMeetingReminder>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteMeetingReminderMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMeetingReminder>>>
     
-    export type DeleteMeetingReminderMutationError = unknown
+    export type DeleteMeetingReminderMutationError = ErrorType<unknown>
 
-    export const useDeleteMeetingReminder = <TError = unknown,
+    export const useDeleteMeetingReminder = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeetingReminder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteMeetingReminder>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateMeetingReminderMutationOptions = <TError = unknown,
+export const getPartialUpdateMeetingReminderMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateMeetingReminderMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateMeetingReminder>>>
     export type PartialUpdateMeetingReminderMutationBody = MeetingReminderDTO
-    export type PartialUpdateMeetingReminderMutationError = unknown
+    export type PartialUpdateMeetingReminderMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateMeetingReminder = <TError = unknown,
+    export const usePartialUpdateMeetingReminder = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateMeetingReminder>>, TError,{id: number;data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateMeetingReminder>>,
@@ -309,7 +310,7 @@ export const getGetAllMeetingRemindersQueryKey = (params?: GetAllMeetingReminder
     }
 
     
-export const getGetAllMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = unknown>(params?: GetAllMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = ErrorType<unknown>>(params?: GetAllMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllMeetingRemindersQueryResult = NonNullable<Awaited<ReturnType<typeof getAllMeetingReminders>>>
-export type GetAllMeetingRemindersQueryError = unknown
+export type GetAllMeetingRemindersQueryError = ErrorType<unknown>
 
 
-export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = unknown>(
+export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllMeetingRemindersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllMeetingReminders>>,
@@ -341,7 +342,7 @@ export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getA
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = unknown>(
+export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: GetAllMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllMeetingReminders>>,
@@ -351,12 +352,12 @@ export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getA
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = unknown>(
+export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: GetAllMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = unknown>(
+export function useGetAllMeetingReminders<TData = Awaited<ReturnType<typeof getAllMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: GetAllMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createMeetingReminder = (
   
 
 
-export const getCreateMeetingReminderMutationOptions = <TError = unknown,
+export const getCreateMeetingReminderMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMeetingReminder>>, TError,{data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createMeetingReminder>>, TError,{data: MeetingReminderDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateMeetingReminderMutationResult = NonNullable<Awaited<ReturnType<typeof createMeetingReminder>>>
     export type CreateMeetingReminderMutationBody = MeetingReminderDTO
-    export type CreateMeetingReminderMutationError = unknown
+    export type CreateMeetingReminderMutationError = ErrorType<unknown>
 
-    export const useCreateMeetingReminder = <TError = unknown,
+    export const useCreateMeetingReminder = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMeetingReminder>>, TError,{data: MeetingReminderDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createMeetingReminder>>,
@@ -449,7 +450,7 @@ export const getCountMeetingRemindersQueryKey = (params?: CountMeetingRemindersP
     }
 
     
-export const getCountMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = unknown>(params?: CountMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = ErrorType<unknown>>(params?: CountMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountMeetingRemindersQueryResult = NonNullable<Awaited<ReturnType<typeof countMeetingReminders>>>
-export type CountMeetingRemindersQueryError = unknown
+export type CountMeetingRemindersQueryError = ErrorType<unknown>
 
 
-export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = unknown>(
+export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = ErrorType<unknown>>(
  params: undefined |  CountMeetingRemindersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countMeetingReminders>>,
@@ -481,7 +482,7 @@ export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof count
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = unknown>(
+export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: CountMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countMeetingReminders>>,
@@ -491,12 +492,12 @@ export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof count
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = unknown>(
+export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: CountMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = unknown>(
+export function useCountMeetingReminders<TData = Awaited<ReturnType<typeof countMeetingReminders>>, TError = ErrorType<unknown>>(
  params?: CountMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchMeetingRemindersQueryKey = (params: SearchMeetingReminders
     }
 
     
-export const getSearchMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = unknown>(params: SearchMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchMeetingRemindersQueryOptions = <TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = ErrorType<unknown>>(params: SearchMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchMeetingRemindersQueryResult = NonNullable<Awaited<ReturnType<typeof searchMeetingReminders>>>
-export type SearchMeetingRemindersQueryError = unknown
+export type SearchMeetingRemindersQueryError = ErrorType<unknown>
 
 
-export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = unknown>(
+export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = ErrorType<unknown>>(
  params: SearchMeetingRemindersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchMeetingReminders>>,
@@ -563,7 +564,7 @@ export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof sear
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = unknown>(
+export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = ErrorType<unknown>>(
  params: SearchMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchMeetingReminders>>,
@@ -573,12 +574,12 @@ export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof sear
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = unknown>(
+export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = ErrorType<unknown>>(
  params: SearchMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = unknown>(
+export function useSearchMeetingReminders<TData = Awaited<ReturnType<typeof searchMeetingReminders>>, TError = ErrorType<unknown>>(
  params: SearchMeetingRemindersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchMeetingReminders>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

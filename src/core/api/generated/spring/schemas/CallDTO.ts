@@ -35,7 +35,7 @@ export interface CallDTO {
   source: SourceDTO;
   customer: CustomerDTO;
   product: ProductDTO;
-  channelType: ChannelTypeDTO;
+  channelType?: ChannelTypeDTO;
   channelParties?: UserProfileDTO;
   assignedTo?: UserProfileDTO;
   callStatus: CallStatusDTO;

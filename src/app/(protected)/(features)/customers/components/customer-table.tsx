@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { customerToast, handleCustomerError } from "./customer-toast";
+import { customerToast, handleCustomerError } from "@/app/(protected)/(features)/customers/components/customer-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
@@ -101,11 +101,11 @@ import {
 
 
 
-import { CustomerSearchAndFilters } from "./table/customer-search-filters";
-import { CustomerTableHeader } from "./table/customer-table-header";
-import { CustomerTableRow } from "./table/customer-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { CustomerSearchAndFilters } from "@/app/(protected)/(features)/customers/components/table/customer-search-filters";
+import { CustomerTableHeader } from "@/app/(protected)/(features)/customers/components/table/customer-table-header";
+import { CustomerTableRow } from "@/app/(protected)/(features)/customers/components/table/customer-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/customers/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/customers/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

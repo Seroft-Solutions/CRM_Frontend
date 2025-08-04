@@ -21,7 +21,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAccount } from "@/core/auth/hooks/use-account";
-import { AUTH_CACHE_CONFIG } from '../config/cache-config';
+import { AUTH_CACHE_CONFIG } from "@/core/auth/config/cache-config";
 import { normalizeRole, normalizeGroup, normalizeAuthority } from "@/core/auth/utils";
 
 export function useUserAuthorities() {

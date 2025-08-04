@@ -31,7 +31,8 @@ import type {
   UserAvailabilityDTO
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetUserAvailabilityQueryKey = (id: number,) => {
     }
 
     
-export const getGetUserAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetUserAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetUserAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof getUserAvailability>>>
-export type GetUserAvailabilityQueryError = unknown
+export type GetUserAvailabilityQueryError = ErrorType<unknown>
 
 
-export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = unknown>(
+export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserAvailability>>,
@@ -88,7 +89,7 @@ export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = unknown>(
+export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserAvailability>>,
@@ -98,12 +99,12 @@ export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = unknown>(
+export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = unknown>(
+export function useGetUserAvailability<TData = Awaited<ReturnType<typeof getUserAvailability>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserAvailability>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateUserAvailability = (
   
 
 
-export const getUpdateUserAvailabilityMutationOptions = <TError = unknown,
+export const getUpdateUserAvailabilityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateUserAvailabilityMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserAvailability>>>
     export type UpdateUserAvailabilityMutationBody = UserAvailabilityDTO
-    export type UpdateUserAvailabilityMutationError = unknown
+    export type UpdateUserAvailabilityMutationError = ErrorType<unknown>
 
-    export const useUpdateUserAvailability = <TError = unknown,
+    export const useUpdateUserAvailability = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateUserAvailability>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteUserAvailabilityMutationOptions = <TError = unknown,
+export const getDeleteUserAvailabilityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserAvailability>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteUserAvailability>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteUserAvailabilityMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUserAvailability>>>
     
-    export type DeleteUserAvailabilityMutationError = unknown
+    export type DeleteUserAvailabilityMutationError = ErrorType<unknown>
 
-    export const useDeleteUserAvailability = <TError = unknown,
+    export const useDeleteUserAvailability = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserAvailability>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteUserAvailability>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateUserAvailabilityMutationOptions = <TError = unknown,
+export const getPartialUpdateUserAvailabilityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateUserAvailabilityMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateUserAvailability>>>
     export type PartialUpdateUserAvailabilityMutationBody = UserAvailabilityDTO
-    export type PartialUpdateUserAvailabilityMutationError = unknown
+    export type PartialUpdateUserAvailabilityMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateUserAvailability = <TError = unknown,
+    export const usePartialUpdateUserAvailability = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserAvailability>>, TError,{id: number;data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateUserAvailability>>,
@@ -309,7 +310,7 @@ export const getGetAllUserAvailabilitiesQueryKey = (params?: GetAllUserAvailabil
     }
 
     
-export const getGetAllUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = unknown>(params?: GetAllUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = ErrorType<unknown>>(params?: GetAllUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllUserAvailabilitiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllUserAvailabilities>>>
-export type GetAllUserAvailabilitiesQueryError = unknown
+export type GetAllUserAvailabilitiesQueryError = ErrorType<unknown>
 
 
-export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = unknown>(
+export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllUserAvailabilitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllUserAvailabilities>>,
@@ -341,7 +342,7 @@ export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof ge
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = unknown>(
+export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: GetAllUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllUserAvailabilities>>,
@@ -351,12 +352,12 @@ export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof ge
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = unknown>(
+export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: GetAllUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = unknown>(
+export function useGetAllUserAvailabilities<TData = Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: GetAllUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createUserAvailability = (
   
 
 
-export const getCreateUserAvailabilityMutationOptions = <TError = unknown,
+export const getCreateUserAvailabilityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserAvailability>>, TError,{data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createUserAvailability>>, TError,{data: UserAvailabilityDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateUserAvailabilityMutationResult = NonNullable<Awaited<ReturnType<typeof createUserAvailability>>>
     export type CreateUserAvailabilityMutationBody = UserAvailabilityDTO
-    export type CreateUserAvailabilityMutationError = unknown
+    export type CreateUserAvailabilityMutationError = ErrorType<unknown>
 
-    export const useCreateUserAvailability = <TError = unknown,
+    export const useCreateUserAvailability = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserAvailability>>, TError,{data: UserAvailabilityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createUserAvailability>>,
@@ -449,7 +450,7 @@ export const getCountUserAvailabilitiesQueryKey = (params?: CountUserAvailabilit
     }
 
     
-export const getCountUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = unknown>(params?: CountUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = ErrorType<unknown>>(params?: CountUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountUserAvailabilitiesQueryResult = NonNullable<Awaited<ReturnType<typeof countUserAvailabilities>>>
-export type CountUserAvailabilitiesQueryError = unknown
+export type CountUserAvailabilitiesQueryError = ErrorType<unknown>
 
 
-export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = unknown>(
+export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: undefined |  CountUserAvailabilitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countUserAvailabilities>>,
@@ -481,7 +482,7 @@ export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof cou
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = unknown>(
+export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: CountUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countUserAvailabilities>>,
@@ -491,12 +492,12 @@ export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof cou
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = unknown>(
+export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: CountUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = unknown>(
+export function useCountUserAvailabilities<TData = Awaited<ReturnType<typeof countUserAvailabilities>>, TError = ErrorType<unknown>>(
  params?: CountUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchUserAvailabilitiesQueryKey = (params: SearchUserAvailabili
     }
 
     
-export const getSearchUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = unknown>(params: SearchUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchUserAvailabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = ErrorType<unknown>>(params: SearchUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchUserAvailabilitiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchUserAvailabilities>>>
-export type SearchUserAvailabilitiesQueryError = unknown
+export type SearchUserAvailabilitiesQueryError = ErrorType<unknown>
 
 
-export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = unknown>(
+export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: SearchUserAvailabilitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchUserAvailabilities>>,
@@ -563,7 +564,7 @@ export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof se
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = unknown>(
+export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: SearchUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchUserAvailabilities>>,
@@ -573,12 +574,12 @@ export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof se
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = unknown>(
+export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: SearchUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = unknown>(
+export function useSearchUserAvailabilities<TData = Awaited<ReturnType<typeof searchUserAvailabilities>>, TError = ErrorType<unknown>>(
  params: SearchUserAvailabilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserAvailabilities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

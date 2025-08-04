@@ -15,7 +15,7 @@ import {
   updateSubCallType, 
   deleteSubCallType 
 } from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
-import { subCallTypeToast } from "../components/sub-call-type-toast";
+import { subCallTypeToast } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-toast";
 
 export async function createSubCallTypeAction(data: any) {
   try {

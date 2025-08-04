@@ -13,8 +13,8 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "./district-form-provider";
-import { RelationshipRenderer } from "./relationship-renderer";
+import { useEntityForm } from "@/app/(protected)/(features)/districts/components/form/district-form-provider";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/districts/components/form/relationship-renderer";
 
 
 import {

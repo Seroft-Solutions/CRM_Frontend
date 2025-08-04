@@ -31,7 +31,8 @@ import type {
   SearchChannelTypesParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetChannelTypeQueryKey = (id: number,) => {
     }
 
     
-export const getGetChannelTypeQueryOptions = <TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetChannelTypeQueryOptions = <TData = Awaited<ReturnType<typeof getChannelType>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetChannelTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getChannelType>>>
-export type GetChannelTypeQueryError = unknown
+export type GetChannelTypeQueryError = ErrorType<unknown>
 
 
-export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(
+export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getChannelType>>,
@@ -88,7 +89,7 @@ export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelTy
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(
+export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getChannelType>>,
@@ -98,12 +99,12 @@ export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelTy
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(
+export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = unknown>(
+export function useGetChannelType<TData = Awaited<ReturnType<typeof getChannelType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannelType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateChannelType = (
   
 
 
-export const getUpdateChannelTypeMutationOptions = <TError = unknown,
+export const getUpdateChannelTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateChannelTypeMutationResult = NonNullable<Awaited<ReturnType<typeof updateChannelType>>>
     export type UpdateChannelTypeMutationBody = ChannelTypeDTO
-    export type UpdateChannelTypeMutationError = unknown
+    export type UpdateChannelTypeMutationError = ErrorType<unknown>
 
-    export const useUpdateChannelType = <TError = unknown,
+    export const useUpdateChannelType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateChannelType>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteChannelTypeMutationOptions = <TError = unknown,
+export const getDeleteChannelTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChannelType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteChannelType>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteChannelTypeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteChannelType>>>
     
-    export type DeleteChannelTypeMutationError = unknown
+    export type DeleteChannelTypeMutationError = ErrorType<unknown>
 
-    export const useDeleteChannelType = <TError = unknown,
+    export const useDeleteChannelType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteChannelType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteChannelType>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateChannelTypeMutationOptions = <TError = unknown,
+export const getPartialUpdateChannelTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateChannelTypeMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateChannelType>>>
     export type PartialUpdateChannelTypeMutationBody = ChannelTypeDTO
-    export type PartialUpdateChannelTypeMutationError = unknown
+    export type PartialUpdateChannelTypeMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateChannelType = <TError = unknown,
+    export const usePartialUpdateChannelType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateChannelType>>, TError,{id: number;data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateChannelType>>,
@@ -309,7 +310,7 @@ export const getGetAllChannelTypesQueryKey = (params?: GetAllChannelTypesParams,
     }
 
     
-export const getGetAllChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = ErrorType<unknown>>(params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllChannelTypes>>>
-export type GetAllChannelTypesQueryError = unknown
+export type GetAllChannelTypesQueryError = ErrorType<unknown>
 
 
-export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(
+export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllChannelTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllChannelTypes>>,
@@ -341,7 +342,7 @@ export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllCh
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(
+export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllChannelTypes>>,
@@ -351,12 +352,12 @@ export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllCh
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(
+export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = unknown>(
+export function useGetAllChannelTypes<TData = Awaited<ReturnType<typeof getAllChannelTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createChannelType = (
   
 
 
-export const getCreateChannelTypeMutationOptions = <TError = unknown,
+export const getCreateChannelTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChannelType>>, TError,{data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createChannelType>>, TError,{data: ChannelTypeDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateChannelTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createChannelType>>>
     export type CreateChannelTypeMutationBody = ChannelTypeDTO
-    export type CreateChannelTypeMutationError = unknown
+    export type CreateChannelTypeMutationError = ErrorType<unknown>
 
-    export const useCreateChannelType = <TError = unknown,
+    export const useCreateChannelType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChannelType>>, TError,{data: ChannelTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createChannelType>>,
@@ -449,7 +450,7 @@ export const getCountChannelTypesQueryKey = (params?: CountChannelTypesParams,) 
     }
 
     
-export const getCountChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = ErrorType<unknown>>(params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof countChannelTypes>>>
-export type CountChannelTypesQueryError = unknown
+export type CountChannelTypesQueryError = ErrorType<unknown>
 
 
-export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(
+export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = ErrorType<unknown>>(
  params: undefined |  CountChannelTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countChannelTypes>>,
@@ -481,7 +482,7 @@ export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChan
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(
+export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = ErrorType<unknown>>(
  params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countChannelTypes>>,
@@ -491,12 +492,12 @@ export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChan
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(
+export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = ErrorType<unknown>>(
  params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = unknown>(
+export function useCountChannelTypes<TData = Awaited<ReturnType<typeof countChannelTypes>>, TError = ErrorType<unknown>>(
  params?: CountChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchChannelTypesQueryKey = (params: SearchChannelTypesParams,)
     }
 
     
-export const getSearchChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchChannelTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = ErrorType<unknown>>(params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchChannelTypesQueryResult = NonNullable<Awaited<ReturnType<typeof searchChannelTypes>>>
-export type SearchChannelTypesQueryError = unknown
+export type SearchChannelTypesQueryError = ErrorType<unknown>
 
 
-export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(
+export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = ErrorType<unknown>>(
  params: SearchChannelTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchChannelTypes>>,
@@ -563,7 +564,7 @@ export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchCh
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(
+export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = ErrorType<unknown>>(
  params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchChannelTypes>>,
@@ -573,12 +574,12 @@ export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchCh
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(
+export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = ErrorType<unknown>>(
  params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = unknown>(
+export function useSearchChannelTypes<TData = Awaited<ReturnType<typeof searchChannelTypes>>, TError = ErrorType<unknown>>(
  params: SearchChannelTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchChannelTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

@@ -11,9 +11,9 @@ import React, { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { RelationshipRenderer } from "../relationship-renderer";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
 import { Building2, UserCheck } from "lucide-react";
-import { useEntityForm } from "../call-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
 
 interface CallChannelStepProps {
     form: any;
@@ -28,13 +28,18 @@ export function CallChannelStep({ form, config, actions }: CallChannelStepProps)
     // Clear channel fields and errors when switching to organization
     useEffect(() => {
         if (callType === "organization") {
-            // Clear channel fields
-            form.setValue("channelParties", "");
-            form.setValue("channelType", "");
+            // Clear channel fields completely
+            form.setValue("channelParties", undefined);
+            form.setValue("channelType", undefined);
             
             // Clear any validation errors for these fields
             form.clearErrors("channelParties");
             form.clearErrors("channelType");
+            
+            // Trigger form validation to clear any remaining errors
+            setTimeout(() => {
+                form.trigger(["channelParties", "channelType"]);
+            }, 100);
         }
     }, [callType, form]);
 

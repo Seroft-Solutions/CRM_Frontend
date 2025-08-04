@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { areaToast, handleAreaError } from "./area-toast";
+import { areaToast, handleAreaError } from "@/app/(protected)/(features)/areas/components/area-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,11 +88,11 @@ import {
 
 
 
-import { AreaSearchAndFilters } from "./table/area-search-filters";
-import { AreaTableHeader } from "./table/area-table-header";
-import { AreaTableRow } from "./table/area-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { AreaSearchAndFilters } from "@/app/(protected)/(features)/areas/components/table/area-search-filters";
+import { AreaTableHeader } from "@/app/(protected)/(features)/areas/components/table/area-table-header";
+import { AreaTableRow } from "@/app/(protected)/(features)/areas/components/table/area-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/areas/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/areas/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

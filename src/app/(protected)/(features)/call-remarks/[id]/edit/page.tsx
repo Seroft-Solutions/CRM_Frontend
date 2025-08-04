@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { CallRemarkForm } from "../../components/call-remark-form";
+import { CallRemarkForm } from "@/app/(protected)/(features)/call-remarks/components/call-remark-form";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";

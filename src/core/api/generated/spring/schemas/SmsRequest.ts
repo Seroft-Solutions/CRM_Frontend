@@ -7,6 +7,14 @@
  */
 
 export interface SmsRequest {
-  phoneNumber?: string;
-  message?: string;
+  /**
+   * @minLength 1
+   * @pattern ^\+?[1-9]\d{1,14}$
+   */
+  phoneNumber: string;
+  /**
+   * @minLength 0
+   * @maxLength 1600
+   */
+  message: string;
 }

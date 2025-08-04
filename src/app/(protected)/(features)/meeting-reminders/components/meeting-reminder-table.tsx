@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { meetingReminderToast, handleMeetingReminderError } from "./meeting-reminder-toast";
+import { meetingReminderToast, handleMeetingReminderError } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,11 +88,11 @@ import {
 
 
 
-import { MeetingReminderSearchAndFilters } from "./table/meeting-reminder-search-filters";
-import { MeetingReminderTableHeader } from "./table/meeting-reminder-table-header";
-import { MeetingReminderTableRow } from "./table/meeting-reminder-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { MeetingReminderSearchAndFilters } from "@/app/(protected)/(features)/meeting-reminders/components/table/meeting-reminder-search-filters";
+import { MeetingReminderTableHeader } from "@/app/(protected)/(features)/meeting-reminders/components/table/meeting-reminder-table-header";
+import { MeetingReminderTableRow } from "@/app/(protected)/(features)/meeting-reminders/components/table/meeting-reminder-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/meeting-reminders/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/meeting-reminders/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

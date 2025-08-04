@@ -32,7 +32,8 @@ import type {
   MeetingRequest
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -55,7 +56,7 @@ export const scheduleMeeting = (
   
 
 
-export const getScheduleMeetingMutationOptions = <TError = unknown,
+export const getScheduleMeetingMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scheduleMeeting>>, TError,{data: MeetingRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof scheduleMeeting>>, TError,{data: MeetingRequest}, TContext> => {
     
@@ -82,9 +83,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ScheduleMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof scheduleMeeting>>>
     export type ScheduleMeetingMutationBody = MeetingRequest
-    export type ScheduleMeetingMutationError = unknown
+    export type ScheduleMeetingMutationError = ErrorType<unknown>
 
-    export const useScheduleMeeting = <TError = unknown,
+    export const useScheduleMeeting = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scheduleMeeting>>, TError,{data: MeetingRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof scheduleMeeting>>,
@@ -116,7 +117,7 @@ export const getHandleOAuthCallbackQueryKey = (params: HandleOAuthCallbackParams
     }
 
     
-export const getHandleOAuthCallbackQueryOptions = <TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = unknown>(params: HandleOAuthCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getHandleOAuthCallbackQueryOptions = <TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = ErrorType<unknown>>(params: HandleOAuthCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -135,10 +136,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type HandleOAuthCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof handleOAuthCallback>>>
-export type HandleOAuthCallbackQueryError = unknown
+export type HandleOAuthCallbackQueryError = ErrorType<unknown>
 
 
-export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = unknown>(
+export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = ErrorType<unknown>>(
  params: HandleOAuthCallbackParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof handleOAuthCallback>>,
@@ -148,7 +149,7 @@ export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = unknown>(
+export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = ErrorType<unknown>>(
  params: HandleOAuthCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof handleOAuthCallback>>,
@@ -158,12 +159,12 @@ export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = unknown>(
+export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = ErrorType<unknown>>(
  params: HandleOAuthCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = unknown>(
+export function useHandleOAuthCallback<TData = Awaited<ReturnType<typeof handleOAuthCallback>>, TError = ErrorType<unknown>>(
  params: HandleOAuthCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof handleOAuthCallback>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -198,7 +199,7 @@ export const getGetAuthorizationUrlQueryKey = (params: GetAuthorizationUrlParams
     }
 
     
-export const getGetAuthorizationUrlQueryOptions = <TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = unknown>(params: GetAuthorizationUrlParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAuthorizationUrlQueryOptions = <TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = ErrorType<unknown>>(params: GetAuthorizationUrlParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -217,10 +218,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAuthorizationUrlQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthorizationUrl>>>
-export type GetAuthorizationUrlQueryError = unknown
+export type GetAuthorizationUrlQueryError = ErrorType<unknown>
 
 
-export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = unknown>(
+export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = ErrorType<unknown>>(
  params: GetAuthorizationUrlParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuthorizationUrl>>,
@@ -230,7 +231,7 @@ export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuth
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = unknown>(
+export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = ErrorType<unknown>>(
  params: GetAuthorizationUrlParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuthorizationUrl>>,
@@ -240,12 +241,12 @@ export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuth
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = unknown>(
+export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = ErrorType<unknown>>(
  params: GetAuthorizationUrlParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = unknown>(
+export function useGetAuthorizationUrl<TData = Awaited<ReturnType<typeof getAuthorizationUrl>>, TError = ErrorType<unknown>>(
  params: GetAuthorizationUrlParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizationUrl>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

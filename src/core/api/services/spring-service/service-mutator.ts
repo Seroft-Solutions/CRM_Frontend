@@ -1,19 +1,91 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { ServiceRequestConfig } from '../base/types';
-import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from './config';
-import { TokenCache } from '@/core/auth';
-import { fetchAccessToken } from '@/core/auth';
-import { getTenantHeader } from '../shared/tenant-helper';
-import { sessionEventEmitter } from '@/core/auth';
+import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
+import { getTenantHeader } from "@/core/api/services/shared/tenant-helper";
 
-const tokenCache = new TokenCache();
+// Simple in-memory token cache to avoid circular dependencies
+class SimpleTokenCache {
+  private token: string | null = null;
+  private expiry = 0;
+  private refreshPromise: Promise<string | null> | null = null;
+
+  async getToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
+    const now = Date.now();
+    if (this.token && now < this.expiry) {
+      return this.token;
+    }
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+    this.refreshPromise = this.refreshToken(refreshFn);
+    const newToken = await this.refreshPromise;
+    this.refreshPromise = null;
+    return newToken;
+  }
+
+  private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
+    try {
+      const newToken = await refreshFn();
+      if (newToken) {
+        this.token = newToken;
+        this.expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+      }
+      return newToken;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      this.token = null;
+      this.expiry = 0;
+      return null;
+    }
+  }
+
+  invalidate() {
+    this.token = null;
+    this.expiry = 0;
+    this.refreshPromise = null;
+  }
+}
+
+// Simple event emitter to avoid circular dependencies
+class SimpleEventEmitter {
+  private listeners: { [key: string]: Array<(event: any) => void> } = {};
+
+  emit(eventType: string, event: any = {}) {
+    if (!this.listeners[eventType]) return;
+    this.listeners[eventType].forEach((callback) => {
+      try {
+        callback({ type: eventType, ...event });
+      } catch (error) {
+        console.error('Error in event listener:', error);
+      }
+    });
+  }
+}
+
+// Standalone token fetching function to avoid circular dependencies
+async function fetchAccessTokenStandalone(): Promise<string | null> {
+  try {
+    if (typeof window !== 'undefined') {
+      const response = await fetch('/api/auth/session');
+      if (response.ok) {
+        const session = await response.json();
+        return session?.access_token || null;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting access token:', error);
+    return null;
+  }
+}
+
+const tokenCache = new SimpleTokenCache();
+const eventEmitter = new SimpleEventEmitter();
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('token-refreshed', ((event: CustomEvent) => {
+  window.addEventListener('token-refreshed', (() => {
     tokenCache.invalidate();
   }) as EventListener);
 }
-
 
 // Check if the request is a long-running operation
 const isLongRunningOperation = (url: string): boolean => {
@@ -25,15 +97,15 @@ const isLongRunningOperation = (url: string): boolean => {
 };
 
 export const springServiceMutator = async <T>(
-  requestConfig: ServiceRequestConfig,
+  config: AxiosRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  const { url, method = 'GET', data, params } = requestConfig;
+  const { url, method = 'GET', data, params } = config;
 
-  const config =
+  const axiosConfig =
     url && isLongRunningOperation(url) ? SPRING_SERVICE_LONG_RUNNING_CONFIG : SPRING_SERVICE_CONFIG;
 
-  const instance = axios.create(config);
+  const instance = axios.create(axiosConfig);
 
   // Add custom parameter serialization for Spring Boot compatibility
   instance.defaults.paramsSerializer = (params) => {
@@ -55,19 +127,19 @@ export const springServiceMutator = async <T>(
   };
 
   // Add auth and tenant interceptor
-  instance.interceptors.request.use(async (config) => {
-    const token = await tokenCache.getToken(fetchAccessToken);
+  instance.interceptors.request.use(async (requestConfig) => {
+    const token = await tokenCache.getToken(fetchAccessTokenStandalone);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      requestConfig.headers.Authorization = `Bearer ${token}`;
     }
 
     // Add tenant header if available
     const tenantHeader = getTenantHeader();
     if (tenantHeader) {
-      config.headers['X-Tenant-Name'] = tenantHeader;
+      requestConfig.headers['X-Tenant-Name'] = tenantHeader;
     }
 
-    return config;
+    return requestConfig;
   });
 
   // Add response interceptor for 401 error handling
@@ -79,23 +151,27 @@ export const springServiceMutator = async <T>(
 
         if (typeof window !== 'undefined' && !error.config?._retry) {
           try {
-            const { refreshSession } = await import('@/core/auth');
-            const refreshed = await refreshSession();
-            if (refreshed) {
-              error.config._retry = true;
-              const token = await tokenCache.getToken(fetchAccessToken);
-              if (token) {
+            // Try to refresh session without importing from circular dependency
+            const response = await fetch('/api/auth/session', { 
+              method: 'GET',
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const session = await response.json();
+              if (session?.access_token) {
+                error.config._retry = true;
                 error.config.headers = error.config.headers || {};
-                error.config.headers.Authorization = `Bearer ${token}`;
+                error.config.headers.Authorization = `Bearer ${session.access_token}`;
+                return instance.request(error.config);
               }
-              return instance.request(error.config);
             }
           } catch (refreshError) {
             console.error('Auto refresh failed:', refreshError);
           }
 
-          // Emit session expired event to trigger modal
-          sessionEventEmitter.emit('session-expired', {
+          // Emit session expired event
+          eventEmitter.emit('session-expired', {
             message: 'Your session has expired',
             statusCode: 401,
           });
@@ -116,3 +192,6 @@ export const springServiceMutator = async <T>(
 
   return response.data;
 };
+
+// Export error type for Orval compatibility
+export type ErrorType<E> = E;

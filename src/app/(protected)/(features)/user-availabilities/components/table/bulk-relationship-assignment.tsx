@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { userAvailabilityToast } from "../user-availability-toast";
+import { userAvailabilityToast } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 
 
 

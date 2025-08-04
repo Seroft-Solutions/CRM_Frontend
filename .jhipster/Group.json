@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250726113020"
+    "changelogDate": "20250803230926"
   },
   "applications": ["crmBackend"],
   "documentation": "Group is scoped per organization.",

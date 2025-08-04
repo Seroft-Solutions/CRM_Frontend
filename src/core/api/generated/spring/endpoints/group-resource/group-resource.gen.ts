@@ -31,7 +31,8 @@ import type {
   SearchGroupsParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetGroupQueryKey = (id: number,) => {
     }
 
     
-export const getGetGroupQueryOptions = <TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetGroupQueryOptions = <TData = Awaited<ReturnType<typeof getGroup>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetGroupQueryResult = NonNullable<Awaited<ReturnType<typeof getGroup>>>
-export type GetGroupQueryError = unknown
+export type GetGroupQueryError = ErrorType<unknown>
 
 
-export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(
+export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getGroup>>,
@@ -88,7 +89,7 @@ export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(
+export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getGroup>>,
@@ -98,12 +99,12 @@ export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(
+export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = unknown>(
+export function useGetGroup<TData = Awaited<ReturnType<typeof getGroup>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGroup>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateGroup = (
   
 
 
-export const getUpdateGroupMutationOptions = <TError = unknown,
+export const getUpdateGroupMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGroup>>, TError,{id: number;data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateGroup>>, TError,{id: number;data: GroupDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateGroupMutationResult = NonNullable<Awaited<ReturnType<typeof updateGroup>>>
     export type UpdateGroupMutationBody = GroupDTO
-    export type UpdateGroupMutationError = unknown
+    export type UpdateGroupMutationError = ErrorType<unknown>
 
-    export const useUpdateGroup = <TError = unknown,
+    export const useUpdateGroup = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGroup>>, TError,{id: number;data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateGroup>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteGroupMutationOptions = <TError = unknown,
+export const getDeleteGroupMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGroup>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteGroup>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteGroupMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGroup>>>
     
-    export type DeleteGroupMutationError = unknown
+    export type DeleteGroupMutationError = ErrorType<unknown>
 
-    export const useDeleteGroup = <TError = unknown,
+    export const useDeleteGroup = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGroup>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteGroup>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateGroupMutationOptions = <TError = unknown,
+export const getPartialUpdateGroupMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateGroup>>, TError,{id: number;data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateGroup>>, TError,{id: number;data: GroupDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateGroupMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateGroup>>>
     export type PartialUpdateGroupMutationBody = GroupDTO
-    export type PartialUpdateGroupMutationError = unknown
+    export type PartialUpdateGroupMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateGroup = <TError = unknown,
+    export const usePartialUpdateGroup = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateGroup>>, TError,{id: number;data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateGroup>>,
@@ -309,7 +310,7 @@ export const getGetAllGroupsQueryKey = (params?: GetAllGroupsParams,) => {
     }
 
     
-export const getGetAllGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getAllGroups>>, TError = ErrorType<unknown>>(params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllGroups>>>
-export type GetAllGroupsQueryError = unknown
+export type GetAllGroupsQueryError = ErrorType<unknown>
 
 
-export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(
+export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllGroupsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllGroups>>,
@@ -341,7 +342,7 @@ export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(
+export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = ErrorType<unknown>>(
  params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllGroups>>,
@@ -351,12 +352,12 @@ export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(
+export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = ErrorType<unknown>>(
  params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = unknown>(
+export function useGetAllGroups<TData = Awaited<ReturnType<typeof getAllGroups>>, TError = ErrorType<unknown>>(
  params?: GetAllGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createGroup = (
   
 
 
-export const getCreateGroupMutationOptions = <TError = unknown,
+export const getCreateGroupMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGroup>>, TError,{data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createGroup>>, TError,{data: GroupDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateGroupMutationResult = NonNullable<Awaited<ReturnType<typeof createGroup>>>
     export type CreateGroupMutationBody = GroupDTO
-    export type CreateGroupMutationError = unknown
+    export type CreateGroupMutationError = ErrorType<unknown>
 
-    export const useCreateGroup = <TError = unknown,
+    export const useCreateGroup = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGroup>>, TError,{data: GroupDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createGroup>>,
@@ -449,7 +450,7 @@ export const getCountGroupsQueryKey = (params?: CountGroupsParams,) => {
     }
 
     
-export const getCountGroupsQueryOptions = <TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountGroupsQueryOptions = <TData = Awaited<ReturnType<typeof countGroups>>, TError = ErrorType<unknown>>(params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof countGroups>>>
-export type CountGroupsQueryError = unknown
+export type CountGroupsQueryError = ErrorType<unknown>
 
 
-export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(
+export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = ErrorType<unknown>>(
  params: undefined |  CountGroupsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countGroups>>,
@@ -481,7 +482,7 @@ export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(
+export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = ErrorType<unknown>>(
  params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countGroups>>,
@@ -491,12 +492,12 @@ export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(
+export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = ErrorType<unknown>>(
  params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = unknown>(
+export function useCountGroups<TData = Awaited<ReturnType<typeof countGroups>>, TError = ErrorType<unknown>>(
  params?: CountGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchGroupsQueryKey = (params: SearchGroupsParams,) => {
     }
 
     
-export const getSearchGroupsQueryOptions = <TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchGroupsQueryOptions = <TData = Awaited<ReturnType<typeof searchGroups>>, TError = ErrorType<unknown>>(params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof searchGroups>>>
-export type SearchGroupsQueryError = unknown
+export type SearchGroupsQueryError = ErrorType<unknown>
 
 
-export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(
+export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = ErrorType<unknown>>(
  params: SearchGroupsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchGroups>>,
@@ -563,7 +564,7 @@ export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(
+export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = ErrorType<unknown>>(
  params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchGroups>>,
@@ -573,12 +574,12 @@ export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(
+export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = ErrorType<unknown>>(
  params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = unknown>(
+export function useSearchGroups<TData = Awaited<ReturnType<typeof searchGroups>>, TError = ErrorType<unknown>>(
  params: SearchGroupsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGroups>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

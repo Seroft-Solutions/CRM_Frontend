@@ -7,9 +7,18 @@
  */
 
 export interface EmailRequest {
-  to?: string;
+  /** @minLength 1 */
+  to: string;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   */
   subject?: string;
-  message?: string;
+  /**
+   * @minLength 0
+   * @maxLength 4096
+   */
+  message: string;
   cc?: string;
   bcc?: string;
 }

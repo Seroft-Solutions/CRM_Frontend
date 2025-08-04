@@ -32,7 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { availableTimeSlotToast } from "../available-time-slot-toast";
+import { availableTimeSlotToast } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
 
 
 

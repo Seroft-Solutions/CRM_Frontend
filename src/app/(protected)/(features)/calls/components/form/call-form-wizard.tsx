@@ -9,25 +9,25 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CallFormProvider, useEntityForm } from "./call-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { CallFormProvider, useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/calls/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/calls/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/calls/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/calls/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-import { stepComponents } from './steps';
+import { stepComponents } from "@/app/(protected)/(features)/calls/components/form/steps";
 import { 
   useCreateCall,
   useUpdateCall,
   useGetCall,
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-import { callToast, handleCallError } from "../call-toast";
+import { callToast, handleCallError } from "@/app/(protected)/(features)/calls/components/call-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 import { useQueryClient } from '@tanstack/react-query';
-import { saveRemarksForCall } from "../../hooks/use-call-remarks";
+import { saveRemarksForCall } from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
 
 interface CallFormProps {
   id?: number;

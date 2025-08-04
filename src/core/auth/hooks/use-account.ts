@@ -20,7 +20,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useGetAccount } from '@/core/api/generated/spring/endpoints/account-resource/account-resource.gen';
-import { AUTH_CACHE_CONFIG } from '../config/cache-config';
+import { AUTH_CACHE_CONFIG } from "@/core/auth/config/cache-config";
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { AdminUserDTO } from '@/core/api/generated/spring/schemas';
 

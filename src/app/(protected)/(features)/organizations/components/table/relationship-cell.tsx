@@ -32,7 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { organizationToast } from "../organization-toast";
+import { organizationToast } from "@/app/(protected)/(features)/organizations/components/organization-toast";
 
 
 

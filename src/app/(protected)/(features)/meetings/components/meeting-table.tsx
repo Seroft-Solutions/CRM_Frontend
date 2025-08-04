@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { meetingToast, handleMeetingError } from "./meeting-toast";
+import { meetingToast, handleMeetingError } from "@/app/(protected)/(features)/meetings/components/meeting-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -96,11 +96,11 @@ import {
 
 
 
-import { MeetingSearchAndFilters } from "./table/meeting-search-filters";
-import { MeetingTableHeader } from "./table/meeting-table-header";
-import { MeetingTableRow } from "./table/meeting-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { MeetingSearchAndFilters } from "@/app/(protected)/(features)/meetings/components/table/meeting-search-filters";
+import { MeetingTableHeader } from "@/app/(protected)/(features)/meetings/components/table/meeting-table-header";
+import { MeetingTableRow } from "@/app/(protected)/(features)/meetings/components/table/meeting-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/meetings/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/meetings/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

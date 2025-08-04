@@ -31,7 +31,8 @@ import type {
   SearchAvailableTimeSlotsParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetAvailableTimeSlotQueryKey = (id: number,) => {
     }
 
     
-export const getGetAvailableTimeSlotQueryOptions = <TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAvailableTimeSlotQueryOptions = <TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAvailableTimeSlotQueryResult = NonNullable<Awaited<ReturnType<typeof getAvailableTimeSlot>>>
-export type GetAvailableTimeSlotQueryError = unknown
+export type GetAvailableTimeSlotQueryError = ErrorType<unknown>
 
 
-export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = unknown>(
+export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAvailableTimeSlot>>,
@@ -88,7 +89,7 @@ export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAva
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = unknown>(
+export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAvailableTimeSlot>>,
@@ -98,12 +99,12 @@ export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAva
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = unknown>(
+export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = unknown>(
+export function useGetAvailableTimeSlot<TData = Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailableTimeSlot>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateAvailableTimeSlot = (
   
 
 
-export const getUpdateAvailableTimeSlotMutationOptions = <TError = unknown,
+export const getUpdateAvailableTimeSlotMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateAvailableTimeSlotMutationResult = NonNullable<Awaited<ReturnType<typeof updateAvailableTimeSlot>>>
     export type UpdateAvailableTimeSlotMutationBody = AvailableTimeSlotDTO
-    export type UpdateAvailableTimeSlotMutationError = unknown
+    export type UpdateAvailableTimeSlotMutationError = ErrorType<unknown>
 
-    export const useUpdateAvailableTimeSlot = <TError = unknown,
+    export const useUpdateAvailableTimeSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateAvailableTimeSlot>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteAvailableTimeSlotMutationOptions = <TError = unknown,
+export const getDeleteAvailableTimeSlotMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAvailableTimeSlot>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteAvailableTimeSlot>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteAvailableTimeSlotMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAvailableTimeSlot>>>
     
-    export type DeleteAvailableTimeSlotMutationError = unknown
+    export type DeleteAvailableTimeSlotMutationError = ErrorType<unknown>
 
-    export const useDeleteAvailableTimeSlot = <TError = unknown,
+    export const useDeleteAvailableTimeSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAvailableTimeSlot>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteAvailableTimeSlot>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateAvailableTimeSlotMutationOptions = <TError = unknown,
+export const getPartialUpdateAvailableTimeSlotMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateAvailableTimeSlotMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateAvailableTimeSlot>>>
     export type PartialUpdateAvailableTimeSlotMutationBody = AvailableTimeSlotDTO
-    export type PartialUpdateAvailableTimeSlotMutationError = unknown
+    export type PartialUpdateAvailableTimeSlotMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateAvailableTimeSlot = <TError = unknown,
+    export const usePartialUpdateAvailableTimeSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateAvailableTimeSlot>>, TError,{id: number;data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateAvailableTimeSlot>>,
@@ -309,7 +310,7 @@ export const getGetAllAvailableTimeSlotsQueryKey = (params?: GetAllAvailableTime
     }
 
     
-export const getGetAllAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = unknown>(params?: GetAllAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = ErrorType<unknown>>(params?: GetAllAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllAvailableTimeSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>>
-export type GetAllAvailableTimeSlotsQueryError = unknown
+export type GetAllAvailableTimeSlotsQueryError = ErrorType<unknown>
 
 
-export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = unknown>(
+export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllAvailableTimeSlotsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAvailableTimeSlots>>,
@@ -341,7 +342,7 @@ export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof ge
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = unknown>(
+export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: GetAllAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAvailableTimeSlots>>,
@@ -351,12 +352,12 @@ export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof ge
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = unknown>(
+export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: GetAllAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = unknown>(
+export function useGetAllAvailableTimeSlots<TData = Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: GetAllAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createAvailableTimeSlot = (
   
 
 
-export const getCreateAvailableTimeSlotMutationOptions = <TError = unknown,
+export const getCreateAvailableTimeSlotMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAvailableTimeSlot>>, TError,{data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createAvailableTimeSlot>>, TError,{data: AvailableTimeSlotDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateAvailableTimeSlotMutationResult = NonNullable<Awaited<ReturnType<typeof createAvailableTimeSlot>>>
     export type CreateAvailableTimeSlotMutationBody = AvailableTimeSlotDTO
-    export type CreateAvailableTimeSlotMutationError = unknown
+    export type CreateAvailableTimeSlotMutationError = ErrorType<unknown>
 
-    export const useCreateAvailableTimeSlot = <TError = unknown,
+    export const useCreateAvailableTimeSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAvailableTimeSlot>>, TError,{data: AvailableTimeSlotDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createAvailableTimeSlot>>,
@@ -449,7 +450,7 @@ export const getCountAvailableTimeSlotsQueryKey = (params?: CountAvailableTimeSl
     }
 
     
-export const getCountAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = unknown>(params?: CountAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = ErrorType<unknown>>(params?: CountAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountAvailableTimeSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof countAvailableTimeSlots>>>
-export type CountAvailableTimeSlotsQueryError = unknown
+export type CountAvailableTimeSlotsQueryError = ErrorType<unknown>
 
 
-export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = unknown>(
+export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: undefined |  CountAvailableTimeSlotsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countAvailableTimeSlots>>,
@@ -481,7 +482,7 @@ export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof cou
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = unknown>(
+export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: CountAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countAvailableTimeSlots>>,
@@ -491,12 +492,12 @@ export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof cou
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = unknown>(
+export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: CountAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = unknown>(
+export function useCountAvailableTimeSlots<TData = Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params?: CountAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchAvailableTimeSlotsQueryKey = (params: SearchAvailableTimeS
     }
 
     
-export const getSearchAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = unknown>(params: SearchAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchAvailableTimeSlotsQueryOptions = <TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = ErrorType<unknown>>(params: SearchAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchAvailableTimeSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof searchAvailableTimeSlots>>>
-export type SearchAvailableTimeSlotsQueryError = unknown
+export type SearchAvailableTimeSlotsQueryError = ErrorType<unknown>
 
 
-export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = unknown>(
+export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: SearchAvailableTimeSlotsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchAvailableTimeSlots>>,
@@ -563,7 +564,7 @@ export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof se
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = unknown>(
+export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: SearchAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchAvailableTimeSlots>>,
@@ -573,12 +574,12 @@ export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof se
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = unknown>(
+export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: SearchAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = unknown>(
+export function useSearchAvailableTimeSlots<TData = Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError = ErrorType<unknown>>(
  params: SearchAvailableTimeSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAvailableTimeSlots>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

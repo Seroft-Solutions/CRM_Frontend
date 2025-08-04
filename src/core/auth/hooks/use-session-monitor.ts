@@ -8,7 +8,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useCallback, useRef } from 'react';
 import { useActivityTracker } from "@/core/auth/hooks/use-activity-tracker";
-import { AUTH_CACHE_CONFIG } from '../config/cache-config';
+import { AUTH_CACHE_CONFIG } from "@/core/auth/config/cache-config";
 import type { SessionMonitorOptions } from '../types';
 
 export function useSessionMonitor(options: SessionMonitorOptions = {}) {

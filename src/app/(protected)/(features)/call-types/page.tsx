@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { CallTypeTable } from "./components/call-type-table";
+import { CallTypeTable } from "@/app/(protected)/(features)/call-types/components/call-type-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

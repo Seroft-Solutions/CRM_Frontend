@@ -31,7 +31,8 @@ import type {
   SubCallTypeDTO
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetSubCallTypeQueryKey = (id: number,) => {
     }
 
     
-export const getGetSubCallTypeQueryOptions = <TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetSubCallTypeQueryOptions = <TData = Awaited<ReturnType<typeof getSubCallType>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetSubCallTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getSubCallType>>>
-export type GetSubCallTypeQueryError = unknown
+export type GetSubCallTypeQueryError = ErrorType<unknown>
 
 
-export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(
+export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubCallType>>,
@@ -88,7 +89,7 @@ export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallTy
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(
+export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubCallType>>,
@@ -98,12 +99,12 @@ export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallTy
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(
+export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = unknown>(
+export function useGetSubCallType<TData = Awaited<ReturnType<typeof getSubCallType>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubCallType>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateSubCallType = (
   
 
 
-export const getUpdateSubCallTypeMutationOptions = <TError = unknown,
+export const getUpdateSubCallTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateSubCallTypeMutationResult = NonNullable<Awaited<ReturnType<typeof updateSubCallType>>>
     export type UpdateSubCallTypeMutationBody = SubCallTypeDTO
-    export type UpdateSubCallTypeMutationError = unknown
+    export type UpdateSubCallTypeMutationError = ErrorType<unknown>
 
-    export const useUpdateSubCallType = <TError = unknown,
+    export const useUpdateSubCallType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateSubCallType>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteSubCallTypeMutationOptions = <TError = unknown,
+export const getDeleteSubCallTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubCallType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteSubCallType>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteSubCallTypeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSubCallType>>>
     
-    export type DeleteSubCallTypeMutationError = unknown
+    export type DeleteSubCallTypeMutationError = ErrorType<unknown>
 
-    export const useDeleteSubCallType = <TError = unknown,
+    export const useDeleteSubCallType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubCallType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteSubCallType>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateSubCallTypeMutationOptions = <TError = unknown,
+export const getPartialUpdateSubCallTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateSubCallTypeMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateSubCallType>>>
     export type PartialUpdateSubCallTypeMutationBody = SubCallTypeDTO
-    export type PartialUpdateSubCallTypeMutationError = unknown
+    export type PartialUpdateSubCallTypeMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateSubCallType = <TError = unknown,
+    export const usePartialUpdateSubCallType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateSubCallType>>, TError,{id: number;data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateSubCallType>>,
@@ -309,7 +310,7 @@ export const getGetAllSubCallTypesQueryKey = (params?: GetAllSubCallTypesParams,
     }
 
     
-export const getGetAllSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = ErrorType<unknown>>(params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllSubCallTypes>>>
-export type GetAllSubCallTypesQueryError = unknown
+export type GetAllSubCallTypesQueryError = ErrorType<unknown>
 
 
-export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(
+export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllSubCallTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllSubCallTypes>>,
@@ -341,7 +342,7 @@ export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSu
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(
+export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllSubCallTypes>>,
@@ -351,12 +352,12 @@ export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSu
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(
+export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = unknown>(
+export function useGetAllSubCallTypes<TData = Awaited<ReturnType<typeof getAllSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: GetAllSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createSubCallType = (
   
 
 
-export const getCreateSubCallTypeMutationOptions = <TError = unknown,
+export const getCreateSubCallTypeMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubCallType>>, TError,{data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createSubCallType>>, TError,{data: SubCallTypeDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateSubCallTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createSubCallType>>>
     export type CreateSubCallTypeMutationBody = SubCallTypeDTO
-    export type CreateSubCallTypeMutationError = unknown
+    export type CreateSubCallTypeMutationError = ErrorType<unknown>
 
-    export const useCreateSubCallType = <TError = unknown,
+    export const useCreateSubCallType = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubCallType>>, TError,{data: SubCallTypeDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createSubCallType>>,
@@ -449,7 +450,7 @@ export const getCountSubCallTypesQueryKey = (params?: CountSubCallTypesParams,) 
     }
 
     
-export const getCountSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = ErrorType<unknown>>(params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof countSubCallTypes>>>
-export type CountSubCallTypesQueryError = unknown
+export type CountSubCallTypesQueryError = ErrorType<unknown>
 
 
-export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(
+export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = ErrorType<unknown>>(
  params: undefined |  CountSubCallTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countSubCallTypes>>,
@@ -481,7 +482,7 @@ export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubC
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(
+export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countSubCallTypes>>,
@@ -491,12 +492,12 @@ export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubC
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(
+export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = unknown>(
+export function useCountSubCallTypes<TData = Awaited<ReturnType<typeof countSubCallTypes>>, TError = ErrorType<unknown>>(
  params?: CountSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchSubCallTypesQueryKey = (params: SearchSubCallTypesParams,)
     }
 
     
-export const getSearchSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchSubCallTypesQueryOptions = <TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = ErrorType<unknown>>(params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchSubCallTypesQueryResult = NonNullable<Awaited<ReturnType<typeof searchSubCallTypes>>>
-export type SearchSubCallTypesQueryError = unknown
+export type SearchSubCallTypesQueryError = ErrorType<unknown>
 
 
-export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(
+export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = ErrorType<unknown>>(
  params: SearchSubCallTypesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchSubCallTypes>>,
@@ -563,7 +564,7 @@ export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSu
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(
+export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = ErrorType<unknown>>(
  params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchSubCallTypes>>,
@@ -573,12 +574,12 @@ export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSu
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(
+export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = ErrorType<unknown>>(
  params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = unknown>(
+export function useSearchSubCallTypes<TData = Awaited<ReturnType<typeof searchSubCallTypes>>, TError = ErrorType<unknown>>(
  params: SearchSubCallTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSubCallTypes>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

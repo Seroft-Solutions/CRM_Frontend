@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { roleToast, handleRoleError } from "./role-toast";
+import { roleToast, handleRoleError } from "@/app/(protected)/(features)/roles/components/role-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,11 +88,11 @@ import {
 
 
 
-import { RoleSearchAndFilters } from "./table/role-search-filters";
-import { RoleTableHeader } from "./table/role-table-header";
-import { RoleTableRow } from "./table/role-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { RoleSearchAndFilters } from "@/app/(protected)/(features)/roles/components/table/role-search-filters";
+import { RoleTableHeader } from "@/app/(protected)/(features)/roles/components/table/role-table-header";
+import { RoleTableRow } from "@/app/(protected)/(features)/roles/components/table/role-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/roles/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/roles/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

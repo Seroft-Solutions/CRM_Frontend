@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { groupToast } from "../group-toast";
+import { groupToast } from "@/app/(protected)/(features)/groups/components/group-toast";
 
 
 

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { userAvailabilityToast, handleUserAvailabilityError } from "./user-availability-toast";
+import { userAvailabilityToast, handleUserAvailabilityError } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,11 +88,11 @@ import {
 
 
 
-import { UserAvailabilitySearchAndFilters } from "./table/user-availability-search-filters";
-import { UserAvailabilityTableHeader } from "./table/user-availability-table-header";
-import { UserAvailabilityTableRow } from "./table/user-availability-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { UserAvailabilitySearchAndFilters } from "@/app/(protected)/(features)/user-availabilities/components/table/user-availability-search-filters";
+import { UserAvailabilityTableHeader } from "@/app/(protected)/(features)/user-availabilities/components/table/user-availability-table-header";
+import { UserAvailabilityTableRow } from "@/app/(protected)/(features)/user-availabilities/components/table/user-availability-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/user-availabilities/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/user-availabilities/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

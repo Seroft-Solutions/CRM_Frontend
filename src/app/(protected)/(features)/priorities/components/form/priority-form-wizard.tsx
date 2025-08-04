@@ -9,22 +9,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PriorityFormProvider, useEntityForm } from "./priority-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { PriorityFormProvider, useEntityForm } from "@/app/(protected)/(features)/priorities/components/form/priority-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/priorities/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/priorities/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/priorities/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/priorities/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+// import { stepComponents } from "@/app/(protected)/(features)/priorities/components/form/steps";
 import { 
   useCreatePriority,
   useUpdatePriority,
   useGetPriority,
 } from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
-import { priorityToast, handlePriorityError } from "../priority-toast";
+import { priorityToast, handlePriorityError } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 import { useQueryClient } from '@tanstack/react-query';
 

@@ -9,7 +9,7 @@ import type {
   ComponentTypeRepresentation
 } from '../../schemas';
 
-import { keycloakServiceMutator } from '../../../../services/keycloak-service/service-mutator';
+import { keycloakServiceMutator } from "@/core/api/services/keycloak-service/service-mutator";
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

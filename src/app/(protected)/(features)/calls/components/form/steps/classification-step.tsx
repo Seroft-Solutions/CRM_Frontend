@@ -11,7 +11,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RelationshipRenderer } from "../relationship-renderer";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
 
 interface CallClassificationStepProps {
   form: any;

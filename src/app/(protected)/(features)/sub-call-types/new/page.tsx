@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { SubCallTypeForm } from "../components/sub-call-type-form";
+import { SubCallTypeForm } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-form";
 import { PermissionGuard } from "@/core/auth";
 
 export const metadata = {

@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { CallStatusForm } from "./form/call-status-form-wizard";
+import { CallStatusForm } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-wizard";
 
 interface CallStatusFormProps {
   id?: number;

@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { CallTypeForm } from "./form/call-type-form-wizard";
+import { CallTypeForm } from "@/app/(protected)/(features)/call-types/components/form/call-type-form-wizard";
 
 interface CallTypeFormProps {
   id?: number;

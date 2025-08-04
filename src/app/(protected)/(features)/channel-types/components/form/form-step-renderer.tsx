@@ -13,8 +13,8 @@ import { Form } from "@/components/ui/form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "./channel-type-form-provider";
-import { RelationshipRenderer } from "./relationship-renderer";
+import { useEntityForm } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-provider";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/channel-types/components/form/relationship-renderer";
 
 
 

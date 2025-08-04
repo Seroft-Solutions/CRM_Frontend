@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { MeetingReminderDetails } from "../components/meeting-reminder-details";
+import { MeetingReminderDetails } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

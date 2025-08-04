@@ -31,7 +31,8 @@ import type {
   SearchRolesParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetRoleQueryKey = (id: number,) => {
     }
 
     
-export const getGetRoleQueryOptions = <TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetRoleQueryOptions = <TData = Awaited<ReturnType<typeof getRole>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetRoleQueryResult = NonNullable<Awaited<ReturnType<typeof getRole>>>
-export type GetRoleQueryError = unknown
+export type GetRoleQueryError = ErrorType<unknown>
 
 
-export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(
+export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getRole>>,
@@ -88,7 +89,7 @@ export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(
+export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getRole>>,
@@ -98,12 +99,12 @@ export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(
+export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = unknown>(
+export function useGetRole<TData = Awaited<ReturnType<typeof getRole>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRole>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateRole = (
   
 
 
-export const getUpdateRoleMutationOptions = <TError = unknown,
+export const getUpdateRoleMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: number;data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: number;data: RoleDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateRole>>>
     export type UpdateRoleMutationBody = RoleDTO
-    export type UpdateRoleMutationError = unknown
+    export type UpdateRoleMutationError = ErrorType<unknown>
 
-    export const useUpdateRole = <TError = unknown,
+    export const useUpdateRole = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: number;data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateRole>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteRoleMutationOptions = <TError = unknown,
+export const getDeleteRoleMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteRoleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRole>>>
     
-    export type DeleteRoleMutationError = unknown
+    export type DeleteRoleMutationError = ErrorType<unknown>
 
-    export const useDeleteRole = <TError = unknown,
+    export const useDeleteRole = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteRole>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateRoleMutationOptions = <TError = unknown,
+export const getPartialUpdateRoleMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateRole>>, TError,{id: number;data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateRole>>, TError,{id: number;data: RoleDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateRole>>>
     export type PartialUpdateRoleMutationBody = RoleDTO
-    export type PartialUpdateRoleMutationError = unknown
+    export type PartialUpdateRoleMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateRole = <TError = unknown,
+    export const usePartialUpdateRole = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateRole>>, TError,{id: number;data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateRole>>,
@@ -309,7 +310,7 @@ export const getGetAllRolesQueryKey = (params?: GetAllRolesParams,) => {
     }
 
     
-export const getGetAllRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAllRoles>>, TError = ErrorType<unknown>>(params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllRoles>>>
-export type GetAllRolesQueryError = unknown
+export type GetAllRolesQueryError = ErrorType<unknown>
 
 
-export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(
+export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllRoles>>,
@@ -341,7 +342,7 @@ export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(
+export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = ErrorType<unknown>>(
  params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllRoles>>,
@@ -351,12 +352,12 @@ export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(
+export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = ErrorType<unknown>>(
  params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = unknown>(
+export function useGetAllRoles<TData = Awaited<ReturnType<typeof getAllRoles>>, TError = ErrorType<unknown>>(
  params?: GetAllRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createRole = (
   
 
 
-export const getCreateRoleMutationOptions = <TError = unknown,
+export const getCreateRoleMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoleDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof createRole>>>
     export type CreateRoleMutationBody = RoleDTO
-    export type CreateRoleMutationError = unknown
+    export type CreateRoleMutationError = ErrorType<unknown>
 
-    export const useCreateRole = <TError = unknown,
+    export const useCreateRole = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoleDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createRole>>,
@@ -449,7 +450,7 @@ export const getCountRolesQueryKey = (params?: CountRolesParams,) => {
     }
 
     
-export const getCountRolesQueryOptions = <TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountRolesQueryOptions = <TData = Awaited<ReturnType<typeof countRoles>>, TError = ErrorType<unknown>>(params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountRolesQueryResult = NonNullable<Awaited<ReturnType<typeof countRoles>>>
-export type CountRolesQueryError = unknown
+export type CountRolesQueryError = ErrorType<unknown>
 
 
-export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(
+export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = ErrorType<unknown>>(
  params: undefined |  CountRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countRoles>>,
@@ -481,7 +482,7 @@ export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(
+export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = ErrorType<unknown>>(
  params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countRoles>>,
@@ -491,12 +492,12 @@ export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(
+export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = ErrorType<unknown>>(
  params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = unknown>(
+export function useCountRoles<TData = Awaited<ReturnType<typeof countRoles>>, TError = ErrorType<unknown>>(
  params?: CountRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchRolesQueryKey = (params: SearchRolesParams,) => {
     }
 
     
-export const getSearchRolesQueryOptions = <TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchRolesQueryOptions = <TData = Awaited<ReturnType<typeof searchRoles>>, TError = ErrorType<unknown>>(params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchRolesQueryResult = NonNullable<Awaited<ReturnType<typeof searchRoles>>>
-export type SearchRolesQueryError = unknown
+export type SearchRolesQueryError = ErrorType<unknown>
 
 
-export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(
+export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = ErrorType<unknown>>(
  params: SearchRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchRoles>>,
@@ -563,7 +564,7 @@ export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(
+export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = ErrorType<unknown>>(
  params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchRoles>>,
@@ -573,12 +574,12 @@ export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(
+export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = ErrorType<unknown>>(
  params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = unknown>(
+export function useSearchRoles<TData = Awaited<ReturnType<typeof searchRoles>>, TError = ErrorType<unknown>>(
  params: SearchRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchRoles>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

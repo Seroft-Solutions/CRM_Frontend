@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250726113018"
+    "changelogDate": "20250803230924"
   },
   "applications": ["crmBackend"],
   "documentation": "Extended user profile linked to Keycloak.",

@@ -24,7 +24,8 @@ import type {
   AdminUserDTO
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -49,7 +50,7 @@ export const getIsAuthenticatedQueryKey = () => {
     }
 
     
-export const getIsAuthenticatedQueryOptions = <TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getIsAuthenticatedQueryOptions = <TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -68,10 +69,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type IsAuthenticatedQueryResult = NonNullable<Awaited<ReturnType<typeof isAuthenticated>>>
-export type IsAuthenticatedQueryError = unknown
+export type IsAuthenticatedQueryError = ErrorType<unknown>
 
 
-export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = unknown>(
+export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = ErrorType<unknown>>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof isAuthenticated>>,
@@ -81,7 +82,7 @@ export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthentic
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = unknown>(
+export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof isAuthenticated>>,
@@ -91,12 +92,12 @@ export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthentic
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = unknown>(
+export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = unknown>(
+export function useIsAuthenticated<TData = Awaited<ReturnType<typeof isAuthenticated>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof isAuthenticated>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -130,7 +131,7 @@ export const getGetAccountQueryKey = () => {
     }
 
     
-export const getGetAccountQueryOptions = <TData = Awaited<ReturnType<typeof getAccount>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAccountQueryOptions = <TData = Awaited<ReturnType<typeof getAccount>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -149,10 +150,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAccountQueryResult = NonNullable<Awaited<ReturnType<typeof getAccount>>>
-export type GetAccountQueryError = unknown
+export type GetAccountQueryError = ErrorType<unknown>
 
 
-export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = unknown>(
+export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = ErrorType<unknown>>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAccount>>,
@@ -162,7 +163,7 @@ export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = unknown>(
+export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAccount>>,
@@ -172,12 +173,12 @@ export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = unknown>(
+export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = unknown>(
+export function useGetAccount<TData = Awaited<ReturnType<typeof getAccount>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccount>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

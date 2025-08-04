@@ -15,7 +15,7 @@ import {
   updateChannelType, 
   deleteChannelType 
 } from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import { channelTypeToast } from "../components/channel-type-toast";
+import { channelTypeToast } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
 
 export async function createChannelTypeAction(data: any) {
   try {

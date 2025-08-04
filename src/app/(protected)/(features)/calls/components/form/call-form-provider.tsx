@@ -24,9 +24,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { callFormConfig } from "./call-form-config";
-import { callFormSchema } from "./call-form-schema";
-import { callToast, handleCallError } from "../call-toast";
+import { callFormConfig } from "@/app/(protected)/(features)/calls/components/form/call-form-config";
+import { callFormSchema } from "@/app/(protected)/(features)/calls/components/form/call-form-schema";
+import { callToast, handleCallError } from "@/app/(protected)/(features)/calls/components/call-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

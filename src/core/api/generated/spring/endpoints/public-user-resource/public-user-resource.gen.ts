@@ -25,7 +25,8 @@ import type {
   UserDTO
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -51,7 +52,7 @@ export const getGetAllPublicUsersQueryKey = (params?: GetAllPublicUsersParams,) 
     }
 
     
-export const getGetAllPublicUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllPublicUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = ErrorType<unknown>>(params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -70,10 +71,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllPublicUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPublicUsers>>>
-export type GetAllPublicUsersQueryError = unknown
+export type GetAllPublicUsersQueryError = ErrorType<unknown>
 
 
-export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(
+export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllPublicUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllPublicUsers>>,
@@ -83,7 +84,7 @@ export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPub
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(
+export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = ErrorType<unknown>>(
  params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllPublicUsers>>,
@@ -93,12 +94,12 @@ export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPub
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(
+export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = ErrorType<unknown>>(
  params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = unknown>(
+export function useGetAllPublicUsers<TData = Awaited<ReturnType<typeof getAllPublicUsers>>, TError = ErrorType<unknown>>(
  params?: GetAllPublicUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPublicUsers>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -132,7 +133,7 @@ export const getSearchQueryKey = (query: string,) => {
     }
 
     
-export const getSearchQueryOptions = <TData = Awaited<ReturnType<typeof search>>, TError = unknown>(query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchQueryOptions = <TData = Awaited<ReturnType<typeof search>>, TError = ErrorType<unknown>>(query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -151,10 +152,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchQueryResult = NonNullable<Awaited<ReturnType<typeof search>>>
-export type SearchQueryError = unknown
+export type SearchQueryError = ErrorType<unknown>
 
 
-export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = unknown>(
+export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = ErrorType<unknown>>(
  query: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof search>>,
@@ -164,7 +165,7 @@ export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = u
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = unknown>(
+export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = ErrorType<unknown>>(
  query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof search>>,
@@ -174,12 +175,12 @@ export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = u
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = unknown>(
+export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = ErrorType<unknown>>(
  query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = unknown>(
+export function useSearch<TData = Awaited<ReturnType<typeof search>>, TError = ErrorType<unknown>>(
  query: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof search>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

@@ -31,7 +31,8 @@ import type {
   SearchProductsParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetProductQueryKey = (id: number,) => {
     }
 
     
-export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetProductQueryResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
-export type GetProductQueryError = unknown
+export type GetProductQueryError = ErrorType<unknown>
 
 
-export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = unknown>(
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProduct>>,
@@ -88,7 +89,7 @@ export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = unknown>(
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProduct>>,
@@ -98,12 +99,12 @@ export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = unknown>(
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = unknown>(
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateProduct = (
   
 
 
-export const getUpdateProductMutationOptions = <TError = unknown,
+export const getUpdateProductMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: number;data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: number;data: ProductDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
     export type UpdateProductMutationBody = ProductDTO
-    export type UpdateProductMutationError = unknown
+    export type UpdateProductMutationError = ErrorType<unknown>
 
-    export const useUpdateProduct = <TError = unknown,
+    export const useUpdateProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: number;data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateProduct>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteProductMutationOptions = <TError = unknown,
+export const getDeleteProductMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteProductMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
     
-    export type DeleteProductMutationError = unknown
+    export type DeleteProductMutationError = ErrorType<unknown>
 
-    export const useDeleteProduct = <TError = unknown,
+    export const useDeleteProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteProduct>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateProductMutationOptions = <TError = unknown,
+export const getPartialUpdateProductMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateProduct>>, TError,{id: number;data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateProduct>>, TError,{id: number;data: ProductDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateProductMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateProduct>>>
     export type PartialUpdateProductMutationBody = ProductDTO
-    export type PartialUpdateProductMutationError = unknown
+    export type PartialUpdateProductMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateProduct = <TError = unknown,
+    export const usePartialUpdateProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateProduct>>, TError,{id: number;data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateProduct>>,
@@ -309,7 +310,7 @@ export const getGetAllProductsQueryKey = (params?: GetAllProductsParams,) => {
     }
 
     
-export const getGetAllProductsQueryOptions = <TData = Awaited<ReturnType<typeof getAllProducts>>, TError = unknown>(params?: GetAllProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllProductsQueryOptions = <TData = Awaited<ReturnType<typeof getAllProducts>>, TError = ErrorType<unknown>>(params?: GetAllProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllProducts>>>
-export type GetAllProductsQueryError = unknown
+export type GetAllProductsQueryError = ErrorType<unknown>
 
 
-export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = unknown>(
+export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllProducts>>,
@@ -341,7 +342,7 @@ export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProduc
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = unknown>(
+export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = ErrorType<unknown>>(
  params?: GetAllProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllProducts>>,
@@ -351,12 +352,12 @@ export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProduc
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = unknown>(
+export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = ErrorType<unknown>>(
  params?: GetAllProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = unknown>(
+export function useGetAllProducts<TData = Awaited<ReturnType<typeof getAllProducts>>, TError = ErrorType<unknown>>(
  params?: GetAllProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createProduct = (
   
 
 
-export const getCreateProductMutationOptions = <TError = unknown,
+export const getCreateProductMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: ProductDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateProductMutationResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
     export type CreateProductMutationBody = ProductDTO
-    export type CreateProductMutationError = unknown
+    export type CreateProductMutationError = ErrorType<unknown>
 
-    export const useCreateProduct = <TError = unknown,
+    export const useCreateProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: ProductDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createProduct>>,
@@ -449,7 +450,7 @@ export const getCountProductsQueryKey = (params?: CountProductsParams,) => {
     }
 
     
-export const getCountProductsQueryOptions = <TData = Awaited<ReturnType<typeof countProducts>>, TError = unknown>(params?: CountProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountProductsQueryOptions = <TData = Awaited<ReturnType<typeof countProducts>>, TError = ErrorType<unknown>>(params?: CountProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountProductsQueryResult = NonNullable<Awaited<ReturnType<typeof countProducts>>>
-export type CountProductsQueryError = unknown
+export type CountProductsQueryError = ErrorType<unknown>
 
 
-export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = unknown>(
+export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = ErrorType<unknown>>(
  params: undefined |  CountProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countProducts>>,
@@ -481,7 +482,7 @@ export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = unknown>(
+export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = ErrorType<unknown>>(
  params?: CountProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countProducts>>,
@@ -491,12 +492,12 @@ export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = unknown>(
+export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = ErrorType<unknown>>(
  params?: CountProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = unknown>(
+export function useCountProducts<TData = Awaited<ReturnType<typeof countProducts>>, TError = ErrorType<unknown>>(
  params?: CountProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchProductsQueryKey = (params: SearchProductsParams,) => {
     }
 
     
-export const getSearchProductsQueryOptions = <TData = Awaited<ReturnType<typeof searchProducts>>, TError = unknown>(params: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchProductsQueryOptions = <TData = Awaited<ReturnType<typeof searchProducts>>, TError = ErrorType<unknown>>(params: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchProductsQueryResult = NonNullable<Awaited<ReturnType<typeof searchProducts>>>
-export type SearchProductsQueryError = unknown
+export type SearchProductsQueryError = ErrorType<unknown>
 
 
-export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = unknown>(
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = ErrorType<unknown>>(
  params: SearchProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchProducts>>,
@@ -563,7 +564,7 @@ export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProduc
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = unknown>(
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = ErrorType<unknown>>(
  params: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchProducts>>,
@@ -573,12 +574,12 @@ export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProduc
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = unknown>(
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = ErrorType<unknown>>(
  params: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = unknown>(
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = ErrorType<unknown>>(
  params: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

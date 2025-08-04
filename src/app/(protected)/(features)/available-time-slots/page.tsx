@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { AvailableTimeSlotTable } from "./components/available-time-slot-table";
+import { AvailableTimeSlotTable } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

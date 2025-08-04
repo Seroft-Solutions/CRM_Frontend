@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { UserDraftForm } from "./form/user-draft-form-wizard";
+import { UserDraftForm } from "@/app/(protected)/(features)/user-drafts/components/form/user-draft-form-wizard";
 
 interface UserDraftFormProps {
   id?: number;

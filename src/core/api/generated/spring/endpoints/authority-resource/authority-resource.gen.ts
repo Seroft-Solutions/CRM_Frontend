@@ -28,7 +28,8 @@ import type {
   Authority
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -53,7 +54,7 @@ export const getGetAllAuthoritiesQueryKey = () => {
     }
 
     
-export const getGetAllAuthoritiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllAuthoritiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -72,10 +73,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllAuthoritiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAuthorities>>>
-export type GetAllAuthoritiesQueryError = unknown
+export type GetAllAuthoritiesQueryError = ErrorType<unknown>
 
 
-export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = unknown>(
+export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = ErrorType<unknown>>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAuthorities>>,
@@ -85,7 +86,7 @@ export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAut
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = unknown>(
+export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAuthorities>>,
@@ -95,12 +96,12 @@ export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAut
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = unknown>(
+export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = unknown>(
+export function useGetAllAuthorities<TData = Awaited<ReturnType<typeof getAllAuthorities>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAuthorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -132,7 +133,7 @@ export const createAuthority = (
   
 
 
-export const getCreateAuthorityMutationOptions = <TError = unknown,
+export const getCreateAuthorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthority>>, TError,{data: Authority}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createAuthority>>, TError,{data: Authority}, TContext> => {
     
@@ -159,9 +160,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateAuthorityMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthority>>>
     export type CreateAuthorityMutationBody = Authority
-    export type CreateAuthorityMutationError = unknown
+    export type CreateAuthorityMutationError = ErrorType<unknown>
 
-    export const useCreateAuthority = <TError = unknown,
+    export const useCreateAuthority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthority>>, TError,{data: Authority}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createAuthority>>,
@@ -192,7 +193,7 @@ export const getGetAuthorityQueryKey = (id: string,) => {
     }
 
     
-export const getGetAuthorityQueryOptions = <TData = Awaited<ReturnType<typeof getAuthority>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAuthorityQueryOptions = <TData = Awaited<ReturnType<typeof getAuthority>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -211,10 +212,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAuthorityQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthority>>>
-export type GetAuthorityQueryError = unknown
+export type GetAuthorityQueryError = ErrorType<unknown>
 
 
-export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = unknown>(
+export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = ErrorType<unknown>>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuthority>>,
@@ -224,7 +225,7 @@ export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = unknown>(
+export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = ErrorType<unknown>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuthority>>,
@@ -234,12 +235,12 @@ export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = unknown>(
+export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = ErrorType<unknown>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = unknown>(
+export function useGetAuthority<TData = Awaited<ReturnType<typeof getAuthority>>, TError = ErrorType<unknown>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -268,7 +269,7 @@ export const deleteAuthority = (
   
 
 
-export const getDeleteAuthorityMutationOptions = <TError = unknown,
+export const getDeleteAuthorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAuthority>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteAuthority>>, TError,{id: string}, TContext> => {
     
@@ -295,9 +296,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteAuthorityMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAuthority>>>
     
-    export type DeleteAuthorityMutationError = unknown
+    export type DeleteAuthorityMutationError = ErrorType<unknown>
 
-    export const useDeleteAuthority = <TError = unknown,
+    export const useDeleteAuthority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAuthority>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteAuthority>>,

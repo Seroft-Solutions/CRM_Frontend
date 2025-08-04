@@ -15,7 +15,7 @@ import {
   updateRole, 
   deleteRole 
 } from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
-import { roleToast } from "../components/role-toast";
+import { roleToast } from "@/app/(protected)/(features)/roles/components/role-toast";
 
 export async function createRoleAction(data: any) {
   try {

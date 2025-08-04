@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { callStatusToast } from "../call-status-toast";
+import { callStatusToast } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
 
 
 

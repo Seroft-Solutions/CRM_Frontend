@@ -13,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { sourceToast, handleSourceError } from "./source-toast";
-import { sourceFormConfig } from "./form/source-form-config";
+import { sourceToast, handleSourceError } from "@/app/(protected)/(features)/sources/components/source-toast";
+import { sourceFormConfig } from "@/app/(protected)/(features)/sources/components/form/source-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

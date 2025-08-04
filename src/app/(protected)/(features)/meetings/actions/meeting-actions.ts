@@ -15,7 +15,7 @@ import {
   updateMeeting, 
   deleteMeeting 
 } from "@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen";
-import { meetingToast } from "../components/meeting-toast";
+import { meetingToast } from "@/app/(protected)/(features)/meetings/components/meeting-toast";
 
 export async function createMeetingAction(data: any) {
   try {

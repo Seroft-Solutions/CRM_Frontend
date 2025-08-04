@@ -15,7 +15,7 @@ import {
   updateCity, 
   deleteCity 
 } from "@/core/api/generated/spring/endpoints/city-resource/city-resource.gen";
-import { cityToast } from "../components/city-toast";
+import { cityToast } from "@/app/(protected)/(features)/cities/components/city-toast";
 
 export async function createCityAction(data: any) {
   try {

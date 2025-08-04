@@ -8,8 +8,11 @@
 import type { WhatsappRequestMessageContent } from './WhatsappRequestMessageContent';
 
 export interface WhatsappRequest {
-  phoneNumberId?: string;
-  to?: string;
-  messageType?: string;
-  messageContent?: WhatsappRequestMessageContent;
+  /** @minLength 1 */
+  phoneNumberId: string;
+  /** @minLength 1 */
+  to: string;
+  /** @minLength 1 */
+  messageType: string;
+  messageContent: WhatsappRequestMessageContent;
 }

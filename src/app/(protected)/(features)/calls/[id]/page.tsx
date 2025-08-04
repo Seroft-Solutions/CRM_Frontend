@@ -11,7 +11,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { use } from "react";
 
-import { CallDetails } from "../components/call-details";
+import { CallDetails } from "@/app/(protected)/(features)/calls/components/call-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

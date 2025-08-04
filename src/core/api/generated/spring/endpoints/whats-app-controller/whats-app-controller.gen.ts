@@ -6,21 +6,31 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useMutation
+  useMutation,
+  useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
   QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
-  UseMutationResult
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
-  SendMessage200,
+  NotificationResponse,
   WhatsappRequest
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -33,7 +43,7 @@ export const sendMessage = (
 ) => {
       
       
-      return springServiceMutator<SendMessage200>(
+      return springServiceMutator<NotificationResponse>(
       {url: `/api/whatsapp/send-message`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: whatsappRequest, signal
@@ -43,7 +53,7 @@ export const sendMessage = (
   
 
 
-export const getSendMessageMutationOptions = <TError = unknown,
+export const getSendMessageMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendMessage>>, TError,{data: WhatsappRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof sendMessage>>, TError,{data: WhatsappRequest}, TContext> => {
     
@@ -70,9 +80,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type SendMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendMessage>>>
     export type SendMessageMutationBody = WhatsappRequest
-    export type SendMessageMutationError = unknown
+    export type SendMessageMutationError = ErrorType<unknown>
 
-    export const useSendMessage = <TError = unknown,
+    export const useSendMessage = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendMessage>>, TError,{data: WhatsappRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof sendMessage>>,
@@ -85,4 +95,84 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
+    export const getServiceStatus = (
     
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<NotificationResponse>(
+      {url: `/api/whatsapp/status`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+export const getGetServiceStatusQueryKey = () => {
+    return [`/api/whatsapp/status`] as const;
+    }
+
+    
+export const getGetServiceStatusQueryOptions = <TData = Awaited<ReturnType<typeof getServiceStatus>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceStatusQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceStatus>>> = ({ signal }) => getServiceStatus(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceStatus>>>
+export type GetServiceStatusQueryError = ErrorType<unknown>
+
+
+export function useGetServiceStatus<TData = Awaited<ReturnType<typeof getServiceStatus>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceStatus<TData = Awaited<ReturnType<typeof getServiceStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceStatus<TData = Awaited<ReturnType<typeof getServiceStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetServiceStatus<TData = Awaited<ReturnType<typeof getServiceStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

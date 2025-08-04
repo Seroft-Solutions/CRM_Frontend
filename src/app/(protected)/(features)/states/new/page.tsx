@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { StateForm } from "../components/state-form";
+import { StateForm } from "@/app/(protected)/(features)/states/components/state-form";
 import { PermissionGuard } from "@/core/auth";
 
 export const metadata = {

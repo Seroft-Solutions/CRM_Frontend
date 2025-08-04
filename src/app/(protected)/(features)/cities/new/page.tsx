@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CityForm } from "../components/city-form";
+import { CityForm } from "@/app/(protected)/(features)/cities/components/city-form";
 import { PermissionGuard } from "@/core/auth";
 
 export const metadata = {

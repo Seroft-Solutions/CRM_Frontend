@@ -15,7 +15,7 @@ import {
   updateState, 
   deleteState 
 } from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-import { stateToast } from "../components/state-toast";
+import { stateToast } from "@/app/(protected)/(features)/states/components/state-toast";
 
 export async function createStateAction(data: any) {
   try {

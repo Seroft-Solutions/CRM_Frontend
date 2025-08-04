@@ -8,7 +8,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "./district-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/districts/components/form/district-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

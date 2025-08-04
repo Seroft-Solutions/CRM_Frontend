@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { cityToast } from "../city-toast";
+import { cityToast } from "@/app/(protected)/(features)/cities/components/city-toast";
 
 
 
