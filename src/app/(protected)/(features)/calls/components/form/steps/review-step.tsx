@@ -60,6 +60,7 @@ interface CallReviewStepProps {
   form: any;
   config: any;
   actions: any;
+  entity?: any;
 }
 
 // Relationship value resolver component
@@ -268,7 +269,7 @@ function RelationshipDisplayValue({
   }
 }
 
-export function CallReviewStep({ form, config, actions }: CallReviewStepProps) {
+export function CallReviewStep({ form, config, actions, entity }: CallReviewStepProps) {
   return (
     <div className="space-y-6">
       {/* Review all previous steps */}
