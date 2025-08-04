@@ -5,15 +5,8 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 import { UserDraftForm } from "@/app/(protected)/(features)/user-drafts/components/user-draft-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditUserDraftPageProps {
   params: Promise<{
@@ -59,14 +52,6 @@ export default async function EditUserDraftPage({ params }: EditUserDraftPagePro
               </div>
             </div>
             
-            <div className="flex items-center gap-2 shrink-0">
-              <ContextAwareBackButton 
-                defaultRoute="/user-drafts"
-                defaultLabel="Back to User Drafts"
-                entityName="UserDraft"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-              />
-            </div>
           </div>
         </div>
 

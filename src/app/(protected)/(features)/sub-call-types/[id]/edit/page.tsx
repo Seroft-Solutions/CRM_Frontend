@@ -5,15 +5,8 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 import { SubCallTypeForm } from "@/app/(protected)/(features)/sub-call-types/components/sub-call-type-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditSubCallTypePageProps {
   params: Promise<{
@@ -59,14 +52,6 @@ export default async function EditSubCallTypePage({ params }: EditSubCallTypePag
               </div>
             </div>
             
-            <div className="flex items-center gap-2 shrink-0">
-              <ContextAwareBackButton 
-                defaultRoute="/sub-call-types"
-                defaultLabel="Back to Sub Call Types"
-                entityName="SubCallType"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-              />
-            </div>
           </div>
         </div>
 
