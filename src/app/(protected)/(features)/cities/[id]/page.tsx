@@ -5,15 +5,8 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 import { CityDetails } from "@/app/(protected)/(features)/cities/components/city-details";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
-import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
+import { PermissionGuard } from "@/core/auth";
 
 interface CityPageProps {
   params: Promise<{
@@ -60,22 +53,6 @@ export default async function CityPage({ params }: CityPageProps) {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 shrink-0">
-              <ContextAwareBackButton 
-                defaultRoute="/cities"
-                defaultLabel="Back to Cities"
-                entityName="City"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-              />
-              <InlinePermissionGuard requiredPermission="city:update">
-                <Button asChild size="sm" className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium">
-                  <Link href={`/cities/${id}/edit`}>
-                    <Pencil className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Edit</span>
-                  </Link>
-                </Button>
-              </InlinePermissionGuard>
-            </div>
           </div>
         </div>
 
