@@ -167,6 +167,7 @@ export function RelationshipCell({
                     href={`/${relatedEntityRoute}/${currentId}`} 
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-slate-100 hover:bg-blue-100 border border-slate-200 hover:border-blue-300 transition-all"
                     onClick={() => {
+                      // Store the current page info for context-aware back navigation
                       if (typeof window !== 'undefined') {
                         localStorage.setItem('referrerInfo', JSON.stringify({
                           url: window.location.pathname,
