@@ -18,7 +18,7 @@ import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-import { stepComponents } from "@/app/(protected)/(features)/customers/components/form/steps";
+// import { stepComponents } from "@/app/(protected)/(features)/customers/components/form/steps";
 import { 
   useCreateCustomer,
   useUpdateCustomer,
@@ -45,6 +45,56 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       queryKey: ["get-customer", id]
     },
   });
+
+  // Update form values when entity data is loaded (for edit mode with generated steps)
+  React.useEffect(() => {
+    if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
+      const formValues: Record<string, any> = {};
+
+      // Handle regular fields
+      config.fields.forEach(fieldConfig => {
+        const value = entity[fieldConfig.name];
+        
+        if (fieldConfig.type === 'date') {
+          // Convert to datetime-local format for the input
+          if (value) {
+            try {
+              const date = new Date(value);
+              if (!isNaN(date.getTime())) {
+                // Format as YYYY-MM-DDTHH:MM for datetime-local input
+                const offset = date.getTimezoneOffset();
+                const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
+              } else {
+                formValues[fieldConfig.name] = "";
+              }
+            } catch {
+              formValues[fieldConfig.name] = "";
+            }
+          } else {
+            formValues[fieldConfig.name] = "";
+          }
+        } else if (fieldConfig.type === 'number') {
+          formValues[fieldConfig.name] = value != null ? String(value) : "";
+        } else {
+          formValues[fieldConfig.name] = value || "";
+        }
+      });
+
+      // Handle relationships
+      config.relationships.forEach(relConfig => {
+        const value = entity[relConfig.name];
+        
+        if (relConfig.multiple) {
+          formValues[relConfig.name] = value ? value.map((item: any) => item[relConfig.primaryKey]) : [];
+        } else {
+          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+        }
+      });
+
+      form.reset(formValues);
+    }
+  }, [entity, config, form, state.isLoading]);
 
   // Render generated step components based on current step
   const renderGeneratedStep = () => {
