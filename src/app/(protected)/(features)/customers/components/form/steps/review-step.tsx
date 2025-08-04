@@ -35,6 +35,7 @@ interface CustomerReviewStepProps {
   form: any;
   config: any;
   actions: any;
+  entity?: any;
 }
 
 // Relationship value resolver component
@@ -171,7 +172,7 @@ function RelationshipDisplayValue({
   }
 }
 
-export function CustomerReviewStep({ form, config, actions }: CustomerReviewStepProps) {
+export function CustomerReviewStep({ form, config, actions, entity }: CustomerReviewStepProps) {
   return (
     <div className="space-y-6">
       {/* Review all previous steps */}

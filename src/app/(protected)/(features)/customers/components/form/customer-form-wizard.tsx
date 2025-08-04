@@ -1,9 +1,8 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced customer form wizard with step components properly enabled
+// - Uncommented step components import and added entity prop support
+// - Fixed step rendering issue that was showing placeholder text
 // ===============================================================
 "use client";
 
@@ -18,7 +17,7 @@ import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/customers/components/form/steps";
+import { stepComponents } from "@/app/(protected)/(features)/customers/components/form/steps";
 import { 
   useCreateCustomer,
   useUpdateCustomer,
@@ -104,7 +103,8 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     const stepProps = {
       form,
       config: config,
-      actions
+      actions,
+      entity
     };
 
     // Use imported step components (requires manual import after generation)
@@ -113,9 +113,8 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       if (StepComponent) {
         return <StepComponent {...stepProps} />;
       }
-      
     } catch (error) {
-      // Steps not imported yet
+      console.error('Error loading step component:', error);
     }
 
     // Fallback message - replace with generated steps
