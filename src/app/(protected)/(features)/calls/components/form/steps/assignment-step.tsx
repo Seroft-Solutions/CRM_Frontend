@@ -32,7 +32,7 @@ export function CallAssignmentStep({ form, config, actions, entity }: CallAssign
         <FormField
           control={form.control}
           name="assignedTo"
-                    render={({field}) => (
+          render={({ field }) => (
             <RelationshipRenderer
               relConfig={{
                 name: 'assignedTo',
@@ -42,19 +42,10 @@ export function CallAssignmentStep({ form, config, actions, entity }: CallAssign
                 primaryKey: 'id',
                 required: false,
                 multiple: false,
-                                customFilters: {"channelTypeId.specified": false},
-                                api: {
-                                    "useGetAllHook": "useGetAllUserProfiles",
-                                    "useSearchHook": "useSearchUserProfiles",
-                                    "useCountHook": "useCountUserProfiles",
-                                    "entityName": "UserProfiles"
-                                },
-                                creation: {
-                                    "canCreate": true,
-                                    "createPath": "/user-profiles/new",
-                                    "createPermission": "userProfile:create:inline"
-                                },
-                                ui: {"label": "Assigned To", "placeholder": "Select assigned to", "icon": "👤"},
+                customFilters: {"channelTypeId.specified":false},
+                api: {"useGetAllHook":"useGetAllUserProfiles","useSearchHook":"useSearchUserProfiles","useCountHook":"useCountUserProfiles","entityName":"UserProfiles"},
+                creation: {"canCreate":true,"createPath":"/user-profiles/new","createPermission":"userProfile:create:inline"},
+                ui: {"label":"Assigned To","placeholder":"Select assigned to","icon":"👤"},
               }}
               field={field}
               form={form}

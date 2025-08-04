@@ -11,15 +11,16 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
+import { RelationshipRenderer } from "../relationship-renderer";
 
 interface CallClassificationStepProps {
   form: any;
   config: any;
   actions: any;
+  entity?: any;
 }
 
-export function CallClassificationStep({ form, config, actions }: CallClassificationStepProps) {
+export function CallClassificationStep({ form, config, actions, entity }: CallClassificationStepProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">

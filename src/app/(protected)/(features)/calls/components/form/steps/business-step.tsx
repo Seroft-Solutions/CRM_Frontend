@@ -7,15 +7,11 @@
 // ===============================================================
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-
-import { Separator } from "@/components/ui/separator";
-
-import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
-
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RelationshipRenderer } from "../relationship-renderer";
 
 interface CallBusinessStepProps {
   form: any;
@@ -24,31 +20,9 @@ interface CallBusinessStepProps {
   entity?: any;
 }
 
-export function CallBusinessStep({ form, config, actions }: CallBusinessStepProps) {
-  const { hasGroup } = useUserAuthorities();
-  const { data: accountData } = useAccount();
-  const isBusinessPartner = hasGroup('Business Partners');
-
-  // Create custom filters for customer relationship based on user group
-  const customerCustomFilters = useMemo(() => {
-    if (isBusinessPartner && accountData?.login) {
-      // For business partners, only show customers created by them
-      return {
-        "createdBy.equals": accountData.login
-      };
-    }
-    // For non-business partners, show all customers
-    return {};
-  }, [isBusinessPartner, accountData?.login]);
-
-
-
-
-
 export function CallBusinessStep({ form, config, actions, entity }: CallBusinessStepProps) {
   return (
     <div className="space-y-6">
-      {/* Business Relationships */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
         
@@ -94,7 +68,6 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                customFilters: customerCustomFilters,
                 api: {"useGetAllHook":"useGetAllCustomers","useSearchHook":"useSearchCustomers","useCountHook":"useCountCustomers","entityName":"Customers"},
                 creation: {"canCreate":true,"createPath":"/customers/new","createPermission":"customer:create:inline"},
                 ui: {"label":"Customer","placeholder":"Select customer","icon":"🏢"},
@@ -133,9 +106,6 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
           )}
         />
       </div>
-
-      {/* Call Remarks Section */}
-
     </div>
   );
 }
