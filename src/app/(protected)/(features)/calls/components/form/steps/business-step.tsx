@@ -1,8 +1,9 @@
 // ===============================================================
-// 🛑 MANUALLY GENERATED FILE - SAFE TO EDIT 🛑
-// - Enhanced business step with integrated call remarks functionality
-// - Allows adding remarks that are saved when call is created
-// - Added business partner filtering for customers by createdBy
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
 // ===============================================================
 "use client";
 
@@ -20,6 +21,7 @@ interface CallBusinessStepProps {
   form: any;
   config: any;
   actions: any;
+  entity?: any;
 }
 
 export function CallBusinessStep({ form, config, actions }: CallBusinessStepProps) {
@@ -43,7 +45,7 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
 
 
 
-
+export function CallBusinessStep({ form, config, actions, entity }: CallBusinessStepProps) {
   return (
     <div className="space-y-6">
       {/* Business Relationships */}
@@ -78,7 +80,7 @@ export function CallBusinessStep({ form, config, actions }: CallBusinessStepProp
           )}
         />
         
-        {/* Customer Relationship - with business partner filtering */}
+        {/* Customer Relationship */}
         <FormField
           control={form.control}
           name="customer"

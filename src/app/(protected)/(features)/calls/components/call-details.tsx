@@ -33,9 +33,213 @@ import {
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
 
 
+import {
+  useGetAllPriorities,
+} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
+import {
+  useGetAllCallTypes,
+} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+import {
+  useGetAllSubCallTypes,
+} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+import {
+  useGetAllSources,
+} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+import {
+  useGetAllCustomers,
+} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
+import {
+  useGetAllProducts,
+} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+import {
+  useGetAllChannelTypes,
+} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+import {
+  useGetAllUserProfiles,
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+import {
+  useGetAllCallStatuses,
+} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+
+
 
 interface CallDetailsProps {
   id: number;
+}
+
+// Component to display relationship values by fetching related entity data
+function RelationshipDisplayValue({ 
+  value, 
+  relConfig
+}: { 
+  value: any; 
+  relConfig: any;
+}) {
+  // Get the appropriate hook for this relationship
+    const { data: priorityData } = relConfig.name === 'priority' ? 
+    useGetAllPriorities({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'priority',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: callTypeData } = relConfig.name === 'callType' ? 
+    useGetAllCallTypes({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'callType',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: subCallTypeData } = relConfig.name === 'subCallType' ? 
+    useGetAllSubCallTypes({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'subCallType',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: sourceData } = relConfig.name === 'source' ? 
+    useGetAllSources({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'source',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: customerData } = relConfig.name === 'customer' ? 
+    useGetAllCustomers({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'customer',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: productData } = relConfig.name === 'product' ? 
+    useGetAllProducts({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'product',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: channelTypeData } = relConfig.name === 'channelType' ? 
+    useGetAllChannelTypes({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'channelType',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: channelPartiesData } = relConfig.name === 'channelParties' ? 
+    useGetAllUserProfiles({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'channelParties',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: assignedToData } = relConfig.name === 'assignedTo' ? 
+    useGetAllUserProfiles({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'assignedTo',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: callStatusData } = relConfig.name === 'callStatus' ? 
+    useGetAllCallStatuses({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'callStatus',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+  
+  if (!value) {
+    return (
+      <span className="text-muted-foreground italic">
+        {relConfig.multiple ? "None selected" : "Not selected"}
+      </span>
+    );
+  }
+
+  // Get the appropriate data for this relationship
+  let allData = null;
+  if (relConfig.name === 'priority') {
+    allData = priorityData;
+  }
+  if (relConfig.name === 'callType') {
+    allData = callTypeData;
+  }
+  if (relConfig.name === 'subCallType') {
+    allData = subCallTypeData;
+  }
+  if (relConfig.name === 'source') {
+    allData = sourceData;
+  }
+  if (relConfig.name === 'customer') {
+    allData = customerData;
+  }
+  if (relConfig.name === 'product') {
+    allData = productData;
+  }
+  if (relConfig.name === 'channelType') {
+    allData = channelTypeData;
+  }
+  if (relConfig.name === 'channelParties') {
+    allData = channelPartiesData;
+  }
+  if (relConfig.name === 'assignedTo') {
+    allData = assignedToData;
+  }
+  if (relConfig.name === 'callStatus') {
+    allData = callStatusData;
+  }
+
+  if (!allData) {
+    // Fallback: try to use the existing data structure
+    if (relConfig.multiple && Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-muted-foreground italic">None selected</span>;
+      }
+      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
+      return <span>{displayValues.join(", ")}</span>;
+    } else {
+      const displayValue = value[relConfig.displayField] || value.id || value;
+      return <span>{displayValue}</span>;
+    }
+  }
+
+  // Extract data array from response (handle both direct array and paginated response)
+  const dataArray = Array.isArray(allData) ? allData : 
+                   allData.content ? allData.content : 
+                   allData.data ? allData.data : [];
+
+  if (relConfig.multiple && Array.isArray(value)) {
+    if (value.length === 0) {
+      return <span className="text-muted-foreground italic">None selected</span>;
+    }
+    
+    const selectedItems = dataArray.filter((item: any) => 
+      value.some((v: any) => {
+        const valueId = typeof v === 'object' ? v[relConfig.primaryKey] : v;
+        return item[relConfig.primaryKey] === valueId;
+      })
+    );
+    
+    if (selectedItems.length === 0) {
+      return <span className="text-muted-foreground italic">{value.length} selected</span>;
+    }
+    
+    const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
+    return <span>{displayValues.join(", ")}</span>;
+  } else {
+    // Single value
+    const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
+    const selectedItem = dataArray.find((item: any) => 
+      item[relConfig.primaryKey] === valueId
+    );
+    
+    return selectedItem ? (
+      <span>{selectedItem[relConfig.displayField]}</span>
+    ) : (
+      <span className="text-muted-foreground italic">
+        Selected (ID: {valueId})
+      </span>
+    );
+  }
 }
 
 export function CallDetails({ id }: CallDetailsProps) {
@@ -100,30 +304,9 @@ export function CallDetails({ id }: CallDetailsProps) {
     );
   };
 
-  // Render relationship value with simple styling
+  // Render relationship value using the enhanced display component
   const renderRelationshipValue = (relConfig: any, value: any) => {
-    if (!value) {
-      return (
-        <span className="text-muted-foreground italic">
-          {relConfig.multiple ? "None selected" : "Not selected"}
-        </span>
-      );
-    }
-
-    if (relConfig.multiple && Array.isArray(value)) {
-      if (value.length === 0) {
-        return (
-          <span className="text-muted-foreground italic">None selected</span>
-        );
-      }
-      
-      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id);
-      return displayValues.join(", ");
-    } else {
-      // Single relationship
-      const displayValue = value[relConfig.displayField] || value.id;
-      return displayValue;
-    }
+    return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
 
   if (isLoading) {
