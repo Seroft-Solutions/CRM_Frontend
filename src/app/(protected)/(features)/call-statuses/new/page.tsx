@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallStatusForm } from "../components/call-status-form";
+import { CallStatusForm } from "@/app/(protected)/(features)/call-statuses/components/call-status-form";
 import { PermissionGuard } from "@/core/auth";
 
 export const metadata = {

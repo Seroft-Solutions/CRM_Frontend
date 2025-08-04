@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { channelTypeToast, handleChannelTypeError } from "./channel-type-toast";
+import { channelTypeToast, handleChannelTypeError } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,11 +79,11 @@ import {
 
 
 
-import { ChannelTypeSearchAndFilters } from "./table/channel-type-search-filters";
-import { ChannelTypeTableHeader } from "./table/channel-type-table-header";
-import { ChannelTypeTableRow } from "./table/channel-type-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { ChannelTypeSearchAndFilters } from "@/app/(protected)/(features)/channel-types/components/table/channel-type-search-filters";
+import { ChannelTypeTableHeader } from "@/app/(protected)/(features)/channel-types/components/table/channel-type-table-header";
+import { ChannelTypeTableRow } from "@/app/(protected)/(features)/channel-types/components/table/channel-type-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/channel-types/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/channel-types/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

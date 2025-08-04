@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
-import { MeetingParticipantTable } from "./components/meeting-participant-table";
+import { MeetingParticipantTable } from "@/app/(protected)/(features)/meeting-participants/components/meeting-participant-table";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

@@ -31,7 +31,8 @@ import type {
   UserDraftDTO
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetUserDraftQueryKey = (id: number,) => {
     }
 
     
-export const getGetUserDraftQueryOptions = <TData = Awaited<ReturnType<typeof getUserDraft>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetUserDraftQueryOptions = <TData = Awaited<ReturnType<typeof getUserDraft>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetUserDraftQueryResult = NonNullable<Awaited<ReturnType<typeof getUserDraft>>>
-export type GetUserDraftQueryError = unknown
+export type GetUserDraftQueryError = ErrorType<unknown>
 
 
-export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = unknown>(
+export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserDraft>>,
@@ -88,7 +89,7 @@ export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = unknown>(
+export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getUserDraft>>,
@@ -98,12 +99,12 @@ export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = unknown>(
+export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = unknown>(
+export function useGetUserDraft<TData = Awaited<ReturnType<typeof getUserDraft>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserDraft>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateUserDraft = (
   
 
 
-export const getUpdateUserDraftMutationOptions = <TError = unknown,
+export const getUpdateUserDraftMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateUserDraftMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserDraft>>>
     export type UpdateUserDraftMutationBody = UserDraftDTO
-    export type UpdateUserDraftMutationError = unknown
+    export type UpdateUserDraftMutationError = ErrorType<unknown>
 
-    export const useUpdateUserDraft = <TError = unknown,
+    export const useUpdateUserDraft = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateUserDraft>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteUserDraftMutationOptions = <TError = unknown,
+export const getDeleteUserDraftMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserDraft>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteUserDraft>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteUserDraftMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUserDraft>>>
     
-    export type DeleteUserDraftMutationError = unknown
+    export type DeleteUserDraftMutationError = ErrorType<unknown>
 
-    export const useDeleteUserDraft = <TError = unknown,
+    export const useDeleteUserDraft = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUserDraft>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteUserDraft>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateUserDraftMutationOptions = <TError = unknown,
+export const getPartialUpdateUserDraftMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateUserDraftMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateUserDraft>>>
     export type PartialUpdateUserDraftMutationBody = UserDraftDTO
-    export type PartialUpdateUserDraftMutationError = unknown
+    export type PartialUpdateUserDraftMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateUserDraft = <TError = unknown,
+    export const usePartialUpdateUserDraft = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateUserDraft>>, TError,{id: number;data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateUserDraft>>,
@@ -309,7 +310,7 @@ export const getGetAllUserDraftsQueryKey = (params?: GetAllUserDraftsParams,) =>
     }
 
     
-export const getGetAllUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = unknown>(params?: GetAllUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = ErrorType<unknown>>(params?: GetAllUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllUserDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllUserDrafts>>>
-export type GetAllUserDraftsQueryError = unknown
+export type GetAllUserDraftsQueryError = ErrorType<unknown>
 
 
-export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = unknown>(
+export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllUserDraftsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllUserDrafts>>,
@@ -341,7 +342,7 @@ export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = unknown>(
+export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = ErrorType<unknown>>(
  params?: GetAllUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllUserDrafts>>,
@@ -351,12 +352,12 @@ export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = unknown>(
+export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = ErrorType<unknown>>(
  params?: GetAllUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = unknown>(
+export function useGetAllUserDrafts<TData = Awaited<ReturnType<typeof getAllUserDrafts>>, TError = ErrorType<unknown>>(
  params?: GetAllUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createUserDraft = (
   
 
 
-export const getCreateUserDraftMutationOptions = <TError = unknown,
+export const getCreateUserDraftMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserDraft>>, TError,{data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createUserDraft>>, TError,{data: UserDraftDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateUserDraftMutationResult = NonNullable<Awaited<ReturnType<typeof createUserDraft>>>
     export type CreateUserDraftMutationBody = UserDraftDTO
-    export type CreateUserDraftMutationError = unknown
+    export type CreateUserDraftMutationError = ErrorType<unknown>
 
-    export const useCreateUserDraft = <TError = unknown,
+    export const useCreateUserDraft = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserDraft>>, TError,{data: UserDraftDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createUserDraft>>,
@@ -449,7 +450,7 @@ export const getCountUserDraftsQueryKey = (params?: CountUserDraftsParams,) => {
     }
 
     
-export const getCountUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = unknown>(params?: CountUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = ErrorType<unknown>>(params?: CountUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountUserDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof countUserDrafts>>>
-export type CountUserDraftsQueryError = unknown
+export type CountUserDraftsQueryError = ErrorType<unknown>
 
 
-export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = unknown>(
+export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = ErrorType<unknown>>(
  params: undefined |  CountUserDraftsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countUserDrafts>>,
@@ -481,7 +482,7 @@ export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = unknown>(
+export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = ErrorType<unknown>>(
  params?: CountUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countUserDrafts>>,
@@ -491,12 +492,12 @@ export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = unknown>(
+export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = ErrorType<unknown>>(
  params?: CountUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = unknown>(
+export function useCountUserDrafts<TData = Awaited<ReturnType<typeof countUserDrafts>>, TError = ErrorType<unknown>>(
  params?: CountUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchUserDraftsQueryKey = (params: SearchUserDraftsParams,) => 
     }
 
     
-export const getSearchUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = unknown>(params: SearchUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchUserDraftsQueryOptions = <TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = ErrorType<unknown>>(params: SearchUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchUserDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof searchUserDrafts>>>
-export type SearchUserDraftsQueryError = unknown
+export type SearchUserDraftsQueryError = ErrorType<unknown>
 
 
-export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = unknown>(
+export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = ErrorType<unknown>>(
  params: SearchUserDraftsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchUserDrafts>>,
@@ -563,7 +564,7 @@ export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = unknown>(
+export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = ErrorType<unknown>>(
  params: SearchUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchUserDrafts>>,
@@ -573,12 +574,12 @@ export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUser
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = unknown>(
+export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = ErrorType<unknown>>(
  params: SearchUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = unknown>(
+export function useSearchUserDrafts<TData = Awaited<ReturnType<typeof searchUserDrafts>>, TError = ErrorType<unknown>>(
  params: SearchUserDraftsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchUserDrafts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

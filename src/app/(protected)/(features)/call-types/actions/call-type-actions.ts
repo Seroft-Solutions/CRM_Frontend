@@ -15,7 +15,7 @@ import {
   updateCallType, 
   deleteCallType 
 } from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
-import { callTypeToast } from "../components/call-type-toast";
+import { callTypeToast } from "@/app/(protected)/(features)/call-types/components/call-type-toast";
 
 export async function createCallTypeAction(data: any) {
   try {

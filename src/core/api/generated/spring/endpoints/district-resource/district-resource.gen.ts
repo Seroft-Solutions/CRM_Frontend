@@ -31,7 +31,8 @@ import type {
   SearchDistrictsParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetDistrictQueryKey = (id: number,) => {
     }
 
     
-export const getGetDistrictQueryOptions = <TData = Awaited<ReturnType<typeof getDistrict>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetDistrictQueryOptions = <TData = Awaited<ReturnType<typeof getDistrict>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetDistrictQueryResult = NonNullable<Awaited<ReturnType<typeof getDistrict>>>
-export type GetDistrictQueryError = unknown
+export type GetDistrictQueryError = ErrorType<unknown>
 
 
-export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = unknown>(
+export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getDistrict>>,
@@ -88,7 +89,7 @@ export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = unknown>(
+export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getDistrict>>,
@@ -98,12 +99,12 @@ export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = unknown>(
+export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = unknown>(
+export function useGetDistrict<TData = Awaited<ReturnType<typeof getDistrict>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDistrict>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateDistrict = (
   
 
 
-export const getUpdateDistrictMutationOptions = <TError = unknown,
+export const getUpdateDistrictMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateDistrictMutationResult = NonNullable<Awaited<ReturnType<typeof updateDistrict>>>
     export type UpdateDistrictMutationBody = DistrictDTO
-    export type UpdateDistrictMutationError = unknown
+    export type UpdateDistrictMutationError = ErrorType<unknown>
 
-    export const useUpdateDistrict = <TError = unknown,
+    export const useUpdateDistrict = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateDistrict>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteDistrictMutationOptions = <TError = unknown,
+export const getDeleteDistrictMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDistrict>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDistrict>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteDistrictMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDistrict>>>
     
-    export type DeleteDistrictMutationError = unknown
+    export type DeleteDistrictMutationError = ErrorType<unknown>
 
-    export const useDeleteDistrict = <TError = unknown,
+    export const useDeleteDistrict = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDistrict>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteDistrict>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateDistrictMutationOptions = <TError = unknown,
+export const getPartialUpdateDistrictMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateDistrictMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateDistrict>>>
     export type PartialUpdateDistrictMutationBody = DistrictDTO
-    export type PartialUpdateDistrictMutationError = unknown
+    export type PartialUpdateDistrictMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateDistrict = <TError = unknown,
+    export const usePartialUpdateDistrict = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateDistrict>>, TError,{id: number;data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateDistrict>>,
@@ -309,7 +310,7 @@ export const getGetAllDistrictsQueryKey = (params?: GetAllDistrictsParams,) => {
     }
 
     
-export const getGetAllDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = unknown>(params?: GetAllDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = ErrorType<unknown>>(params?: GetAllDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllDistrictsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllDistricts>>>
-export type GetAllDistrictsQueryError = unknown
+export type GetAllDistrictsQueryError = ErrorType<unknown>
 
 
-export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = unknown>(
+export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllDistrictsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllDistricts>>,
@@ -341,7 +342,7 @@ export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = unknown>(
+export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = ErrorType<unknown>>(
  params?: GetAllDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllDistricts>>,
@@ -351,12 +352,12 @@ export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = unknown>(
+export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = ErrorType<unknown>>(
  params?: GetAllDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = unknown>(
+export function useGetAllDistricts<TData = Awaited<ReturnType<typeof getAllDistricts>>, TError = ErrorType<unknown>>(
  params?: GetAllDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createDistrict = (
   
 
 
-export const getCreateDistrictMutationOptions = <TError = unknown,
+export const getCreateDistrictMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDistrict>>, TError,{data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createDistrict>>, TError,{data: DistrictDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateDistrictMutationResult = NonNullable<Awaited<ReturnType<typeof createDistrict>>>
     export type CreateDistrictMutationBody = DistrictDTO
-    export type CreateDistrictMutationError = unknown
+    export type CreateDistrictMutationError = ErrorType<unknown>
 
-    export const useCreateDistrict = <TError = unknown,
+    export const useCreateDistrict = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDistrict>>, TError,{data: DistrictDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createDistrict>>,
@@ -449,7 +450,7 @@ export const getCountDistrictsQueryKey = (params?: CountDistrictsParams,) => {
     }
 
     
-export const getCountDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof countDistricts>>, TError = unknown>(params?: CountDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof countDistricts>>, TError = ErrorType<unknown>>(params?: CountDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountDistrictsQueryResult = NonNullable<Awaited<ReturnType<typeof countDistricts>>>
-export type CountDistrictsQueryError = unknown
+export type CountDistrictsQueryError = ErrorType<unknown>
 
 
-export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = unknown>(
+export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = ErrorType<unknown>>(
  params: undefined |  CountDistrictsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countDistricts>>,
@@ -481,7 +482,7 @@ export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistric
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = unknown>(
+export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = ErrorType<unknown>>(
  params?: CountDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countDistricts>>,
@@ -491,12 +492,12 @@ export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistric
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = unknown>(
+export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = ErrorType<unknown>>(
  params?: CountDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = unknown>(
+export function useCountDistricts<TData = Awaited<ReturnType<typeof countDistricts>>, TError = ErrorType<unknown>>(
  params?: CountDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchDistrictsQueryKey = (params: SearchDistrictsParams,) => {
     }
 
     
-export const getSearchDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof searchDistricts>>, TError = unknown>(params: SearchDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchDistrictsQueryOptions = <TData = Awaited<ReturnType<typeof searchDistricts>>, TError = ErrorType<unknown>>(params: SearchDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchDistrictsQueryResult = NonNullable<Awaited<ReturnType<typeof searchDistricts>>>
-export type SearchDistrictsQueryError = unknown
+export type SearchDistrictsQueryError = ErrorType<unknown>
 
 
-export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = unknown>(
+export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = ErrorType<unknown>>(
  params: SearchDistrictsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchDistricts>>,
@@ -563,7 +564,7 @@ export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = unknown>(
+export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = ErrorType<unknown>>(
  params: SearchDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchDistricts>>,
@@ -573,12 +574,12 @@ export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistr
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = unknown>(
+export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = ErrorType<unknown>>(
  params: SearchDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = unknown>(
+export function useSearchDistricts<TData = Awaited<ReturnType<typeof searchDistricts>>, TError = ErrorType<unknown>>(
  params: SearchDistrictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchDistricts>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

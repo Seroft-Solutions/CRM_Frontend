@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { ServiceRequestConfig } from '../base/types';
-import { KEYCLOAK_SERVICE_CONFIG, KEYCLOAK_ADMIN_CONFIG } from './config';
+import { ServiceRequestConfig } from "@/core/api/services/base/types";
+import { KEYCLOAK_SERVICE_CONFIG, KEYCLOAK_ADMIN_CONFIG } from "@/core/api/services/keycloak-service/config";
 import { sessionEventEmitter } from '@/core/auth';
 
 // Admin token cache

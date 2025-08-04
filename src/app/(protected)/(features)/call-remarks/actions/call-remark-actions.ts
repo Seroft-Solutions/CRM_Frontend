@@ -15,7 +15,7 @@ import {
   updateCallRemark, 
   deleteCallRemark 
 } from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
-import { callRemarkToast } from "../components/call-remark-toast";
+import { callRemarkToast } from "@/app/(protected)/(features)/call-remarks/components/call-remark-toast";
 
 export async function createCallRemarkAction(data: any) {
   try {

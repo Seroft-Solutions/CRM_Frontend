@@ -15,7 +15,7 @@ import {
   updateCallStatus, 
   deleteCallStatus 
 } from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
-import { callStatusToast } from "../components/call-status-toast";
+import { callStatusToast } from "@/app/(protected)/(features)/call-statuses/components/call-status-toast";
 
 export async function createCallStatusAction(data: any) {
   try {

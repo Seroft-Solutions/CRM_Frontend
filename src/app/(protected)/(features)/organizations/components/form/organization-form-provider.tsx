@@ -18,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { organizationFormConfig } from "./organization-form-config";
-import { organizationFormSchema } from "./organization-form-schema";
-import { organizationToast, handleOrganizationError } from "../organization-toast";
+import { organizationFormConfig } from "@/app/(protected)/(features)/organizations/components/form/organization-form-config";
+import { organizationFormSchema } from "@/app/(protected)/(features)/organizations/components/form/organization-form-schema";
+import { organizationToast, handleOrganizationError } from "@/app/(protected)/(features)/organizations/components/organization-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

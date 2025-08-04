@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { UserAvailabilityDetails } from "../components/user-availability-details";
+import { UserAvailabilityDetails } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

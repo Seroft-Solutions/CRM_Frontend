@@ -30,7 +30,8 @@ import type {
   TriggerOrganizationSchemaSetupParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -51,7 +52,7 @@ export const setupSchema = (
   
 
 
-export const getSetupSchemaMutationOptions = <TError = unknown,
+export const getSetupSchemaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setupSchema>>, TError,{schemaName: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof setupSchema>>, TError,{schemaName: string}, TContext> => {
     
@@ -78,9 +79,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type SetupSchemaMutationResult = NonNullable<Awaited<ReturnType<typeof setupSchema>>>
     
-    export type SetupSchemaMutationError = unknown
+    export type SetupSchemaMutationError = ErrorType<unknown>
 
-    export const useSetupSchema = <TError = unknown,
+    export const useSetupSchema = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setupSchema>>, TError,{schemaName: string}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof setupSchema>>,
@@ -109,7 +110,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getTriggerOrganizationSchemaSetupMutationOptions = <TError = unknown,
+export const getTriggerOrganizationSchemaSetupMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerOrganizationSchemaSetup>>, TError,{organizationName: string;params: TriggerOrganizationSchemaSetupParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof triggerOrganizationSchemaSetup>>, TError,{organizationName: string;params: TriggerOrganizationSchemaSetupParams}, TContext> => {
     
@@ -136,9 +137,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type TriggerOrganizationSchemaSetupMutationResult = NonNullable<Awaited<ReturnType<typeof triggerOrganizationSchemaSetup>>>
     
-    export type TriggerOrganizationSchemaSetupMutationError = unknown
+    export type TriggerOrganizationSchemaSetupMutationError = ErrorType<unknown>
 
-    export const useTriggerOrganizationSchemaSetup = <TError = unknown,
+    export const useTriggerOrganizationSchemaSetup = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerOrganizationSchemaSetup>>, TError,{organizationName: string;params: TriggerOrganizationSchemaSetupParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof triggerOrganizationSchemaSetup>>,
@@ -167,7 +168,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getCreateOrganizationWithSchemaMutationOptions = <TError = unknown,
+export const getCreateOrganizationWithSchemaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationWithSchema>>, TError,{data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createOrganizationWithSchema>>, TError,{data: OrganizationDTO}, TContext> => {
     
@@ -194,9 +195,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateOrganizationWithSchemaMutationResult = NonNullable<Awaited<ReturnType<typeof createOrganizationWithSchema>>>
     export type CreateOrganizationWithSchemaMutationBody = OrganizationDTO
-    export type CreateOrganizationWithSchemaMutationError = unknown
+    export type CreateOrganizationWithSchemaMutationError = ErrorType<unknown>
 
-    export const useCreateOrganizationWithSchema = <TError = unknown,
+    export const useCreateOrganizationWithSchema = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationWithSchema>>, TError,{data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOrganizationWithSchema>>,
@@ -227,7 +228,7 @@ export const getCheckSchemaExistsQueryKey = (schemaName: string,) => {
     }
 
     
-export const getCheckSchemaExistsQueryOptions = <TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = unknown>(schemaName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCheckSchemaExistsQueryOptions = <TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = ErrorType<unknown>>(schemaName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -246,10 +247,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CheckSchemaExistsQueryResult = NonNullable<Awaited<ReturnType<typeof checkSchemaExists>>>
-export type CheckSchemaExistsQueryError = unknown
+export type CheckSchemaExistsQueryError = ErrorType<unknown>
 
 
-export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = unknown>(
+export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = ErrorType<unknown>>(
  schemaName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof checkSchemaExists>>,
@@ -259,7 +260,7 @@ export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSche
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = unknown>(
+export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = ErrorType<unknown>>(
  schemaName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof checkSchemaExists>>,
@@ -269,12 +270,12 @@ export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSche
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = unknown>(
+export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = ErrorType<unknown>>(
  schemaName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = unknown>(
+export function useCheckSchemaExists<TData = Awaited<ReturnType<typeof checkSchemaExists>>, TError = ErrorType<unknown>>(
  schemaName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkSchemaExists>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -308,7 +309,7 @@ export const getGetOrganizationSetupProgressQueryKey = (organizationName: string
     }
 
     
-export const getGetOrganizationSetupProgressQueryOptions = <TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = unknown>(organizationName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetOrganizationSetupProgressQueryOptions = <TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = ErrorType<unknown>>(organizationName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -327,10 +328,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetOrganizationSetupProgressQueryResult = NonNullable<Awaited<ReturnType<typeof getOrganizationSetupProgress>>>
-export type GetOrganizationSetupProgressQueryError = unknown
+export type GetOrganizationSetupProgressQueryError = ErrorType<unknown>
 
 
-export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = unknown>(
+export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = ErrorType<unknown>>(
  organizationName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getOrganizationSetupProgress>>,
@@ -340,7 +341,7 @@ export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeo
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = unknown>(
+export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = ErrorType<unknown>>(
  organizationName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getOrganizationSetupProgress>>,
@@ -350,12 +351,12 @@ export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeo
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = unknown>(
+export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = ErrorType<unknown>>(
  organizationName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = unknown>(
+export function useGetOrganizationSetupProgress<TData = Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError = ErrorType<unknown>>(
  organizationName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganizationSetupProgress>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -389,7 +390,7 @@ export const getGetTenantInfoQueryKey = (tenantName: string,) => {
     }
 
     
-export const getGetTenantInfoQueryOptions = <TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = unknown>(tenantName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetTenantInfoQueryOptions = <TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = ErrorType<unknown>>(tenantName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -408,10 +409,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetTenantInfoQueryResult = NonNullable<Awaited<ReturnType<typeof getTenantInfo>>>
-export type GetTenantInfoQueryError = unknown
+export type GetTenantInfoQueryError = ErrorType<unknown>
 
 
-export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = unknown>(
+export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = ErrorType<unknown>>(
  tenantName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTenantInfo>>,
@@ -421,7 +422,7 @@ export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = unknown>(
+export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = ErrorType<unknown>>(
  tenantName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTenantInfo>>,
@@ -431,12 +432,12 @@ export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = unknown>(
+export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = ErrorType<unknown>>(
  tenantName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = unknown>(
+export function useGetTenantInfo<TData = Awaited<ReturnType<typeof getTenantInfo>>, TError = ErrorType<unknown>>(
  tenantName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantInfo>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

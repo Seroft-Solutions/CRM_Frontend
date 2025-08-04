@@ -9,22 +9,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AreaFormProvider, useEntityForm } from "./area-form-provider";
-import { FormProgressIndicator } from "./form-progress-indicator";
-import { FormStepRenderer } from "./form-step-renderer";
-import { FormNavigation } from "./form-navigation";
-import { FormStateManager } from "./form-state-manager";
+import { AreaFormProvider, useEntityForm } from "@/app/(protected)/(features)/areas/components/form/area-form-provider";
+import { FormProgressIndicator } from "@/app/(protected)/(features)/areas/components/form/form-progress-indicator";
+import { FormStepRenderer } from "@/app/(protected)/(features)/areas/components/form/form-step-renderer";
+import { FormNavigation } from "@/app/(protected)/(features)/areas/components/form/form-navigation";
+import { FormStateManager } from "@/app/(protected)/(features)/areas/components/form/form-state-manager";
 import { FormErrorsDisplay } from "@/components/form-errors-display";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+// import { stepComponents } from "@/app/(protected)/(features)/areas/components/form/steps";
 import { 
   useCreateArea,
   useUpdateArea,
   useGetArea,
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-import { areaToast, handleAreaError } from "../area-toast";
+import { areaToast, handleAreaError } from "@/app/(protected)/(features)/areas/components/area-toast";
 import { useCrossFormNavigation } from "@/context/cross-form-navigation";
 import { useQueryClient } from '@tanstack/react-query';
 

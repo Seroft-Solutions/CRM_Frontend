@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
-import { BaseService } from '../base/base-service';
-import { ServiceRequestConfig } from '../base/types';
+import { BaseService } from "@/core/api/services/base/base-service";
+import { ServiceRequestConfig } from "@/core/api/services/base/types";
 
 /**
  * Creates a service mutator function for Orval

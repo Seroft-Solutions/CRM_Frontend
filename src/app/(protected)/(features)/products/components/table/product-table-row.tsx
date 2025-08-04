@@ -15,7 +15,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { InlinePermissionGuard } from "@/core/auth";
-import { RelationshipCell } from "./relationship-cell";
+import { RelationshipCell } from "@/app/(protected)/(features)/products/components/table/relationship-cell";
 import type { ProductDTO } from "@/core/api/generated/spring/schemas/ProductDTO";
 
 

@@ -18,9 +18,9 @@ import type {
   FormActions, 
   FormContextValue 
 } from "./form-types";
-import { productFormConfig } from "./product-form-config";
-import { productFormSchema } from "./product-form-schema";
-import { productToast, handleProductError } from "../product-toast";
+import { productFormConfig } from "@/app/(protected)/(features)/products/components/form/product-form-config";
+import { productFormSchema } from "@/app/(protected)/(features)/products/components/form/product-form-schema";
+import { productToast, handleProductError } from "@/app/(protected)/(features)/products/components/product-toast";
 import { useCrossFormNavigation, useNavigationFromUrl } from "@/context/cross-form-navigation";
 import { useEntityDrafts } from "@/core/hooks/use-entity-drafts";
 import { SaveDraftDialog, DraftRestorationDialog } from "@/components/form-drafts";

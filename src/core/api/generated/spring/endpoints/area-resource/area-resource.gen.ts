@@ -31,7 +31,8 @@ import type {
   SearchAreasParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetAreaQueryKey = (id: number,) => {
     }
 
     
-export const getGetAreaQueryOptions = <TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAreaQueryOptions = <TData = Awaited<ReturnType<typeof getArea>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAreaQueryResult = NonNullable<Awaited<ReturnType<typeof getArea>>>
-export type GetAreaQueryError = unknown
+export type GetAreaQueryError = ErrorType<unknown>
 
 
-export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(
+export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getArea>>,
@@ -88,7 +89,7 @@ export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(
+export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getArea>>,
@@ -98,12 +99,12 @@ export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(
+export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = unknown>(
+export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateArea = (
   
 
 
-export const getUpdateAreaMutationOptions = <TError = unknown,
+export const getUpdateAreaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArea>>, TError,{id: number;data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateArea>>, TError,{id: number;data: AreaDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateAreaMutationResult = NonNullable<Awaited<ReturnType<typeof updateArea>>>
     export type UpdateAreaMutationBody = AreaDTO
-    export type UpdateAreaMutationError = unknown
+    export type UpdateAreaMutationError = ErrorType<unknown>
 
-    export const useUpdateArea = <TError = unknown,
+    export const useUpdateArea = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateArea>>, TError,{id: number;data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateArea>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteAreaMutationOptions = <TError = unknown,
+export const getDeleteAreaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArea>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteArea>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteAreaMutationResult = NonNullable<Awaited<ReturnType<typeof deleteArea>>>
     
-    export type DeleteAreaMutationError = unknown
+    export type DeleteAreaMutationError = ErrorType<unknown>
 
-    export const useDeleteArea = <TError = unknown,
+    export const useDeleteArea = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteArea>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteArea>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateAreaMutationOptions = <TError = unknown,
+export const getPartialUpdateAreaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateArea>>, TError,{id: number;data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateArea>>, TError,{id: number;data: AreaDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateAreaMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateArea>>>
     export type PartialUpdateAreaMutationBody = AreaDTO
-    export type PartialUpdateAreaMutationError = unknown
+    export type PartialUpdateAreaMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateArea = <TError = unknown,
+    export const usePartialUpdateArea = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateArea>>, TError,{id: number;data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateArea>>,
@@ -309,7 +310,7 @@ export const getGetAllAreasQueryKey = (params?: GetAllAreasParams,) => {
     }
 
     
-export const getGetAllAreasQueryOptions = <TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllAreasQueryOptions = <TData = Awaited<ReturnType<typeof getAllAreas>>, TError = ErrorType<unknown>>(params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllAreasQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAreas>>>
-export type GetAllAreasQueryError = unknown
+export type GetAllAreasQueryError = ErrorType<unknown>
 
 
-export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(
+export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllAreasParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAreas>>,
@@ -341,7 +342,7 @@ export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(
+export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = ErrorType<unknown>>(
  params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAreas>>,
@@ -351,12 +352,12 @@ export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(
+export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = ErrorType<unknown>>(
  params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = unknown>(
+export function useGetAllAreas<TData = Awaited<ReturnType<typeof getAllAreas>>, TError = ErrorType<unknown>>(
  params?: GetAllAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createArea = (
   
 
 
-export const getCreateAreaMutationOptions = <TError = unknown,
+export const getCreateAreaMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArea>>, TError,{data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createArea>>, TError,{data: AreaDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateAreaMutationResult = NonNullable<Awaited<ReturnType<typeof createArea>>>
     export type CreateAreaMutationBody = AreaDTO
-    export type CreateAreaMutationError = unknown
+    export type CreateAreaMutationError = ErrorType<unknown>
 
-    export const useCreateArea = <TError = unknown,
+    export const useCreateArea = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createArea>>, TError,{data: AreaDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createArea>>,
@@ -449,7 +450,7 @@ export const getCountAreasQueryKey = (params?: CountAreasParams,) => {
     }
 
     
-export const getCountAreasQueryOptions = <TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountAreasQueryOptions = <TData = Awaited<ReturnType<typeof countAreas>>, TError = ErrorType<unknown>>(params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountAreasQueryResult = NonNullable<Awaited<ReturnType<typeof countAreas>>>
-export type CountAreasQueryError = unknown
+export type CountAreasQueryError = ErrorType<unknown>
 
 
-export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(
+export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = ErrorType<unknown>>(
  params: undefined |  CountAreasParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countAreas>>,
@@ -481,7 +482,7 @@ export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(
+export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = ErrorType<unknown>>(
  params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countAreas>>,
@@ -491,12 +492,12 @@ export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TE
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(
+export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = ErrorType<unknown>>(
  params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = unknown>(
+export function useCountAreas<TData = Awaited<ReturnType<typeof countAreas>>, TError = ErrorType<unknown>>(
  params?: CountAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchAreasQueryKey = (params: SearchAreasParams,) => {
     }
 
     
-export const getSearchAreasQueryOptions = <TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchAreasQueryOptions = <TData = Awaited<ReturnType<typeof searchAreas>>, TError = ErrorType<unknown>>(params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchAreasQueryResult = NonNullable<Awaited<ReturnType<typeof searchAreas>>>
-export type SearchAreasQueryError = unknown
+export type SearchAreasQueryError = ErrorType<unknown>
 
 
-export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(
+export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = ErrorType<unknown>>(
  params: SearchAreasParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchAreas>>,
@@ -563,7 +564,7 @@ export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(
+export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = ErrorType<unknown>>(
  params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchAreas>>,
@@ -573,12 +574,12 @@ export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(
+export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = ErrorType<unknown>>(
  params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = unknown>(
+export function useSearchAreas<TData = Awaited<ReturnType<typeof searchAreas>>, TError = ErrorType<unknown>>(
  params: SearchAreasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchAreas>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

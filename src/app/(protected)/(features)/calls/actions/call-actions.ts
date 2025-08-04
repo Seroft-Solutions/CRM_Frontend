@@ -15,7 +15,7 @@ import {
   updateCall, 
   deleteCall 
 } from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
-import { callToast } from "../components/call-toast";
+import { callToast } from "@/app/(protected)/(features)/calls/components/call-toast";
 
 export async function createCallAction(data: any) {
   try {

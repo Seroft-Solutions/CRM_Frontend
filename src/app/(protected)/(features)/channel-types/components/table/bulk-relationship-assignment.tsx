@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { channelTypeToast } from "../channel-type-toast";
+import { channelTypeToast } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
 
 
 

@@ -13,8 +13,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { areaToast, handleAreaError } from "./area-toast";
-import { areaFormConfig } from "./form/area-form-config";
+import { areaToast, handleAreaError } from "@/app/(protected)/(features)/areas/components/area-toast";
+import { areaFormConfig } from "@/app/(protected)/(features)/areas/components/form/area-form-config";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

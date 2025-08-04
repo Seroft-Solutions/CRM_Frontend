@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { callTypeToast, handleCallTypeError } from "./call-type-toast";
+import { callTypeToast, handleCallTypeError } from "@/app/(protected)/(features)/call-types/components/call-type-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,11 +79,11 @@ import {
 
 
 
-import { CallTypeSearchAndFilters } from "./table/call-type-search-filters";
-import { CallTypeTableHeader } from "./table/call-type-table-header";
-import { CallTypeTableRow } from "./table/call-type-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { CallTypeSearchAndFilters } from "@/app/(protected)/(features)/call-types/components/table/call-type-search-filters";
+import { CallTypeTableHeader } from "@/app/(protected)/(features)/call-types/components/table/call-type-table-header";
+import { CallTypeTableRow } from "@/app/(protected)/(features)/call-types/components/table/call-type-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/call-types/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/call-types/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

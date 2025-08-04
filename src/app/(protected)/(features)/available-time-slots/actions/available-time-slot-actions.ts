@@ -15,7 +15,7 @@ import {
   updateAvailableTimeSlot, 
   deleteAvailableTimeSlot 
 } from "@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen";
-import { availableTimeSlotToast } from "../components/available-time-slot-toast";
+import { availableTimeSlotToast } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast";
 
 export async function createAvailableTimeSlotAction(data: any) {
   try {

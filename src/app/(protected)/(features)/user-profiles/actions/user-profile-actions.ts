@@ -15,7 +15,7 @@ import {
   updateUserProfile, 
   deleteUserProfile 
 } from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
-import { userProfileToast } from "../components/user-profile-toast";
+import { userProfileToast } from "@/app/(protected)/(features)/user-profiles/components/user-profile-toast";
 
 export async function createUserProfileAction(data: any) {
   try {

@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { UserProfileForm } from "./form/user-profile-form-wizard";
+import { UserProfileForm } from "@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-wizard";
 
 interface UserProfileFormProps {
   id?: number;

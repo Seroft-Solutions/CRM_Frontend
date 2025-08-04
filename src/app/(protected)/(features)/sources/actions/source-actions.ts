@@ -15,7 +15,7 @@ import {
   updateSource, 
   deleteSource 
 } from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
-import { sourceToast } from "../components/source-toast";
+import { sourceToast } from "@/app/(protected)/(features)/sources/components/source-toast";
 
 export async function createSourceAction(data: any) {
   try {

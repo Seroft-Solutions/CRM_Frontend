@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { OrganizationForm } from "../components/organization-form";
+import { OrganizationForm } from "@/app/(protected)/(features)/organizations/components/organization-form";
 import { PermissionGuard } from "@/core/auth";
 
 export const metadata = {

@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { ChannelTypeForm } from "./form/channel-type-form-wizard";
+import { ChannelTypeForm } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-wizard";
 
 interface ChannelTypeFormProps {
   id?: number;

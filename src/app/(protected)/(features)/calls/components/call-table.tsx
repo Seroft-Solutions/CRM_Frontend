@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { callToast, handleCallError } from "./call-toast";
+import { callToast, handleCallError } from "@/app/(protected)/(features)/calls/components/call-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
@@ -121,11 +121,11 @@ import {
 
 
 
-import { CallSearchAndFilters } from "./table/call-search-filters";
-import { CallTableHeader } from "./table/call-table-header";
-import { CallTableRow } from "./table/call-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { CallSearchAndFilters } from "@/app/(protected)/(features)/calls/components/table/call-search-filters";
+import { CallTableHeader } from "@/app/(protected)/(features)/calls/components/table/call-table-header";
+import { CallTableRow } from "@/app/(protected)/(features)/calls/components/table/call-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/calls/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/calls/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

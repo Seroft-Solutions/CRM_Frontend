@@ -15,7 +15,7 @@ import {
   updateGroup, 
   deleteGroup 
 } from "@/core/api/generated/spring/endpoints/group-resource/group-resource.gen";
-import { groupToast } from "../components/group-toast";
+import { groupToast } from "@/app/(protected)/(features)/groups/components/group-toast";
 
 export async function createGroupAction(data: any) {
   try {

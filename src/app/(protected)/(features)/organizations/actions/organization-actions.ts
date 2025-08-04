@@ -15,7 +15,7 @@ import {
   updateOrganization, 
   deleteOrganization 
 } from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
-import { organizationToast } from "../components/organization-toast";
+import { organizationToast } from "@/app/(protected)/(features)/organizations/components/organization-toast";
 
 export async function createOrganizationAction(data: any) {
   try {

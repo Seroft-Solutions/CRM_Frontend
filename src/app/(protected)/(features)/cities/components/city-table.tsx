@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { cityToast, handleCityError } from "./city-toast";
+import { cityToast, handleCityError } from "@/app/(protected)/(features)/cities/components/city-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,11 +88,11 @@ import {
 
 
 
-import { CitySearchAndFilters } from "./table/city-search-filters";
-import { CityTableHeader } from "./table/city-table-header";
-import { CityTableRow } from "./table/city-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { CitySearchAndFilters } from "@/app/(protected)/(features)/cities/components/table/city-search-filters";
+import { CityTableHeader } from "@/app/(protected)/(features)/cities/components/table/city-table-header";
+import { CityTableRow } from "@/app/(protected)/(features)/cities/components/table/city-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/cities/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/cities/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

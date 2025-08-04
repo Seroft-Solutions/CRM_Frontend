@@ -11,7 +11,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 
 import { Separator } from "@/components/ui/separator";
 
-import { RelationshipRenderer } from "../relationship-renderer";
+import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 

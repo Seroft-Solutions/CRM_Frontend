@@ -15,7 +15,7 @@ import {
   updateCustomer, 
   deleteCustomer 
 } from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
-import { customerToast } from "../components/customer-toast";
+import { customerToast } from "@/app/(protected)/(features)/customers/components/customer-toast";
 
 export async function createCustomerAction(data: any) {
   try {

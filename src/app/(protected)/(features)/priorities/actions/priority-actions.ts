@@ -15,7 +15,7 @@ import {
   updatePriority, 
   deletePriority 
 } from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
-import { priorityToast } from "../components/priority-toast";
+import { priorityToast } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 
 export async function createPriorityAction(data: any) {
   try {

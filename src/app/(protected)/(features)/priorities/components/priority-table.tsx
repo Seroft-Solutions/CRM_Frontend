@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { priorityToast, handlePriorityError } from "./priority-toast";
+import { priorityToast, handlePriorityError } from "@/app/(protected)/(features)/priorities/components/priority-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,11 +79,11 @@ import {
 
 
 
-import { PrioritySearchAndFilters } from "./table/priority-search-filters";
-import { PriorityTableHeader } from "./table/priority-table-header";
-import { PriorityTableRow } from "./table/priority-table-row";
-import { BulkRelationshipAssignment } from "./table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "./table/advanced-pagination";
+import { PrioritySearchAndFilters } from "@/app/(protected)/(features)/priorities/components/table/priority-search-filters";
+import { PriorityTableHeader } from "@/app/(protected)/(features)/priorities/components/table/priority-table-header";
+import { PriorityTableRow } from "@/app/(protected)/(features)/priorities/components/table/priority-table-row";
+import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/priorities/components/table/bulk-relationship-assignment";
+import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/priorities/components/table/advanced-pagination";
 
 // Define sort ordering constants
 const ASC = "asc";

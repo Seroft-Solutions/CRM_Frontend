@@ -31,7 +31,8 @@ import type {
   SearchOrganizationsParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetOrganizationQueryKey = (id: number,) => {
     }
 
     
-export const getGetOrganizationQueryOptions = <TData = Awaited<ReturnType<typeof getOrganization>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetOrganizationQueryOptions = <TData = Awaited<ReturnType<typeof getOrganization>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetOrganizationQueryResult = NonNullable<Awaited<ReturnType<typeof getOrganization>>>
-export type GetOrganizationQueryError = unknown
+export type GetOrganizationQueryError = ErrorType<unknown>
 
 
-export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = unknown>(
+export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getOrganization>>,
@@ -88,7 +89,7 @@ export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganiza
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = unknown>(
+export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getOrganization>>,
@@ -98,12 +99,12 @@ export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganiza
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = unknown>(
+export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = unknown>(
+export function useGetOrganization<TData = Awaited<ReturnType<typeof getOrganization>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOrganization>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateOrganization = (
   
 
 
-export const getUpdateOrganizationMutationOptions = <TError = unknown,
+export const getUpdateOrganizationMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrganization>>>
     export type UpdateOrganizationMutationBody = OrganizationDTO
-    export type UpdateOrganizationMutationError = unknown
+    export type UpdateOrganizationMutationError = ErrorType<unknown>
 
-    export const useUpdateOrganization = <TError = unknown,
+    export const useUpdateOrganization = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateOrganization>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteOrganizationMutationOptions = <TError = unknown,
+export const getDeleteOrganizationMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrganization>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteOrganization>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteOrganization>>>
     
-    export type DeleteOrganizationMutationError = unknown
+    export type DeleteOrganizationMutationError = ErrorType<unknown>
 
-    export const useDeleteOrganization = <TError = unknown,
+    export const useDeleteOrganization = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrganization>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteOrganization>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateOrganizationMutationOptions = <TError = unknown,
+export const getPartialUpdateOrganizationMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateOrganization>>>
     export type PartialUpdateOrganizationMutationBody = OrganizationDTO
-    export type PartialUpdateOrganizationMutationError = unknown
+    export type PartialUpdateOrganizationMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateOrganization = <TError = unknown,
+    export const usePartialUpdateOrganization = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateOrganization>>, TError,{id: number;data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateOrganization>>,
@@ -309,7 +310,7 @@ export const getGetAllOrganizationsQueryKey = (params?: GetAllOrganizationsParam
     }
 
     
-export const getGetAllOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = unknown>(params?: GetAllOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = ErrorType<unknown>>(params?: GetAllOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllOrganizationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllOrganizations>>>
-export type GetAllOrganizationsQueryError = unknown
+export type GetAllOrganizationsQueryError = ErrorType<unknown>
 
 
-export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = unknown>(
+export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllOrganizationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllOrganizations>>,
@@ -341,7 +342,7 @@ export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = unknown>(
+export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = ErrorType<unknown>>(
  params?: GetAllOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllOrganizations>>,
@@ -351,12 +352,12 @@ export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = unknown>(
+export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = ErrorType<unknown>>(
  params?: GetAllOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = unknown>(
+export function useGetAllOrganizations<TData = Awaited<ReturnType<typeof getAllOrganizations>>, TError = ErrorType<unknown>>(
  params?: GetAllOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createOrganization = (
   
 
 
-export const getCreateOrganizationMutationOptions = <TError = unknown,
+export const getCreateOrganizationMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganization>>, TError,{data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createOrganization>>, TError,{data: OrganizationDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof createOrganization>>>
     export type CreateOrganizationMutationBody = OrganizationDTO
-    export type CreateOrganizationMutationError = unknown
+    export type CreateOrganizationMutationError = ErrorType<unknown>
 
-    export const useCreateOrganization = <TError = unknown,
+    export const useCreateOrganization = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganization>>, TError,{data: OrganizationDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOrganization>>,
@@ -449,7 +450,7 @@ export const getCountOrganizationsQueryKey = (params?: CountOrganizationsParams,
     }
 
     
-export const getCountOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof countOrganizations>>, TError = unknown>(params?: CountOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof countOrganizations>>, TError = ErrorType<unknown>>(params?: CountOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountOrganizationsQueryResult = NonNullable<Awaited<ReturnType<typeof countOrganizations>>>
-export type CountOrganizationsQueryError = unknown
+export type CountOrganizationsQueryError = ErrorType<unknown>
 
 
-export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = unknown>(
+export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = ErrorType<unknown>>(
  params: undefined |  CountOrganizationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countOrganizations>>,
@@ -481,7 +482,7 @@ export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrg
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = unknown>(
+export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = ErrorType<unknown>>(
  params?: CountOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countOrganizations>>,
@@ -491,12 +492,12 @@ export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrg
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = unknown>(
+export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = ErrorType<unknown>>(
  params?: CountOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = unknown>(
+export function useCountOrganizations<TData = Awaited<ReturnType<typeof countOrganizations>>, TError = ErrorType<unknown>>(
  params?: CountOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchOrganizationsQueryKey = (params: SearchOrganizationsParams
     }
 
     
-export const getSearchOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = unknown>(params: SearchOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchOrganizationsQueryOptions = <TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = ErrorType<unknown>>(params: SearchOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchOrganizationsQueryResult = NonNullable<Awaited<ReturnType<typeof searchOrganizations>>>
-export type SearchOrganizationsQueryError = unknown
+export type SearchOrganizationsQueryError = ErrorType<unknown>
 
 
-export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = unknown>(
+export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = ErrorType<unknown>>(
  params: SearchOrganizationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchOrganizations>>,
@@ -563,7 +564,7 @@ export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = unknown>(
+export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = ErrorType<unknown>>(
  params: SearchOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchOrganizations>>,
@@ -573,12 +574,12 @@ export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchO
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = unknown>(
+export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = ErrorType<unknown>>(
  params: SearchOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = unknown>(
+export function useSearchOrganizations<TData = Awaited<ReturnType<typeof searchOrganizations>>, TError = ErrorType<unknown>>(
  params: SearchOrganizationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchOrganizations>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

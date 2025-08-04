@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { AvailableTimeSlotDetails } from "../components/available-time-slot-details";
+import { AvailableTimeSlotDetails } from "@/app/(protected)/(features)/available-time-slots/components/available-time-slot-details";
 import { PageHeader } from "@/components/page-header";
 import { PageTitle } from "@/components/page-title";
 import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";

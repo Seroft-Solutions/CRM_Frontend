@@ -34,7 +34,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { callTypeToast } from "../call-type-toast";
+import { callTypeToast } from "@/app/(protected)/(features)/call-types/components/call-type-toast";
 
 
 

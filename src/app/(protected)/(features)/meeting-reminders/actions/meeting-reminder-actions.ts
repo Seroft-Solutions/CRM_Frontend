@@ -15,7 +15,7 @@ import {
   updateMeetingReminder, 
   deleteMeetingReminder 
 } from "@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen";
-import { meetingReminderToast } from "../components/meeting-reminder-toast";
+import { meetingReminderToast } from "@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast";
 
 export async function createMeetingReminderAction(data: any) {
   try {

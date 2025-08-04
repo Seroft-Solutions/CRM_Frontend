@@ -10,6 +10,7 @@
  */
 import { z } from "zod";
 
+// Override the channelType validation to make it optional
 export const callFormSchemaFields = {
   priority: z.number({ message: "Please select priority from the dropdown" }),
   callType: z.number({ message: "Please select call type from the dropdown" }),
@@ -17,7 +18,7 @@ export const callFormSchemaFields = {
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
   product: z.number({ message: "Please select product from the dropdown" }),
-  channelType: z.number({ message: "Please select channel type from the dropdown" }),
+  channelType: z.number({ message: "Please select channel type from the dropdown" }).optional(), // Made optional
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
   callStatus: z.number({ message: "Please select call status from the dropdown" }),
@@ -35,7 +36,7 @@ export const callFieldSchemas = {
   source: z.number({ message: "Please select source from the dropdown" }),
   customer: z.number({ message: "Please select customer from the dropdown" }),
   product: z.number({ message: "Please select product from the dropdown" }),
-  channelType: z.number({ message: "Please select channel type from the dropdown" }),
+  channelType: z.number({ message: "Please select channel type from the dropdown" }).optional(), // Made optional
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
   callStatus: z.number({ message: "Please select call status from the dropdown" }),
@@ -49,7 +50,7 @@ export const callStepSchemas = {
     lastModifiedBy: callFieldSchemas.lastModifiedBy,
     lastModifiedDate: callFieldSchemas.lastModifiedDate,
   }),
-  
+
   review: callFormSchema,
 };
 
@@ -57,7 +58,7 @@ export const callStepSchemas = {
 export const validateStep = (stepId: string, data: any) => {
   const schema = callStepSchemas[stepId as keyof typeof callStepSchemas];
   if (!schema) return { success: true, data };
-  
+
   try {
     const validData = schema.parse(data);
     return { success: true, data: validData };

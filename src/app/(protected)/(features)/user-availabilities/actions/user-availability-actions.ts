@@ -15,7 +15,7 @@ import {
   updateUserAvailability, 
   deleteUserAvailability 
 } from "@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen";
-import { userAvailabilityToast } from "../components/user-availability-toast";
+import { userAvailabilityToast } from "@/app/(protected)/(features)/user-availabilities/components/user-availability-toast";
 
 export async function createUserAvailabilityAction(data: any) {
   try {

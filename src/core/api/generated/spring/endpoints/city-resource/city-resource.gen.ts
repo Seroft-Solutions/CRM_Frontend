@@ -31,7 +31,8 @@ import type {
   SearchCitiesParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetCityQueryKey = (id: number,) => {
     }
 
     
-export const getGetCityQueryOptions = <TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetCityQueryOptions = <TData = Awaited<ReturnType<typeof getCity>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetCityQueryResult = NonNullable<Awaited<ReturnType<typeof getCity>>>
-export type GetCityQueryError = unknown
+export type GetCityQueryError = ErrorType<unknown>
 
 
-export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(
+export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCity>>,
@@ -88,7 +89,7 @@ export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(
+export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCity>>,
@@ -98,12 +99,12 @@ export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError =
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(
+export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = unknown>(
+export function useGetCity<TData = Awaited<ReturnType<typeof getCity>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCity>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updateCity = (
   
 
 
-export const getUpdateCityMutationOptions = <TError = unknown,
+export const getUpdateCityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCity>>, TError,{id: number;data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateCity>>, TError,{id: number;data: CityDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateCityMutationResult = NonNullable<Awaited<ReturnType<typeof updateCity>>>
     export type UpdateCityMutationBody = CityDTO
-    export type UpdateCityMutationError = unknown
+    export type UpdateCityMutationError = ErrorType<unknown>
 
-    export const useUpdateCity = <TError = unknown,
+    export const useUpdateCity = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCity>>, TError,{id: number;data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateCity>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeleteCityMutationOptions = <TError = unknown,
+export const getDeleteCityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCity>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteCity>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteCityMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCity>>>
     
-    export type DeleteCityMutationError = unknown
+    export type DeleteCityMutationError = ErrorType<unknown>
 
-    export const useDeleteCity = <TError = unknown,
+    export const useDeleteCity = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCity>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteCity>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdateCityMutationOptions = <TError = unknown,
+export const getPartialUpdateCityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateCity>>, TError,{id: number;data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdateCity>>, TError,{id: number;data: CityDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdateCityMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdateCity>>>
     export type PartialUpdateCityMutationBody = CityDTO
-    export type PartialUpdateCityMutationError = unknown
+    export type PartialUpdateCityMutationError = ErrorType<unknown>
 
-    export const usePartialUpdateCity = <TError = unknown,
+    export const usePartialUpdateCity = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdateCity>>, TError,{id: number;data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdateCity>>,
@@ -309,7 +310,7 @@ export const getGetAllCitiesQueryKey = (params?: GetAllCitiesParams,) => {
     }
 
     
-export const getGetAllCitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllCitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllCities>>, TError = ErrorType<unknown>>(params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllCities>>>
-export type GetAllCitiesQueryError = unknown
+export type GetAllCitiesQueryError = ErrorType<unknown>
 
 
-export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(
+export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllCitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllCities>>,
@@ -341,7 +342,7 @@ export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(
+export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = ErrorType<unknown>>(
  params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllCities>>,
@@ -351,12 +352,12 @@ export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(
+export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = ErrorType<unknown>>(
  params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = unknown>(
+export function useGetAllCities<TData = Awaited<ReturnType<typeof getAllCities>>, TError = ErrorType<unknown>>(
  params?: GetAllCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createCity = (
   
 
 
-export const getCreateCityMutationOptions = <TError = unknown,
+export const getCreateCityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCity>>, TError,{data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createCity>>, TError,{data: CityDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateCityMutationResult = NonNullable<Awaited<ReturnType<typeof createCity>>>
     export type CreateCityMutationBody = CityDTO
-    export type CreateCityMutationError = unknown
+    export type CreateCityMutationError = ErrorType<unknown>
 
-    export const useCreateCity = <TError = unknown,
+    export const useCreateCity = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCity>>, TError,{data: CityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createCity>>,
@@ -449,7 +450,7 @@ export const getCountCitiesQueryKey = (params?: CountCitiesParams,) => {
     }
 
     
-export const getCountCitiesQueryOptions = <TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountCitiesQueryOptions = <TData = Awaited<ReturnType<typeof countCities>>, TError = ErrorType<unknown>>(params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof countCities>>>
-export type CountCitiesQueryError = unknown
+export type CountCitiesQueryError = ErrorType<unknown>
 
 
-export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(
+export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = ErrorType<unknown>>(
  params: undefined |  CountCitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countCities>>,
@@ -481,7 +482,7 @@ export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(
+export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = ErrorType<unknown>>(
  params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countCities>>,
@@ -491,12 +492,12 @@ export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(
+export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = ErrorType<unknown>>(
  params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = unknown>(
+export function useCountCities<TData = Awaited<ReturnType<typeof countCities>>, TError = ErrorType<unknown>>(
  params?: CountCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchCitiesQueryKey = (params: SearchCitiesParams,) => {
     }
 
     
-export const getSearchCitiesQueryOptions = <TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchCitiesQueryOptions = <TData = Awaited<ReturnType<typeof searchCities>>, TError = ErrorType<unknown>>(params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchCitiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchCities>>>
-export type SearchCitiesQueryError = unknown
+export type SearchCitiesQueryError = ErrorType<unknown>
 
 
-export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(
+export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = ErrorType<unknown>>(
  params: SearchCitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchCities>>,
@@ -563,7 +564,7 @@ export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(
+export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = ErrorType<unknown>>(
  params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchCities>>,
@@ -573,12 +574,12 @@ export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(
+export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = ErrorType<unknown>>(
  params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = unknown>(
+export function useSearchCities<TData = Awaited<ReturnType<typeof searchCities>>, TError = ErrorType<unknown>>(
  params: SearchCitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

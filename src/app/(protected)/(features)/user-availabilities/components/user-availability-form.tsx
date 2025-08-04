@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { UserAvailabilityForm } from "./form/user-availability-form-wizard";
+import { UserAvailabilityForm } from "@/app/(protected)/(features)/user-availabilities/components/form/user-availability-form-wizard";
 
 interface UserAvailabilityFormProps {
   id?: number;

@@ -1,10 +1,10 @@
-import { BaseService } from '../base/base-service';
+import { BaseService } from "@/core/api/services/base/base-service";
 import {
   KEYCLOAK_SERVICE_CONFIG,
   KEYCLOAK_REALM,
   KEYCLOAK_ADMIN_CONFIG,
   KEYCLOAK_DEBUG,
-} from './config';
+} from "@/core/api/services/keycloak-service/config";
 
 /**
  * Unified Keycloak Admin Client Service

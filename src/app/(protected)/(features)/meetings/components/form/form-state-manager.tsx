@@ -8,7 +8,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEntityForm } from "./meeting-form-provider";
+import { useEntityForm } from "@/app/(protected)/(features)/meetings/components/form/meeting-form-provider";
 
 interface FormStateManagerProps {
   entity?: any;

@@ -15,7 +15,7 @@ import {
   updateUserDraft, 
   deleteUserDraft 
 } from "@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen";
-import { userDraftToast } from "../components/user-draft-toast";
+import { userDraftToast } from "@/app/(protected)/(features)/user-drafts/components/user-draft-toast";
 
 export async function createUserDraftAction(data: any) {
   try {

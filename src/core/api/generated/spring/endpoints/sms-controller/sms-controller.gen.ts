@@ -6,20 +6,31 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
-  useMutation
+  useMutation,
+  useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
   QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
-  UseMutationResult
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
+  NotificationResponse,
   SmsRequest
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -32,7 +43,7 @@ export const sendSms = (
 ) => {
       
       
-      return springServiceMutator<string>(
+      return springServiceMutator<NotificationResponse>(
       {url: `/api/sms/send`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: smsRequest, signal
@@ -42,7 +53,7 @@ export const sendSms = (
   
 
 
-export const getSendSmsMutationOptions = <TError = unknown,
+export const getSendSmsMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SmsRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SmsRequest}, TContext> => {
     
@@ -69,9 +80,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type SendSmsMutationResult = NonNullable<Awaited<ReturnType<typeof sendSms>>>
     export type SendSmsMutationBody = SmsRequest
-    export type SendSmsMutationError = unknown
+    export type SendSmsMutationError = ErrorType<unknown>
 
-    export const useSendSms = <TError = unknown,
+    export const useSendSms = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SmsRequest}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof sendSms>>,
@@ -84,4 +95,84 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
+    export const getServiceStatus1 = (
     
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<NotificationResponse>(
+      {url: `/api/sms/status`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+export const getGetServiceStatus1QueryKey = () => {
+    return [`/api/sms/status`] as const;
+    }
+
+    
+export const getGetServiceStatus1QueryOptions = <TData = Awaited<ReturnType<typeof getServiceStatus1>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceStatus1QueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceStatus1>>> = ({ signal }) => getServiceStatus1(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceStatus1QueryResult = NonNullable<Awaited<ReturnType<typeof getServiceStatus1>>>
+export type GetServiceStatus1QueryError = ErrorType<unknown>
+
+
+export function useGetServiceStatus1<TData = Awaited<ReturnType<typeof getServiceStatus1>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceStatus1>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceStatus1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceStatus1<TData = Awaited<ReturnType<typeof getServiceStatus1>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceStatus1>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceStatus1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceStatus1<TData = Awaited<ReturnType<typeof getServiceStatus1>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetServiceStatus1<TData = Awaited<ReturnType<typeof getServiceStatus1>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceStatus1>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceStatus1QueryOptions(options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

@@ -15,7 +15,7 @@ import {
   updateDistrict, 
   deleteDistrict 
 } from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
-import { districtToast } from "../components/district-toast";
+import { districtToast } from "@/app/(protected)/(features)/districts/components/district-toast";
 
 export async function createDistrictAction(data: any) {
   try {

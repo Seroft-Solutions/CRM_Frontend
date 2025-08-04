@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { StateForm } from "./form/state-form-wizard";
+import { StateForm } from "@/app/(protected)/(features)/states/components/form/state-form-wizard";
 
 interface StateFormProps {
   id?: number;

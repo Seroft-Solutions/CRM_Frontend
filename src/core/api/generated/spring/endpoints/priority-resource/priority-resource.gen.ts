@@ -31,7 +31,8 @@ import type {
   SearchPrioritiesParams
 } from '../../schemas';
 
-import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -56,7 +57,7 @@ export const getGetPriorityQueryKey = (id: number,) => {
     }
 
     
-export const getGetPriorityQueryOptions = <TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetPriorityQueryOptions = <TData = Awaited<ReturnType<typeof getPriority>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,10 +76,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetPriorityQueryResult = NonNullable<Awaited<ReturnType<typeof getPriority>>>
-export type GetPriorityQueryError = unknown
+export type GetPriorityQueryError = ErrorType<unknown>
 
 
-export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(
+export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = ErrorType<unknown>>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPriority>>,
@@ -88,7 +89,7 @@ export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(
+export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPriority>>,
@@ -98,12 +99,12 @@ export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, 
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(
+export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = unknown>(
+export function useGetPriority<TData = Awaited<ReturnType<typeof getPriority>>, TError = ErrorType<unknown>>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriority>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -135,7 +136,7 @@ export const updatePriority = (
   
 
 
-export const getUpdatePriorityMutationOptions = <TError = unknown,
+export const getUpdatePriorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePriority>>, TError,{id: number;data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updatePriority>>, TError,{id: number;data: PriorityDTO}, TContext> => {
     
@@ -162,9 +163,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdatePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof updatePriority>>>
     export type UpdatePriorityMutationBody = PriorityDTO
-    export type UpdatePriorityMutationError = unknown
+    export type UpdatePriorityMutationError = ErrorType<unknown>
 
-    export const useUpdatePriority = <TError = unknown,
+    export const useUpdatePriority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePriority>>, TError,{id: number;data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updatePriority>>,
@@ -190,7 +191,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getDeletePriorityMutationOptions = <TError = unknown,
+export const getDeletePriorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePriority>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deletePriority>>, TError,{id: number}, TContext> => {
     
@@ -217,9 +218,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeletePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof deletePriority>>>
     
-    export type DeletePriorityMutationError = unknown
+    export type DeletePriorityMutationError = ErrorType<unknown>
 
-    export const useDeletePriority = <TError = unknown,
+    export const useDeletePriority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePriority>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deletePriority>>,
@@ -248,7 +249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   
 
 
-export const getPartialUpdatePriorityMutationOptions = <TError = unknown,
+export const getPartialUpdatePriorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdatePriority>>, TError,{id: number;data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof partialUpdatePriority>>, TError,{id: number;data: PriorityDTO}, TContext> => {
     
@@ -275,9 +276,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PartialUpdatePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof partialUpdatePriority>>>
     export type PartialUpdatePriorityMutationBody = PriorityDTO
-    export type PartialUpdatePriorityMutationError = unknown
+    export type PartialUpdatePriorityMutationError = ErrorType<unknown>
 
-    export const usePartialUpdatePriority = <TError = unknown,
+    export const usePartialUpdatePriority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof partialUpdatePriority>>, TError,{id: number;data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof partialUpdatePriority>>,
@@ -309,7 +310,7 @@ export const getGetAllPrioritiesQueryKey = (params?: GetAllPrioritiesParams,) =>
     }
 
     
-export const getGetAllPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetAllPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = ErrorType<unknown>>(params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -328,10 +329,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAllPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllPriorities>>>
-export type GetAllPrioritiesQueryError = unknown
+export type GetAllPrioritiesQueryError = ErrorType<unknown>
 
 
-export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(
+export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = ErrorType<unknown>>(
  params: undefined |  GetAllPrioritiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllPriorities>>,
@@ -341,7 +342,7 @@ export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPrio
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(
+export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = ErrorType<unknown>>(
  params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllPriorities>>,
@@ -351,12 +352,12 @@ export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPrio
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(
+export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = ErrorType<unknown>>(
  params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = unknown>(
+export function useGetAllPriorities<TData = Awaited<ReturnType<typeof getAllPriorities>>, TError = ErrorType<unknown>>(
  params?: GetAllPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -388,7 +389,7 @@ export const createPriority = (
   
 
 
-export const getCreatePriorityMutationOptions = <TError = unknown,
+export const getCreatePriorityMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPriority>>, TError,{data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createPriority>>, TError,{data: PriorityDTO}, TContext> => {
     
@@ -415,9 +416,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreatePriorityMutationResult = NonNullable<Awaited<ReturnType<typeof createPriority>>>
     export type CreatePriorityMutationBody = PriorityDTO
-    export type CreatePriorityMutationError = unknown
+    export type CreatePriorityMutationError = ErrorType<unknown>
 
-    export const useCreatePriority = <TError = unknown,
+    export const useCreatePriority = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPriority>>, TError,{data: PriorityDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createPriority>>,
@@ -449,7 +450,7 @@ export const getCountPrioritiesQueryKey = (params?: CountPrioritiesParams,) => {
     }
 
     
-export const getCountPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getCountPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof countPriorities>>, TError = ErrorType<unknown>>(params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -468,10 +469,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type CountPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof countPriorities>>>
-export type CountPrioritiesQueryError = unknown
+export type CountPrioritiesQueryError = ErrorType<unknown>
 
 
-export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(
+export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = ErrorType<unknown>>(
  params: undefined |  CountPrioritiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof countPriorities>>,
@@ -481,7 +482,7 @@ export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriori
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(
+export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = ErrorType<unknown>>(
  params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof countPriorities>>,
@@ -491,12 +492,12 @@ export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriori
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(
+export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = ErrorType<unknown>>(
  params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = unknown>(
+export function useCountPriorities<TData = Awaited<ReturnType<typeof countPriorities>>, TError = ErrorType<unknown>>(
  params?: CountPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -531,7 +532,7 @@ export const getSearchPrioritiesQueryKey = (params: SearchPrioritiesParams,) => 
     }
 
     
-export const getSearchPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getSearchPrioritiesQueryOptions = <TData = Awaited<ReturnType<typeof searchPriorities>>, TError = ErrorType<unknown>>(params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -550,10 +551,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchPrioritiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchPriorities>>>
-export type SearchPrioritiesQueryError = unknown
+export type SearchPrioritiesQueryError = ErrorType<unknown>
 
 
-export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(
+export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = ErrorType<unknown>>(
  params: SearchPrioritiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchPriorities>>,
@@ -563,7 +564,7 @@ export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPrio
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(
+export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = ErrorType<unknown>>(
  params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchPriorities>>,
@@ -573,12 +574,12 @@ export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPrio
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(
+export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = ErrorType<unknown>>(
  params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = unknown>(
+export function useSearchPriorities<TData = Awaited<ReturnType<typeof searchPriorities>>, TError = ErrorType<unknown>>(
  params: SearchPrioritiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPriorities>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

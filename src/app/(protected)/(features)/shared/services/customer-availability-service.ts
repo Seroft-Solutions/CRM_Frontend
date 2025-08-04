@@ -6,7 +6,7 @@
 import {
   AvailabilityService,
   DEFAULT_AVAILABILITY_CONFIG,
-} from './availability-service';
+} from "@/app/(protected)/(features)/shared/services/availability-service";
 import { useQueryClient } from '@tanstack/react-query';
 
 import {

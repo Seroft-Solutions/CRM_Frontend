@@ -15,7 +15,7 @@ import {
   updateArea, 
   deleteArea 
 } from "@/core/api/generated/spring/endpoints/area-resource/area-resource.gen";
-import { areaToast } from "../components/area-toast";
+import { areaToast } from "@/app/(protected)/(features)/areas/components/area-toast";
 
 export async function createAreaAction(data: any) {
   try {
