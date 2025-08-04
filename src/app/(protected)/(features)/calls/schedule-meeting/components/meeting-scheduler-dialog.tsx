@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogOverlay } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,12 +61,18 @@ export function MeetingSchedulerDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}} modal>
-      <DialogContent 
-        className="sm:max-w-lg max-w-[95vw] bg-background/95 backdrop-blur-md border-0 shadow-2xl p-0 gap-0 overflow-hidden"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+    <>
+      {/* Custom Backdrop with stronger blur */}
+      {open && (
+        <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-xl" />
+      )}
+      
+      <Dialog open={open} onOpenChange={() => {}} modal>
+        <DialogContent 
+          className="sm:max-w-lg max-w-[95vw] bg-background/95 backdrop-blur-md border-0 shadow-2xl p-0 gap-0 overflow-hidden z-50"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-8 py-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -166,7 +172,8 @@ export function MeetingSchedulerDialog({
             )}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
