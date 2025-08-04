@@ -33,9 +33,112 @@ import {
 } from "@/core/api/generated/spring/endpoints/role-resource/role-resource.gen";
 
 
+import {
+  useGetAllOrganizations,
+} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
+import {
+  useGetAllUserProfiles,
+} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+
+
 
 interface RoleDetailsProps {
   id: number;
+}
+
+// Component to display relationship values by fetching related entity data
+function RelationshipDisplayValue({ 
+  value, 
+  relConfig
+}: { 
+  value: any; 
+  relConfig: any;
+}) {
+  // Get the appropriate hook for this relationship
+    const { data: organizationData } = relConfig.name === 'organization' ? 
+    useGetAllOrganizations({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'organization',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+      const { data: usersData } = relConfig.name === 'users' ? 
+    useGetAllUserProfiles({ page: 0, size: 1000 }, {
+      query: {
+        enabled: !!value && relConfig.name === 'users',
+        staleTime: 5 * 60 * 1000,
+      }
+    }) : { data: null };
+  
+  if (!value) {
+    return (
+      <span className="text-muted-foreground italic">
+        {relConfig.multiple ? "None selected" : "Not selected"}
+      </span>
+    );
+  }
+
+  // Get the appropriate data for this relationship
+  let allData = null;
+  if (relConfig.name === 'organization') {
+    allData = organizationData;
+  }
+  if (relConfig.name === 'users') {
+    allData = usersData;
+  }
+
+  if (!allData) {
+    // Fallback: try to use the existing data structure
+    if (relConfig.multiple && Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-muted-foreground italic">None selected</span>;
+      }
+      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
+      return <span>{displayValues.join(", ")}</span>;
+    } else {
+      const displayValue = value[relConfig.displayField] || value.id || value;
+      return <span>{displayValue}</span>;
+    }
+  }
+
+  // Extract data array from response (handle both direct array and paginated response)
+  const dataArray = Array.isArray(allData) ? allData : 
+                   allData.content ? allData.content : 
+                   allData.data ? allData.data : [];
+
+  if (relConfig.multiple && Array.isArray(value)) {
+    if (value.length === 0) {
+      return <span className="text-muted-foreground italic">None selected</span>;
+    }
+    
+    const selectedItems = dataArray.filter((item: any) => 
+      value.some((v: any) => {
+        const valueId = typeof v === 'object' ? v[relConfig.primaryKey] : v;
+        return item[relConfig.primaryKey] === valueId;
+      })
+    );
+    
+    if (selectedItems.length === 0) {
+      return <span className="text-muted-foreground italic">{value.length} selected</span>;
+    }
+    
+    const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
+    return <span>{displayValues.join(", ")}</span>;
+  } else {
+    // Single value
+    const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
+    const selectedItem = dataArray.find((item: any) => 
+      item[relConfig.primaryKey] === valueId
+    );
+    
+    return selectedItem ? (
+      <span>{selectedItem[relConfig.displayField]}</span>
+    ) : (
+      <span className="text-muted-foreground italic">
+        Selected (ID: {valueId})
+      </span>
+    );
+  }
 }
 
 export function RoleDetails({ id }: RoleDetailsProps) {
@@ -100,30 +203,9 @@ export function RoleDetails({ id }: RoleDetailsProps) {
     );
   };
 
-  // Render relationship value with simple styling
+  // Render relationship value using the enhanced display component
   const renderRelationshipValue = (relConfig: any, value: any) => {
-    if (!value) {
-      return (
-        <span className="text-muted-foreground italic">
-          {relConfig.multiple ? "None selected" : "Not selected"}
-        </span>
-      );
-    }
-
-    if (relConfig.multiple && Array.isArray(value)) {
-      if (value.length === 0) {
-        return (
-          <span className="text-muted-foreground italic">None selected</span>
-        );
-      }
-      
-      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id);
-      return displayValues.join(", ");
-    } else {
-      // Single relationship
-      const displayValue = value[relConfig.displayField] || value.id;
-      return displayValue;
-    }
+    return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
 
   if (isLoading) {
