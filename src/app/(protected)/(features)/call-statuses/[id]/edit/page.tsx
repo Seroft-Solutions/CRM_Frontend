@@ -5,15 +5,8 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 import { CallStatusForm } from "@/app/(protected)/(features)/call-statuses/components/call-status-form";
-import { PageHeader } from "@/components/page-header";
-import { PageTitle } from "@/components/page-title";
 import { PermissionGuard } from "@/core/auth";
-import { ContextAwareBackButton } from "@/components/context-aware-back-button";
 
 interface EditCallStatusPageProps {
   params: Promise<{
@@ -59,14 +52,6 @@ export default async function EditCallStatusPage({ params }: EditCallStatusPageP
               </div>
             </div>
             
-            <div className="flex items-center gap-2 shrink-0">
-              <ContextAwareBackButton 
-                defaultRoute="/call-statuses"
-                defaultLabel="Back to Call Statuses"
-                entityName="CallStatus"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-              />
-            </div>
           </div>
         </div>
 
