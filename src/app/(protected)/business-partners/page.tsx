@@ -176,16 +176,56 @@ export default function BusinessPartnersPage() {
         { method: 'DELETE' }
       );
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to remove partner');
+        // Handle different error scenarios with specific toast messages
+        if (responseData.details) {
+          const { keycloakRemoval, springRemoval, rollback } = responseData.details;
+          
+          if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
+            // Rollback scenario - Spring failed but Keycloak was restored
+            toast.error('Partner removal failed: Backend sync issue. No changes were made.', {
+              description: 'The partner remains in the system. Please try again later.',
+              duration: 6000,
+            });
+          } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
+            // Critical failure - data inconsistency
+            toast.error('CRITICAL: Partner removal partially failed!', {
+              description: 'Please contact system administrator immediately. Data may be inconsistent.',
+              duration: 10000,
+            });
+          } else if (responseData.error?.includes('not found')) {
+            toast.error('Partner not found or already removed');
+          } else {
+            toast.error('Failed to remove partner', {
+              description: responseData.error || 'Unknown error occurred',
+              duration: 5000,
+            });
+          }
+        } else {
+          toast.error('Failed to remove partner', {
+            description: responseData.error || 'Unknown error occurred',
+          });
+        }
+        
+        console.error('Partner removal failed:', responseData);
+        return;
       }
 
-      toast.success('Partner removed successfully');
-      setPartnerToRemove(null);
-      fetchPartners(); // Refresh list
+      // Success case
+      if (responseData.success) {
+        toast.success('Partner removed successfully', {
+          description: 'Partner has been removed from both identity provider and backend system.',
+        });
+        setPartnerToRemove(null);
+        fetchPartners(); // Refresh list
+      }
     } catch (error) {
       console.error('Failed to remove partner:', error);
-      toast.error('Failed to remove partner');
+      toast.error('Network error: Failed to remove partner', {
+        description: 'Please check your connection and try again.',
+      });
     } finally {
       setIsRemoving(false);
     }
