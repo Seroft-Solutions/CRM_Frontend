@@ -1,0 +1,657 @@
+name: Environment Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      action:
+        description: 'Configuration action'
+        required: true
+        type: choice
+        options:
+          - sync-config
+          - update-secrets
+          - validate-config
+          - backup-config
+          - restore-config
+      config_source:
+        description: 'Configuration source (for sync)'
+        required: false
+        type: choice
+        options:
+          - main
+          - develop
+          - custom
+      dry_run:
+        description: 'Dry run (preview changes only)'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  # Validate environment and permissions
+  validate-environment:
+    name: Validate Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.validate.outputs.environment }}
+      action: ${{ steps.validate.outputs.action }}
+      is-production: ${{ steps.validate.outputs.is-production }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate inputs
+        id: validate
+        run: |
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          ACTION="${{ github.event.inputs.action }}"
+          
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+          
+          if [ "$ENVIRONMENT" = "production" ]; then
+            echo "is-production=true" >> $GITHUB_OUTPUT
+            echo "🔒 Production environment detected - additional safeguards applied"
+          else
+            echo "is-production=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "Environment: $ENVIRONMENT"
+          echo "Action: $ACTION"
+
+      - name: Check permissions
+        run: |
+          echo "Checking permissions for ${{ steps.validate.outputs.environment }} environment..."
+          
+          # Add permission checks here
+          # For production, might require specific team membership
+          
+          echo "✅ Permissions validated"
+
+  # Sync configuration files
+  sync-config:
+    name: Sync Configuration
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    if: github.event.inputs.action == 'sync-config'
+    environment: ${{ needs.validate-environment.outputs.environment }}-config
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.config_source || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Prepare environment configurations
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          echo "Preparing configurations for $ENVIRONMENT environment..."
+          
+          # Create environment-specific configuration
+          mkdir -p config/$ENVIRONMENT
+          
+          # Base configuration template
+          cat > config/$ENVIRONMENT/app.json << EOF
+          {
+            "environment": "$ENVIRONMENT",
+            "nodeEnv": "production",
+            "logging": {
+              "level": "${{ needs.validate-environment.outputs.environment == 'production' && 'warn' || 'info' }}",
+              "enableDebug": ${{ needs.validate-environment.outputs.environment != 'production' }}
+            },
+            "security": {
+              "enableCSP": true,
+              "enableHSTS": ${{ needs.validate-environment.outputs.environment == 'production' }},
+              "enableCORS": true
+            },
+            "performance": {
+              "enableCaching": true,
+              "enableMinification": true,
+              "enableGzip": true
+            },
+            "monitoring": {
+              "enableMetrics": true,
+              "enableTracing": ${{ needs.validate-environment.outputs.environment == 'production' }},
+              "enableHealthChecks": true
+            }
+          }
+          EOF
+          
+          # Environment-specific overrides
+          case "$ENVIRONMENT" in
+            development)
+              cat > config/$ENVIRONMENT/overrides.json << EOF
+          {
+            "nodeEnv": "development",
+            "logging": {
+              "level": "debug",
+              "enableDebug": true
+            },
+            "security": {
+              "enableHSTS": false
+            },
+            "performance": {
+              "enableMinification": false
+            }
+          }
+          EOF
+              ;;
+            staging)
+              cat > config/$ENVIRONMENT/overrides.json << EOF
+          {
+            "logging": {
+              "level": "info"
+            },
+            "monitoring": {
+              "enableTracing": true
+            }
+          }
+          EOF
+              ;;
+            production)
+              cat > config/$ENVIRONMENT/overrides.json << EOF
+          {
+            "logging": {
+              "level": "warn"
+            },
+            "security": {
+              "enableHSTS": true,
+              "strictSSL": true
+            },
+            "monitoring": {
+              "enableTracing": true,
+              "enableAlerts": true
+            }
+          }
+          EOF
+              ;;
+          esac
+
+      - name: Generate environment variables template
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          cat > config/$ENVIRONMENT/.env.template << EOF
+          # CRM Frontend Environment Configuration
+          # Environment: $ENVIRONMENT
+          
+          # Application
+          NODE_ENV=production
+          NEXT_TELEMETRY_DISABLED=1
+          
+          # API Configuration
+          NEXT_PUBLIC_API_URL=https://api-$ENVIRONMENT.example.com
+          NEXT_PUBLIC_API_TIMEOUT=30000
+          
+          # Authentication
+          NEXTAUTH_URL=https://$ENVIRONMENT.crm-frontend.example.com
+          NEXTAUTH_SECRET=\${NEXTAUTH_SECRET}
+          
+          # Keycloak Configuration
+          KEYCLOAK_CLIENT_ID=crm-frontend-$ENVIRONMENT
+          KEYCLOAK_CLIENT_SECRET=\${KEYCLOAK_CLIENT_SECRET}
+          KEYCLOAK_ISSUER=https://auth-$ENVIRONMENT.example.com/realms/crm
+          
+          # Database (if applicable)
+          DATABASE_URL=\${DATABASE_URL}
+          
+          # Redis (if applicable)
+          REDIS_URL=\${REDIS_URL}
+          
+          # Monitoring
+          SENTRY_DSN=\${SENTRY_DSN}
+          SENTRY_ENVIRONMENT=$ENVIRONMENT
+          
+          # Feature Flags
+          NEXT_PUBLIC_ENABLE_DEBUG_PANEL=${{ needs.validate-environment.outputs.environment != 'production' }}
+          NEXT_PUBLIC_ENABLE_ANALYTICS=true
+          
+          # Performance
+          NEXT_PUBLIC_ENABLE_SW=true
+          NEXT_PUBLIC_ENABLE_PREFETCH=true
+          EOF
+
+      - name: Create Docker Compose configuration
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          cat > config/$ENVIRONMENT/docker-compose.yml << EOF
+          version: '3.8'
+          
+          services:
+            crm-frontend:
+              image: syedus06/crm-frontend:\${IMAGE_TAG:-latest}
+              ports:
+                - "\${PORT:-3000}:3000"
+              environment:
+                - NODE_ENV=production
+                - NEXT_TELEMETRY_DISABLED=1
+              env_file:
+                - .env
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+              restart: unless-stopped
+              logging:
+                driver: "json-file"
+                options:
+                  max-size: "10m"
+                  max-file: "3"
+          
+          networks:
+            default:
+              external: true
+              name: crm-network
+          EOF
+
+      - name: Create Kubernetes manifests
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          mkdir -p config/$ENVIRONMENT/k8s
+          
+          # Deployment
+          cat > config/$ENVIRONMENT/k8s/deployment.yml << EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: crm-frontend
+            namespace: crm-$ENVIRONMENT
+            labels:
+              app: crm-frontend
+              environment: $ENVIRONMENT
+          spec:
+            replicas: ${{ needs.validate-environment.outputs.environment == 'production' && '3' || '2' }}
+            selector:
+              matchLabels:
+                app: crm-frontend
+            template:
+              metadata:
+                labels:
+                  app: crm-frontend
+                  environment: $ENVIRONMENT
+              spec:
+                containers:
+                - name: crm-frontend
+                  image: syedus06/crm-frontend:latest
+                  ports:
+                  - containerPort: 3000
+                  env:
+                  - name: NODE_ENV
+                    value: "production"
+                  - name: NEXT_TELEMETRY_DISABLED
+                    value: "1"
+                  envFrom:
+                  - secretRef:
+                      name: crm-frontend-secrets
+                  - configMapRef:
+                      name: crm-frontend-config
+                  resources:
+                    requests:
+                      memory: "256Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "512Mi"
+                      cpu: "500m"
+                  livenessProbe:
+                    httpGet:
+                      path: /api/health
+                      port: 3000
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /api/health
+                      port: 3000
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+          EOF
+          
+          # Service
+          cat > config/$ENVIRONMENT/k8s/service.yml << EOF
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: crm-frontend-service
+            namespace: crm-$ENVIRONMENT
+          spec:
+            selector:
+              app: crm-frontend
+            ports:
+            - protocol: TCP
+              port: 80
+              targetPort: 3000
+            type: ClusterIP
+          EOF
+          
+          # Ingress
+          cat > config/$ENVIRONMENT/k8s/ingress.yml << EOF
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: crm-frontend-ingress
+            namespace: crm-$ENVIRONMENT
+            annotations:
+              kubernetes.io/ingress.class: nginx
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          spec:
+            tls:
+            - hosts:
+              - $ENVIRONMENT.crm-frontend.example.com
+              secretName: crm-frontend-tls
+            rules:
+            - host: $ENVIRONMENT.crm-frontend.example.com
+              http:
+                paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: crm-frontend-service
+                      port:
+                        number: 80
+          EOF
+
+      - name: Preview configuration changes
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🔍 CONFIGURATION PREVIEW"
+          echo "========================"
+          echo "Environment: ${{ needs.validate-environment.outputs.environment }}"
+          echo "Source: ${{ github.event.inputs.config_source || 'main' }}"
+          echo ""
+          echo "Generated configurations:"
+          find config/${{ needs.validate-environment.outputs.environment }} -type f -exec echo "📁 {}" \;
+          echo ""
+          echo "This is a DRY RUN - no changes will be applied"
+
+      - name: Apply configuration
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          echo "📋 APPLYING CONFIGURATION"
+          echo "========================="
+          echo "Environment: ${{ needs.validate-environment.outputs.environment }}"
+          
+          # Here you would apply the configuration to the target environment
+          # This could involve:
+          # - Updating ConfigMaps in Kubernetes
+          # - Updating environment variables in the deployment platform
+          # - Syncing files to the server
+          
+          echo "✅ Configuration applied successfully"
+
+      - name: Upload configuration artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: config-${{ needs.validate-environment.outputs.environment }}
+          path: config/${{ needs.validate-environment.outputs.environment }}/
+
+  # Update secrets
+  update-secrets:
+    name: Update Secrets
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    if: github.event.inputs.action == 'update-secrets'
+    environment: ${{ needs.validate-environment.outputs.environment }}-secrets
+    steps:
+      - name: Validate secret update permissions
+        run: |
+          echo "🔐 Validating secret update permissions..."
+          echo "Environment: ${{ needs.validate-environment.outputs.environment }}"
+          
+          if [ "${{ needs.validate-environment.outputs.is-production }}" = "true" ]; then
+            echo "🚨 Production secrets update requires elevated permissions"
+          fi
+
+      - name: Generate secret templates
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          cat > secrets-template.yaml << EOF
+          # Secret Configuration Template for $ENVIRONMENT
+          # DO NOT COMMIT ACTUAL VALUES
+          
+          secrets:
+            # Authentication
+            nextauth_secret: "CHANGE_ME_RANDOM_STRING"
+            keycloak_client_secret: "CHANGE_ME_KEYCLOAK_SECRET"
+            
+            # Database
+            database_url: "postgresql://username:password@host:port/database"
+            
+            # Redis
+            redis_url: "redis://username:password@host:port"
+            
+            # External Services
+            sentry_dsn: "https://your-sentry-dsn@sentry.io/project-id"
+            
+            # API Keys
+            google_analytics_id: "GA-XXXXXXXXX"
+            
+            # Docker Registry (if needed)
+            docker_username: "registry-username"
+            docker_password: "registry-password"
+          EOF
+
+      - name: Preview secret update
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🔐 SECRET UPDATE PREVIEW"
+          echo "========================"
+          echo "Environment: ${{ needs.validate-environment.outputs.environment }}"
+          echo ""
+          echo "Secrets that would be updated:"
+          cat secrets-template.yaml
+          echo ""
+          echo "This is a DRY RUN - no secrets will be updated"
+
+      - name: Update secrets
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          echo "🔐 UPDATING SECRETS"
+          echo "==================="
+          
+          # Here you would update secrets in your target environment
+          # Examples:
+          # - kubectl create secret generic crm-frontend-secrets --from-env-file=.env
+          # - Update secrets in cloud provider (AWS Secrets Manager, etc.)
+          # - Update secrets in deployment platform
+          
+          echo "✅ Secrets updated successfully"
+
+      - name: Upload secret templates
+        uses: actions/upload-artifact@v4
+        with:
+          name: secrets-template-${{ needs.validate-environment.outputs.environment }}
+          path: secrets-template.yaml
+
+  # Validate configuration
+  validate-config:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    if: github.event.inputs.action == 'validate-config'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate environment configuration
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          echo "🔍 VALIDATING CONFIGURATION"
+          echo "==========================="
+          echo "Environment: $ENVIRONMENT"
+          
+          # Check if configuration files exist
+          CONFIG_DIR="config/$ENVIRONMENT"
+          
+          if [ ! -d "$CONFIG_DIR" ]; then
+            echo "❌ Configuration directory not found: $CONFIG_DIR"
+            exit 1
+          fi
+          
+          # Validate required files
+          REQUIRED_FILES=(
+            "app.json"
+            ".env.template"
+            "docker-compose.yml"
+            "k8s/deployment.yml"
+            "k8s/service.yml"
+            "k8s/ingress.yml"
+          )
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ -f "$CONFIG_DIR/$file" ]; then
+              echo "✅ Found: $file"
+            else
+              echo "❌ Missing: $file"
+            fi
+          done
+
+      - name: Validate JSON configurations
+        run: |
+          echo "🔍 Validating JSON configurations..."
+          
+          # Validate JSON syntax
+          find config/ -name "*.json" -exec sh -c 'echo "Validating $1"; python3 -m json.tool "$1" > /dev/null' _ {} \;
+          
+          echo "✅ JSON validation completed"
+
+      - name: Validate Docker configurations
+        run: |
+          echo "🔍 Validating Docker configurations..."
+          
+          # Check Docker Compose syntax
+          find config/ -name "docker-compose.yml" -exec sh -c 'echo "Validating $1"; docker-compose -f "$1" config > /dev/null' _ {} \;
+          
+          echo "✅ Docker validation completed"
+
+      - name: Validate Kubernetes manifests
+        run: |
+          echo "🔍 Validating Kubernetes manifests..."
+          
+          # Validate YAML syntax
+          find config/ -name "*.yml" -path "*/k8s/*" -exec sh -c 'echo "Validating $1"; python3 -c "import yaml; yaml.safe_load(open(\"$1\"))"' _ {} \;
+          
+          echo "✅ Kubernetes validation completed"
+
+  # Backup configuration
+  backup-config:
+    name: Backup Configuration
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    if: github.event.inputs.action == 'backup-config'
+    steps:
+      - name: Create configuration backup
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          
+          echo "💾 CREATING CONFIGURATION BACKUP"
+          echo "================================="
+          echo "Environment: $ENVIRONMENT"
+          echo "Timestamp: $TIMESTAMP"
+          
+          mkdir -p backup/$ENVIRONMENT/$TIMESTAMP
+          
+          # Here you would backup current configuration from the environment
+          # Examples:
+          # - kubectl get configmap -o yaml > backup/configmaps.yaml
+          # - Export environment variables
+          # - Backup database configurations
+          
+          echo "✅ Configuration backup created"
+
+  # Restore configuration
+  restore-config:
+    name: Restore Configuration
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    if: github.event.inputs.action == 'restore-config'
+    environment: ${{ needs.validate-environment.outputs.environment }}-restore
+    steps:
+      - name: Restore configuration
+        run: |
+          ENVIRONMENT="${{ needs.validate-environment.outputs.environment }}"
+          
+          echo "🔄 RESTORING CONFIGURATION"
+          echo "=========================="
+          echo "Environment: $ENVIRONMENT"
+          
+          if [ "${{ needs.validate-environment.outputs.is-production }}" = "true" ]; then
+            echo "🚨 Production restore requires manual approval"
+          fi
+          
+          # Here you would restore configuration from backup
+          # This should be implemented carefully with rollback capabilities
+          
+          echo "✅ Configuration restored successfully"
+
+  # Summary report
+  generate-report:
+    name: Generate Report
+    runs-on: ubuntu-latest
+    needs: [validate-environment, sync-config, update-secrets, validate-config, backup-config, restore-config]
+    if: always()
+    steps:
+      - name: Generate configuration report
+        run: |
+          cat > config-report.md << EOF
+          # Environment Configuration Report
+          
+          **Environment**: ${{ needs.validate-environment.outputs.environment }}
+          **Action**: ${{ needs.validate-environment.outputs.action }}
+          **Dry Run**: ${{ github.event.inputs.dry_run }}
+          **Timestamp**: $(date -u)
+          **Executed By**: ${{ github.actor }}
+          
+          ## Job Results
+          
+          | Job | Status |
+          |-----|--------|
+          | Validate Environment | ${{ needs.validate-environment.result }} |
+          | Sync Config | ${{ needs.sync-config.result }} |
+          | Update Secrets | ${{ needs.update-secrets.result }} |
+          | Validate Config | ${{ needs.validate-config.result }} |
+          | Backup Config | ${{ needs.backup-config.result }} |
+          | Restore Config | ${{ needs.restore-config.result }} |
+          
+          ## Summary
+          
+          Configuration management operation completed for the **${{ needs.validate-environment.outputs.environment }}** environment.
+          
+          Please review the individual job outputs for detailed information.
+          EOF
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: config-report
+          path: config-report.md

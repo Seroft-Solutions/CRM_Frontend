@@ -1,0 +1,433 @@
+name: Quality & Security Checks
+
+on:
+  schedule:
+    # Run security checks daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of checks to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - security
+          - dependencies
+          - code-quality
+          - performance
+  push:
+    branches: [main, develop]
+    paths:
+      - 'package*.json'
+      - '.github/workflows/quality-check.yml'
+
+env:
+  NODE_VERSION: '20'
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  # Security vulnerability scanning
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'security' || github.event_name == 'schedule' || github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          echo "Running npm security audit..."
+          npm audit --audit-level=moderate > audit-report.txt || true
+          cat audit-report.txt
+
+      - name: Run npm audit fix
+        run: |
+          echo "Attempting to fix vulnerabilities automatically..."
+          npm audit fix --dry-run > audit-fix-report.txt || true
+          cat audit-fix-report.txt
+
+      - name: Check for high/critical vulnerabilities
+        run: |
+          if npm audit --audit-level=high; then
+            echo "✅ No high or critical vulnerabilities found"
+          else
+            echo "⚠️ High or critical vulnerabilities detected"
+            echo "Please review and update dependencies"
+            exit 1
+          fi
+
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-reports
+          path: |
+            audit-report.txt
+            audit-fix-report.txt
+
+  # Dependency analysis and updates
+  dependency-check:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'dependencies' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "Checking for outdated dependencies..."
+          npm outdated > outdated-report.txt || true
+          cat outdated-report.txt
+
+      - name: Analyze dependency tree
+        run: |
+          echo "Analyzing dependency tree..."
+          npm ls --depth=0 > dependency-tree.txt || true
+          cat dependency-tree.txt
+
+      - name: Check package-lock.json integrity
+        run: |
+          echo "Verifying package-lock.json integrity..."
+          npm ci --dry-run
+
+      - name: Generate dependency update suggestions
+        run: |
+          echo "Generating dependency update suggestions..."
+          
+          cat > dependency-suggestions.md << 'EOF'
+          # Dependency Update Suggestions
+          
+          ## Outdated Dependencies
+          ```
+          $(cat outdated-report.txt)
+          ```
+          
+          ## Security Recommendations
+          - Run `npm audit fix` to automatically fix vulnerabilities
+          - Consider updating major versions manually after testing
+          - Review breaking changes before updating
+          
+          ## Maintenance Tasks
+          - [ ] Update development dependencies
+          - [ ] Update production dependencies
+          - [ ] Test application after updates
+          - [ ] Update documentation if needed
+          EOF
+
+      - name: Upload dependency reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-reports
+          path: |
+            outdated-report.txt
+            dependency-tree.txt
+            dependency-suggestions.md
+
+  # Code quality analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'code-quality' || github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint analysis
+        run: |
+          echo "Running ESLint analysis..."
+          npm run lint -- --format=json --output-file=eslint-report.json || true
+          npm run lint || echo "ESLint found issues"
+
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting..."
+          npm run format:check || echo "Formatting issues found"
+
+      - name: Validate import statements
+        run: |
+          echo "Validating import statements..."
+          npm run validate-imports
+
+      - name: Analyze code complexity
+        run: |
+          echo "Analyzing code complexity..."
+          
+          # Count lines of code
+          find src -name "*.ts" -o -name "*.tsx" | xargs wc -l > loc-report.txt
+          
+          # Generate basic metrics
+          cat > code-metrics.md << 'EOF'
+          # Code Quality Metrics
+          
+          ## Lines of Code
+          ```
+          $(cat loc-report.txt | tail -1)
+          ```
+          
+          ## File Count
+          - TypeScript files: $(find src -name "*.ts" | wc -l)
+          - TSX files: $(find src -name "*.tsx" | wc -l)
+          - Total source files: $(find src -name "*.ts" -o -name "*.tsx" | wc -l)
+          
+          ## Quality Recommendations
+          - Maintain consistent code formatting
+          - Keep components small and focused
+          - Use TypeScript strictly for better type safety
+          - Follow established naming conventions
+          EOF
+
+      - name: Upload code quality reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-reports
+          path: |
+            eslint-report.json
+            loc-report.txt
+            code-metrics.md
+
+  # Performance analysis
+  performance-check:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'performance'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze bundle size
+        run: |
+          echo "Analyzing bundle size..."
+          
+          # Build the application
+          npm run build || echo "Build completed with warnings"
+          
+          # Analyze built files
+          if [ -d ".next" ]; then
+            find .next -name "*.js" -exec ls -lh {} \; > bundle-analysis.txt
+            
+            echo "Bundle Analysis Report:" > bundle-report.md
+            echo "======================" >> bundle-report.md
+            echo "" >> bundle-report.md
+            echo "## JavaScript Bundle Files" >> bundle-report.md
+            echo "\`\`\`" >> bundle-report.md
+            cat bundle-analysis.txt >> bundle-report.md
+            echo "\`\`\`" >> bundle-report.md
+            echo "" >> bundle-report.md
+            echo "## Recommendations" >> bundle-report.md
+            echo "- Monitor bundle size growth over time" >> bundle-report.md
+            echo "- Consider code splitting for large components" >> bundle-report.md
+            echo "- Use dynamic imports for non-critical features" >> bundle-report.md
+            echo "- Optimize images and assets" >> bundle-report.md
+          fi
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Check for performance anti-patterns
+        run: |
+          echo "Checking for performance anti-patterns..."
+          
+          # Look for potential performance issues
+          grep -r "useEffect.*\[\]" src/ > useeffect-patterns.txt || true
+          grep -r "useState.*function" src/ > usestate-patterns.txt || true
+          
+          echo "Performance check completed"
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: |
+            bundle-analysis.txt
+            bundle-report.md
+            useeffect-patterns.txt
+            usestate-patterns.txt
+
+  # License compliance check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install license checker
+        run: npm install -g license-checker
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate license report
+        run: |
+          echo "Generating license report..."
+          license-checker --json > licenses.json
+          license-checker --csv > licenses.csv
+          license-checker > licenses.txt
+
+      - name: Check for problematic licenses
+        run: |
+          echo "Checking for problematic licenses..."
+          
+          # List of licenses to avoid (GPL, AGPL, etc.)
+          PROBLEMATIC_LICENSES="GPL|AGPL|LGPL"
+          
+          if grep -i "$PROBLEMATIC_LICENSES" licenses.txt; then
+            echo "⚠️ Potentially problematic licenses found"
+            echo "Please review the licenses above"
+          else
+            echo "✅ No problematic licenses detected"
+          fi
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: |
+            licenses.json
+            licenses.csv
+            licenses.txt
+
+  # Create comprehensive report
+  generate-report:
+    name: Generate Quality Report
+    runs-on: ubuntu-latest
+    needs: [security-scan, dependency-check, code-quality, performance-check, license-check]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate comprehensive report
+        run: |
+          echo "Generating comprehensive quality report..."
+          
+          cat > quality-report.md << 'EOF'
+          # CRM Frontend Quality & Security Report
+          
+          Generated on: $(date -u)
+          
+          ## Summary
+          
+          | Check Type | Status | Details |
+          |------------|--------|---------|
+          | Security Scan | ${{ needs.security-scan.result }} | Vulnerability assessment |
+          | Dependency Check | ${{ needs.dependency-check.result }} | Outdated packages analysis |
+          | Code Quality | ${{ needs.code-quality.result }} | Linting and formatting |
+          | Performance | ${{ needs.performance-check.result }} | Bundle size and optimization |
+          | License Compliance | ${{ needs.license-check.result }} | License compatibility |
+          
+          ## Recommendations
+          
+          ### High Priority
+          - Review and fix any security vulnerabilities
+          - Update outdated dependencies with security patches
+          
+          ### Medium Priority
+          - Address code quality issues
+          - Optimize bundle size if needed
+          
+          ### Low Priority
+          - Review license compliance
+          - Consider performance optimizations
+          
+          ## Next Steps
+          
+          1. Address any failing checks
+          2. Update dependencies regularly
+          3. Monitor security advisories
+          4. Maintain code quality standards
+          
+          ---
+          *This report was generated automatically by GitHub Actions*
+          EOF
+
+      - name: Upload comprehensive report
+        uses: actions/upload-artifact@v4
+        with:
+          name: comprehensive-quality-report
+          path: quality-report.md
+
+      - name: Create issue if problems found
+        if: needs.security-scan.result == 'failure' || needs.dependency-check.result == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Quality Check Issues - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Quality Check Results
+            
+            Automated quality checks have detected issues that require attention.
+            
+            ### Results Summary
+            - Security Scan: ${{ needs.security-scan.result }}
+            - Dependency Check: ${{ needs.dependency-check.result }}
+            - Code Quality: ${{ needs.code-quality.result }}
+            - Performance: ${{ needs.performance-check.result }}
+            - License Check: ${{ needs.license-check.result }}
+            
+            ### Action Required
+            Please review the workflow artifacts and address any issues found.
+            
+            **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            ---
+            *This issue was created automatically by GitHub Actions*
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['automated', 'quality-check', 'needs-attention']
+            });
