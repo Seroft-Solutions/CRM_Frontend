@@ -137,23 +137,22 @@ jobs:
             COMMITS=$(git log --oneline --pretty=format:"- %s (%an)" $LAST_TAG..HEAD)
           fi
           
-          # Create changelog
-          CHANGELOG="## Release v$NEW_VERSION
-
-### Changes
-$COMMITS
-
-### Release Information
-- **Version**: v$NEW_VERSION
-- **Release Type**: ${{ github.event.inputs.release_type }}
-- **Pre-release**: ${{ github.event.inputs.prerelease }}
-- **Released by**: ${{ github.actor }}
-- **Release Date**: $(date -u)"
-
-          # Save changelog to file and output
-          echo "$CHANGELOG" > RELEASE_CHANGELOG.md
+          # Create changelog file
+          echo "## Release v$NEW_VERSION" > RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "### Changes" >> RELEASE_CHANGELOG.md
+          echo "$COMMITS" >> RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "### Release Information" >> RELEASE_CHANGELOG.md
+          echo "- **Version**: v$NEW_VERSION" >> RELEASE_CHANGELOG.md
+          echo "- **Release Type**: ${{ github.event.inputs.release_type }}" >> RELEASE_CHANGELOG.md
+          echo "- **Pre-release**: ${{ github.event.inputs.prerelease }}" >> RELEASE_CHANGELOG.md
+          echo "- **Released by**: ${{ github.actor }}" >> RELEASE_CHANGELOG.md
+          echo "- **Release Date**: $(date -u)" >> RELEASE_CHANGELOG.md
+          
+          # Save changelog to output
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          cat RELEASE_CHANGELOG.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Upload changelog
