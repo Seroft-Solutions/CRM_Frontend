@@ -73,33 +73,40 @@ The project uses a custom code generator that creates:
 - **Organization Context**: Tenant isolation
 - **RBAC System**: Permission-based access control
 
-## 🚀 Release Management
+## 🚀 Docker & Release Management
 
-This project includes a comprehensive GitHub Actions workflow system for automated releases, deployments, and quality assurance.
+This project includes simplified GitHub Actions workflows for Docker builds and release management.
 
 ### Available Workflows
 
-1. **CI/CD Pipeline** - Main build, test, and quality pipeline
-2. **Development Deployment** - Auto-deploy to dev environment
-3. **Production Deployment** - Controlled production deployment
-4. **Release Management** - Automated release creation with versioning
-5. **Quality & Security Checks** - Comprehensive scanning and monitoring
-6. **Hotfix Deployment** - Emergency deployment procedures
-7. **Environment Configuration** - Configuration management
+1. **CI/CD Pipeline** - Code quality, security scanning, and build testing
+2. **Docker Build & Publish** - Environment-aware Docker image building
+3. **Release Management** - Automated versioned releases
+
+### Environment Configuration
+
+- **Development** (`.env`) - Local development with localhost URLs
+- **Production** (`.env.production`) - Production environment URLs
+
+Update production URLs in `.env.production` before deploying:
+```env
+AUTH_URL=https://your-production-domain.com
+AUTH_KEYCLOAK_ISSUER=https://your-keycloak-domain.com/realms/crm
+NEXT_PUBLIC_SPRING_API_URL=https://your-api-domain.com
+```
 
 ### Quick Release Guide
 
 **Creating a Release:**
 1. Go to Actions → Release Management
 2. Select release type (major/minor/patch/prerelease)
-3. Workflow handles versioning, changelog, and deployment
+3. Workflow creates version tag, changelog, and Docker images
 
-**Emergency Hotfix:**
-1. Create hotfix branch from main
-2. Go to Actions → Hotfix Deployment
-3. Specify urgency level and rollback plan
+**Docker Images:**
+- Published to `syedus06/crm-frontend`
+- Tags: `latest`, `develop-dev`, version tags (e.g., `v1.0.0`)
 
-📖 **[Complete Release Management Documentation](docs/RELEASE_MANAGEMENT.md)**
+📖 **[Complete GitHub Actions Documentation](docs/GITHUB_ACTIONS.md)**
 
 ## 🔒 Security
 
@@ -141,7 +148,7 @@ This project includes a comprehensive GitHub Actions workflow system for automat
 
 ## 📚 Documentation
 
-- [Release Management](docs/RELEASE_MANAGEMENT.md) - Complete guide to our CI/CD workflows
+- [GitHub Actions](docs/GITHUB_ACTIONS.md) - Docker builds and release management
 - [IntelliJ Setup](INTELLIJ_SETUP.md) - IDE configuration
 - [Meeting Integration](MEETING_INTEGRATION_IMPLEMENTATION.md) - Meeting system implementation
 - [Claude AI Guidelines](CLAUDE.md) - AI assistant development guidelines
