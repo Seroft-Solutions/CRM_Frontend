@@ -2,21 +2,34 @@
 FROM node:20.17.0-alpine AS builder
 WORKDIR /app
 
-ARG ENV_FILE
+# Build arguments
+ARG ENV_FILE=.env.production
+ARG BUILD_VERSION=unknown
+
+# Copy environment file
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
-    npm ci --legacy-peer-deps --verbose || (cat /root/.npm/_logs/*-debug.log && exit 1)
+    npm ci --legacy-peer-deps
 
 COPY . .
+ENV PATH=/app/node_modules/.bin:$PATH
 RUN npm run build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
 WORKDIR /app
+
+# Build arguments
+ARG BUILD_VERSION=unknown
+
+# Labels for image metadata
+LABEL maintainer="CRM Team"
+LABEL version="${BUILD_VERSION}"
+LABEL description="CRM Frontend Application"
 
 COPY --from=builder /app/.env ./
 RUN addgroup --system --gid 1001 nodejs && \
