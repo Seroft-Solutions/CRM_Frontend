@@ -53,6 +53,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
+import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-with-refresh';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 interface BusinessPartner {
@@ -86,6 +87,9 @@ export default function BusinessPartnersPage() {
 
   // Fetch channel types for parallel resolution
   const { data: channelTypes } = useGetAllChannelTypes();
+
+  // FIXED: Use enhanced data mutation hook for proper cache invalidation
+  const { deletePartner } = useBusinessPartnersDataMutation();
 
   // Helper function to get channel type information from Keycloak attributes
   const getChannelTypeInfo = (partner: BusinessPartner): ChannelTypeInfo | null => {
@@ -165,68 +169,54 @@ export default function BusinessPartnersPage() {
     router.push(`/business-partners/${partner.id}/edit`);
   };
 
-  // Remove partner
+  // FIXED: Remove partner with enhanced error handling and cache invalidation
   const handleRemovePartner = async () => {
     if (!partnerToRemove || !organizationId) return;
 
     setIsRemoving(true);
+    
     try {
-      const response = await fetch(
-        `/api/keycloak/organizations/${organizationId}/partners/${partnerToRemove.id}`,
-        { method: 'DELETE' }
-      );
+      await deletePartner(async () => {
+        const response = await fetch(
+          `/api/keycloak/organizations/${organizationId}/partners/${partnerToRemove.id}`,
+          { method: 'DELETE' }
+        );
 
-      const responseData = await response.json();
+        const responseData = await response.json();
 
-      if (!response.ok) {
-        // Handle different error scenarios with specific toast messages
-        if (responseData.details) {
-          const { keycloakRemoval, springRemoval, rollback } = responseData.details;
+        if (!response.ok) {
+          // Handle different error scenarios with specific toast messages
+          if (responseData.details) {
+            const { keycloakRemoval, springRemoval, rollback } = responseData.details;
 
-          if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
-            // Rollback scenario - Spring failed but Keycloak was restored
-            toast.error('Partner removal failed: Backend sync issue. No changes were made.', {
-              description: 'The partner remains in the system. Please try again later.',
-              duration: 6000,
-            });
-          } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
-            // Critical failure - data inconsistency
-            toast.error('CRITICAL: Partner removal partially failed!', {
-              description:
-                'Please contact system administrator immediately. Data may be inconsistent.',
-              duration: 10000,
-            });
-          } else if (responseData.error?.includes('not found')) {
-            toast.error('Partner not found or already removed');
+            if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
+              // Rollback scenario - Spring failed but Keycloak was restored
+              throw new Error('Partner removal failed: Backend sync issue. No changes were made. The partner remains in the system. Please try again later.');
+            } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
+              // Critical failure - data inconsistency
+              throw new Error('CRITICAL: Partner removal partially failed! Please contact system administrator immediately. Data may be inconsistent.');
+            } else if (responseData.error?.includes('not found')) {
+              throw new Error('Partner not found or already removed');
+            } else {
+              throw new Error(responseData.error || 'Unknown error occurred');
+            }
           } else {
-            toast.error('Failed to remove partner', {
-              description: responseData.error || 'Unknown error occurred',
-              duration: 5000,
-            });
+            throw new Error(responseData.error || 'Unknown error occurred');
           }
-        } else {
-          toast.error('Failed to remove partner', {
-            description: responseData.error || 'Unknown error occurred',
-          });
         }
 
-        console.error('Partner removal failed:', responseData);
-        return;
-      }
+        // Check for success
+        if (!responseData.success) {
+          throw new Error('Partner removal failed - no success confirmation received');
+        }
+      });
 
-      // Success case
-      if (responseData.success) {
-        toast.success('Partner removed successfully', {
-          description: 'Partner has been removed from both identity provider and backend system.',
-        });
-        setPartnerToRemove(null);
-        fetchPartners(); // Refresh list
-      }
+      // Success - the deletePartner hook will handle success toast and cache invalidation
+      setPartnerToRemove(null);
+      
     } catch (error) {
       console.error('Failed to remove partner:', error);
-      toast.error('Network error: Failed to remove partner', {
-        description: 'Please check your connection and try again.',
-      });
+      // Error handling is done by the deletePartner hook
     } finally {
       setIsRemoving(false);
     }
