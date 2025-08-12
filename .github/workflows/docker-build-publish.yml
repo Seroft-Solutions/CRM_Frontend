@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to build for'
+        description: "Environment to build for"
         required: true
-        default: 'production'
+        default: "production"
         type: choice
         options:
           - development
