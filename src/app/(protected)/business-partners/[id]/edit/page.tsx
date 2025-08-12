@@ -26,6 +26,7 @@ import { ArrowLeft, Save, Loader2, Edit, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
+import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-with-refresh';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
 
@@ -68,6 +69,9 @@ export default function EditPartnerPage() {
 
   // Fetch channel types for selector
   const { data: channelTypes } = useGetAllChannelTypes();
+
+  // FIXED: Use enhanced data mutation hook for proper cache invalidation
+  const { updatePartner } = useBusinessPartnersDataMutation();
 
   // Form setup
   const form = useForm<UpdatePartnerFormData>({
@@ -137,53 +141,61 @@ export default function EditPartnerPage() {
     }
   };
 
-  // Update partner
+  // FIXED: Update partner with enhanced error handling and cache invalidation
   const handleUpdatePartner = async (data: UpdatePartnerFormData) => {
     if (!partner || !organizationId) return;
 
     setIsUpdating(true);
+    
     try {
-      console.log('Updating partner:', {
-        partnerId: partner.id,
-        organizationId,
-        updateData: data,
-      });
-      const updatePayload = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        attributes: {
-          ...partner.attributes,
-          channel_type_id: [data.channelTypeId.toString()],
-        },
-      };
-
-      console.log('Update payload:', updatePayload);
-
-      // If PATCH fails, try PUT
-      const patchResponse = await fetch(
-        `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
+      await updatePartner(async () => {
+        console.log('Updating partner:', {
+          partnerId: partner.id,
+          organizationId,
+          updateData: data,
+        });
+        
+        const updatePayload = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          attributes: {
+            ...partner.attributes,
+            channel_type_id: [data.channelTypeId.toString()],
           },
-          body: JSON.stringify(updatePayload),
-        }
-      );
+        };
 
-      if (!patchResponse.ok) {
-        const errorText = await patchResponse.text();
-        console.error('PUT failed:', patchResponse.status, errorText);
-        throw new Error(`Failed to update partner: ${patchResponse.status} ${errorText}`);
-      }
-      toast.success('Partner updated successfully');
+        console.log('Update payload:', updatePayload);
+
+        const patchResponse = await fetch(
+          `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatePayload),
+          }
+        );
+
+        if (!patchResponse.ok) {
+          const errorText = await patchResponse.text();
+          console.error('PATCH failed:', patchResponse.status, errorText);
+          throw new Error(`Failed to update partner: ${patchResponse.status} ${errorText}`);
+        }
+
+        const result = await patchResponse.json();
+        if (!result.success) {
+          throw new Error('Update failed - no success confirmation received');
+        }
+      });
+
+      // Success - the updatePartner hook will handle success toast and cache invalidation
       router.push('/business-partners');
+      
     } catch (error) {
       console.error('Failed to update partner:', error);
-      toast.error(
-        `Failed to update partner: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      // Error handling is done by the updatePartner hook
     } finally {
       setIsUpdating(false);
     }

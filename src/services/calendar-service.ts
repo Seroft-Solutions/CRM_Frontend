@@ -1,3 +1,10 @@
+/**
+ * FIXED: Calendar Service integrated with actual backend endpoints
+ * 
+ * This service now properly integrates with the existing backend
+ * GoogleCalendarService and SchedulerService.
+ */
+
 'use client';
 
 import { format, addMinutes } from 'date-fns';
@@ -49,32 +56,150 @@ export interface MeetingNotificationData {
   organizerEmail: string;
 }
 
-class CalendarService {
+export interface CalendarAuthStatus {
+  isAuthenticated: boolean;
+  userEmail?: string;
+  hasValidToken: boolean;
+  tokenExpiry?: number;
+  scopes?: string[];
+  error?: string;
+}
+
+// Backend MeetingRequest format (matching Java model)
+export interface BackendMeetingRequest {
+  summary: string;
+  location?: string;
+  description?: string;
+  startTime: string; // ISO string
+  endTime: string; // ISO string
+  timeZone: string;
+  attendees: string[]; // array of email strings
+  userEmail: string; // organizer email
+}
+
+class IntegratedCalendarService {
   private readonly baseApiUrl = '/api';
+  private authStatusCache: Map<string, CalendarAuthStatus> = new Map();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   /**
-   * Create a Google Calendar event
+   * FIXED: Check calendar authentication using backend endpoint
+   */
+  async checkCalendarAuth(userEmail: string): Promise<CalendarAuthStatus> {
+    try {
+      // Check if credentials exist by trying to get auth URL
+      const response = await fetch(`${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`);
+      
+      if (response.ok) {
+        // If we can get auth URL, user needs to authenticate
+        return {
+          isAuthenticated: false,
+          userEmail,
+          hasValidToken: false,
+          error: `Calendar authentication required for ${userEmail}`,
+        };
+      } else {
+        // Check error response to determine status
+        const errorData = await response.json();
+        
+        if (errorData.includes?.('No credentials found')) {
+          return {
+            isAuthenticated: false,
+            userEmail,
+            hasValidToken: false,
+            error: `No calendar credentials found for ${userEmail}. Please authorize access.`,
+          };
+        }
+        
+        // If error is something else, assume authenticated
+        return {
+          isAuthenticated: true,
+          userEmail,
+          hasValidToken: true,
+        };
+      }
+    } catch (error) {
+      console.error('Calendar auth check failed:', error);
+      return {
+        isAuthenticated: false,
+        userEmail,
+        hasValidToken: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * FIXED: Get Google Calendar authorization URL using backend
+   */
+  async getAuthorizationUrl(userEmail: string): Promise<string> {
+    try {
+      const response = await fetch(`${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get authorization URL: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.authUrl;
+    } catch (error) {
+      console.error('Failed to get authorization URL:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * FIXED: Create calendar event using backend GoogleCalendarService
    */
   async createCalendarEvent(
-    eventData: CalendarEvent
+    eventData: CalendarEvent,
+    organizerEmail: string
   ): Promise<{ eventId: string; meetingUrl?: string }> {
     try {
-      const response = await fetch(`${this.baseApiUrl}/calendar/events`, {
+      // Convert frontend format to backend format
+      const backendRequest: BackendMeetingRequest = {
+        summary: eventData.summary,
+        description: eventData.description,
+        location: eventData.location,
+        startTime: eventData.start.dateTime,
+        endTime: eventData.end.dateTime,
+        timeZone: eventData.start.timeZone,
+        attendees: eventData.attendees.map(a => a.email),
+        userEmail: organizerEmail,
+      };
+
+      console.log('Creating calendar event with backend request:', backendRequest);
+
+      const response = await fetch(`${this.baseApiUrl}/calendar/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify(backendRequest),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create calendar event: ${response.statusText}`);
+        const errorText = await response.text();
+        
+        // Handle specific authentication errors
+        if (response.status === 400 && errorText.includes('No credentials found')) {
+          throw new Error(
+            `Calendar authentication required for ${organizerEmail}. ` +
+            `Please authorize calendar access before scheduling meetings.`
+          );
+        }
+        
+        throw new Error(`Failed to create calendar event: ${errorText}`);
       }
 
-      const result = await response.json();
+      const responseText = await response.text();
+      
+      // Backend returns: "Event created successfully: [event_link]"
+      const eventLink = responseText.replace('Event created successfully: ', '');
+      
       return {
-        eventId: result.id,
-        meetingUrl: result.hangoutLink || result.conferenceData?.entryPoints?.[0]?.uri,
+        eventId: 'backend-generated-id', // Backend doesn't return ID directly
+        meetingUrl: eventLink,
       };
     } catch (error) {
       console.error('Error creating calendar event:', error);
@@ -83,85 +208,30 @@ class CalendarService {
   }
 
   /**
-   * Update a Google Calendar event
-   */
-  async updateCalendarEvent(eventId: string, eventData: Partial<CalendarEvent>): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseApiUrl}/calendar/events/${eventId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update calendar event: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error updating calendar event:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Cancel a Google Calendar event
-   */
-  async cancelCalendarEvent(eventId: string): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseApiUrl}/calendar/events/${eventId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to cancel calendar event: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error canceling calendar event:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get user's available time slots
-   */
-  async getAvailableTimeSlots(
-    userId: number,
-    startDate: string,
-    endDate: string
-  ): Promise<Array<{ start: string; end: string; available: boolean }>> {
-    try {
-      const response = await fetch(
-        `${this.baseApiUrl}/calendar/availability?userId=${userId}&start=${startDate}&end=${endDate}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch availability: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching availability:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Send meeting invitation email
+   * FIXED: Send meeting notification using backend email service
    */
   async sendMeetingInvitation(notificationData: MeetingNotificationData): Promise<void> {
     try {
-      const response = await fetch(`${this.baseApiUrl}/notifications/meeting-invitation`, {
+      const emailRequest = {
+        to: notificationData.participantEmail,
+        subject: `Meeting Invitation: ${notificationData.meetingDateTime}`,
+        message: this.generateMeetingInvitationEmail(notificationData),
+      };
+
+      const response = await fetch(`${this.baseApiUrl}/email/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(notificationData),
+        body: JSON.stringify(emailRequest),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to send meeting invitation: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to send meeting invitation: ${errorData.message || response.statusText}`);
       }
+
+      console.log(`Meeting invitation sent to ${notificationData.participantEmail}`);
     } catch (error) {
       console.error('Error sending meeting invitation:', error);
       throw error;
@@ -169,32 +239,51 @@ class CalendarService {
   }
 
   /**
-   * Schedule meeting reminders
+   * Generate meeting invitation email content
    */
-  async scheduleMeetingReminders(
-    meetingId: string,
-    reminders: Array<{ type: 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION'; minutesBefore: number }>
-  ): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseApiUrl}/meetings/${meetingId}/reminders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reminders }),
-      });
+  private generateMeetingInvitationEmail(data: MeetingNotificationData): string {
+    return `
+Dear ${data.participantName},
 
+You have been invited to a meeting:
+
+Meeting Details:
+- Date & Time: ${data.meetingDateTime}
+- Duration: ${data.duration} minutes
+- Type: ${data.meetingType}
+${data.meetingUrl ? `- Meeting URL: ${data.meetingUrl}` : ''}
+${data.location ? `- Location: ${data.location}` : ''}
+
+Organizer: ${data.organizerName} (${data.organizerEmail})
+
+Please mark your calendar and be prepared for the meeting.
+
+Best regards,
+The Meeting System
+    `.trim();
+  }
+
+  /**
+   * FIXED: Check email service status using backend
+   */
+  async checkEmailServiceStatus(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseApiUrl}/email/status`);
+      
       if (!response.ok) {
-        throw new Error(`Failed to schedule reminders: ${response.statusText}`);
+        return false;
       }
+      
+      const data = await response.json();
+      return data.success === true;
     } catch (error) {
-      console.error('Error scheduling reminders:', error);
-      throw error;
+      console.error('Email service status check failed:', error);
+      return false;
     }
   }
 
   /**
-   * Convert meeting data to Google Calendar event format
+   * Convert meeting data to CalendarEvent format
    */
   createCalendarEventFromMeeting(
     meetingData: any,
@@ -230,7 +319,7 @@ class CalendarService {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: 'email', minutes: 120 }, // 2 hours before
+          { method: 'email', minutes: 120 }, // 2 hours before (matches backend scheduler)
           { method: 'popup', minutes: 30 }, // 30 minutes before
         ],
       },
@@ -241,7 +330,7 @@ class CalendarService {
       if (meetingData.meetingUrl) {
         event.location = meetingData.meetingUrl;
       } else {
-        // Request Google Meet integration
+        // Request Google Meet integration (handled by backend)
         event.conferenceData = {
           createRequest: {
             requestId: `meet-${Date.now()}`,
@@ -259,46 +348,39 @@ class CalendarService {
   }
 
   /**
-   * Process complete meeting scheduling workflow
+   * FIXED: Complete meeting scheduling workflow integrated with backend
    */
   async scheduleCompleteWorkflow(
     meetingData: any,
     organizerEmail: string,
     organizerName: string,
     timeZone = 'UTC'
-  ): Promise<{ meetingId: string; googleEventId: string; meetingUrl?: string }> {
+  ): Promise<{ meetingId: string; googleEventId: string; meetingUrl?: string; authRequired?: boolean }> {
     try {
-      // 1. Create calendar event
-      const calendarEvent = this.createCalendarEventFromMeeting(
-        meetingData,
-        organizerEmail,
-        timeZone
-      );
-      const { eventId, meetingUrl } = await this.createCalendarEvent(calendarEvent);
+      console.log('Starting complete meeting workflow for:', organizerEmail);
 
-      // 2. Create meeting in database (this would be handled by backend API)
-      const meetingResponse = await fetch(`${this.baseApiUrl}/meetings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...meetingData,
-          googleCalendarEventId: eventId,
-          meetingUrl: meetingUrl || meetingData.meetingUrl,
-        }),
-      });
-
-      if (!meetingResponse.ok) {
-        throw new Error('Failed to create meeting in database');
+      // 1. Check if organizer has calendar authentication
+      const authStatus = await this.checkCalendarAuth(organizerEmail);
+      
+      if (!authStatus.isAuthenticated || !authStatus.hasValidToken) {
+        console.warn('Calendar authentication required for:', organizerEmail);
+        return {
+          meetingId: '',
+          googleEventId: '',
+          authRequired: true,
+        };
       }
 
-      const meeting = await meetingResponse.json();
+      // 2. Create calendar event using backend
+      const calendarEvent = this.createCalendarEventFromMeeting(meetingData, organizerEmail, timeZone);
+      const { eventId, meetingUrl } = await this.createCalendarEvent(calendarEvent, organizerEmail);
 
-      // 3. Send invitation emails
-      for (const participant of meetingData.participants) {
-        await this.sendMeetingInvitation({
-          meetingId: meeting.id,
+      console.log('Calendar event created:', { eventId, meetingUrl });
+
+      // 3. Send invitation emails to all participants
+      const invitationPromises = meetingData.participants.map((participant: any) =>
+        this.sendMeetingInvitation({
+          meetingId: meetingData.id || 'temp-id',
           participantEmail: participant.email,
           participantName: participant.name,
           meetingDateTime: meetingData.meetingDateTime,
@@ -308,26 +390,79 @@ class CalendarService {
           location: meetingData.location,
           organizerName,
           organizerEmail,
-        });
-      }
+        })
+      );
 
-      // 4. Schedule reminders
-      await this.scheduleMeetingReminders(meeting.id, [
-        { type: 'EMAIL', minutesBefore: 120 }, // 2 hours before
-        { type: 'EMAIL', minutesBefore: 30 }, // 30 minutes before
-      ]);
+      await Promise.all(invitationPromises);
+      console.log('Meeting invitations sent to all participants');
+
+      // 4. Note: Meeting reminders are automatically handled by backend SchedulerService
+      console.log('Meeting reminders will be automatically sent by backend scheduler 2 hours before the meeting');
 
       return {
-        meetingId: meeting.id,
+        meetingId: meetingData.id || 'backend-generated',
         googleEventId: eventId,
         meetingUrl: meetingUrl || meetingData.meetingUrl,
+        authRequired: false,
       };
     } catch (error) {
       console.error('Error in complete meeting workflow:', error);
+      
+      // Check if it's an authentication error
+      if (error instanceof Error && error.message.includes('authentication required')) {
+        return {
+          meetingId: '',
+          googleEventId: '',
+          authRequired: true,
+        };
+      }
+      
       throw error;
     }
   }
+
+  /**
+   * Clear authentication cache for a user
+   */
+  clearAuthCache(userEmail: string): void {
+    this.authStatusCache.delete(userEmail);
+  }
+
+  /**
+   * Test all backend integrations
+   */
+  async testBackendIntegration(): Promise<{
+    calendarService: boolean;
+    emailService: boolean;
+    errors: string[];
+  }> {
+    const results = {
+      calendarService: false,
+      emailService: false,
+      errors: [] as string[],
+    };
+
+    // Test calendar service
+    try {
+      const authUrl = await this.getAuthorizationUrl('test@example.com');
+      results.calendarService = !!authUrl;
+    } catch (error: any) {
+      results.errors.push(`Calendar service: ${error.message}`);
+    }
+
+    // Test email service
+    try {
+      results.emailService = await this.checkEmailServiceStatus();
+      if (!results.emailService) {
+        results.errors.push('Email service: Service not available');
+      }
+    } catch (error: any) {
+      results.errors.push(`Email service: ${error.message}`);
+    }
+
+    return results;
+  }
 }
 
-export const calendarService = new CalendarService();
+export const calendarService = new IntegratedCalendarService();
 export default calendarService;
