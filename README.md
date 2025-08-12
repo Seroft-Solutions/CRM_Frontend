@@ -1,6 +1,7 @@
 # CRM Frontend
 
-A modern, responsive CRM frontend application built with Next.js 15, TypeScript, and Tailwind CSS.
+A modern, responsive CRM frontend application built with Next.js 15, TypeScript,
+and Tailwind CSS.
 
 ## 🚀 Quick Start
 
@@ -21,11 +22,13 @@ npm run start
 ## 📋 Available Scripts
 
 ### Development
+
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build production application
 - `npm run start` - Start production server
 
 ### Code Quality
+
 - `npm run lint` - Run ESLint checks
 - `npm run lint:fix` - Fix ESLint issues automatically
 - `npm run format` - Format all files with Prettier
@@ -34,7 +37,9 @@ npm run start
 - `npm run code-quality:fix` - Fix both lint and format issues
 
 ### API & Code Generation
-- `npm run sync` - Full sync: fetch OpenAPI, generate types, sync JHipster, generate Next.js entities
+
+- `npm run sync` - Full sync: fetch OpenAPI, generate types, sync JHipster,
+  generate Next.js entities
 - `npm run openapi:fetch` - Fetch OpenAPI spec from backend (localhost:8080)
 - `npm run openapi:generate` - Generate TypeScript API clients from OpenAPI
 - `npm run generate-nextjs` - Generate Next.js entities and components
@@ -43,6 +48,7 @@ npm run start
 ## 🏗️ Architecture
 
 ### Tech Stack
+
 - **Framework**: Next.js 15 with App Router and Turbopack
 - **UI Library**: Radix UI components with Tailwind CSS
 - **State Management**: TanStack Query (React Query) for server state
@@ -51,6 +57,7 @@ npm run start
 - **API Generation**: Orval for TypeScript client generation from OpenAPI
 
 ### Key Features
+
 - **Multi-tenant**: Organization-based data isolation
 - **Meeting Scheduler**: Integrated availability and booking system
 - **Call Management**: Call tracking with remarks and meetings
@@ -60,7 +67,9 @@ npm run start
 ## 🔧 Development Workflow
 
 ### Code Generation System
+
 The project uses a custom code generator that creates:
+
 - CRUD pages with consistent routing
 - Form components with validation
 - Table components with filtering/sorting
@@ -68,6 +77,7 @@ The project uses a custom code generator that creates:
 - Toast notifications
 
 ### Authentication & Authorization
+
 - **Keycloak**: Primary identity provider
 - **NextAuth.js**: Session management and middleware
 - **Organization Context**: Tenant isolation
@@ -75,7 +85,8 @@ The project uses a custom code generator that creates:
 
 ## 🚀 Docker & Release Management
 
-This project includes simplified GitHub Actions workflows for Docker builds and release management.
+This project includes simplified GitHub Actions workflows for Docker builds and
+release management.
 
 ### Available Workflows
 
@@ -89,6 +100,7 @@ This project includes simplified GitHub Actions workflows for Docker builds and 
 - **Production** (`.env.production`) - Production environment URLs
 
 Update production URLs in `.env.production` before deploying:
+
 ```env
 AUTH_URL=https://your-production-domain.com
 AUTH_KEYCLOAK_ISSUER=https://your-keycloak-domain.com/realms/crm
@@ -98,11 +110,13 @@ NEXT_PUBLIC_SPRING_API_URL=https://your-api-domain.com
 ### Quick Release Guide
 
 **Creating a Release:**
+
 1. Go to Actions → Release Management
 2. Select release type (major/minor/patch/prerelease)
 3. Workflow creates version tag, changelog, and Docker images
 
 **Docker Images:**
+
 - Published to `syedus06/crm-frontend`
 - Tags: `latest`, `develop-dev`, version tags (e.g., `v1.0.0`)
 
@@ -141,6 +155,7 @@ NEXT_PUBLIC_SPRING_API_URL=https://your-api-domain.com
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow the existing code style and conventions
 - Run `npm run code-quality` before committing
 - Ensure all tests pass
@@ -148,9 +163,11 @@ NEXT_PUBLIC_SPRING_API_URL=https://your-api-domain.com
 
 ## 📚 Documentation
 
-- [GitHub Actions](docs/GITHUB_ACTIONS.md) - Docker builds and release management
+- [GitHub Actions](docs/GITHUB_ACTIONS.md) - Docker builds and release
+  management
 - [IntelliJ Setup](INTELLIJ_SETUP.md) - IDE configuration
-- [Meeting Integration](MEETING_INTEGRATION_IMPLEMENTATION.md) - Meeting system implementation
+- [Meeting Integration](MEETING_INTEGRATION_IMPLEMENTATION.md) - Meeting system
+  implementation
 - [Claude AI Guidelines](CLAUDE.md) - AI assistant development guidelines
 
 ## 🌐 Environment Variables
@@ -186,7 +203,8 @@ docker build -t crm-frontend .
 docker run -p 3000:3000 crm-frontend
 ```
 
-The project includes production-ready Docker configurations with multi-stage builds and health checks.
+The project includes production-ready Docker configurations with multi-stage
+builds and health checks.
 
 ## 📊 Monitoring
 
@@ -203,7 +221,8 @@ The project includes production-ready Docker configurations with multi-stage bui
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
 ---
 

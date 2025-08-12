@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Type of release'
+        description: "Type of release"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - major
@@ -14,17 +14,17 @@ on:
           - patch
           - prerelease
       prerelease:
-        description: 'Create pre-release'
+        description: "Create pre-release"
         required: false
         default: false
         type: boolean
       custom_version:
-        description: 'Custom version (optional, overrides release_type)'
+        description: "Custom version (optional, overrides release_type)"
         required: false
         type: string
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
   NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -63,7 +63,7 @@ jobs:
         id: version
         run: |
           CURRENT_VERSION="${{ steps.current-version.outputs.current-version }}"
-          
+
           if [ -n "${{ github.event.inputs.custom_version }}" ]; then
             NEW_VERSION="${{ github.event.inputs.custom_version }}"
             echo "Using custom version: $NEW_VERSION"
@@ -97,7 +97,7 @@ jobs:
               NEW_VERSION="$MAJOR.$MINOR.$PATCH"
             fi
           fi
-          
+
           echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "New version will be: $NEW_VERSION"
@@ -125,18 +125,18 @@ jobs:
         run: |
           NEW_VERSION="${{ steps.version.outputs.new-version }}"
           CURRENT_VERSION="${{ steps.version.outputs.current-version }}"
-          
+
           echo "Generating changelog from v$CURRENT_VERSION to v$NEW_VERSION"
-          
+
           # Get commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
+
           if [ -z "$LAST_TAG" ]; then
             COMMITS=$(git log --oneline --pretty=format:"- %s (%an)" | head -20)
           else
             COMMITS=$(git log --oneline --pretty=format:"- %s (%an)" $LAST_TAG..HEAD)
           fi
-          
+
           # Create changelog file
           echo "## Release v$NEW_VERSION" > RELEASE_CHANGELOG.md
           echo "" >> RELEASE_CHANGELOG.md
@@ -149,7 +149,7 @@ jobs:
           echo "- **Pre-release**: ${{ github.event.inputs.prerelease }}" >> RELEASE_CHANGELOG.md
           echo "- **Released by**: ${{ github.actor }}" >> RELEASE_CHANGELOG.md
           echo "- **Release Date**: $(date -u)" >> RELEASE_CHANGELOG.md
-          
+
           # Save changelog to output
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat RELEASE_CHANGELOG.md >> $GITHUB_OUTPUT
@@ -174,7 +174,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -223,18 +223,18 @@ jobs:
         run: |
           NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
           npm version $NEW_VERSION --no-git-tag-version
-          
+
           echo "Updated package.json to version $NEW_VERSION"
 
       - name: Update version in other files
         run: |
           NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
-          
+
           # Update version in Dockerfile if needed
           if [ -f Dockerfile ]; then
             sed -i "s/LABEL version=.*/LABEL version=\"$NEW_VERSION\"/" Dockerfile
           fi
-          
+
           # Update any other version references
           echo "Version updated in relevant files"
 
@@ -242,10 +242,10 @@ jobs:
         run: |
           NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
           git add package.json package-lock.json
-          
+
           # Add other files if they were modified
           [ -f Dockerfile ] && git add Dockerfile
-          
+
           git commit -m "chore: bump version to v$NEW_VERSION" || echo "No changes to commit"
 
       - name: Create and push tag
@@ -253,11 +253,11 @@ jobs:
         run: |
           NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
           TAG="v$NEW_VERSION"
-          
+
           git tag -a $TAG -m "Release $TAG"
           git push origin $TAG
           git push origin HEAD:${{ github.ref_name }}
-          
+
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Created and pushed tag: $TAG"
 
@@ -292,7 +292,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -312,7 +312,7 @@ jobs:
             package.json \
             next.config.ts \
             README.md
-          
+
           echo "Created release archive"
 
       - name: Upload release assets
