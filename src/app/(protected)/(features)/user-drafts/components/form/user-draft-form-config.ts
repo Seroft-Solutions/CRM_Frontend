@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for UserDraft form
@@ -13,37 +13,30 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const userDraftFormConfig: FormConfig = {
   entity: 'UserDraft',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'keycloakUserId',
-        'type',
-        'jsonPayload',
-      ],
-      relationships: [
-      ],
+      fields: ['keycloakUserId', 'type', 'jsonPayload'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -58,8 +51,7 @@ export const userDraftFormConfig: FormConfig = {
       validation: {
         required: false,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'type',
@@ -71,8 +63,7 @@ export const userDraftFormConfig: FormConfig = {
         required: false,
         maxLength: 50,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'jsonPayload',
@@ -83,14 +74,12 @@ export const userDraftFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
   // Relationship definitions
-  relationships: [
-  ],
+  relationships: [],
 
   // Global form configuration
   validation: {
@@ -113,7 +102,7 @@ export const userDraftFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -147,17 +136,19 @@ export const userDraftFormConfig: FormConfig = {
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
       showRestorationDialog: true,
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const userDraftFormHelpers = {
-  getStepById: (stepId: string) => userDraftFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => userDraftFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => userDraftFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => userDraftFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    userDraftFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    userDraftFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = userDraftFormConfig.steps.find(s => s.id === stepId);
+    const step = userDraftFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

@@ -38,8 +38,8 @@ import {
 import { format, addMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import './meeting-scheduler.css';
-import { MeetingErrorDialog } from "@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog";
-import { useUserAvailabilityCreation } from "@/app/(protected)/(features)/shared/services/customer-availability-service";
+import { MeetingErrorDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog';
+import { useUserAvailabilityCreation } from '@/app/(protected)/(features)/shared/services/customer-availability-service';
 
 // Backend imports
 import {
@@ -48,9 +48,9 @@ import {
 } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 import { useCreateMeetingParticipant } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 import { useCreateMeetingReminder } from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
-import { 
+import {
   useGetAllAvailableTimeSlots,
-  useUpdateAvailableTimeSlot 
+  useUpdateAvailableTimeSlot,
 } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
@@ -108,7 +108,7 @@ export function MeetingScheduler({
 }: MeetingSchedulerProps) {
   const { ensureUserHasAvailability } = useUserAvailabilityCreation();
   const queryClient = useQueryClient();
-  
+
   const [currentStep, setCurrentStep] = useState<Step>('datetime');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -127,7 +127,7 @@ export function MeetingScheduler({
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
   const [bookedTimeSlots, setBookedTimeSlots] = useState<string[]>([]); // New state for booked time slots
-  
+
   // Error handling state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -146,14 +146,14 @@ export function MeetingScheduler({
             const meetingDateTime = new Date(selectedDate);
             const [hours, minutes] = selectedTime.split(':').map(Number);
             meetingDateTime.setHours(hours, minutes, 0, 0);
-            
+
             // Find the matching time slot
-            const matchingSlot = timeSlots.find(slot => {
+            const matchingSlot = timeSlots.find((slot) => {
               const slotDateTime = new Date(slot.slotDateTime);
               const userIdMatch = slot.user?.id?.toString() === assignedUserId?.toString();
               return slotDateTime.getTime() === meetingDateTime.getTime() && userIdMatch;
             });
-            
+
             if (matchingSlot) {
               // Update the slot to mark it as booked
               updateAvailableTimeSlot({
@@ -162,7 +162,7 @@ export function MeetingScheduler({
                   ...matchingSlot,
                   isBooked: true,
                   bookedAt: new Date().toISOString(),
-                }
+                },
               });
               console.log('✅ Time slot marked as booked:', matchingSlot.id);
             } else {
@@ -206,25 +206,25 @@ export function MeetingScheduler({
           console.log('🔄 Invalidating caches to refresh data...');
           await Promise.all([
             // Invalidate meetings cache
-            queryClient.invalidateQueries({ 
+            queryClient.invalidateQueries({
               queryKey: ['useGetAllMeetings'],
-              exact: false 
+              exact: false,
             }),
             // Invalidate available time slots cache
-            queryClient.invalidateQueries({ 
+            queryClient.invalidateQueries({
               queryKey: ['useGetAllAvailableTimeSlots'],
-              exact: false 
+              exact: false,
             }),
             // Invalidate user availabilities cache
-            queryClient.invalidateQueries({ 
+            queryClient.invalidateQueries({
               queryKey: ['useGetAllUserAvailabilities'],
-              exact: false 
+              exact: false,
             }),
             // Invalidate calls cache (if user navigates back)
-            queryClient.invalidateQueries({ 
+            queryClient.invalidateQueries({
               queryKey: ['useGetAllCalls'],
-              exact: false 
-            })
+              exact: false,
+            }),
           ]);
           console.log('✅ All caches invalidated - fresh data will be loaded');
 
@@ -232,7 +232,9 @@ export function MeetingScheduler({
         } catch (error) {
           // Handle errors in participant/reminder creation
           console.error('Error in post-meeting creation steps:', error);
-          setErrorMessage('Meeting was created but some participants or reminders could not be set up. Please check the meeting details.');
+          setErrorMessage(
+            'Meeting was created but some participants or reminders could not be set up. Please check the meeting details.'
+          );
           setShowErrorDialog(true);
           onError?.(error);
         }
@@ -240,8 +242,8 @@ export function MeetingScheduler({
       onError: (error) => {
         console.error('Failed to create meeting:', error);
         setErrorMessage(
-          error?.message || 
-          'We encountered an unexpected error while scheduling your meeting. Please try again or contact support if the issue persists.'
+          error?.message ||
+            'We encountered an unexpected error while scheduling your meeting. Please try again or contact support if the issue persists.'
         );
         setShowErrorDialog(true);
         onError?.(error);
@@ -255,55 +257,57 @@ export function MeetingScheduler({
     mutation: {
       onSuccess: () => {
         // Invalidate time slots cache when a slot is updated
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['useGetAllAvailableTimeSlots'],
-          exact: false 
+          exact: false,
         });
         console.log('✅ Time slot cache invalidated after booking');
-      }
-    }
+      },
+    },
   });
 
   // Get data from backend
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
-    assignedUserId ? { 'userId.equals': assignedUserId.toString(), 'isBooked.equals': false } : undefined,
-    { 
-      query: { 
+    assignedUserId
+      ? { 'userId.equals': assignedUserId.toString(), 'isBooked.equals': false }
+      : undefined,
+    {
+      query: {
         enabled: !!assignedUserId,
         staleTime: 5 * 60 * 1000, // 5 minutes
         cacheTime: 10 * 60 * 1000, // 10 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-        refetchInterval: false
-      } 
+        refetchInterval: false,
+      },
     }
   );
 
   const { data: userAvailabilities } = useGetAllUserAvailabilities(
     assignedUserId ? { 'userId.equals': assignedUserId.toString() } : undefined,
-    { 
-      query: { 
+    {
+      query: {
         enabled: !!assignedUserId,
         staleTime: 5 * 60 * 1000, // 5 minutes
         cacheTime: 10 * 60 * 1000, // 10 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-        refetchInterval: false
-      } 
+        refetchInterval: false,
+      },
     }
   );
 
   const { data: existingMeetings } = useGetAllMeetings(
     assignedUserId ? { 'organizerId.equals': assignedUserId.toString() } : undefined,
-    { 
-      query: { 
+    {
+      query: {
         enabled: !!assignedUserId,
         staleTime: 5 * 60 * 1000, // 5 minutes
         cacheTime: 10 * 60 * 1000, // 10 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-        refetchInterval: false
-      } 
+        refetchInterval: false,
+      },
     }
   );
 
@@ -330,7 +334,7 @@ export function MeetingScheduler({
   // Ensure assigned user has availability (memoized to prevent infinite calls)
   useEffect(() => {
     if (assignedUserId) {
-      ensureUserHasAvailability(assignedUserId).then(success => {
+      ensureUserHasAvailability(assignedUserId).then((success) => {
         if (success) {
           console.log('✅ User availability confirmed for:', assignedUserId);
         } else {
@@ -384,7 +388,7 @@ export function MeetingScheduler({
       fromAvailableTimeSlots: timeSlots?.length || 0,
       fromUserAvailabilities: userAvailabilities?.length || 0,
       totalGenerated: slots.length,
-      assignedUserId
+      assignedUserId,
     });
 
     // Only use default time slots if absolutely no data exists
@@ -427,7 +431,7 @@ export function MeetingScheduler({
         .filter((meeting) => {
           if (!meeting.meetingDateTime) return false;
           const meetingDate = new Date(meeting.meetingDateTime);
-          const isScheduledOrConfirmed = 
+          const isScheduledOrConfirmed =
             meeting.meetingStatus === MeetingDTOMeetingStatus.SCHEDULED ||
             meeting.meetingStatus === MeetingDTOMeetingStatus.CONFIRMED;
           return isScheduledOrConfirmed && meetingDate.toDateString() === selectedDateStr;

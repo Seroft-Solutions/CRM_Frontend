@@ -5,31 +5,31 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 // Import the generated API functions directly
-import { 
+import {
   createChannelType,
-  updateChannelType, 
-  deleteChannelType 
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import { channelTypeToast } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
+  updateChannelType,
+  deleteChannelType,
+} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import { channelTypeToast } from '@/app/(protected)/(features)/channel-types/components/channel-type-toast';
 
 export async function createChannelTypeAction(data: any) {
   try {
     // Create entity using the generated API function
     const result = await createChannelType(data);
-    
+
     // Revalidate both the main list page and any related pages
-    revalidatePath("/channel-types");
-    revalidatePath("/channel-types/new");
+    revalidatePath('/channel-types');
+    revalidatePath('/channel-types/new');
     channelTypeToast.created();
-    
+
     return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to create channeltype:", error);
+    console.error('Failed to create channeltype:', error);
     channelTypeToast.createError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -39,16 +39,16 @@ export async function updateChannelTypeAction(id: number, data: any) {
   try {
     // Update entity using the generated API function with correct signature
     const result = await updateChannelType(id, data);
-    
+
     // Revalidate all related paths to ensure fresh data
-    revalidatePath("/channel-types");
+    revalidatePath('/channel-types');
     revalidatePath(`/channel-types/${id}`);
     revalidatePath(`/channel-types/${id}/edit`);
     channelTypeToast.updated();
-    
+
     return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to update channeltype:", error);
+    console.error('Failed to update channeltype:', error);
     channelTypeToast.updateError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -57,13 +57,13 @@ export async function updateChannelTypeAction(id: number, data: any) {
 export async function deleteChannelTypeAction(id: number) {
   try {
     await deleteChannelType(id);
-    
-    revalidatePath("/channel-types");
+
+    revalidatePath('/channel-types');
     channelTypeToast.deleted();
-    
+
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete channeltype:", error);
+    console.error('Failed to delete channeltype:', error);
     channelTypeToast.deleteError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -71,25 +71,23 @@ export async function deleteChannelTypeAction(id: number) {
 
 export async function bulkDeleteChannelTypeAction(ids: number[]) {
   try {
-    const results = await Promise.allSettled(
-      ids.map(id => deleteChannelType(id))
-    );
-    
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
-    const errorCount = results.filter(r => r.status === 'rejected').length;
-    
+    const results = await Promise.allSettled(ids.map((id) => deleteChannelType(id)));
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
     // Revalidate to ensure table reflects deletions
-    revalidatePath("/channel-types");
-    
+    revalidatePath('/channel-types');
+
     if (errorCount === 0) {
       channelTypeToast.bulkDeleted(successCount);
     } else {
       channelTypeToast.bulkDeleteError();
     }
-    
+
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error("Bulk delete failed:", error);
+    console.error('Bulk delete failed:', error);
     channelTypeToast.bulkDeleteError(error?.message);
     return { success: false, error: error?.message };
   }

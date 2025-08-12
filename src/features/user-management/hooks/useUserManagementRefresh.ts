@@ -5,7 +5,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { USER_MANAGEMENT_QUERY_KEYS } from "@/features/user-management/hooks/index";
+import { USER_MANAGEMENT_QUERY_KEYS } from '@/features/user-management/hooks/index';
 
 export function useUserManagementRefresh() {
   const queryClient = useQueryClient();

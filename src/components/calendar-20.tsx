@@ -92,7 +92,7 @@ export default function Calendar20({
             {timeSlots.map((time) => {
               const isBooked = bookedTimeSlots.includes(time);
               const isSelected = selectedTime === time;
-              
+
               return (
                 <Button
                   key={time}
@@ -100,8 +100,8 @@ export default function Calendar20({
                   onClick={() => handleTimeSelect(time)}
                   disabled={disabled || isBooked}
                   className={`w-full shadow-none ${
-                    isBooked 
-                      ? 'bg-red-50 border-red-200 text-red-500 opacity-60 cursor-not-allowed' 
+                    isBooked
+                      ? 'bg-red-50 border-red-200 text-red-500 opacity-60 cursor-not-allowed'
                       : ''
                   }`}
                 >

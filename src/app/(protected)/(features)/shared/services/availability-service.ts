@@ -3,15 +3,15 @@
  * Handles automatic creation of weekly schedules and specific time slots
  */
 
-import { 
-  UserAvailabilityDTO, 
+import {
+  UserAvailabilityDTO,
   UserAvailabilityDTODayOfWeek,
-  AvailableTimeSlotDTO 
+  AvailableTimeSlotDTO,
 } from '@/core/api/generated/spring/schemas';
 
 export interface DefaultAvailabilityConfig {
   startTime: string; // "09:00"
-  endTime: string;   // "19:00"
+  endTime: string; // "19:00"
   slotDurationMinutes: number; // 30
   workingDays: UserAvailabilityDTODayOfWeek[];
   timeZone?: string;
@@ -26,17 +26,17 @@ export interface GeneratedAvailability {
  * Default configuration for 9am-7pm with 30-minute slots
  */
 export const DEFAULT_AVAILABILITY_CONFIG: DefaultAvailabilityConfig = {
-  startTime: "09:00",
-  endTime: "19:00", 
+  startTime: '09:00',
+  endTime: '19:00',
   slotDurationMinutes: 30,
   workingDays: [
     UserAvailabilityDTODayOfWeek.MONDAY,
     UserAvailabilityDTODayOfWeek.TUESDAY,
     UserAvailabilityDTODayOfWeek.WEDNESDAY,
     UserAvailabilityDTODayOfWeek.THURSDAY,
-    UserAvailabilityDTODayOfWeek.FRIDAY
+    UserAvailabilityDTODayOfWeek.FRIDAY,
   ],
-  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
 
 export class AvailabilityService {
@@ -47,7 +47,7 @@ export class AvailabilityService {
     userId: number | string,
     config: DefaultAvailabilityConfig = DEFAULT_AVAILABILITY_CONFIG
   ): Omit<UserAvailabilityDTO, 'id'>[] {
-    return config.workingDays.map(dayOfWeek => ({
+    return config.workingDays.map((dayOfWeek) => ({
       dayOfWeek,
       startTime: config.startTime,
       endTime: config.endTime,
@@ -59,7 +59,7 @@ export class AvailabilityService {
       createdBy: 'system',
       createdDate: new Date().toISOString(),
       lastModifiedBy: 'system',
-      lastModifiedDate: new Date().toISOString()
+      lastModifiedDate: new Date().toISOString(),
     }));
   }
 
@@ -77,7 +77,7 @@ export class AvailabilityService {
 
     while (currentDate <= endDate) {
       const dayOfWeek = this.getDayOfWeekEnum(currentDate.getDay());
-      
+
       // Only generate slots for working days
       if (config.workingDays.includes(dayOfWeek)) {
         const daySlots = this.generateDaySlots(userId, currentDate, config);
@@ -106,10 +106,7 @@ export class AvailabilityService {
     let currentHour = startHour;
     let currentMin = startMin;
 
-    while (
-      currentHour < endHour || 
-      (currentHour === endHour && currentMin < endMin)
-    ) {
+    while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
       const slotDateTime = new Date(date);
       slotDateTime.setHours(currentHour, currentMin, 0, 0);
 
@@ -121,8 +118,8 @@ export class AvailabilityService {
         user: { id: userId } as any,
         createdBy: 'system',
         createdDate: new Date().toISOString(),
-        lastModifiedBy: 'system', 
-        lastModifiedDate: new Date().toISOString()
+        lastModifiedBy: 'system',
+        lastModifiedDate: new Date().toISOString(),
       });
 
       // Move to next slot
@@ -147,7 +144,7 @@ export class AvailabilityService {
       3: UserAvailabilityDTODayOfWeek.WEDNESDAY,
       4: UserAvailabilityDTODayOfWeek.THURSDAY,
       5: UserAvailabilityDTODayOfWeek.FRIDAY,
-      6: UserAvailabilityDTODayOfWeek.SATURDAY
+      6: UserAvailabilityDTODayOfWeek.SATURDAY,
     };
     return mapping[jsDay as keyof typeof mapping];
   }
@@ -160,17 +157,17 @@ export class AvailabilityService {
     config: DefaultAvailabilityConfig = DEFAULT_AVAILABILITY_CONFIG
   ): GeneratedAvailability {
     const userAvailabilities = this.generateWeeklyAvailability(userId, config);
-    
+
     // Generate slots for next 30 days
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + 30);
-    
+
     const timeSlots = this.generateTimeSlots(userId, startDate, endDate, config);
 
     return {
       userAvailabilities,
-      timeSlots
+      timeSlots,
     };
   }
 
@@ -188,7 +185,7 @@ export class AvailabilityService {
     const daysCount = generated.userAvailabilities.length;
     const slotsCount = generated.timeSlots.length;
     const config = DEFAULT_AVAILABILITY_CONFIG;
-    
+
     return `${daysCount} working days (${config.startTime}-${config.endTime}) with ${slotsCount} available time slots`;
   }
 }

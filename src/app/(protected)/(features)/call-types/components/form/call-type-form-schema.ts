@@ -8,12 +8,19 @@
 /**
  * CallType form validation schema with user-friendly messages
  */
-import { z } from "zod";
+import { z } from 'zod';
 
 export const callTypeFormSchemaFields = {
-  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
-  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  name: z
+    .string({ message: 'Please enter name' })
+    .min(1, { message: 'Please enter name' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  description: z
+    .string()
+    .max(255, { message: 'Please enter no more than 255 characters' })
+    .optional(),
+  remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
 };
 
 export const callTypeFormSchema = z.object(callTypeFormSchemaFields);
@@ -22,9 +29,16 @@ export type CallTypeFormValues = z.infer<typeof callTypeFormSchema>;
 
 // Individual field schemas for granular validation
 export const callTypeFieldSchemas = {
-  name: z.string({ message: "Please enter name" }).min(1, { message: "Please enter name" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  description: z.string().max(255, { message: "Please enter no more than 255 characters" }).optional(),
-  remark: z.string().max(1000, { message: "Please enter no more than 1000 characters" }).optional(),
+  name: z
+    .string({ message: 'Please enter name' })
+    .min(1, { message: 'Please enter name' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  description: z
+    .string()
+    .max(255, { message: 'Please enter no more than 255 characters' })
+    .optional(),
+  remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
 };
 
 // Step-specific validation schemas
@@ -38,7 +52,7 @@ export const callTypeStepSchemas = {
     lastModifiedBy: callTypeFieldSchemas.lastModifiedBy,
     lastModifiedDate: callTypeFieldSchemas.lastModifiedDate,
   }),
-  
+
   review: callTypeFormSchema,
 };
 
@@ -46,7 +60,7 @@ export const callTypeStepSchemas = {
 export const validateStep = (stepId: string, data: any) => {
   const schema = callTypeStepSchemas[stepId as keyof typeof callTypeStepSchemas];
   if (!schema) return { success: true, data };
-  
+
   try {
     const validData = schema.parse(data);
     return { success: true, data: validData };

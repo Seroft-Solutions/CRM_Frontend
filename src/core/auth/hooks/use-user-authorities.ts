@@ -1,10 +1,10 @@
 /**
  * Hook to fetch user authorities (roles and groups) dynamically from backend API
- * 
+ *
  * This hook replaces the previous approach of storing roles in the NextAuth session,
  * which had size limitations (4KB max). Instead, it fetches user authorities from
  * the backend /api/account endpoint and normalizes them for permission checking.
- * 
+ *
  * Features:
  * - Fetches authorities from backend API instead of JWT token parsing
  * - Handles 500+ authorities without session size issues
@@ -12,7 +12,7 @@
  * - Integrated with enhanced caching and error handling
  * - Background refetching to keep authorities in sync
  * - Separates roles and groups for better organization
- * 
+ *
  * @returns {Object} Object containing roles, groups, loading state, and helper functions
  */
 
@@ -20,9 +20,9 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useAccount } from "@/core/auth/hooks/use-account";
-import { AUTH_CACHE_CONFIG } from "@/core/auth/config/cache-config";
-import { normalizeRole, normalizeGroup, normalizeAuthority } from "@/core/auth/utils";
+import { useAccount } from '@/core/auth/hooks/use-account';
+import { AUTH_CACHE_CONFIG } from '@/core/auth/config/cache-config';
+import { normalizeRole, normalizeGroup, normalizeAuthority } from '@/core/auth/utils';
 
 export function useUserAuthorities() {
   const { data: session, status } = useSession();
@@ -32,10 +32,10 @@ export function useUserAuthorities() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Use the enhanced account hook with optimized caching
-  const { 
-    data: accountData, 
-    isLoading: accountLoading, 
-    error: accountError 
+  const {
+    data: accountData,
+    isLoading: accountLoading,
+    error: accountError,
   } = useAccount({
     refetchInBackground: true, // Keep authorities fresh in background
     staleTime: AUTH_CACHE_CONFIG.authorities.staleTime,
@@ -89,7 +89,7 @@ export function useUserAuthorities() {
       setGroups([]);
       setAllAuthorities([]);
     }
-    
+
     setIsLoading(false);
   }, [session, status, accountData, accountLoading, accountError]);
 
@@ -98,14 +98,17 @@ export function useUserAuthorities() {
     groups,
     authorities: allAuthorities,
     isLoading,
-    
+
     // Helper functions
     hasRole: (role: string) => roles.includes(normalizeRole(role)),
     hasGroup: (group: string) => groups.includes(normalizeGroup(group)),
     hasAuthority: (authority: string) => allAuthorities.includes(normalizeAuthority(authority)),
-    hasAnyRole: (rolesToCheck: string[]) => rolesToCheck.some(role => roles.includes(normalizeRole(role))),
-    hasAnyGroup: (groupsToCheck: string[]) => groupsToCheck.some(group => groups.includes(normalizeGroup(group))),
-    hasAnyAuthority: (authoritiesToCheck: string[]) => authoritiesToCheck.some(auth => allAuthorities.includes(normalizeAuthority(auth))),
+    hasAnyRole: (rolesToCheck: string[]) =>
+      rolesToCheck.some((role) => roles.includes(normalizeRole(role))),
+    hasAnyGroup: (groupsToCheck: string[]) =>
+      groupsToCheck.some((group) => groups.includes(normalizeGroup(group))),
+    hasAnyAuthority: (authoritiesToCheck: string[]) =>
+      authoritiesToCheck.some((auth) => allAuthorities.includes(normalizeAuthority(auth))),
   };
 }
 

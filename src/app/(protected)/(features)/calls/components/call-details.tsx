@@ -5,17 +5,20 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { callToast, handleCallError } from "@/app/(protected)/(features)/calls/components/call-toast";
-import { callFormConfig } from "@/app/(protected)/(features)/calls/components/form/call-form-config";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  callToast,
+  handleCallError,
+} from '@/app/(protected)/(features)/calls/components/call-toast';
+import { callFormConfig } from '@/app/(protected)/(features)/calls/components/form/call-form-config';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,132 +28,155 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetCall,
   useDeleteCall,
-} from "@/core/api/generated/spring/endpoints/call-resource/call-resource.gen";
+} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 
-
-import {
-  useGetAllPriorities,
-} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
-import {
-  useGetAllCallTypes,
-} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
-import {
-  useGetAllSubCallTypes,
-} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
-import {
-  useGetAllSources,
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
-import {
-  useGetAllCustomers,
-} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
-import {
-  useGetAllProducts,
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
-import {
-  useGetAllChannelTypes,
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import {
-  useGetAllUserProfiles,
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
-import {
-  useGetAllCallStatuses,
-} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
-
-
+import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
+import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
 interface CallDetailsProps {
   id: number;
 }
 
 // Component to display relationship values by fetching related entity data
-function RelationshipDisplayValue({ 
-  value, 
-  relConfig
-}: { 
-  value: any; 
-  relConfig: any;
-}) {
+function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   // Get the appropriate hook for this relationship
-    const { data: priorityData } = relConfig.name === 'priority' ? 
-    useGetAllPriorities({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'priority',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: callTypeData } = relConfig.name === 'callType' ? 
-    useGetAllCallTypes({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'callType',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: subCallTypeData } = relConfig.name === 'subCallType' ? 
-    useGetAllSubCallTypes({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'subCallType',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: sourceData } = relConfig.name === 'source' ? 
-    useGetAllSources({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'source',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: customerData } = relConfig.name === 'customer' ? 
-    useGetAllCustomers({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'customer',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: productData } = relConfig.name === 'product' ? 
-    useGetAllProducts({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'product',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: channelTypeData } = relConfig.name === 'channelType' ? 
-    useGetAllChannelTypes({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'channelType',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: channelPartiesData } = relConfig.name === 'channelParties' ? 
-    useGetAllUserProfiles({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'channelParties',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: assignedToData } = relConfig.name === 'assignedTo' ? 
-    useGetAllUserProfiles({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'assignedTo',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-      const { data: callStatusData } = relConfig.name === 'callStatus' ? 
-    useGetAllCallStatuses({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'callStatus',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-  
+  const { data: priorityData } =
+    relConfig.name === 'priority'
+      ? useGetAllPriorities(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'priority',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: callTypeData } =
+    relConfig.name === 'callType'
+      ? useGetAllCallTypes(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'callType',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: subCallTypeData } =
+    relConfig.name === 'subCallType'
+      ? useGetAllSubCallTypes(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'subCallType',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: sourceData } =
+    relConfig.name === 'source'
+      ? useGetAllSources(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'source',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: customerData } =
+    relConfig.name === 'customer'
+      ? useGetAllCustomers(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'customer',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: productData } =
+    relConfig.name === 'product'
+      ? useGetAllProducts(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'product',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: channelTypeData } =
+    relConfig.name === 'channelType'
+      ? useGetAllChannelTypes(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'channelType',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: channelPartiesData } =
+    relConfig.name === 'channelParties'
+      ? useGetAllUserProfiles(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'channelParties',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: assignedToData } =
+    relConfig.name === 'assignedTo'
+      ? useGetAllUserProfiles(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'assignedTo',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: callStatusData } =
+    relConfig.name === 'callStatus'
+      ? useGetAllCallStatuses(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'callStatus',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+
   if (!value) {
     return (
       <span className="text-muted-foreground italic">
-        {relConfig.multiple ? "None selected" : "Not selected"}
+        {relConfig.multiple ? 'None selected' : 'Not selected'}
       </span>
     );
   }
@@ -194,8 +220,10 @@ function RelationshipDisplayValue({
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">None selected</span>;
       }
-      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
-      return <span>{displayValues.join(", ")}</span>;
+      const displayValues = value.map(
+        (item: any) => item[relConfig.displayField] || item.id || item
+      );
+      return <span>{displayValues.join(', ')}</span>;
     } else {
       const displayValue = value[relConfig.displayField] || value.id || value;
       return <span>{displayValue}</span>;
@@ -203,41 +231,41 @@ function RelationshipDisplayValue({
   }
 
   // Extract data array from response (handle both direct array and paginated response)
-  const dataArray = Array.isArray(allData) ? allData : 
-                   allData.content ? allData.content : 
-                   allData.data ? allData.data : [];
+  const dataArray = Array.isArray(allData)
+    ? allData
+    : allData.content
+      ? allData.content
+      : allData.data
+        ? allData.data
+        : [];
 
   if (relConfig.multiple && Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground italic">None selected</span>;
     }
-    
-    const selectedItems = dataArray.filter((item: any) => 
+
+    const selectedItems = dataArray.filter((item: any) =>
       value.some((v: any) => {
         const valueId = typeof v === 'object' ? v[relConfig.primaryKey] : v;
         return item[relConfig.primaryKey] === valueId;
       })
     );
-    
+
     if (selectedItems.length === 0) {
       return <span className="text-muted-foreground italic">{value.length} selected</span>;
     }
-    
+
     const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
-    return <span>{displayValues.join(", ")}</span>;
+    return <span>{displayValues.join(', ')}</span>;
   } else {
     // Single value
     const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
-    const selectedItem = dataArray.find((item: any) => 
-      item[relConfig.primaryKey] === valueId
-    );
-    
+    const selectedItem = dataArray.find((item: any) => item[relConfig.primaryKey] === valueId);
+
     return selectedItem ? (
       <span>{selectedItem[relConfig.displayField]}</span>
     ) : (
-      <span className="text-muted-foreground italic">
-        Selected (ID: {valueId})
-      </span>
+      <span className="text-muted-foreground italic">Selected (ID: {valueId})</span>
     );
   }
 }
@@ -261,7 +289,7 @@ export function CallDetails({ id }: CallDetailsProps) {
     mutation: {
       onSuccess: () => {
         callToast.deleted();
-        router.push("/calls");
+        router.push('/calls');
       },
       onError: (error) => {
         handleCallError(error);
@@ -277,31 +305,31 @@ export function CallDetails({ id }: CallDetailsProps) {
   // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
-      return value ? "Yes" : "No";
+      return value ? 'Yes' : 'No';
     }
-    
+
     if (fieldConfig.type === 'date') {
-      return value ? format(new Date(value), "PPP") : (
+      return value ? (
+        format(new Date(value), 'PPP')
+      ) : (
         <span className="text-muted-foreground italic">Not set</span>
       );
     }
-    
+
     if (fieldConfig.type === 'file') {
-      return value ? "File uploaded" : (
+      return value ? (
+        'File uploaded'
+      ) : (
         <span className="text-muted-foreground italic">No file</span>
       );
     }
-    
+
     if (fieldConfig.type === 'enum') {
-      return value || (
-        <span className="text-muted-foreground italic">Not set</span>
-      );
+      return value || <span className="text-muted-foreground italic">Not set</span>;
     }
-    
+
     // Default text/number fields
-    return value || (
-      <span className="text-muted-foreground italic">Not set</span>
-    );
+    return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
   // Render relationship value using the enhanced display component
@@ -326,9 +354,8 @@ export function CallDetails({ id }: CallDetailsProps) {
   }
 
   // Filter out review step and empty steps
-  const displaySteps = formConfig.steps.filter(step => 
-    step.id !== 'review' && 
-    (step.fields.length > 0 || step.relationships.length > 0)
+  const displaySteps = formConfig.steps.filter(
+    (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );
 
   return (
@@ -356,12 +383,12 @@ export function CallDetails({ id }: CallDetailsProps) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Render Fields */}
-                {step.fields.map(fieldName => {
-                  const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
+                {step.fields.map((fieldName) => {
+                  const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
                   if (!fieldConfig) return null;
-                  
+
                   const value = entity[fieldName];
-                  
+
                   return (
                     <div key={fieldName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -375,12 +402,14 @@ export function CallDetails({ id }: CallDetailsProps) {
                 })}
 
                 {/* Render Relationships */}
-                {step.relationships.map(relationshipName => {
-                  const relConfig = formConfig.relationships.find(r => r.name === relationshipName);
+                {step.relationships.map((relationshipName) => {
+                  const relConfig = formConfig.relationships.find(
+                    (r) => r.name === relationshipName
+                  );
                   if (!relConfig) return null;
-                  
+
                   const value = entity[relationshipName];
-                  
+
                   return (
                     <div key={relationshipName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -407,7 +436,7 @@ export function CallDetails({ id }: CallDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -423,8 +452,8 @@ export function CallDetails({ id }: CallDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              call and remove its data from the server.
+              This action cannot be undone. This will permanently delete the call and remove its
+              data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -6,21 +6,19 @@
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
 
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { toast } from "sonner";
-import { sourceToast, handleSourceError } from "@/app/(protected)/(features)/sources/components/source-toast";
-import { useQueryClient } from '@tanstack/react-query';
-import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+  sourceToast,
+  handleSourceError,
+} from '@/app/(protected)/(features)/sources/components/source-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +26,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +36,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 // Add custom scrollbar styles
 const tableScrollStyles = `
@@ -73,21 +71,20 @@ import {
   useUpdateSource,
   usePartialUpdateSource,
   useSearchSources,
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
 
-
-
-
-
-import { SourceSearchAndFilters } from "@/app/(protected)/(features)/sources/components/table/source-search-filters";
-import { SourceTableHeader } from "@/app/(protected)/(features)/sources/components/table/source-table-header";
-import { SourceTableRow } from "@/app/(protected)/(features)/sources/components/table/source-table-row";
-import { BulkRelationshipAssignment } from "@/app/(protected)/(features)/sources/components/table/bulk-relationship-assignment";
-import { AdvancedPagination, usePaginationState } from "@/app/(protected)/(features)/sources/components/table/advanced-pagination";
+import { SourceSearchAndFilters } from '@/app/(protected)/(features)/sources/components/table/source-search-filters';
+import { SourceTableHeader } from '@/app/(protected)/(features)/sources/components/table/source-table-header';
+import { SourceTableRow } from '@/app/(protected)/(features)/sources/components/table/source-table-row';
+import { BulkRelationshipAssignment } from '@/app/(protected)/(features)/sources/components/table/bulk-relationship-assignment';
+import {
+  AdvancedPagination,
+  usePaginationState,
+} from '@/app/(protected)/(features)/sources/components/table/advanced-pagination';
 
 // Define sort ordering constants
-const ASC = "asc";
-const DESC = "desc";
+const ASC = 'asc';
+const DESC = 'desc';
 
 // Define column configuration
 interface ColumnConfig {
@@ -109,8 +106,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
-  
+
   {
     id: 'name',
     label: 'Name',
@@ -119,7 +115,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'description',
     label: 'Description',
@@ -128,7 +124,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
+
   {
     id: 'remark',
     label: 'Remark',
@@ -137,9 +133,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: true,
   },
-  
-  
-  
+
   {
     id: 'createdBy',
     label: 'Created By',
@@ -148,7 +142,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: false, // Hidden by default
     sortable: true,
   },
-  
+
   {
     id: 'createdDate',
     label: 'Created Date',
@@ -157,7 +151,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: false, // Hidden by default
     sortable: true,
   },
-  
+
   {
     id: 'lastModifiedBy',
     label: 'Last Modified By',
@@ -166,7 +160,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: false, // Hidden by default
     sortable: true,
   },
-  
+
   {
     id: 'lastModifiedDate',
     label: 'Last Modified Date',
@@ -175,7 +169,6 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: false, // Hidden by default
     sortable: true,
   },
-  
 ];
 
 // Local storage key for column visibility with version
@@ -192,19 +185,14 @@ interface DateRange {
 
 export function SourceTable() {
   const queryClient = useQueryClient();
-  
+
   // Enhanced pagination state management
-  const {
-    page,
-    pageSize,
-    handlePageChange,
-    handlePageSizeChange,
-    resetPagination,
-  } = usePaginationState(1, 10); // Default to 25 items per page
-  
-  const [sort, setSort] = useState("id");
+  const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
+    usePaginationState(1, 10); // Default to 25 items per page
+
+  const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
@@ -212,24 +200,24 @@ export function SourceTable() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
-  
+
   // Track individual cell updates instead of global state
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
-  
+
   // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
-  
+
   // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Load column visibility from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
       const oldKey = 'source-table-columns'; // Old key without version
-      
+
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
@@ -239,21 +227,27 @@ export function SourceTable() {
           // Remove old key to force reset for auditing fields
           localStorage.removeItem(oldKey);
         }
-        
+
         // Set default visibility with auditing fields hidden
-        const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
-          ...acc, 
-          [col.id]: col.visible 
-        }), {});
+        const defaultVisibility = ALL_COLUMNS.reduce(
+          (acc, col) => ({
+            ...acc,
+            [col.id]: col.visible,
+          }),
+          {}
+        );
         setColumnVisibility(defaultVisibility);
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
       // Fallback to default visibility
-      const defaultVisibility = ALL_COLUMNS.reduce((acc, col) => ({ 
-        ...acc, 
-        [col.id]: col.visible 
-      }), {});
+      const defaultVisibility = ALL_COLUMNS.reduce(
+        (acc, col) => ({
+          ...acc,
+          [col.id]: col.visible,
+        }),
+        {}
+      );
       setColumnVisibility(defaultVisibility);
     } finally {
       setIsColumnVisibilityLoaded(true);
@@ -273,14 +267,14 @@ export function SourceTable() {
 
   // Get visible columns
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter(col => columnVisibility[col.id] !== false);
+    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
-    setColumnVisibility(prev => ({
+    setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]
+      [columnId]: !prev[columnId],
     }));
   };
 
@@ -288,24 +282,23 @@ export function SourceTable() {
   const handleRefresh = async () => {
     try {
       // Invalidate all related queries to force fresh data
-      await queryClient.invalidateQueries({ 
+      await queryClient.invalidateQueries({
         queryKey: ['getAllSources'],
-        refetchType: 'active'
+        refetchType: 'active',
       });
-      await queryClient.invalidateQueries({ 
+      await queryClient.invalidateQueries({
         queryKey: ['countSources'],
-        refetchType: 'active'
+        refetchType: 'active',
       });
-      
-      await queryClient.invalidateQueries({ 
+
+      await queryClient.invalidateQueries({
         queryKey: ['searchSources'],
-        refetchType: 'active'
+        refetchType: 'active',
       });
-      
-      
+
       // Also manually trigger refetch
       await refetch();
-      
+
       toast.success('Data refreshed successfully');
     } catch (error) {
       console.error('Failed to refresh data:', error);
@@ -320,26 +313,30 @@ export function SourceTable() {
       return;
     }
 
-    const headers = visibleColumns.map(col => col.label);
+    const headers = visibleColumns.map((col) => col.label);
     const csvContent = [
       headers.join(','),
-      ...data.map(item => {
-        return visibleColumns.map(col => {
-          let value = '';
-          if (col.type === 'field') {
-            const fieldValue = item[col.accessor as keyof typeof item];
-            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
-          } else if (col.type === 'relationship') {
-            const relationship = item[col.accessor as keyof typeof item] as any;
-            
-          }
-          // Escape CSV values
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-            value = `"${value.replace(/"/g, '""')}"`;
-          }
-          return value;
-        }).join(',');
-      })
+      ...data.map((item) => {
+        return visibleColumns
+          .map((col) => {
+            let value = '';
+            if (col.type === 'field') {
+              const fieldValue = item[col.accessor as keyof typeof item];
+              value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
+            } else if (col.type === 'relationship') {
+              const relationship = item[col.accessor as keyof typeof item] as any;
+            }
+            // Escape CSV values
+            if (
+              typeof value === 'string' &&
+              (value.includes(',') || value.includes('"') || value.includes('\n'))
+            ) {
+              value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          })
+          .join(',');
+      }),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -351,34 +348,28 @@ export function SourceTable() {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
+
     toast.success('Data exported successfully');
   };
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
 
-  
-
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find(e => e[displayField]?.toLowerCase().includes(name.toLowerCase()));
+    const entity = entities?.find((e) =>
+      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+    );
     return entity?.id;
   };
 
   // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {};
-    
-    
-    
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        
-        
-        
-        
+      if (value !== undefined && value !== '' && value !== null) {
         // Handle createdDate date filter
         if (key === 'createdDate') {
           if (value instanceof Date) {
@@ -387,7 +378,7 @@ export function SourceTable() {
             params['createdDate.equals'] = value;
           }
         }
-        
+
         // Handle lastModifiedDate date filter
         if (key === 'lastModifiedDate') {
           if (value instanceof Date) {
@@ -396,43 +387,42 @@ export function SourceTable() {
             params['lastModifiedDate.equals'] = value;
           }
         }
-        
-        
+
         // Handle name text filter with contains
         else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
         }
-        
+
         // Handle description text filter with contains
         else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['description.contains'] = value;
           }
         }
-        
+
         // Handle remark text filter with contains
         else if (key === 'remark') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['remark.contains'] = value;
           }
         }
-        
+
         // Handle createdBy text filter with contains
         else if (key === 'createdBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['createdBy.contains'] = value;
           }
         }
-        
+
         // Handle lastModifiedBy text filter with contains
         else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
           }
         }
-        
+
         // Handle other filters
         else if (Array.isArray(value) && value.length > 0) {
           // Handle array values (for multi-select filters)
@@ -445,21 +435,20 @@ export function SourceTable() {
     });
 
     // Add date range filters
-    
+
     if (dateRange.from) {
       params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
+
     if (dateRange.from) {
       params['lastModifiedDate.greaterThanOrEqual'] = dateRange.from.toISOString();
     }
     if (dateRange.to) {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
     }
-    
 
     return params;
   };
@@ -467,8 +456,8 @@ export function SourceTable() {
   const filterParams = buildFilterParams();
 
   // Fetch data with React Query
-  
-  const { data, isLoading, refetch } = searchTerm 
+
+  const { data, isLoading, refetch } = searchTerm
     ? useSearchSources(
         {
           query: searchTerm,
@@ -500,132 +489,148 @@ export function SourceTable() {
           },
         }
       );
-  
 
   // Get total count for pagination
-  const { data: countData } = useCountSources(
-    filterParams,
-    {
-      query: {
-        enabled: true,
-        staleTime: 0, // Always consider data stale for immediate refetch
-        refetchOnWindowFocus: true,
-      },
-    }
-  );
+  const { data: countData } = useCountSources(filterParams, {
+    query: {
+      enabled: true,
+      staleTime: 0, // Always consider data stale for immediate refetch
+      refetchOnWindowFocus: true,
+    },
+  });
 
   // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateSource({
     mutation: {
       onMutate: async (variables) => {
         // Cancel any outgoing refetches
-        await queryClient.cancelQueries({ 
-          queryKey: ['getAllSources'] 
+        await queryClient.cancelQueries({
+          queryKey: ['getAllSources'],
         });
-        
-        await queryClient.cancelQueries({ 
-          queryKey: ['searchSources'] 
+
+        await queryClient.cancelQueries({
+          queryKey: ['searchSources'],
         });
-        
 
         // Snapshot the previous value
-        const previousData = queryClient.getQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }]);
+        const previousData = queryClient.getQueryData([
+          'getAllSources',
+          {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          },
+        ]);
 
         // Optimistically update the cache
         if (previousData && Array.isArray(previousData)) {
-          queryClient.setQueryData(['getAllSources', {
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          }], (old: any[]) => 
-            old.map(source => 
-              source.id === variables.id 
-                ? { ...source, ...variables.data }
-                : source
-            )
+          queryClient.setQueryData(
+            [
+              'getAllSources',
+              {
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            (old: any[]) =>
+              old.map((source) =>
+                source.id === variables.id ? { ...source, ...variables.data } : source
+              )
           );
         }
 
-        
         // Also update search cache if applicable
         if (searchTerm) {
-          queryClient.setQueryData(['searchSources', {
-            query: searchTerm,
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          }], (old: any[]) => 
-            old?.map(source => 
-              source.id === variables.id 
-                ? { ...source, ...variables.data }
-                : source
-            )
+          queryClient.setQueryData(
+            [
+              'searchSources',
+              {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            (old: any[]) =>
+              old?.map((source) =>
+                source.id === variables.id ? { ...source, ...variables.data } : source
+              )
           );
         }
-        
 
         return { previousData };
       },
       onSuccess: (data, variables) => {
         // CRITICAL: Update cache with server response to ensure UI reflects actual data
-        queryClient.setQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }], (old: any[]) => 
-          old?.map(source => 
-            source.id === variables.id 
-              ? data // Use complete server response
-              : source
-          )
-        );
-
-        
-        // Also update search cache if applicable
-        if (searchTerm) {
-          queryClient.setQueryData(['searchSources', {
-            query: searchTerm,
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          }], (old: any[]) => 
-            old?.map(source => 
-              source.id === variables.id 
+        queryClient.setQueryData(
+          [
+            'getAllSources',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          (old: any[]) =>
+            old?.map((source) =>
+              source.id === variables.id
                 ? data // Use complete server response
                 : source
             )
+        );
+
+        // Also update search cache if applicable
+        if (searchTerm) {
+          queryClient.setQueryData(
+            [
+              'searchSources',
+              {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            (old: any[]) =>
+              old?.map((source) =>
+                source.id === variables.id
+                  ? data // Use complete server response
+                  : source
+              )
           );
         }
-        
 
         sourceToast.updated();
       },
       onError: (error, variables, context) => {
         // Rollback on error
         if (context?.previousData) {
-          queryClient.setQueryData(['getAllSources', {
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          }], context.previousData);
+          queryClient.setQueryData(
+            [
+              'getAllSources',
+              {
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            context.previousData
+          );
         }
         handleSourceError(error);
       },
       onSettled: () => {
         // Force a background refetch to ensure eventual consistency
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllSources'],
-          refetchType: 'none' // Don't refetch immediately, just mark as stale
+          refetchType: 'none', // Don't refetch immediately, just mark as stale
         });
       },
     },
@@ -636,22 +641,29 @@ export function SourceTable() {
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
-        
-        const previousData = queryClient.getQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }]);
+
+        const previousData = queryClient.getQueryData([
+          'getAllSources',
+          {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          },
+        ]);
 
         // Optimistically remove the item
-        queryClient.setQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }], (old: any[]) => 
-          old?.filter(source => source.id !== variables.id)
+        queryClient.setQueryData(
+          [
+            'getAllSources',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          (old: any[]) => old?.filter((source) => source.id !== variables.id)
         );
 
         return { previousData };
@@ -659,18 +671,24 @@ export function SourceTable() {
       onSuccess: () => {
         sourceToast.deleted();
         // Update count cache
-        queryClient.setQueryData(['countSources', filterParams], (old: number) => 
+        queryClient.setQueryData(['countSources', filterParams], (old: number) =>
           Math.max(0, (old || 0) - 1)
         );
       },
       onError: (error, variables, context) => {
         if (context?.previousData) {
-          queryClient.setQueryData(['getAllSources', {
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          }], context.previousData);
+          queryClient.setQueryData(
+            [
+              'getAllSources',
+              {
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            context.previousData
+          );
         }
         handleSourceError(error);
       },
@@ -690,9 +708,9 @@ export function SourceTable() {
   // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
-      return "ChevronsUpDown";
+      return 'ChevronsUpDown';
     }
-    return order === ASC ? "ChevronUp" : "ChevronDown";
+    return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
   // Handle delete
@@ -710,9 +728,9 @@ export function SourceTable() {
 
   // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [column]: value
+      [column]: value,
     }));
     resetPagination(); // Reset to page 1 when filters change
   };
@@ -720,18 +738,16 @@ export function SourceTable() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
     resetPagination(); // Reset to page 1 when clearing filters
   };
 
-  
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     resetPagination(); // Reset to page 1 when searching
   };
-  
 
   // Calculate total pages
   const totalItems = countData || 0;
@@ -753,7 +769,9 @@ export function SourceTable() {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else if (data) {
-      setSelectedRows(new Set(data.map(item => item.id).filter((id): id is number => id !== undefined)));
+      setSelectedRows(
+        new Set(data.map((item) => item.id).filter((id): id is number => id !== undefined))
+      );
     }
   };
 
@@ -765,54 +783,70 @@ export function SourceTable() {
   const confirmBulkDelete = async () => {
     // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
-    
-    // Get current data for rollback
-    const previousData = queryClient.getQueryData(['getAllSources', {
-      page: apiPage,
-      size: pageSize,
-      sort: [`${sort},${order}`],
-      ...filterParams,
-    }]);
 
-    try {
-      // Optimistically remove all selected items
-      queryClient.setQueryData(['getAllSources', {
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData([
+      'getAllSources',
+      {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
         ...filterParams,
-      }], (old: any[]) => 
-        old?.filter(source => !selectedRows.has(source.id || 0))
+      },
+    ]);
+
+    try {
+      // Optimistically remove all selected items
+      queryClient.setQueryData(
+        [
+          'getAllSources',
+          {
+            page: apiPage,
+            size: pageSize,
+            sort: [`${sort},${order}`],
+            ...filterParams,
+          },
+        ],
+        (old: any[]) => old?.filter((source) => !selectedRows.has(source.id || 0))
       );
 
       // Process deletions
-      const deletePromises = Array.from(selectedRows).map(id => 
-        new Promise<void>((resolve, reject) => {
-          deleteEntity({ id }, {
-            onSuccess: () => resolve(),
-            onError: (error) => reject(error)
-          });
-        })
+      const deletePromises = Array.from(selectedRows).map(
+        (id) =>
+          new Promise<void>((resolve, reject) => {
+            deleteEntity(
+              { id },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              }
+            );
+          })
       );
 
       await Promise.all(deletePromises);
       sourceToast.bulkDeleted(selectedRows.size);
       setSelectedRows(new Set());
-      
+
       // Update count cache
-      queryClient.setQueryData(['countSources', filterParams], (old: number) => 
+      queryClient.setQueryData(['countSources', filterParams], (old: number) =>
         Math.max(0, (old || 0) - selectedRows.size)
       );
-      
     } catch (error) {
       // Rollback optimistic update on error
       if (previousData) {
-        queryClient.setQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }], previousData);
+        queryClient.setQueryData(
+          [
+            'getAllSources',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          previousData
+        );
       }
       sourceToast.bulkDeleteError();
     }
@@ -821,21 +855,21 @@ export function SourceTable() {
 
   // Enhanced relationship update handler with individual cell tracking
   const handleRelationshipUpdate = async (
-    entityId: number, 
-    relationshipName: string, 
+    entityId: number,
+    relationshipName: string,
     newValue: number | null,
     isBulkOperation: boolean = false
   ) => {
     const cellKey = `${entityId}-${relationshipName}`;
-    
+
     // Track this specific cell as updating
-    setUpdatingCells(prev => new Set(prev).add(cellKey));
-    
+    setUpdatingCells((prev) => new Set(prev).add(cellKey));
+
     return new Promise<void>((resolve, reject) => {
       // Get the current entity data first
-      const currentEntity = data?.find(item => item.id === entityId);
+      const currentEntity = data?.find((item) => item.id === entityId);
       if (!currentEntity) {
-        setUpdatingCells(prev => {
+        setUpdatingCells((prev) => {
           const newSet = new Set(prev);
           newSet.delete(cellKey);
           return newSet;
@@ -847,100 +881,120 @@ export function SourceTable() {
       // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
-        id: entityId
+        id: entityId,
       };
-      
+
       // Update only the specific relationship
       if (newValue) {
         // Find the full relationship object from options
-        const relationshipConfig = relationshipConfigs.find(config => config.name === relationshipName);
-        const selectedOption = relationshipConfig?.options.find(opt => opt.id === newValue);
+        const relationshipConfig = relationshipConfigs.find(
+          (config) => config.name === relationshipName
+        );
+        const selectedOption = relationshipConfig?.options.find((opt) => opt.id === newValue);
         updateData[relationshipName] = selectedOption || { id: newValue };
       } else {
         updateData[relationshipName] = null;
       }
 
-      updateEntity({ 
-        id: entityId,
-        data: updateData
-      }, {
-        onSuccess: (serverResponse) => {
-          // CRITICAL: Ensure individual cache updates with server response for bulk operations
-          if (isBulkOperation) {
-            // Update cache with server response for this specific entity
-            queryClient.setQueryData(['getAllSources', {
-              page: apiPage,
-              size: pageSize,
-              sort: [`${sort},${order}`],
-              ...filterParams,
-            }], (old: any[]) => 
-              old?.map(source => 
-                source.id === entityId 
-                  ? serverResponse // Use server response
-                  : source
-              )
-            );
-
-            
-            // Also update search cache if applicable
-            if (searchTerm) {
-              queryClient.setQueryData(['searchSources', {
-                query: searchTerm,
-                page: apiPage,
-                size: pageSize,
-                sort: [`${sort},${order}`],
-                ...filterParams,
-              }], (old: any[]) => 
-                old?.map(source => 
-                  source.id === entityId 
-                    ? serverResponse // Use server response
-                    : source
-                )
+      updateEntity(
+        {
+          id: entityId,
+          data: updateData,
+        },
+        {
+          onSuccess: (serverResponse) => {
+            // CRITICAL: Ensure individual cache updates with server response for bulk operations
+            if (isBulkOperation) {
+              // Update cache with server response for this specific entity
+              queryClient.setQueryData(
+                [
+                  'getAllSources',
+                  {
+                    page: apiPage,
+                    size: pageSize,
+                    sort: [`${sort},${order}`],
+                    ...filterParams,
+                  },
+                ],
+                (old: any[]) =>
+                  old?.map((source) =>
+                    source.id === entityId
+                      ? serverResponse // Use server response
+                      : source
+                  )
               );
-            }
-            
-          }
 
-          // Only show individual toast if not part of bulk operation
-          if (!isBulkOperation) {
-            sourceToast.relationshipUpdated(relationshipName);
-          }
-          resolve();
-        },
-        onError: (error: any) => {
-          reject(error);
-        },
-        onSettled: () => {
-          // Remove this cell from updating state
-          setUpdatingCells(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(cellKey);
-            return newSet;
-          });
+              // Also update search cache if applicable
+              if (searchTerm) {
+                queryClient.setQueryData(
+                  [
+                    'searchSources',
+                    {
+                      query: searchTerm,
+                      page: apiPage,
+                      size: pageSize,
+                      sort: [`${sort},${order}`],
+                      ...filterParams,
+                    },
+                  ],
+                  (old: any[]) =>
+                    old?.map((source) =>
+                      source.id === entityId
+                        ? serverResponse // Use server response
+                        : source
+                    )
+                );
+              }
+            }
+
+            // Only show individual toast if not part of bulk operation
+            if (!isBulkOperation) {
+              sourceToast.relationshipUpdated(relationshipName);
+            }
+            resolve();
+          },
+          onError: (error: any) => {
+            reject(error);
+          },
+          onSettled: () => {
+            // Remove this cell from updating state
+            setUpdatingCells((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(cellKey);
+              return newSet;
+            });
+          },
         }
-      });
+      );
     });
   };
 
   // Handle bulk relationship updates with individual server response syncing
-  const handleBulkRelationshipUpdate = async (entityIds: number[], relationshipName: string, newValue: number | null) => {
+  const handleBulkRelationshipUpdate = async (
+    entityIds: number[],
+    relationshipName: string,
+    newValue: number | null
+  ) => {
     // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllSources'] });
-    
+
     // Get current data for rollback
-    const previousData = queryClient.getQueryData(['getAllSources', {
-      page: apiPage,
-      size: pageSize,
-      sort: [`${sort},${order}`],
-      ...filterParams,
-    }]);
+    const previousData = queryClient.getQueryData([
+      'getAllSources',
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+    ]);
 
     try {
       // Process updates sequentially with bulk operation flag
       // Each individual update will handle its own cache update with server response
       let successCount = 0;
       let errorCount = 0;
-      
+
       for (const id of entityIds) {
         try {
           await handleRelationshipUpdate(id, relationshipName, newValue, true); // Pass true for bulk operation
@@ -950,46 +1004,53 @@ export function SourceTable() {
           errorCount++;
         }
       }
-      
+
       // Show single bulk success toast
       if (successCount > 0) {
-        const action = newValue === null ? "cleared" : "updated";
+        const action = newValue === null ? 'cleared' : 'updated';
         sourceToast.custom.success(
           `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
           `${relationshipName} ${action} for ${successCount} item${successCount > 1 ? 's' : ''}`
         );
       }
-      
+
       if (errorCount === entityIds.length) {
         throw new Error(`All ${errorCount} updates failed`);
       } else if (errorCount > 0) {
         sourceToast.custom.warning(
-          "⚠️ Partial Success",
+          '⚠️ Partial Success',
           `${successCount} updated, ${errorCount} failed`
         );
       }
-      
     } catch (error) {
       // Rollback optimistic update on error
       if (previousData) {
-        queryClient.setQueryData(['getAllSources', {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        }], previousData);
+        queryClient.setQueryData(
+          [
+            'getAllSources',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          previousData
+        );
       }
       throw error;
     }
   };
 
   // Prepare relationship configurations for components
-  const relationshipConfigs = [
-    
-  ];
+  const relationshipConfigs = [];
 
   // Check if any filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm) || Boolean(dateRange.from) || Boolean(dateRange.to);
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 ||
+    Boolean(searchTerm) ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
@@ -1013,239 +1074,230 @@ export function SourceTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
-      {/* Table Controls */}
-      <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Column Visibility Toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Columns</span>
-                <span className="sm:hidden">Cols</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ALL_COLUMNS.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={columnVisibility[column.id] !== false}
-                  onCheckedChange={() => toggleColumnVisibility(column.id)}
-                  onSelect={(e) => e.preventDefault()}
-                  className="flex items-center gap-2"
-                >
-                  {columnVisibility[column.id] !== false ? (
-                    <Eye className="h-4 w-4" />
-                  ) : (
-                    <EyeOff className="h-4 w-4" />
-                  )}
-                  {column.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Table Controls */}
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Column Visibility Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                  <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Columns</span>
+                  <span className="sm:hidden">Cols</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {ALL_COLUMNS.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={columnVisibility[column.id] !== false}
+                    onCheckedChange={() => toggleColumnVisibility(column.id)}
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex items-center gap-2"
+                  >
+                    {columnVisibility[column.id] !== false ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
+                    )}
+                    {column.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Refresh Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="gap-2 text-xs sm:text-sm"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-            <span className="sm:hidden">⟳</span>
-          </Button>
-
-          {/* Export Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportToCSV}
-            className="gap-2 text-xs sm:text-sm"
-            disabled={!data || data.length === 0}
-          >
-            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Export CSV</span>
-            <span className="sm:hidden">CSV</span>
-          </Button>
-        </div>
-
-        {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearAllFilters}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-            Clear All Filters
-          </Button>
-        )}
-      </div>
-
-      {/* Bulk Actions */}
-      {selectedRows.size > 0 && (
-        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
-          <span className="text-sm text-muted-foreground">
-            {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
-          </span>
-          <div className="flex flex-wrap gap-2 sm:ml-auto">
-            {relationshipConfigs.some(config => config.isEditable) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBulkRelationshipDialog(true)}
-                className="gap-2"
-              >
-                Assign Associations
-              </Button>
-            )}
+            {/* Refresh Button */}
             <Button
-              variant="destructive"
+              variant="outline"
               size="sm"
-              onClick={handleBulkDelete}
+              onClick={handleRefresh}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={isLoading}
             >
-              Delete Selected
+              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+              <span className="sm:hidden">⟳</span>
+            </Button>
+
+            {/* Export Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={!data || data.length === 0}
+            >
+              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
             </Button>
           </div>
-        </div>
-      )}
 
-      {/* Data Table */}
-      <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
-        <div className="table-scroll overflow-x-auto">
-          <Table className="w-full min-w-[600px]">
-            
-            <SourceTableHeader 
-              onSort={handleSort}
-              getSortIcon={getSortIcon}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              isAllSelected={isAllSelected}
-              isIndeterminate={isIndeterminate}
-              onSelectAll={handleSelectAll}
-              visibleColumns={visibleColumns}
-            />
-            <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length + 2}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : data?.length ? (
-              data.map((source) => (
-                <SourceTableRow
-                  key={source.id}
-                  source={source}
-                  onDelete={handleDelete}
-                  isDeleting={isDeleting}
-                  isSelected={selectedRows.has(source.id || 0)}
-                  onSelect={handleSelectRow}
-                  relationshipConfigs={relationshipConfigs}
-                  onRelationshipUpdate={handleRelationshipUpdate}
-                  updatingCells={updatingCells}
-                  visibleColumns={visibleColumns}
-                />
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length + 2}
-                  className="h-24 text-center"
-                >
-                  No sources found
-                  {hasActiveFilters && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Try adjusting your filters
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear All Filters
+            </Button>
+          )}
         </div>
-      </div>
 
-      {/* Advanced Pagination */}
-      <div className="table-container">
-        <AdvancedPagination
-          currentPage={page}
-          pageSize={pageSize}
-          totalItems={totalItems}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          isLoading={isLoading}
-          pageSizeOptions={[10, 25, 50, 100]}
-          showPageSizeSelector={true}
-          showPageInput={true}
-          showItemsInfo={true}
-          showFirstLastButtons={true}
-          maxPageButtons={7}
+        {/* Bulk Actions */}
+        {selectedRows.size > 0 && (
+          <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
+            <span className="text-sm text-muted-foreground">
+              {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="flex flex-wrap gap-2 sm:ml-auto">
+              {relationshipConfigs.some((config) => config.isEditable) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkRelationshipDialog(true)}
+                  className="gap-2"
+                >
+                  Assign Associations
+                </Button>
+              )}
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Data Table */}
+        <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
+          <div className="table-scroll overflow-x-auto">
+            <Table className="w-full min-w-[600px]">
+              <SourceTableHeader
+                onSort={handleSort}
+                getSortIcon={getSortIcon}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                isAllSelected={isAllSelected}
+                isIndeterminate={isIndeterminate}
+                onSelectAll={handleSelectAll}
+                visibleColumns={visibleColumns}
+              />
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : data?.length ? (
+                  data.map((source) => (
+                    <SourceTableRow
+                      key={source.id}
+                      source={source}
+                      onDelete={handleDelete}
+                      isDeleting={isDeleting}
+                      isSelected={selectedRows.has(source.id || 0)}
+                      onSelect={handleSelectRow}
+                      relationshipConfigs={relationshipConfigs}
+                      onRelationshipUpdate={handleRelationshipUpdate}
+                      updatingCells={updatingCells}
+                      visibleColumns={visibleColumns}
+                    />
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                      No sources found
+                      {hasActiveFilters && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Try adjusting your filters
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Advanced Pagination */}
+        <div className="table-container">
+          <AdvancedPagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
+            pageSizeOptions={[10, 25, 50, 100]}
+            showPageSizeSelector={true}
+            showPageInput={true}
+            showItemsInfo={true}
+            showFirstLastButtons={true}
+            maxPageButtons={7}
+          />
+        </div>
+
+        {/* Bulk Delete Dialog */}
+        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the selected sources and
+                remove their data from the server.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete All
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the source and remove its
+                data from the server.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk Relationship Assignment Dialog */}
+        <BulkRelationshipAssignment
+          open={showBulkRelationshipDialog}
+          onOpenChange={setShowBulkRelationshipDialog}
+          selectedEntityIds={Array.from(selectedRows)}
+          relationshipConfigs={relationshipConfigs}
+          onBulkUpdate={handleBulkRelationshipUpdate}
         />
-      </div>
-
-      {/* Bulk Delete Dialog */}
-      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected sources and remove their data from the server.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmBulkDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              source and remove its data from the server.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Bulk Relationship Assignment Dialog */}
-      <BulkRelationshipAssignment
-        open={showBulkRelationshipDialog}
-        onOpenChange={setShowBulkRelationshipDialog}
-        selectedEntityIds={Array.from(selectedRows)}
-        relationshipConfigs={relationshipConfigs}
-        onBulkUpdate={handleBulkRelationshipUpdate}
-      />
       </div>
     </>
   );

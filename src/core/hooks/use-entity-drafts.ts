@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   useCreateUserDraft,
   useUpdateUserDraft,
   useDeleteUserDraft,
   useGetAllUserDrafts,
   type UserDraftDTO,
-} from "@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen";
+} from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
 
 export interface DraftData {
   entityType: string;
@@ -45,8 +45,8 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     isLoading: isLoadingDrafts,
     error: draftsError,
   } = useGetAllUserDrafts(
-    { 
-      'type.equals': entityType
+    {
+      'type.equals': entityType,
     },
     {
       query: {
@@ -72,12 +72,12 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     mutation: {
       onSuccess: (data) => {
         queryClient.invalidateQueries({
-          queryKey: ["/api/user-drafts"],
+          queryKey: ['/api/user-drafts'],
         });
         // Removed toast from here - let the caller handle success messages
       },
       onError: (error) => {
-        console.error("Failed to create draft:", error);
+        console.error('Failed to create draft:', error);
         // Removed toast from here - let the caller handle error messages
       },
     },
@@ -88,12 +88,12 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     mutation: {
       onSuccess: (data) => {
         queryClient.invalidateQueries({
-          queryKey: ["/api/user-drafts"],
+          queryKey: ['/api/user-drafts'],
         });
         // Removed toast from here - let the caller handle success messages
       },
       onError: (error) => {
-        console.error("Failed to update draft:", error);
+        console.error('Failed to update draft:', error);
         // Removed toast from here - let the caller handle error messages
       },
     },
@@ -104,12 +104,12 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["/api/user-drafts"],
+          queryKey: ['/api/user-drafts'],
         });
         // Removed toast from here - let the caller handle success messages
       },
       onError: (error: any) => {
-        console.error("Failed to delete draft:", error);
+        console.error('Failed to delete draft:', error);
         // Removed toast from here - let the caller handle error messages
       },
     },
@@ -133,7 +133,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
         currentStep: currentStep || 0,
         sessionId: sessionId || `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         savedAt: new Date().toISOString(),
-        version: "1.0",
+        version: '1.0',
       };
 
       const userDraftDTO: UserDraftDTO = {
@@ -149,10 +149,11 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
       } else {
         // Check if we need to clean up old drafts before creating new one
         if (drafts.length >= maxDrafts) {
-          const oldestDraft = drafts.sort((a, b) => 
-            new Date(a.createdDate || "").getTime() - new Date(b.createdDate || "").getTime()
+          const oldestDraft = drafts.sort(
+            (a, b) =>
+              new Date(a.createdDate || '').getTime() - new Date(b.createdDate || '').getTime()
           )[0];
-          
+
           if (oldestDraft) {
             await deleteDraftMutation.mutateAsync({ id: oldestDraft.id });
           }
@@ -165,7 +166,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
 
       return true;
     } catch (error) {
-      console.error("Failed to save draft:", error);
+      console.error('Failed to save draft:', error);
       return false;
     }
   };
@@ -199,7 +200,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
           console.log(`Draft ${draftId} was already deleted, updating local state`);
           // Refresh the drafts list to sync with server state
           queryClient.invalidateQueries({
-            queryKey: ["/api/user-drafts"],
+            queryKey: ['/api/user-drafts'],
           });
         } else {
           console.warn(`Failed to delete draft ${draftId} after restoration:`, error);
@@ -223,11 +224,11 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
         console.log(`Draft ${draftId} was already deleted, updating local state`);
         // Refresh the drafts list to sync with server state
         queryClient.invalidateQueries({
-          queryKey: ["/api/user-drafts"],
+          queryKey: ['/api/user-drafts'],
         });
         return true; // Treat as success since the draft is gone anyway
       } else {
-        console.error("Failed to delete draft:", error);
+        console.error('Failed to delete draft:', error);
         return false;
       }
     }
@@ -238,10 +239,11 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
    */
   const getLatestDraft = (): DraftItem | null => {
     if (drafts.length === 0) return null;
-    
-    return drafts.sort((a, b) => 
-      new Date(b.lastModifiedDate || b.createdDate || "").getTime() - 
-      new Date(a.lastModifiedDate || a.createdDate || "").getTime()
+
+    return drafts.sort(
+      (a, b) =>
+        new Date(b.lastModifiedDate || b.createdDate || '').getTime() -
+        new Date(a.lastModifiedDate || a.createdDate || '').getTime()
     )[0];
   };
 
@@ -253,7 +255,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
     const oldDrafts = drafts.filter((draft) => {
-      const draftDate = new Date(draft.createdDate || "");
+      const draftDate = new Date(draft.createdDate || '');
       return draftDate < cutoffDate;
     });
 
@@ -267,7 +269,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
     draftsError,
-    
+
     // Actions
     saveDraft,
     loadDraft,
@@ -275,7 +277,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     deleteDraft,
     getLatestDraft,
     cleanupOldDrafts,
-    
+
     // State
     isSaving: createDraftMutation.isPending || updateDraftMutation.isPending,
     isDeleting: deleteDraftMutation.isPending,

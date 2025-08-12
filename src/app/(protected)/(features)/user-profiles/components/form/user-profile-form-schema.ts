@@ -8,15 +8,41 @@
 /**
  * UserProfile form validation schema with user-friendly messages
  */
-import { z } from "zod";
+import { z } from 'zod';
 
 export const userProfileFormSchemaFields = {
-  keycloakId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, { message: "Please enter valid keycloakid" }).optional(),
-  firstName: z.string({ message: "Please enter firstname" }).min(1, { message: "Please enter firstname" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  lastName: z.string({ message: "Please enter lastname" }).min(1, { message: "Please enter lastname" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  email: z.string({ message: "Please enter email" }).min(1, { message: "Please enter email" }).email({ message: "Please enter a valid email address (example: name@company.com)" }),
-  phone: z.string().max(20, { message: "Please enter no more than 20 characters" }).regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, { message: "Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567" }).optional(),
-  displayName: z.string().max(200, { message: "Please enter no more than 200 characters" }).optional(),
+  keycloakId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, {
+      message: 'Please enter valid keycloakid',
+    })
+    .optional(),
+  firstName: z
+    .string({ message: 'Please enter firstname' })
+    .min(1, { message: 'Please enter firstname' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  lastName: z
+    .string({ message: 'Please enter lastname' })
+    .min(1, { message: 'Please enter lastname' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  email: z
+    .string({ message: 'Please enter email' })
+    .min(1, { message: 'Please enter email' })
+    .email({ message: 'Please enter a valid email address (example: name@company.com)' }),
+  phone: z
+    .string()
+    .max(20, { message: 'Please enter no more than 20 characters' })
+    .regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, {
+      message:
+        'Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567',
+    })
+    .optional(),
+  displayName: z
+    .string()
+    .max(200, { message: 'Please enter no more than 200 characters' })
+    .optional(),
   internalUser: z.string().optional(),
   organizations: z.number().optional(),
   groups: z.number().optional(),
@@ -30,12 +56,38 @@ export type UserProfileFormValues = z.infer<typeof userProfileFormSchema>;
 
 // Individual field schemas for granular validation
 export const userProfileFieldSchemas = {
-  keycloakId: z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, { message: "Please enter valid keycloakid" }).optional(),
-  firstName: z.string({ message: "Please enter firstname" }).min(1, { message: "Please enter firstname" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  lastName: z.string({ message: "Please enter lastname" }).min(1, { message: "Please enter lastname" }).min(2, { message: "Please enter at least 2 characters" }).max(50, { message: "Please enter no more than 50 characters" }),
-  email: z.string({ message: "Please enter email" }).min(1, { message: "Please enter email" }).email({ message: "Please enter a valid email address (example: name@company.com)" }),
-  phone: z.string().max(20, { message: "Please enter no more than 20 characters" }).regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, { message: "Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567" }).optional(),
-  displayName: z.string().max(200, { message: "Please enter no more than 200 characters" }).optional(),
+  keycloakId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, {
+      message: 'Please enter valid keycloakid',
+    })
+    .optional(),
+  firstName: z
+    .string({ message: 'Please enter firstname' })
+    .min(1, { message: 'Please enter firstname' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  lastName: z
+    .string({ message: 'Please enter lastname' })
+    .min(1, { message: 'Please enter lastname' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(50, { message: 'Please enter no more than 50 characters' }),
+  email: z
+    .string({ message: 'Please enter email' })
+    .min(1, { message: 'Please enter email' })
+    .email({ message: 'Please enter a valid email address (example: name@company.com)' }),
+  phone: z
+    .string()
+    .max(20, { message: 'Please enter no more than 20 characters' })
+    .regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, {
+      message:
+        'Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567',
+    })
+    .optional(),
+  displayName: z
+    .string()
+    .max(200, { message: 'Please enter no more than 200 characters' })
+    .optional(),
   internalUser: z.string().optional(),
   organizations: z.number().optional(),
   groups: z.number().optional(),
@@ -57,7 +109,7 @@ export const userProfileStepSchemas = {
     lastModifiedBy: userProfileFieldSchemas.lastModifiedBy,
     lastModifiedDate: userProfileFieldSchemas.lastModifiedDate,
   }),
-  
+
   review: userProfileFormSchema,
 };
 
@@ -65,7 +117,7 @@ export const userProfileStepSchemas = {
 export const validateStep = (stepId: string, data: any) => {
   const schema = userProfileStepSchemas[stepId as keyof typeof userProfileStepSchemas];
   if (!schema) return { success: true, data };
-  
+
   try {
     const validData = schema.parse(data);
     return { success: true, data: validData };

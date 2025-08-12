@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { OrganizationForm } from "@/app/(protected)/(features)/organizations/components/form/organization-form-wizard";
+import React from 'react';
+import { OrganizationForm } from '@/app/(protected)/(features)/organizations/components/form/organization-form-wizard';
 
 interface OrganizationFormProps {
   id?: number;

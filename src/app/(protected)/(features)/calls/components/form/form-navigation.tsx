@@ -5,12 +5,12 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
+import React, { useState } from 'react';
+import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useEntityForm } from '@/app/(protected)/(features)/calls/components/form/call-form-provider';
 
 interface FormNavigationProps {
   onCancel: () => void;
@@ -19,12 +19,7 @@ interface FormNavigationProps {
   isNew: boolean;
 }
 
-export function FormNavigation({ 
-  onCancel, 
-  onSubmit, 
-  isSubmitting, 
-  isNew 
-}: FormNavigationProps) {
+export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
   const isLastStep = state.currentStep === config.steps.length - 1;
 
@@ -43,13 +38,13 @@ export function FormNavigation({
     // Check if drafts are enabled and form has unsaved changes
     const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
     const hasUnsavedChanges = state.isDirty && draftsEnabled;
-    
+
     if (hasUnsavedChanges && config.behavior?.drafts?.confirmDialog) {
       // Use the draft system - trigger the draft check through actions
       if (actions.saveDraft) {
         // Show the draft dialog by triggering a "navigation" that calls onCancel
-        const draftCheckEvent = new CustomEvent('triggerDraftCheck', { 
-          detail: { onProceed: onCancel } 
+        const draftCheckEvent = new CustomEvent('triggerDraftCheck', {
+          detail: { onProceed: onCancel },
         });
         window.dispatchEvent(draftCheckEvent);
       } else {
@@ -81,43 +76,43 @@ export function FormNavigation({
           <span className="text-red-500">*</span> means required fields - please fill these out
         </div>
       )}
-      
-      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
-      {/* Cancel/Previous Button */}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={state.currentStep === 0 ? handleCancel : handlePrevious}
-        className="flex items-center gap-2 justify-center"
-        disabled={isSubmitting}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {state.currentStep === 0 ? "Cancel" : "Previous"}
-      </Button>
 
-      {/* Next/Submit Button */}
-      {isLastStep ? (
-        <Button 
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
-        >
-          <Save className="h-4 w-4" />
-          {isSubmitting ? "Submitting..." : `${isNew ? "Create" : "Update"} Call`}
-        </Button>
-      ) : (
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+        {/* Cancel/Previous Button */}
         <Button
           type="button"
-          onClick={handleNext}
+          variant="outline"
+          onClick={state.currentStep === 0 ? handleCancel : handlePrevious}
           className="flex items-center gap-2 justify-center"
           disabled={isSubmitting}
         >
-          Next Step
-          <ArrowRight className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
+          {state.currentStep === 0 ? 'Cancel' : 'Previous'}
         </Button>
-      )}
-    </div>
+
+        {/* Next/Submit Button */}
+        {isLastStep ? (
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
+          >
+            <Save className="h-4 w-4" />
+            {isSubmitting ? 'Submitting...' : `${isNew ? 'Create' : 'Update'} Call`}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            onClick={handleNext}
+            className="flex items-center gap-2 justify-center"
+            disabled={isSubmitting}
+          >
+            Next Step
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

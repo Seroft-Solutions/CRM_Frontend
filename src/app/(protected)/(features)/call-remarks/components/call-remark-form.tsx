@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { CallRemarkForm } from "@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-wizard";
+import React from 'react';
+import { CallRemarkForm } from '@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-wizard';
 
 interface CallRemarkFormProps {
   id?: number;

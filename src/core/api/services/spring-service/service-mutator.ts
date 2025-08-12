@@ -1,6 +1,9 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { SPRING_SERVICE_CONFIG, SPRING_SERVICE_LONG_RUNNING_CONFIG } from "@/core/api/services/spring-service/config";
-import { getTenantHeader } from "@/core/api/services/shared/tenant-helper";
+import {
+  SPRING_SERVICE_CONFIG,
+  SPRING_SERVICE_LONG_RUNNING_CONFIG,
+} from '@/core/api/services/spring-service/config';
+import { getTenantHeader } from '@/core/api/services/shared/tenant-helper';
 
 // Simple in-memory token cache to avoid circular dependencies
 class SimpleTokenCache {
@@ -110,19 +113,19 @@ export const springServiceMutator = async <T>(
   // Add custom parameter serialization for Spring Boot compatibility
   instance.defaults.paramsSerializer = (params) => {
     const searchParams = new URLSearchParams();
-    
-    Object.keys(params).forEach(key => {
+
+    Object.keys(params).forEach((key) => {
       const value = params[key];
       if (Array.isArray(value)) {
         // For arrays, add each value as a separate parameter (Spring Boot format)
-        value.forEach(item => {
+        value.forEach((item) => {
           searchParams.append(key, item);
         });
       } else if (value !== undefined && value !== null) {
         searchParams.append(key, value);
       }
     });
-    
+
     return searchParams.toString();
   };
 
@@ -152,11 +155,11 @@ export const springServiceMutator = async <T>(
         if (typeof window !== 'undefined' && !error.config?._retry) {
           try {
             // Try to refresh session without importing from circular dependency
-            const response = await fetch('/api/auth/session', { 
+            const response = await fetch('/api/auth/session', {
               method: 'GET',
-              credentials: 'include'
+              credentials: 'include',
             });
-            
+
             if (response.ok) {
               const session = await response.json();
               if (session?.access_token) {

@@ -5,20 +5,18 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { InlinePermissionGuard } from "@/core/auth";
-import { RelationshipCell } from "@/app/(protected)/(features)/user-drafts/components/table/relationship-cell";
-import type { UserDraftDTO } from "@/core/api/generated/spring/schemas/UserDraftDTO";
-
-
+import Link from 'next/link';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { InlinePermissionGuard } from '@/core/auth';
+import { RelationshipCell } from '@/app/(protected)/(features)/user-drafts/components/table/relationship-cell';
+import type { UserDraftDTO } from '@/core/api/generated/spring/schemas/UserDraftDTO';
 
 interface RelationshipConfig {
   name: string;
@@ -35,7 +33,12 @@ interface UserDraftTableRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
-  onRelationshipUpdate?: (entityId: number, relationshipName: string, newValue: number | null, isBulkOperation?: boolean) => Promise<void>;
+  onRelationshipUpdate?: (
+    entityId: number,
+    relationshipName: string,
+    newValue: number | null,
+    isBulkOperation?: boolean
+  ) => Promise<void>;
   updatingCells?: Set<string>;
   visibleColumns: Array<{
     id: string;
@@ -47,11 +50,11 @@ interface UserDraftTableRowProps {
   }>;
 }
 
-export function UserDraftTableRow({ 
-  userDraft, 
-  onDelete, 
-  isDeleting, 
-  isSelected, 
+export function UserDraftTableRow({
+  userDraft,
+  onDelete,
+  isDeleting,
+  isSelected,
   onSelect,
   relationshipConfigs = [],
   onRelationshipUpdate,
@@ -67,81 +70,59 @@ export function UserDraftTableRow({
         />
       </TableCell>
       {visibleColumns.map((column, index) => (
-        <TableCell 
-          key={column.id} 
+        <TableCell
+          key={column.id}
           className={`
             px-2 sm:px-3 py-2 
             ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
             whitespace-nowrap overflow-hidden text-ellipsis
           `}
         >
-          {column.type === 'field' ? (
-            // Render field column
-            (() => {
-              const field = userDraft[column.accessor as keyof typeof userDraft];
-              
-              if (column.id === 'keycloakUserId') {
-                
-                return field?.toString() || "";
-                
-              }
-              
-              if (column.id === 'type') {
-                
-                return field?.toString() || "";
-                
-              }
-              
-              if (column.id === 'jsonPayload') {
-                
-                return field?.toString() || "";
-                
-              }
-              
-              if (column.id === 'createdBy') {
-                
-                return field?.toString() || "";
-                
-              }
-              
-              if (column.id === 'createdDate') {
-                
-                return field ? format(new Date(field as string), "PPP") : "";
-                
-              }
-              
-              if (column.id === 'lastModifiedBy') {
-                
-                return field?.toString() || "";
-                
-              }
-              
-              if (column.id === 'lastModifiedDate') {
-                
-                return field ? format(new Date(field as string), "PPP") : "";
-                
-              }
-              
-              return field?.toString() || "";
-            })()
-          ) : (
-            // Render relationship column
-            (() => {
-              
-              return null;
-            })()
-          )}
+          {column.type === 'field'
+            ? // Render field column
+              (() => {
+                const field = userDraft[column.accessor as keyof typeof userDraft];
+
+                if (column.id === 'keycloakUserId') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'type') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'jsonPayload') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'createdBy') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'createdDate') {
+                  return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                if (column.id === 'lastModifiedBy') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'lastModifiedDate') {
+                  return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                return field?.toString() || '';
+              })()
+            : // Render relationship column
+              (() => {
+                return null;
+              })()}
         </TableCell>
       ))}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[100px] sm:w-[120px]">
         <div className="flex items-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="userDraft:read">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
-            >
+            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
               <Link href={`/user-drafts/${userDraft.id}`}>
                 <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">View</span>
@@ -149,12 +130,7 @@ export function UserDraftTableRow({
             </Button>
           </InlinePermissionGuard>
           <InlinePermissionGuard requiredPermission="userDraft:update">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
-            >
+            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
               <Link href={`/user-drafts/${userDraft.id}/edit`}>
                 <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="sr-only">Edit</span>

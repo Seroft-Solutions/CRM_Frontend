@@ -33,8 +33,14 @@ import { PermissionGuard } from '@/core/auth';
 // Form validation schema
 const invitePartnerSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  firstName: z.string().min(1, 'First name is required').min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(1, 'Last name is required').min(2, 'Last name must be at least 2 characters'),
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .min(2, 'First name must be at least 2 characters'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .min(2, 'Last name must be at least 2 characters'),
   channelTypeId: z.number().min(1, 'Channel Type is required'),
 });
 
@@ -60,9 +66,9 @@ export default function InvitePartnersPage() {
   const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
 
   const [isInviting, setIsInviting] = useState(false);
-  const [invitationStatus, setInvitationStatus] = useState<InvitationResult>({ 
-    sent: [], 
-    failed: [] 
+  const [invitationStatus, setInvitationStatus] = useState<InvitationResult>({
+    sent: [],
+    failed: [],
   });
 
   // Form setup with validation
@@ -79,10 +85,11 @@ export default function InvitePartnersPage() {
 
   // Watch form values to enable/disable button
   const watchedValues = form.watch();
-  const isFormValid = form.formState.isValid && 
-    watchedValues.email?.trim() !== '' && 
-    watchedValues.firstName?.trim() !== '' && 
-    watchedValues.lastName?.trim() !== '' && 
+  const isFormValid =
+    form.formState.isValid &&
+    watchedValues.email?.trim() !== '' &&
+    watchedValues.firstName?.trim() !== '' &&
+    watchedValues.lastName?.trim() !== '' &&
     watchedValues.channelTypeId !== undefined;
 
   const handleSubmit = async (data: InvitePartnerFormData) => {
@@ -143,12 +150,11 @@ export default function InvitePartnersPage() {
         ...prev,
         sent: [...prev.sent, data],
       }));
-
     } catch (error) {
       console.error('Failed to invite partner:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to invite partner';
       toast.error(errorMessage);
-      
+
       setInvitationStatus((prev) => ({
         ...prev,
         failed: [...prev.failed, { invitation: data, error: errorMessage }],
@@ -202,8 +208,8 @@ export default function InvitePartnersPage() {
               Invite Business Partner
             </CardTitle>
             <CardDescription>
-              Send an invitation to a business partner to join your organization.
-              They'll receive an email with setup instructions.
+              Send an invitation to a business partner to join your organization. They'll receive an
+              email with setup instructions.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -288,8 +294,8 @@ export default function InvitePartnersPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={!isFormValid || isInviting || isCreatingProfile}
                     className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 gap-2"
                   >
@@ -318,7 +324,8 @@ export default function InvitePartnersPage() {
                 {/* Helper text */}
                 <div className="text-sm text-muted-foreground">
                   <p>
-                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all required fields (* fields) are properly filled.
+                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
+                    required fields (* fields) are properly filled.
                   </p>
                 </div>
               </form>
@@ -336,10 +343,7 @@ export default function InvitePartnersPage() {
                   <CardDescription>Status of your recent partner invitations</CardDescription>
                 </div>
                 {invitationStatus.sent.length > 0 && (
-                  <Button 
-                    onClick={() => router.push('/business-partners')}
-                    className="gap-2"
-                  >
+                  <Button onClick={() => router.push('/business-partners')} className="gap-2">
                     <Building2 className="h-4 w-4" />
                     View Business Partners
                   </Button>
@@ -376,8 +380,9 @@ export default function InvitePartnersPage() {
                     </div>
                     <div className="mt-4 p-3 bg-green-100 rounded-md">
                       <p className="text-sm text-green-800">
-                        💡 <strong>Next step:</strong> Invited partners will receive an email with setup instructions. 
-                        They'll appear in your Business Partners list once they accept.
+                        💡 <strong>Next step:</strong> Invited partners will receive an email with
+                        setup instructions. They'll appear in your Business Partners list once they
+                        accept.
                       </p>
                     </div>
                   </AlertDescription>
@@ -413,8 +418,8 @@ export default function InvitePartnersPage() {
 
               {/* Clear results button */}
               <div className="flex justify-center pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setInvitationStatus({ sent: [], failed: [] })}
                   className="gap-2"
                 >

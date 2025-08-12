@@ -25,7 +25,7 @@ async function fetchUserAccount(): Promise<{ authorities?: string[] } | null> {
     const baseUrl = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com';
     const response = await fetch(`${baseUrl}/api/account`, {
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -54,7 +54,7 @@ const getAuthSession = cache(async () => {
 const getUserRolesFromAPI = cache(async (): Promise<string[]> => {
   try {
     const accountData = await fetchUserAccount();
-    
+
     if (!accountData?.authorities) {
       return [];
     }
@@ -118,11 +118,11 @@ export const getSession = cache(async () => {
 export const hasRole = async (requiredRole: string): Promise<boolean> => {
   const session = await getSession();
   if (!session?.roles) return false;
-  
+
   // Normalize user roles and required role
   const normalizedUserRoles = session.roles.map(normalizeRole);
   const normalizedRequiredRole = normalizeRole(requiredRole);
-  
+
   return normalizedUserRoles.includes(normalizedRequiredRole);
 };
 

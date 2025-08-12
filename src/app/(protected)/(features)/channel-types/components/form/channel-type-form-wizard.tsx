@@ -5,27 +5,33 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChannelTypeFormProvider, useEntityForm } from "@/app/(protected)/(features)/channel-types/components/form/channel-type-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/channel-types/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/channel-types/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/channel-types/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/channel-types/components/form/form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { Form } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  ChannelTypeFormProvider,
+  useEntityForm,
+} from '@/app/(protected)/(features)/channel-types/components/form/channel-type-form-provider';
+import { FormProgressIndicator } from '@/app/(protected)/(features)/channel-types/components/form/form-progress-indicator';
+import { FormStepRenderer } from '@/app/(protected)/(features)/channel-types/components/form/form-step-renderer';
+import { FormNavigation } from '@/app/(protected)/(features)/channel-types/components/form/form-navigation';
+import { FormStateManager } from '@/app/(protected)/(features)/channel-types/components/form/form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import { Form } from '@/components/ui/form';
+import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
 // import { stepComponents } from "@/app/(protected)/(features)/channel-types/components/form/steps";
-import { 
+import {
   useCreateChannelType,
   useUpdateChannelType,
   useGetChannelType,
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
-import { channelTypeToast, handleChannelTypeError } from "@/app/(protected)/(features)/channel-types/components/channel-type-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import {
+  channelTypeToast,
+  handleChannelTypeError,
+} from '@/app/(protected)/(features)/channel-types/components/channel-type-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ChannelTypeFormProps {
@@ -42,7 +48,7 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetChannelType(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-channel-type", id]
+      queryKey: ['get-channel-type', id],
     },
   });
 
@@ -52,9 +58,9 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
       const formValues: Record<string, any> = {};
 
       // Handle regular fields
-      config.fields.forEach(fieldConfig => {
+      config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
-        
+
         if (fieldConfig.type === 'date') {
           // Convert to datetime-local format for the input
           if (value) {
@@ -63,30 +69,32 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
               if (!isNaN(date.getTime())) {
                 // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
-                const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
               } else {
-                formValues[fieldConfig.name] = "";
+                formValues[fieldConfig.name] = '';
               }
             } catch {
-              formValues[fieldConfig.name] = "";
+              formValues[fieldConfig.name] = '';
             }
           } else {
-            formValues[fieldConfig.name] = "";
+            formValues[fieldConfig.name] = '';
           }
         } else if (fieldConfig.type === 'number') {
-          formValues[fieldConfig.name] = value != null ? String(value) : "";
+          formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
-          formValues[fieldConfig.name] = value || "";
+          formValues[fieldConfig.name] = value || '';
         }
       });
 
       // Handle relationships
-      config.relationships.forEach(relConfig => {
+      config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
-        
+
         if (relConfig.multiple) {
-          formValues[relConfig.name] = value ? value.map((item: any) => item[relConfig.primaryKey]) : [];
+          formValues[relConfig.name] = value
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
@@ -105,7 +113,7 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
       form,
       config: config,
       actions,
-      entity
+      entity,
     };
 
     // Use imported step components (requires manual import after generation)
@@ -127,7 +135,8 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
           Generated step components for "{currentStepConfig.id}" step would render here.
         </p>
         <p className="text-sm text-muted-foreground mt-2">
-          1. Run: <code>node src/core/step-generator.js ChannelType</code><br/>
+          1. Run: <code>node src/core/step-generator.js ChannelType</code>
+          <br />
           2. Uncomment the import and usage above
         </p>
       </div>
@@ -142,15 +151,15 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/channel-types";
-      
+      const backRoute = returnUrl || '/channel-types';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -195,9 +204,7 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
         <Form {...form}>
           <form className="space-y-6">
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                {renderGeneratedStep()}
-              </CardContent>
+              <CardContent className="p-4 sm:p-6">{renderGeneratedStep()}</CardContent>
             </Card>
           </form>
         </Form>
@@ -207,7 +214,7 @@ function ChannelTypeFormContent({ id }: ChannelTypeFormProps) {
       )}
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -232,23 +239,22 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -256,7 +262,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
         } else {
           setIsRedirecting(true);
           channelTypeToast.created();
-          router.push("/channel-types");
+          router.push('/channel-types');
         }
       },
       onError: (error) => {
@@ -269,24 +275,23 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
     mutation: {
       onSuccess: () => {
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchChannelTypes'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         setIsRedirecting(true);
         channelTypeToast.updated();
-        router.push("/channel-types");
+        router.push('/channel-types');
       },
       onError: (error) => {
         handleChannelTypeError(error);
@@ -307,11 +312,11 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
   }
 
   return (
-    <ChannelTypeFormProvider 
+    <ChannelTypeFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

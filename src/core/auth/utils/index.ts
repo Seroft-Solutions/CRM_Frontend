@@ -66,10 +66,10 @@ export async function logoutWithCleanup() {
   try {
     // Import cleanup utility dynamically to avoid SSR issues
     const { localStorageCleanup } = await import('./local-storage-cleanup');
-    
+
     // Clean up all local storage data
     localStorageCleanup.logout();
-    
+
     // Proceed with normal logout
     await signOut({
       callbackUrl: '/',
@@ -106,11 +106,11 @@ export async function fetchAccessToken(): Promise<string | null> {
         const session = await response.json();
         return session?.access_token || null;
       }
-      
+
       const { tokenStorage } = await import('../tokens');
       return tokenStorage.getToken() || tokenStorage.getTokenSession();
     }
-    
+
     const { getAccessToken } = await import('@/lib/dal');
     return await getAccessToken();
   } catch (error) {

@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { ProductForm } from "@/app/(protected)/(features)/products/components/form/product-form-wizard";
+import React from 'react';
+import { ProductForm } from '@/app/(protected)/(features)/products/components/form/product-form-wizard';
 
 interface ProductFormProps {
   id?: number;

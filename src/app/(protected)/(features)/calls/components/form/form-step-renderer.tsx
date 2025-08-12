@@ -5,63 +5,62 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useEntityForm } from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/calls/components/form/relationship-renderer";
-
+import React, { useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useEntityForm } from '@/app/(protected)/(features)/calls/components/form/call-form-provider';
+import { RelationshipRenderer } from '@/app/(protected)/(features)/calls/components/form/relationship-renderer';
 
 import {
   useGetAllPriorities,
   useSearchPriorities,
   useCountPriorities,
-} from "@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen";
+} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 import {
   useGetAllCallTypes,
   useSearchCallTypes,
   useCountCallTypes,
-} from "@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen";
+} from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
 import {
   useGetAllSubCallTypes,
   useSearchSubCallTypes,
   useCountSubCallTypes,
-} from "@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen";
+} from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 import {
   useGetAllSources,
   useSearchSources,
   useCountSources,
-} from "@/core/api/generated/spring/endpoints/source-resource/source-resource.gen";
+} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
 import {
   useGetAllCustomers,
   useSearchCustomers,
   useCountCustomers,
-} from "@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen";
+} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import {
   useGetAllProducts,
   useSearchProducts,
   useCountProducts,
-} from "@/core/api/generated/spring/endpoints/product-resource/product-resource.gen";
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   useGetAllChannelTypes,
   useSearchChannelTypes,
   useCountChannelTypes,
-} from "@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen";
+} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import {
   useGetAllUserProfiles,
   useSearchUserProfiles,
   useCountUserProfiles,
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
+} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import {
   useGetAllCallStatuses,
   useSearchCallStatuses,
   useCountCallStatuses,
-} from "@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen";
+} from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;
@@ -83,7 +82,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="Priorities"
           />
         );
-        
+
       case 'callType':
         return (
           <RelationshipDisplayValue
@@ -95,7 +94,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="CallTypes"
           />
         );
-        
+
       case 'subCallType':
         return (
           <RelationshipDisplayValue
@@ -107,7 +106,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="SubCallTypes"
           />
         );
-        
+
       case 'source':
         return (
           <RelationshipDisplayValue
@@ -119,7 +118,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="Sources"
           />
         );
-        
+
       case 'customer':
         return (
           <RelationshipDisplayValue
@@ -131,7 +130,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="Customers"
           />
         );
-        
+
       case 'product':
         return (
           <RelationshipDisplayValue
@@ -143,7 +142,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="Products"
           />
         );
-        
+
       case 'channelType':
         return (
           <RelationshipDisplayValue
@@ -155,7 +154,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="ChannelTypes"
           />
         );
-        
+
       case 'channelParties':
         return (
           <RelationshipDisplayValue
@@ -167,7 +166,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="UserProfiles"
           />
         );
-        
+
       case 'assignedTo':
         return (
           <RelationshipDisplayValue
@@ -179,7 +178,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="UserProfiles"
           />
         );
-        
+
       case 'callStatus':
         return (
           <RelationshipDisplayValue
@@ -191,7 +190,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             label="CallStatuses"
           />
         );
-        
+
       default:
         return <span>{value ? 'Selected' : 'Not selected'}</span>;
     }
@@ -201,18 +200,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
 }
 
 // Component to display relationship values
-function RelationshipDisplayValue({ 
-  value, 
-  useGetAllHook, 
-  displayField, 
-  primaryKey, 
+function RelationshipDisplayValue({
+  value,
+  useGetAllHook,
+  displayField,
+  primaryKey,
   multiple,
-  label 
-}: { 
-  value: any; 
-  useGetAllHook: any; 
-  displayField: string; 
-  primaryKey: string; 
+  label,
+}: {
+  value: any;
+  useGetAllHook: any;
+  displayField: string;
+  primaryKey: string;
   multiple: boolean;
   label: string;
 }) {
@@ -223,7 +222,7 @@ function RelationshipDisplayValue({
       query: {
         enabled: !!value, // Only fetch if there's a value to resolve
         staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-      }
+      },
     }
   );
 
@@ -236,35 +235,35 @@ function RelationshipDisplayValue({
   }
 
   // Extract data array from response (handle both direct array and paginated response)
-  const dataArray = Array.isArray(allData) ? allData : 
-                   allData.content ? allData.content : 
-                   allData.data ? allData.data : [];
+  const dataArray = Array.isArray(allData)
+    ? allData
+    : allData.content
+      ? allData.content
+      : allData.data
+        ? allData.data
+        : [];
 
   if (multiple && Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground italic">None selected</span>;
     }
-    
-    const selectedItems = dataArray.filter((item: any) => 
-      value.includes(item[primaryKey])
-    );
-    
+
+    const selectedItems = dataArray.filter((item: any) => value.includes(item[primaryKey]));
+
     if (selectedItems.length === 0) {
       return <span className="text-muted-foreground italic">{value.length} selected</span>;
     }
-    
+
     const displayValues = selectedItems.map((item: any) => item[displayField]);
-    return displayValues.join(", ");
+    return displayValues.join(', ');
   } else {
     // Single value
-    const selectedItem = dataArray.find((item: any) => 
-      item[primaryKey] === value
-    );
-    
-    return selectedItem ? selectedItem[displayField] : (
-      <span className="text-muted-foreground italic">
-        Selected (ID: {value})
-      </span>
+    const selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
+
+    return selectedItem ? (
+      selectedItem[displayField]
+    ) : (
+      <span className="text-muted-foreground italic">Selected (ID: {value})</span>
     );
   }
 }
@@ -279,9 +278,9 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
       const formValues: Record<string, any> = {};
 
       // Handle regular fields
-      config.fields.forEach(fieldConfig => {
+      config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
-        
+
         if (fieldConfig.type === 'date') {
           // Convert to datetime-local format for the input
           if (value) {
@@ -290,30 +289,32 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
               if (!isNaN(date.getTime())) {
                 // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
-                const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
               } else {
-                formValues[fieldConfig.name] = "";
+                formValues[fieldConfig.name] = '';
               }
             } catch {
-              formValues[fieldConfig.name] = "";
+              formValues[fieldConfig.name] = '';
             }
           } else {
-            formValues[fieldConfig.name] = "";
+            formValues[fieldConfig.name] = '';
           }
         } else if (fieldConfig.type === 'number') {
-          formValues[fieldConfig.name] = value != null ? String(value) : "";
+          formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
-          formValues[fieldConfig.name] = value || "";
+          formValues[fieldConfig.name] = value || '';
         }
       });
 
       // Handle relationships
-      config.relationships.forEach(relConfig => {
+      config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
-        
+
         if (relConfig.multiple) {
-          formValues[relConfig.name] = value ? value.map((item: any) => item[relConfig.primaryKey]) : [];
+          formValues[relConfig.name] = value
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
@@ -324,7 +325,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   }, [entity, config, form, state.isLoading]);
 
   const renderField = (fieldName: string) => {
-    const fieldConfig = config.fields.find(f => f.name === fieldName);
+    const fieldConfig = config.fields.find((f) => f.name === fieldName);
     if (!fieldConfig) return null;
 
     return (
@@ -379,7 +380,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     form.trigger(fieldConfig.name);
                   }}
                 />
-              ) : fieldConfig.name?.toLowerCase().includes('mobile') || fieldConfig.name?.toLowerCase().includes('phone') ? (
+              ) : fieldConfig.name?.toLowerCase().includes('mobile') ||
+                fieldConfig.name?.toLowerCase().includes('phone') ? (
                 <Input
                   type="tel"
                   placeholder="Enter phone number (example: 03001234567)"
@@ -410,7 +412,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   };
 
   const renderRelationship = (relationshipName: string) => {
-    const relConfig = config.relationships.find(r => r.name === relationshipName);
+    const relConfig = config.relationships.find((r) => r.name === relationshipName);
     if (!relConfig) return null;
 
     return (
@@ -441,7 +443,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
           {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
-            
+
             return (
               <div key={step.id} className="border rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
@@ -459,64 +461,59 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {step.fields.map(fieldName => {
-                    const fieldConfig = config.fields.find(f => f.name === fieldName);
+                  {step.fields.map((fieldName) => {
+                    const fieldConfig = config.fields.find((f) => f.name === fieldName);
                     if (!fieldConfig) return null;
                     const value = form.getValues(fieldName);
-                    
+
                     // Format value for display
                     const displayValue = (() => {
-                      if (!value) return (
-                        <span className="text-muted-foreground italic">Not set</span>
-                      );
-                      
+                      if (!value)
+                        return <span className="text-muted-foreground italic">Not set</span>;
+
                       if (fieldConfig.type === 'date') {
                         try {
                           const date = value instanceof Date ? value : new Date(value);
-                          const dateStr = isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                          const dateStr = isNaN(date.getTime())
+                            ? 'Invalid date'
+                            : date.toLocaleDateString();
                           return dateStr;
                         } catch {
-                          return (
-                            <span className="text-muted-foreground italic">
-                              Invalid date
-                            </span>
-                          );
+                          return <span className="text-muted-foreground italic">Invalid date</span>;
                         }
                       }
-                      
+
                       if (fieldConfig.type === 'boolean') {
                         return value ? 'Yes' : 'No';
                       }
-                      
+
                       if (fieldConfig.type === 'enum') {
                         const option = fieldConfig.options?.find((opt: any) => opt.value === value);
                         return option ? option.label : value;
                       }
-                      
+
                       if (fieldConfig.type === 'file') {
                         const fileStr = value && value.name ? value.name : 'No file selected';
                         return fileStr;
                       }
-                      
+
                       return String(value);
                     })();
-                    
+
                     return (
                       <div key={fieldName} className="space-y-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                           {fieldConfig.label}
                         </div>
-                        <div className="text-sm font-semibold text-foreground">
-                          {displayValue}
-                        </div>
+                        <div className="text-sm font-semibold text-foreground">{displayValue}</div>
                       </div>
                     );
                   })}
-                  {step.relationships.map(relName => {
-                    const relConfig = config.relationships.find(r => r.name === relName);
+                  {step.relationships.map((relName) => {
+                    const relConfig = config.relationships.find((r) => r.name === relName);
                     if (!relConfig) return null;
                     const value = form.getValues(relName);
-                    
+
                     return (
                       <div key={relName} className="space-y-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -539,12 +536,16 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     // Regular step rendering
     return (
       <div className="space-y-6">
-        <div className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}>
+        <div
+          className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
+        >
           {/* Render regular fields */}
-          {currentStepConfig.fields.map(fieldName => renderField(fieldName))}
-          
+          {currentStepConfig.fields.map((fieldName) => renderField(fieldName))}
+
           {/* Render relationships */}
-          {currentStepConfig.relationships.map(relationshipName => renderRelationship(relationshipName))}
+          {currentStepConfig.relationships.map((relationshipName) =>
+            renderRelationship(relationshipName)
+          )}
         </div>
       </div>
     );
@@ -554,9 +555,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     <Form {...form}>
       <form className="space-y-6">
         <Card>
-          <CardContent className="p-4 sm:p-6">
-            {renderCurrentStep()}
-          </CardContent>
+          <CardContent className="p-4 sm:p-6">{renderCurrentStep()}</CardContent>
         </Card>
       </form>
     </Form>

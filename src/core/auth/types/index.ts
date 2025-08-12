@@ -40,7 +40,6 @@ export interface ActivityTrackerOptions {
   immediate?: boolean; // whether to start tracking immediately
 }
 
-
 export interface AuthConfig {
   keycloak: {
     issuer: string;

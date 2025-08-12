@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Group form
@@ -13,80 +13,63 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const groupFormConfig: FormConfig = {
   entity: 'Group',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'keycloakGroupId',
-        'name',
-        'path',
-        'description',
-      ],
-      relationships: [
-      ],
+      fields: ['keycloakGroupId', 'name', 'path', 'description'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'users',
       title: 'People & Users',
       description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'members',
-      ],
+      fields: [],
+      relationships: ['members'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'settings',
       title: 'Settings & Files',
       description: 'Configure options',
-      fields: [
-        'isActive',
-      ],
-      relationships: [
-      ],
+      fields: ['isActive'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'organization',
-      ],
+      fields: [],
+      relationships: ['organization'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -102,8 +85,7 @@ export const groupFormConfig: FormConfig = {
         required: true,
         pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'name',
@@ -116,8 +98,7 @@ export const groupFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'path',
@@ -129,8 +110,7 @@ export const groupFormConfig: FormConfig = {
         required: true,
         maxLength: 500,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'description',
@@ -142,8 +122,7 @@ export const groupFormConfig: FormConfig = {
         required: false,
         maxLength: 255,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'isActive',
@@ -154,8 +133,7 @@ export const groupFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -185,7 +163,7 @@ export const groupFormConfig: FormConfig = {
         label: 'Organization',
         placeholder: 'Select organization',
         icon: '🔗',
-      }
+      },
     },
     {
       name: 'members',
@@ -211,7 +189,7 @@ export const groupFormConfig: FormConfig = {
         label: 'Members',
         placeholder: 'Select members',
         icon: '👥',
-      }
+      },
     },
   ],
 
@@ -236,7 +214,7 @@ export const groupFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -270,17 +248,19 @@ export const groupFormConfig: FormConfig = {
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
       showRestorationDialog: true,
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const groupFormHelpers = {
-  getStepById: (stepId: string) => groupFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => groupFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => groupFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => groupFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    groupFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    groupFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = groupFormConfig.steps.find(s => s.id === stepId);
+    const step = groupFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

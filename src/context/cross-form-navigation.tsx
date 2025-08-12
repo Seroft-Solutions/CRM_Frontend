@@ -51,7 +51,7 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
   const [draftHandlers, setDraftHandlers] = useState<Map<string, DraftCheckHandler>>(new Map());
 
   const registerDraftCheck = useCallback((handler: DraftCheckHandler) => {
-    setDraftHandlers(prev => {
+    setDraftHandlers((prev) => {
       const newMap = new Map(prev);
       newMap.set(handler.formId, handler);
       return newMap;
@@ -59,7 +59,7 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
   }, []);
 
   const unregisterDraftCheck = useCallback((formId: string) => {
-    setDraftHandlers(prev => {
+    setDraftHandlers((prev) => {
       const newMap = new Map(prev);
       newMap.delete(formId);
       return newMap;
@@ -120,7 +120,7 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
     }) => {
       // Check if there's an active draft handler for the current form
       const handler = draftHandlers.get(params.referrerForm);
-      
+
       if (handler) {
         // Let the form handle the draft check
         handler.checkDrafts(() => {

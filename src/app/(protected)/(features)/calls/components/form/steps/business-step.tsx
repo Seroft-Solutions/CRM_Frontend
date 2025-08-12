@@ -4,14 +4,14 @@
 // - Allows adding remarks that are saved when call is created
 // - Added business partner filtering for customers by createdBy
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { RelationshipRenderer } from "../relationship-renderer";
+import React, { useMemo } from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { RelationshipRenderer } from '../relationship-renderer';
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 
@@ -32,7 +32,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
     if (isBusinessPartner && accountData?.login) {
       // For business partners, only show customers created by them
       return {
-        "createdBy.equals": accountData.login
+        'createdBy.equals': accountData.login,
       };
     }
     // For non-business partners, show all customers
@@ -42,9 +42,9 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
-        
+
         {/* Generated Relationship Fields */}
-        
+
         {/* Source Relationship */}
         <FormField
           control={form.control}
@@ -59,9 +59,18 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {"useGetAllHook":"useGetAllSources","useSearchHook":"useSearchSources","useCountHook":"useCountSources","entityName":"Sources"},
-                creation: {"canCreate":true,"createPath":"/sources/new","createPermission":"source:create:inline"},
-                ui: {"label":"Source","placeholder":"Select source","icon":"🏢"},
+                api: {
+                  useGetAllHook: 'useGetAllSources',
+                  useSearchHook: 'useSearchSources',
+                  useCountHook: 'useCountSources',
+                  entityName: 'Sources',
+                },
+                creation: {
+                  canCreate: true,
+                  createPath: '/sources/new',
+                  createPermission: 'source:create:inline',
+                },
+                ui: { label: 'Source', placeholder: 'Select source', icon: '🏢' },
               }}
               field={field}
               form={form}
@@ -70,7 +79,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
             />
           )}
         />
-        
+
         {/* Customer Relationship - with business partner filtering */}
         <FormField
           control={form.control}
@@ -86,9 +95,18 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 required: true,
                 multiple: false,
                 customFilters: customerCustomFilters,
-                api: {"useGetAllHook":"useGetAllCustomers","useSearchHook":"useSearchCustomers","useCountHook":"useCountCustomers","entityName":"Customers"},
-                creation: {"canCreate":true,"createPath":"/customers/new","createPermission":"customer:create:inline"},
-                ui: {"label":"Customer","placeholder":"Select customer","icon":"🏢"},
+                api: {
+                  useGetAllHook: 'useGetAllCustomers',
+                  useSearchHook: 'useSearchCustomers',
+                  useCountHook: 'useCountCustomers',
+                  entityName: 'Customers',
+                },
+                creation: {
+                  canCreate: true,
+                  createPath: '/customers/new',
+                  createPermission: 'customer:create:inline',
+                },
+                ui: { label: 'Customer', placeholder: 'Select customer', icon: '🏢' },
               }}
               field={field}
               form={form}
@@ -97,7 +115,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
             />
           )}
         />
-        
+
         {/* Product Relationship */}
         <FormField
           control={form.control}
@@ -112,9 +130,18 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                api: {"useGetAllHook":"useGetAllProducts","useSearchHook":"useSearchProducts","useCountHook":"useCountProducts","entityName":"Products"},
-                creation: {"canCreate":true,"createPath":"/products/new","createPermission":"product:create:inline"},
-                ui: {"label":"Product","placeholder":"Select product","icon":"🏢"},
+                api: {
+                  useGetAllHook: 'useGetAllProducts',
+                  useSearchHook: 'useSearchProducts',
+                  useCountHook: 'useCountProducts',
+                  entityName: 'Products',
+                },
+                creation: {
+                  canCreate: true,
+                  createPath: '/products/new',
+                  createPermission: 'product:create:inline',
+                },
+                ui: { label: 'Product', placeholder: 'Select product', icon: '🏢' },
               }}
               field={field}
               form={form}

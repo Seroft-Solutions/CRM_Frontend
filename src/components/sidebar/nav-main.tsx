@@ -17,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { type SidebarItem } from "@/components/sidebar/sidebar-items";
+import { type SidebarItem } from '@/components/sidebar/sidebar-items';
 
 export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
@@ -54,10 +54,10 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
       <SidebarGroupLabel>CRM Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <NavItem 
-            key={item.key} 
-            item={item} 
-            pathname={pathname} 
+          <NavItem
+            key={item.key}
+            item={item}
+            pathname={pathname}
             isActive={isActive}
             hasPermission={hasPermission}
           />

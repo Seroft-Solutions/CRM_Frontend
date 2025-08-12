@@ -12,7 +12,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { sidebarItems } from "@/components/sidebar/sidebar-items";
+import { sidebarItems } from '@/components/sidebar/sidebar-items';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

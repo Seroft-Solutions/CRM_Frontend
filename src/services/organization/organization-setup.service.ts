@@ -160,9 +160,9 @@ export class OrganizationSetupService {
     const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         userId,
-        isOrganizationOwner: true // Flag to indicate this user should get admin privileges
+        isOrganizationOwner: true, // Flag to indicate this user should get admin privileges
       }),
     });
 

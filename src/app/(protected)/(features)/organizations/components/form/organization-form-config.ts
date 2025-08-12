@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Organization form
@@ -13,66 +13,52 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const organizationFormConfig: FormConfig = {
   entity: 'Organization',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'keycloakOrgId',
-        'name',
-        'displayName',
-        'domain',
-      ],
-      relationships: [
-      ],
+      fields: ['keycloakOrgId', 'name', 'displayName', 'domain'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'users',
       title: 'People & Users',
       description: 'Assign users and responsibilities',
-      fields: [
-      ],
-      relationships: [
-        'members',
-      ],
+      fields: [],
+      relationships: ['members'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'settings',
       title: 'Settings & Files',
       description: 'Configure options',
-      fields: [
-        'isActive',
-      ],
-      relationships: [
-      ],
+      fields: ['isActive'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -88,8 +74,7 @@ export const organizationFormConfig: FormConfig = {
         required: true,
         pattern: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'name',
@@ -102,8 +87,7 @@ export const organizationFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 100,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'displayName',
@@ -115,8 +99,7 @@ export const organizationFormConfig: FormConfig = {
         required: false,
         maxLength: 150,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'domain',
@@ -127,10 +110,10 @@ export const organizationFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 100,
-        pattern: /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
+        pattern:
+          /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'isActive',
@@ -141,8 +124,7 @@ export const organizationFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -172,7 +154,7 @@ export const organizationFormConfig: FormConfig = {
         label: 'Members',
         placeholder: 'Select members',
         icon: '👥',
-      }
+      },
     },
   ],
 
@@ -197,7 +179,7 @@ export const organizationFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -231,17 +213,19 @@ export const organizationFormConfig: FormConfig = {
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
       showRestorationDialog: true,
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const organizationFormHelpers = {
-  getStepById: (stepId: string) => organizationFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => organizationFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => organizationFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => organizationFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    organizationFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    organizationFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = organizationFormConfig.steps.find(s => s.id === stepId);
+    const step = organizationFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

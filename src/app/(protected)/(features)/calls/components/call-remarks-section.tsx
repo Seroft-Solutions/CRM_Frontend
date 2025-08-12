@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { format } from "date-fns";
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  MessageSquare, 
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  MessageSquare,
   Search,
   Filter,
   SortAsc,
   SortDesc,
-  MoreHorizontal
-} from "lucide-react";
-import { toast } from "sonner";
+  MoreHorizontal,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import {
   ColumnDef,
   flexRender,
@@ -24,15 +24,10 @@ import {
   useReactTable,
   SortingState,
   ColumnFiltersState,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +35,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,14 +45,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -65,20 +60,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 
 import {
   useGetAllCallRemarks,
   useCreateCallRemark,
   useUpdateCallRemark,
   useDeleteCallRemark,
-} from "@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen";
-import type { CallRemarkDTO } from "@/core/api/generated/spring/schemas/CallRemarkDTO";
+} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRemarkDTO';
 
 interface CallRemarksSectionProps {
   callId: number;
@@ -90,21 +85,23 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedRemark, setSelectedRemark] = useState<CallRemarkDTO | null>(null);
-  const [newRemark, setNewRemark] = useState("");
-  const [editRemark, setEditRemark] = useState("");
-  
+  const [newRemark, setNewRemark] = useState('');
+  const [editRemark, setEditRemark] = useState('');
+
   // Table state
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "dateTime", desc: true }
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'dateTime', desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
 
   // Fetch call remarks for this specific call
-  const { data: callRemarks = [], isLoading, refetch } = useGetAllCallRemarks(
+  const {
+    data: callRemarks = [],
+    isLoading,
+    refetch,
+  } = useGetAllCallRemarks(
     {
       'callId.equals': callId,
-      sort: ["dateTime,desc"],
+      sort: ['dateTime,desc'],
     },
     {
       query: {
@@ -117,9 +114,9 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: createCallRemark, isPending: isCreating } = useCreateCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark added successfully");
+        toast.success('Call remark added successfully');
         setShowAddDialog(false);
-        setNewRemark("");
+        setNewRemark('');
         refetch();
       },
       onError: (error) => {
@@ -132,10 +129,10 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: updateCallRemark, isPending: isUpdating } = useUpdateCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark updated successfully");
+        toast.success('Call remark updated successfully');
         setShowEditDialog(false);
         setSelectedRemark(null);
-        setEditRemark("");
+        setEditRemark('');
         refetch();
       },
       onError: (error) => {
@@ -148,7 +145,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const { mutate: deleteCallRemark, isPending: isDeleting } = useDeleteCallRemark({
     mutation: {
       onSuccess: () => {
-        toast.success("Call remark deleted successfully");
+        toast.success('Call remark deleted successfully');
         setShowDeleteDialog(false);
         setSelectedRemark(null);
         refetch();
@@ -162,7 +159,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   // Action handlers
   const handleAddRemark = () => {
     if (!newRemark.trim()) {
-      toast.error("Please enter a remark");
+      toast.error('Please enter a remark');
       return;
     }
 
@@ -177,7 +174,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
 
   const handleEditRemark = () => {
     if (!selectedRemark || !editRemark.trim()) {
-      toast.error("Please enter a remark");
+      toast.error('Please enter a remark');
       return;
     }
 
@@ -198,7 +195,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
 
   const openEditDialog = (remark: CallRemarkDTO) => {
     setSelectedRemark(remark);
-    setEditRemark(remark.remark || "");
+    setEditRemark(remark.remark || '');
     setShowEditDialog(true);
   };
 
@@ -211,18 +208,18 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const columns = useMemo<ColumnDef<CallRemarkDTO>[]>(
     () => [
       {
-        accessorKey: "dateTime",
+        accessorKey: 'dateTime',
         header: ({ column }) => {
           return (
             <Button
               variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
               className="h-8 px-2 lg:px-3 text-xs"
             >
               Date & Time
-              {column.getIsSorted() === "asc" ? (
+              {column.getIsSorted() === 'asc' ? (
                 <SortAsc className="ml-2 h-3 w-3" />
-              ) : column.getIsSorted() === "desc" ? (
+              ) : column.getIsSorted() === 'desc' ? (
                 <SortDesc className="ml-2 h-3 w-3" />
               ) : (
                 <Filter className="ml-2 h-3 w-3 opacity-50" />
@@ -231,18 +228,16 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           );
         },
         cell: ({ row }) => {
-          const dateTime = row.getValue("dateTime") as string;
+          const dateTime = row.getValue('dateTime') as string;
           if (!dateTime) return <span className="text-muted-foreground text-xs">No date</span>;
-          
+
           const date = new Date(dateTime);
           return (
             <div className="space-y-0.5">
               <div className="text-xs font-medium text-foreground">
-                {format(date, "MMM dd, yyyy")}
+                {format(date, 'MMM dd, yyyy')}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {format(date, "h:mm a")}
-              </div>
+              <div className="text-xs text-muted-foreground">{format(date, 'h:mm a')}</div>
             </div>
           );
         },
@@ -251,38 +246,32 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         maxSize: 90,
       },
       {
-        accessorKey: "remark",
-        header: "Remark Content",
+        accessorKey: 'remark',
+        header: 'Remark Content',
         cell: ({ row }) => {
-          const remark = row.getValue("remark") as string;
-          const truncatedRemark = remark?.length > 100 
-            ? `${remark.substring(0, 100)}...` 
-            : remark;
-          
+          const remark = row.getValue('remark') as string;
+          const truncatedRemark = remark?.length > 100 ? `${remark.substring(0, 100)}...` : remark;
+
           return (
             <div className="w-full">
-              <div 
+              <div
                 className="text-sm whitespace-pre-wrap break-words p-3 bg-muted/30 rounded-lg border-l-2 border-primary/20"
                 title={remark} // Show full text on hover
               >
-                {truncatedRemark || "No content"}
+                {truncatedRemark || 'No content'}
               </div>
             </div>
           );
         },
       },
       {
-        id: "actions",
+        id: 'actions',
         header: ({ column }) => {
-          return (
-            <div className="text-right">
-              Actions
-            </div>
-          );
+          return <div className="text-right">Actions</div>;
         },
         cell: ({ row }) => {
           const remark = row.original;
-          
+
           return (
             <div className="flex justify-end">
               <DropdownMenu>
@@ -332,7 +321,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: false,
-    columnResizeMode: "onChange",
+    columnResizeMode: 'onChange',
     state: {
       sorting,
       columnFilters,
@@ -352,9 +341,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-lg font-semibold text-foreground">
-                Call Remarks
-              </CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">Call Remarks</CardTitle>
               <Badge variant="secondary" className="text-xs">
                 {callRemarks.length}
               </Badge>
@@ -368,14 +355,14 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               Add Remark
             </Button>
           </div>
-          
+
           {/* Search and filters */}
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search remarks..."
-                value={globalFilter ?? ""}
+                value={globalFilter ?? ''}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 className="pl-9"
               />
@@ -385,7 +372,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
@@ -411,10 +398,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                           <TableHead key={header.id} style={{ width: header.getSize() }}>
                             {header.isPlaceholder
                               ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
+                              : flexRender(header.column.columnDef.header, header.getContext())}
                           </TableHead>
                         ))}
                       </TableRow>
@@ -425,25 +409,19 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                       table.getRowModel().rows.map((row) => (
                         <TableRow
                           key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
+                          data-state={row.getIsSelected() && 'selected'}
                           className="hover:bg-muted/50 transition-colors"
                         >
                           {row.getVisibleCells().map((cell) => (
                             <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
                           ))}
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
+                        <TableCell colSpan={columns.length} className="h-24 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-6 w-6 text-muted-foreground" />
                             <span className="text-muted-foreground">No remarks found.</span>
@@ -474,11 +452,10 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div className="flex items-center gap-6 lg:gap-8">
                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                      Page {table.getState().pagination.pageIndex + 1} of{" "}
-                      {table.getPageCount()}
+                      Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -487,8 +464,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                       >
-                        <span className="sr-only">Go to previous page</span>
-                        ←
+                        <span className="sr-only">Go to previous page</span>←
                       </Button>
                       <Button
                         variant="outline"
@@ -496,8 +472,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                       >
-                        <span className="sr-only">Go to next page</span>
-                        →
+                        <span className="sr-only">Go to next page</span>→
                       </Button>
                     </div>
                   </div>
@@ -535,16 +510,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               variant="outline"
               onClick={() => {
                 setShowAddDialog(false);
-                setNewRemark("");
+                setNewRemark('');
               }}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleAddRemark}
-              disabled={isCreating || !newRemark.trim()}
-            >
-              {isCreating ? "Adding..." : "Add Remark"}
+            <Button onClick={handleAddRemark} disabled={isCreating || !newRemark.trim()}>
+              {isCreating ? 'Adding...' : 'Add Remark'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -555,9 +527,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Call Remark</DialogTitle>
-            <DialogDescription>
-              Update the remark content.
-            </DialogDescription>
+            <DialogDescription>Update the remark content.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -578,16 +548,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               onClick={() => {
                 setShowEditDialog(false);
                 setSelectedRemark(null);
-                setEditRemark("");
+                setEditRemark('');
               }}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleEditRemark}
-              disabled={isUpdating || !editRemark.trim()}
-            >
-              {isUpdating ? "Updating..." : "Update Remark"}
+            <Button onClick={handleEditRemark} disabled={isUpdating || !editRemark.trim()}>
+              {isUpdating ? 'Updating...' : 'Update Remark'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -616,7 +583,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

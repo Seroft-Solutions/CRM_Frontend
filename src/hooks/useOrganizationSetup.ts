@@ -235,13 +235,13 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
 
     const currentStoredOrgId = localStorage.getItem('selectedOrganizationId');
     const currentStoredOrgName = localStorage.getItem('selectedOrganizationName');
-    
+
     // Find the organization that should be selected
     let targetOrg = organizations[0]; // Default to first org
-    
+
     // If there's a stored org ID, try to find that organization
     if (currentStoredOrgId) {
-      const foundOrg = organizations.find(org => org.id === currentStoredOrgId);
+      const foundOrg = organizations.find((org) => org.id === currentStoredOrgId);
       if (foundOrg) {
         targetOrg = foundOrg;
       }
@@ -252,7 +252,7 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       localStorage.setItem('selectedOrganizationId', targetOrg.id);
       console.log('Updated localStorage selectedOrganizationId:', targetOrg.id);
     }
-    
+
     if (!currentStoredOrgName || currentStoredOrgName !== targetOrg.name) {
       localStorage.setItem('selectedOrganizationName', targetOrg.name);
       console.log('Updated localStorage selectedOrganizationName:', targetOrg.name);

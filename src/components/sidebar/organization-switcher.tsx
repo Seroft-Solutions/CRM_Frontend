@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/sidebar';
 
 // Custom Coffee/Tea Cup Icon Component
-const CupIcon = ({ className = "size-4" }: { className?: string }) => (
+const CupIcon = ({ className = 'size-4' }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"
@@ -54,9 +54,9 @@ export function OrganizationSwitcher() {
 
     const selectedOrgId = localStorage.getItem('selectedOrganizationId');
     const selectedOrgName = localStorage.getItem('selectedOrganizationName');
-    
+
     let targetOrg = organizations[0]; // Default to first organization
-    
+
     // Try to find organization by ID first
     if (selectedOrgId) {
       const foundById = organizations.find((org) => org.id === selectedOrgId);
@@ -64,24 +64,24 @@ export function OrganizationSwitcher() {
         targetOrg = foundById;
       }
     }
-    
+
     // Validate and sync localStorage data
     const needsIdUpdate = !selectedOrgId || selectedOrgId !== targetOrg.id;
     const needsNameUpdate = !selectedOrgName || selectedOrgName !== targetOrg.name;
-    
+
     if (needsIdUpdate || needsNameUpdate) {
       console.log('Organization switcher: Syncing localStorage with current org data');
-      
+
       if (needsIdUpdate) {
         localStorage.setItem('selectedOrganizationId', targetOrg.id);
         console.log('Updated selectedOrganizationId:', targetOrg.id);
       }
-      
+
       if (needsNameUpdate) {
         localStorage.setItem('selectedOrganizationName', targetOrg.name);
         console.log('Updated selectedOrganizationName:', targetOrg.name);
       }
-      
+
       // Update cookies for SSR consistency
       document.cookie = `selectedOrganizationId=${targetOrg.id}; path=/; max-age=31536000; SameSite=Lax`;
       document.cookie = `selectedOrganizationName=${encodeURIComponent(targetOrg.name)}; path=/; max-age=31536000; SameSite=Lax`;
@@ -107,19 +107,19 @@ export function OrganizationSwitcher() {
 
   const handleOrganizationSwitch = (org: (typeof organizations)[0]) => {
     console.log('Switching to organization:', org);
-    
+
     // Clean up organization-related data and form drafts before switching
     localStorageCleanup.organizationSwitch();
-    
+
     // Set new organization data in localStorage
     setActiveOrganization(org);
     localStorage.setItem('selectedOrganizationId', org.id);
     localStorage.setItem('selectedOrganizationName', org.name);
-    
+
     // Also set cookies for SSR access
     document.cookie = `selectedOrganizationId=${org.id}; path=/; max-age=31536000; SameSite=Lax`;
     document.cookie = `selectedOrganizationName=${encodeURIComponent(org.name)}; path=/; max-age=31536000; SameSite=Lax`;
-    
+
     // Reload to apply the new organization context
     window.location.reload();
   };
@@ -141,7 +141,9 @@ export function OrganizationSwitcher() {
                   <span className="font-bold text-base tracking-tight">CRM Cup</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <span className="truncate text-sm text-gray-600 font-medium">{displayOrg.name}</span>
+                <span className="truncate text-sm text-gray-600 font-medium">
+                  {displayOrg.name}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 transition-colors" />
             </SidebarMenuButton>

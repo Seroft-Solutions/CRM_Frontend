@@ -1,4 +1,12 @@
-import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Map, FileText } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  Settings,
+  PhoneCall,
+  Map,
+  FileText,
+} from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
 // Define the type for sidebar items
@@ -15,7 +23,13 @@ export type SidebarItem = {
 
 // Main sidebar items
 export const sidebarItems: SidebarItem[] = [
-  { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, requiredPermission: 'dashboard' },
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    path: '/dashboard',
+    icon: LayoutDashboard,
+    requiredPermission: 'dashboard',
+  },
   { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
   {
     key: 'userManagement',
@@ -66,7 +80,12 @@ export const sidebarItems: SidebarItem[] = [
     expandable: false,
     requiredPermission: 'geography:sidebar',
     children: [
-      { key: 'states', label: 'States Master', path: '/states', requiredPermission: 'state:sidebar' },
+      {
+        key: 'states',
+        label: 'States Master',
+        path: '/states',
+        requiredPermission: 'state:sidebar',
+      },
       {
         key: 'districts',
         label: 'Districts Master',

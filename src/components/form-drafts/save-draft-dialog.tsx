@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Save, Loader2, Trash2 } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Save, Loader2, Trash2 } from 'lucide-react';
 
 export interface DraftDialogProps {
   open: boolean;
@@ -71,8 +71,8 @@ export function SaveDraftDialog({
             Save as Draft?
           </DialogTitle>
           <DialogDescription>
-            You have unsaved changes in your {entityType.toLowerCase()} form. 
-            What would you like to do?
+            You have unsaved changes in your {entityType.toLowerCase()} form. What would you like to
+            do?
           </DialogDescription>
         </DialogHeader>
 
@@ -116,12 +116,7 @@ export function SaveDraftDialog({
             </p>
           </div>
 
-          <Button
-            onClick={handleCancel}
-            disabled={isSaving}
-            className="w-full"
-            variant="outline"
-          >
+          <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
             Cancel
           </Button>
         </div>

@@ -15,7 +15,7 @@ import type {
 export interface EnhancedMemberRepresentation extends MemberRepresentation {
   groups?: string[]; // Array of group names
   groupDetails?: GroupRepresentation[]; // Full group objects
-  realmRoles?: string[]; // Array of role names  
+  realmRoles?: string[]; // Array of role names
   roleDetails?: RoleRepresentation[]; // Full role objects
 }
 

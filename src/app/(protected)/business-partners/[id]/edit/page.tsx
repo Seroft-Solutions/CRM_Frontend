@@ -22,13 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  ArrowLeft,
-  Save,
-  Loader2,
-  Edit,
-  AlertCircle,
-} from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Edit, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
@@ -37,8 +31,14 @@ import { ChannelTypeSelector } from '@/features/user-profile-management/componen
 
 // Form validation schema
 const updatePartnerSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(1, 'Last name is required').min(2, 'Last name must be at least 2 characters'),
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .min(2, 'First name must be at least 2 characters'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .min(2, 'Last name must be at least 2 characters'),
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   channelTypeId: z.number().min(1, 'Channel Type is required'),
 });
@@ -61,7 +61,7 @@ export default function EditPartnerPage() {
   const router = useRouter();
   const params = useParams();
   const { organizationId, organizationName } = useOrganizationContext();
-  
+
   const [partner, setPartner] = useState<BusinessPartner | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -90,7 +90,7 @@ export default function EditPartnerPage() {
     if (!channelTypeId) return null;
 
     if (channelTypes) {
-      const channelType = channelTypes.find(ct => ct.id === parseInt(channelTypeId));
+      const channelType = channelTypes.find((ct) => ct.id === parseInt(channelTypeId));
       if (channelType) {
         return channelType.id;
       }
@@ -110,10 +110,10 @@ export default function EditPartnerPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch partners');
       }
-      
+
       const allPartners = await response.json();
       const foundPartner = allPartners.find((p: BusinessPartner) => p.id === partnerId);
-      
+
       if (!foundPartner) {
         throw new Error('Partner not found');
       }
@@ -128,7 +128,6 @@ export default function EditPartnerPage() {
         email: foundPartner.email,
         channelTypeId: channelTypeId || undefined,
       });
-
     } catch (error) {
       console.error('Failed to fetch partner:', error);
       toast.error('Failed to load partner details');
@@ -147,7 +146,7 @@ export default function EditPartnerPage() {
       console.log('Updating partner:', {
         partnerId: partner.id,
         organizationId,
-        updateData: data
+        updateData: data,
       });
       const updatePayload = {
         firstName: data.firstName,
@@ -161,28 +160,30 @@ export default function EditPartnerPage() {
 
       console.log('Update payload:', updatePayload);
 
-        // If PATCH fails, try PUT
-        const patchResponse = await fetch(
-          `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatePayload),
-          }
-        );
-
-        if (!patchResponse.ok) {
-          const errorText = await patchResponse.text();
-          console.error('PUT failed:', patchResponse.status, errorText);
-          throw new Error(`Failed to update partner: ${patchResponse.status} ${errorText}`);
+      // If PATCH fails, try PUT
+      const patchResponse = await fetch(
+        `/api/keycloak/organizations/${organizationId}/partners/${partner.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatePayload),
         }
+      );
+
+      if (!patchResponse.ok) {
+        const errorText = await patchResponse.text();
+        console.error('PUT failed:', patchResponse.status, errorText);
+        throw new Error(`Failed to update partner: ${patchResponse.status} ${errorText}`);
+      }
       toast.success('Partner updated successfully');
       router.push('/business-partners');
     } catch (error) {
       console.error('Failed to update partner:', error);
-      toast.error(`Failed to update partner: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(
+        `Failed to update partner: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -258,11 +259,7 @@ export default function EditPartnerPage() {
                           <FormItem>
                             <FormLabel>First Name *</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="John"
-                                disabled={isUpdating}
-                                {...field}
-                              />
+                              <Input placeholder="John" disabled={isUpdating} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -275,11 +272,7 @@ export default function EditPartnerPage() {
                           <FormItem>
                             <FormLabel>Last Name *</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="Doe"
-                                disabled={isUpdating}
-                                {...field}
-                              />
+                              <Input placeholder="Doe" disabled={isUpdating} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -369,9 +362,7 @@ export default function EditPartnerPage() {
                     The partner you're looking for doesn't exist or you don't have access to it.
                   </p>
                 </div>
-                <Button onClick={() => router.push('/business-partners')}>
-                  Back to Partners
-                </Button>
+                <Button onClick={() => router.push('/business-partners')}>Back to Partners</Button>
               </div>
             </CardContent>
           </Card>

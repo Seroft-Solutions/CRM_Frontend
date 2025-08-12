@@ -50,7 +50,14 @@ export interface RelationshipConfig {
   primaryKey: string;
   required: boolean;
   multiple: boolean;
-  category: 'geographic' | 'user' | 'classification' | 'business' | 'channel' | 'assignment' | 'other';
+  category:
+    | 'geographic'
+    | 'user'
+    | 'classification'
+    | 'business'
+    | 'channel'
+    | 'assignment'
+    | 'other';
   cascadingFilter?: CascadingFilter;
   autoPopulate?: AutoPopulateConfig;
   customFilters?: Record<string, any>;

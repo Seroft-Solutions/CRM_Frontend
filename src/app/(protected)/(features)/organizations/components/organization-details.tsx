@@ -5,17 +5,20 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { organizationToast, handleOrganizationError } from "@/app/(protected)/(features)/organizations/components/organization-toast";
-import { organizationFormConfig } from "@/app/(protected)/(features)/organizations/components/form/organization-form-config";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  organizationToast,
+  handleOrganizationError,
+} from '@/app/(protected)/(features)/organizations/components/organization-toast';
+import { organizationFormConfig } from '@/app/(protected)/(features)/organizations/components/form/organization-form-config';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,45 +28,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetOrganization,
   useDeleteOrganization,
-} from "@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen";
+} from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
-
-import {
-  useGetAllUserProfiles,
-} from "@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen";
-
-
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 interface OrganizationDetailsProps {
   id: number;
 }
 
 // Component to display relationship values by fetching related entity data
-function RelationshipDisplayValue({ 
-  value, 
-  relConfig
-}: { 
-  value: any; 
-  relConfig: any;
-}) {
+function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   // Get the appropriate hook for this relationship
-    const { data: membersData } = relConfig.name === 'members' ? 
-    useGetAllUserProfiles({ page: 0, size: 1000 }, {
-      query: {
-        enabled: !!value && relConfig.name === 'members',
-        staleTime: 5 * 60 * 1000,
-      }
-    }) : { data: null };
-  
+  const { data: membersData } =
+    relConfig.name === 'members'
+      ? useGetAllUserProfiles(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'members',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+
   if (!value) {
     return (
       <span className="text-muted-foreground italic">
-        {relConfig.multiple ? "None selected" : "Not selected"}
+        {relConfig.multiple ? 'None selected' : 'Not selected'}
       </span>
     );
   }
@@ -80,8 +77,10 @@ function RelationshipDisplayValue({
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">None selected</span>;
       }
-      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
-      return <span>{displayValues.join(", ")}</span>;
+      const displayValues = value.map(
+        (item: any) => item[relConfig.displayField] || item.id || item
+      );
+      return <span>{displayValues.join(', ')}</span>;
     } else {
       const displayValue = value[relConfig.displayField] || value.id || value;
       return <span>{displayValue}</span>;
@@ -89,41 +88,41 @@ function RelationshipDisplayValue({
   }
 
   // Extract data array from response (handle both direct array and paginated response)
-  const dataArray = Array.isArray(allData) ? allData : 
-                   allData.content ? allData.content : 
-                   allData.data ? allData.data : [];
+  const dataArray = Array.isArray(allData)
+    ? allData
+    : allData.content
+      ? allData.content
+      : allData.data
+        ? allData.data
+        : [];
 
   if (relConfig.multiple && Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground italic">None selected</span>;
     }
-    
-    const selectedItems = dataArray.filter((item: any) => 
+
+    const selectedItems = dataArray.filter((item: any) =>
       value.some((v: any) => {
         const valueId = typeof v === 'object' ? v[relConfig.primaryKey] : v;
         return item[relConfig.primaryKey] === valueId;
       })
     );
-    
+
     if (selectedItems.length === 0) {
       return <span className="text-muted-foreground italic">{value.length} selected</span>;
     }
-    
+
     const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
-    return <span>{displayValues.join(", ")}</span>;
+    return <span>{displayValues.join(', ')}</span>;
   } else {
     // Single value
     const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
-    const selectedItem = dataArray.find((item: any) => 
-      item[relConfig.primaryKey] === valueId
-    );
-    
+    const selectedItem = dataArray.find((item: any) => item[relConfig.primaryKey] === valueId);
+
     return selectedItem ? (
       <span>{selectedItem[relConfig.displayField]}</span>
     ) : (
-      <span className="text-muted-foreground italic">
-        Selected (ID: {valueId})
-      </span>
+      <span className="text-muted-foreground italic">Selected (ID: {valueId})</span>
     );
   }
 }
@@ -147,7 +146,7 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
     mutation: {
       onSuccess: () => {
         organizationToast.deleted();
-        router.push("/organizations");
+        router.push('/organizations');
       },
       onError: (error) => {
         handleOrganizationError(error);
@@ -163,31 +162,31 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
   // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
-      return value ? "Yes" : "No";
+      return value ? 'Yes' : 'No';
     }
-    
+
     if (fieldConfig.type === 'date') {
-      return value ? format(new Date(value), "PPP") : (
+      return value ? (
+        format(new Date(value), 'PPP')
+      ) : (
         <span className="text-muted-foreground italic">Not set</span>
       );
     }
-    
+
     if (fieldConfig.type === 'file') {
-      return value ? "File uploaded" : (
+      return value ? (
+        'File uploaded'
+      ) : (
         <span className="text-muted-foreground italic">No file</span>
       );
     }
-    
+
     if (fieldConfig.type === 'enum') {
-      return value || (
-        <span className="text-muted-foreground italic">Not set</span>
-      );
+      return value || <span className="text-muted-foreground italic">Not set</span>;
     }
-    
+
     // Default text/number fields
-    return value || (
-      <span className="text-muted-foreground italic">Not set</span>
-    );
+    return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
   // Render relationship value using the enhanced display component
@@ -212,9 +211,8 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
   }
 
   // Filter out review step and empty steps
-  const displaySteps = formConfig.steps.filter(step => 
-    step.id !== 'review' && 
-    (step.fields.length > 0 || step.relationships.length > 0)
+  const displaySteps = formConfig.steps.filter(
+    (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );
 
   return (
@@ -242,12 +240,12 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Render Fields */}
-                {step.fields.map(fieldName => {
-                  const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
+                {step.fields.map((fieldName) => {
+                  const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
                   if (!fieldConfig) return null;
-                  
+
                   const value = entity[fieldName];
-                  
+
                   return (
                     <div key={fieldName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -261,12 +259,14 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
                 })}
 
                 {/* Render Relationships */}
-                {step.relationships.map(relationshipName => {
-                  const relConfig = formConfig.relationships.find(r => r.name === relationshipName);
+                {step.relationships.map((relationshipName) => {
+                  const relConfig = formConfig.relationships.find(
+                    (r) => r.name === relationshipName
+                  );
                   if (!relConfig) return null;
-                  
+
                   const value = entity[relationshipName];
-                  
+
                   return (
                     <div key={relationshipName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -293,7 +293,7 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -309,8 +309,8 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              organization and remove its data from the server.
+              This action cannot be undone. This will permanently delete the organization and remove
+              its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

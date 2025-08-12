@@ -7,7 +7,7 @@ orbs:
 # Environment variables and reusable commands
 commands:
   setup_docker_buildkit:
-    description: 'Setup Docker BuildKit for optimized builds'
+    description: "Setup Docker BuildKit for optimized builds"
     steps:
       - run:
           name: Setup Docker BuildKit

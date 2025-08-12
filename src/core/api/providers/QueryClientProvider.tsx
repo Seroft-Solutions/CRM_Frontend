@@ -61,7 +61,7 @@ export function QueryClientProvider({
         }),
         queryCache: new QueryCache({
           onError: (error: any) => {
-            // Handle 401 errors - just log, no automatic logout  
+            // Handle 401 errors - just log, no automatic logout
             if (error?.status === 401) {
               console.warn('Authentication expired during query - continuing without logout');
             }

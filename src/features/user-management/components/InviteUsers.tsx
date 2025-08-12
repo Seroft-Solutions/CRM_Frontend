@@ -15,7 +15,7 @@ import {
   useOrganizationContext,
   useAvailableGroups,
   useUserManagementRefresh,
-} from "@/features/user-management/hooks";
+} from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,24 +30,21 @@ import {
 } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import {
-  UserPlus,
-  Mail,
-  ArrowLeft,
-  Send,
-  Users,
-  CheckCircle,
-  AlertCircle,
-  X,
-} from 'lucide-react';
+import { UserPlus, Mail, ArrowLeft, Send, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
 import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 
 // Form validation schema
 const inviteUserSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  firstName: z.string().min(1, 'First name is required').min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(1, 'Last name is required').min(2, 'Last name must be at least 2 characters'),
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .min(2, 'First name must be at least 2 characters'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .min(2, 'Last name must be at least 2 characters'),
   selectedGroups: z.array(z.string()).default([]),
   invitationNote: z.string().optional(),
 });
@@ -88,9 +85,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
   // Watch form values to enable/disable button
   const watchedValues = form.watch();
-  const isFormValid = form.formState.isValid && 
-    watchedValues.email?.trim() !== '' && 
-    watchedValues.firstName?.trim() !== '' && 
+  const isFormValid =
+    form.formState.isValid &&
+    watchedValues.email?.trim() !== '' &&
+    watchedValues.firstName?.trim() !== '' &&
     watchedValues.lastName?.trim() !== '';
 
   // Handle user invitation
@@ -112,13 +110,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
       }));
 
       // Show clear success message
-      toast.success(
-        `Invitation sent to ${data.firstName} ${data.lastName} (${data.email})`
-      );
+      toast.success(`Invitation sent to ${data.firstName} ${data.lastName} (${data.email})`);
 
       // Refresh data in background (no UI blocking)
       refreshAllUserData(organizationId);
-      
     } catch (error) {
       setInvitationStatus((prev) => ({
         ...prev,
@@ -160,7 +155,10 @@ export function InviteUsers({ className }: InviteUsersProps) {
             <div className="space-y-1 mt-2">
               <p>• Invited user receives an email with account setup instructions</p>
               <p>• They'll set their password and can immediately access the organization</p>
-              <p>• You can view all users (including pending invitations) in the Organization Users page</p>
+              <p>
+                • You can view all users (including pending invitations) in the Organization Users
+                page
+              </p>
             </div>
           </AlertDescription>
         </Alert>
@@ -172,8 +170,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
               Invite User to Organization
             </CardTitle>
             <CardDescription>
-              Send an invitation to a user to join your organization. 
-              They'll receive an email with setup instructions.
+              Send an invitation to a user to join your organization. They'll receive an email with
+              setup instructions.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,11 +185,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                       <FormItem>
                         <FormLabel>First Name *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="John"
-                            disabled={isInvitingWithGroups}
-                            {...field}
-                          />
+                          <Input placeholder="John" disabled={isInvitingWithGroups} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -204,11 +198,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                       <FormItem>
                         <FormLabel>Last Name *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Doe" 
-                            disabled={isInvitingWithGroups} 
-                            {...field} 
-                          />
+                          <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -269,7 +259,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 {/* Helper text */}
                 <div className="text-sm text-muted-foreground">
                   <p>
-                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all required fields (* fields) are properly filled.
+                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
+                    required fields (* fields) are properly filled.
                   </p>
                 </div>
               </form>
@@ -287,7 +278,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                   <CardDescription>Status of your recent invitations</CardDescription>
                 </div>
                 {invitationStatus.sent.length > 0 && (
-                  <Button 
+                  <Button
                     onClick={() => router.push('/user-management/organization-users')}
                     className="gap-2"
                   >
@@ -327,8 +318,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     </div>
                     <div className="mt-4 p-3 bg-green-100 rounded-md">
                       <p className="text-sm text-green-800">
-                        💡 <strong>Next step:</strong> Invited users will receive an email with setup instructions. 
-                        They'll appear in your Organization Users list once they accept.
+                        💡 <strong>Next step:</strong> Invited users will receive an email with
+                        setup instructions. They'll appear in your Organization Users list once they
+                        accept.
                       </p>
                     </div>
                   </AlertDescription>
@@ -360,8 +352,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                     </div>
                     <div className="mt-4 p-3 bg-red-100 rounded-md">
                       <p className="text-sm text-red-800">
-                        💡 <strong>Tip:</strong> Check email addresses and try again. 
-                        Users might already exist in the system.
+                        💡 <strong>Tip:</strong> Check email addresses and try again. Users might
+                        already exist in the system.
                       </p>
                     </div>
                   </AlertDescription>
@@ -370,8 +362,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
               {/* Clear results button */}
               <div className="flex justify-center pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setInvitationStatus({ sent: [], failed: [] })}
                   className="gap-2"
                 >

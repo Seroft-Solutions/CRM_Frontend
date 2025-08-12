@@ -32,11 +32,11 @@ export default function OrganizationPage() {
         });
         localStorage.setItem('selectedOrganizationId', organizations[0].id);
         localStorage.setItem('selectedOrganizationName', organizations[0].name);
-        
+
         // Also set cookies for SSR access
         document.cookie = `selectedOrganizationId=${organizations[0].id}; path=/; max-age=31536000; SameSite=Lax`;
         document.cookie = `selectedOrganizationName=${encodeURIComponent(organizations[0].name)}; path=/; max-age=31536000; SameSite=Lax`;
-        
+
         router.replace('/dashboard');
       } else {
         persistentLog('OrganizationPage: Multiple orgs → /organization/organization-select');
