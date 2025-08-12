@@ -143,9 +143,9 @@
   }
 
   /* Enhanced Sidebar Styling */
-  [data-sidebar="sidebar"] {
+  [data-sidebar='sidebar'] {
     /* Add subtle shadow and border enhancement */
-    box-shadow: 
+    box-shadow:
       0 0 0 1px rgba(59, 130, 246, 0.1),
       0 4px 12px -2px rgba(0, 0, 0, 0.05),
       0 2px 8px -1px rgba(59, 130, 246, 0.1);
@@ -153,26 +153,30 @@
   }
 
   /* Organization switcher enhanced styling */
-  [data-sidebar="menu-button"][data-size="lg"] {
+  [data-sidebar='menu-button'][data-size='lg'] {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
     border: 1px solid rgba(59, 130, 246, 0.1);
-    box-shadow: 
+    box-shadow:
       0 1px 3px rgba(0, 0, 0, 0.05),
       0 1px 2px rgba(59, 130, 246, 0.1);
     transition: all 0.2s ease-in-out;
   }
 
-  [data-sidebar="menu-button"][data-size="lg"]:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 100%);
+  [data-sidebar='menu-button'][data-size='lg']:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(239, 246, 255, 0.9) 100%
+    );
     border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.1),
       0 1px 3px rgba(59, 130, 246, 0.15);
     transform: translateY(-1px);
   }
 
   /* Menu items enhanced hover effects */
-  [data-sidebar="menu-button"]:not([data-size="lg"]):hover {
+  [data-sidebar='menu-button']:not([data-size='lg']):hover {
     background: linear-gradient(135deg, rgba(239, 246, 255, 0.6) 0%, rgba(219, 234, 254, 0.4) 100%);
     border-left: 3px solid rgba(59, 130, 246, 0.5);
     padding-left: calc(0.5rem - 3px);
@@ -180,7 +184,7 @@
   }
 
   /* Active menu item styling */
-  [data-sidebar="menu-button"][data-active="true"] {
+  [data-sidebar='menu-button'][data-active='true'] {
     background: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(219, 234, 254, 0.6) 100%);
     border-left: 3px solid rgb(59, 130, 246);
     padding-left: calc(0.5rem - 3px);

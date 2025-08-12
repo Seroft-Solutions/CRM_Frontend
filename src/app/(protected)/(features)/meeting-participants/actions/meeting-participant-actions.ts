@@ -5,31 +5,31 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 // Import the generated API functions directly
-import { 
+import {
   createMeetingParticipant,
-  updateMeetingParticipant, 
-  deleteMeetingParticipant 
-} from "@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen";
-import { meetingParticipantToast } from "@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast";
+  updateMeetingParticipant,
+  deleteMeetingParticipant,
+} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+import { meetingParticipantToast } from '@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast';
 
 export async function createMeetingParticipantAction(data: any) {
   try {
     // Create entity using the generated API function
     const result = await createMeetingParticipant(data);
-    
+
     // Revalidate both the main list page and any related pages
-    revalidatePath("/meeting-participants");
-    revalidatePath("/meeting-participants/new");
+    revalidatePath('/meeting-participants');
+    revalidatePath('/meeting-participants/new');
     meetingParticipantToast.created();
-    
+
     return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to create meetingparticipant:", error);
+    console.error('Failed to create meetingparticipant:', error);
     meetingParticipantToast.createError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -39,16 +39,16 @@ export async function updateMeetingParticipantAction(id: number, data: any) {
   try {
     // Update entity using the generated API function with correct signature
     const result = await updateMeetingParticipant(id, data);
-    
+
     // Revalidate all related paths to ensure fresh data
-    revalidatePath("/meeting-participants");
+    revalidatePath('/meeting-participants');
     revalidatePath(`/meeting-participants/${id}`);
     revalidatePath(`/meeting-participants/${id}/edit`);
     meetingParticipantToast.updated();
-    
+
     return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to update meetingparticipant:", error);
+    console.error('Failed to update meetingparticipant:', error);
     meetingParticipantToast.updateError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -57,13 +57,13 @@ export async function updateMeetingParticipantAction(id: number, data: any) {
 export async function deleteMeetingParticipantAction(id: number) {
   try {
     await deleteMeetingParticipant(id);
-    
-    revalidatePath("/meeting-participants");
+
+    revalidatePath('/meeting-participants');
     meetingParticipantToast.deleted();
-    
+
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete meetingparticipant:", error);
+    console.error('Failed to delete meetingparticipant:', error);
     meetingParticipantToast.deleteError(error?.message);
     return { success: false, error: error?.message };
   }
@@ -71,25 +71,23 @@ export async function deleteMeetingParticipantAction(id: number) {
 
 export async function bulkDeleteMeetingParticipantAction(ids: number[]) {
   try {
-    const results = await Promise.allSettled(
-      ids.map(id => deleteMeetingParticipant(id))
-    );
-    
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
-    const errorCount = results.filter(r => r.status === 'rejected').length;
-    
+    const results = await Promise.allSettled(ids.map((id) => deleteMeetingParticipant(id)));
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
     // Revalidate to ensure table reflects deletions
-    revalidatePath("/meeting-participants");
-    
+    revalidatePath('/meeting-participants');
+
     if (errorCount === 0) {
       meetingParticipantToast.bulkDeleted(successCount);
     } else {
       meetingParticipantToast.bulkDeleteError();
     }
-    
+
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error("Bulk delete failed:", error);
+    console.error('Bulk delete failed:', error);
     meetingParticipantToast.bulkDeleteError(error?.message);
     return { success: false, error: error?.message };
   }

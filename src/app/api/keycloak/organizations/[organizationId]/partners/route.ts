@@ -172,9 +172,9 @@ export async function GET(
           // Add groups and roles to member object
           return {
             ...member,
-            groups: memberGroups.map(g => g.name).filter(Boolean), // Array of group names
+            groups: memberGroups.map((g) => g.name).filter(Boolean), // Array of group names
             groupDetails: memberGroups, // Full group objects
-            realmRoles: memberRoles.map(r => r.name).filter(Boolean), // Array of role names
+            realmRoles: memberRoles.map((r) => r.name).filter(Boolean), // Array of role names
             roleDetails: memberRoles, // Full role objects
           };
         } catch (error) {
@@ -190,7 +190,9 @@ export async function GET(
       return memberGroups.includes('Business Partners');
     });
 
-    console.log(`Enhanced partners API: ${members.length} total members, ${businessPartners.length} business partners`);
+    console.log(
+      `Enhanced partners API: ${members.length} total members, ${businessPartners.length} business partners`
+    );
 
     return NextResponse.json(businessPartners);
   } catch (error: any) {
@@ -280,7 +282,10 @@ export async function POST(
           await putAdminRealmsRealmUsersUserId(realm, userId, updatedUserAttributes);
           console.log('Updated existing user with partner attributes');
         } catch (attributeError) {
-          console.warn('Failed to update user attributes, but continuing with invitation:', attributeError);
+          console.warn(
+            'Failed to update user attributes, but continuing with invitation:',
+            attributeError
+          );
           // Continue with the flow - user exists, just without updated custom attributes
         }
 
@@ -360,7 +365,9 @@ export async function POST(
         // 1.5. Set default password for the new partner user
         const passwordSet = await setDefaultPassword(realm, userId);
         if (!passwordSet) {
-          console.warn('Failed to set default password for partner, but continuing with user creation');
+          console.warn(
+            'Failed to set default password for partner, but continuing with user creation'
+          );
         }
 
         // 2. Try to update user with custom attributes (gracefully handle failures)
@@ -379,7 +386,10 @@ export async function POST(
           await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
           console.log('Successfully updated user with custom attributes');
         } catch (attributeError) {
-          console.warn('Failed to set custom attributes, but user creation succeeded:', attributeError);
+          console.warn(
+            'Failed to set custom attributes, but user creation succeeded:',
+            attributeError
+          );
           // Continue with the flow - user is created, just without custom attributes
         }
 
@@ -469,7 +479,10 @@ export async function POST(
           await putAdminRealmsRealmUsersUserId(realm, userId, updatedUser);
           console.log('Added partner invitation metadata');
         } catch (metadataError) {
-          console.warn('Failed to add invitation metadata, but invitation succeeded:', metadataError);
+          console.warn(
+            'Failed to add invitation metadata, but invitation succeeded:',
+            metadataError
+          );
           // Continue - the core invitation worked, just missing some metadata
         }
       }

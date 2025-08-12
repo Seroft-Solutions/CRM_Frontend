@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { UserProfileForm } from "@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-wizard";
+import React from 'react';
+import { UserProfileForm } from '@/app/(protected)/(features)/user-profiles/components/form/user-profile-form-wizard';
 
 interface UserProfileFormProps {
   id?: number;

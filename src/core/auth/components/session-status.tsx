@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useIdleTimeout } from "@/core/auth/hooks/use-idle-timeout";
+import { useIdleTimeout } from '@/core/auth/hooks/use-idle-timeout';
 
 interface SessionStatusProps {
   className?: string;

@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { MeetingForm } from "@/app/(protected)/(features)/meetings/components/form/meeting-form-wizard";
+import React from 'react';
+import { MeetingForm } from '@/app/(protected)/(features)/meetings/components/form/meeting-form-wizard';
 
 interface MeetingFormProps {
   id?: number;

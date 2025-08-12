@@ -28,7 +28,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
 
     console.log('TenantContext: Initializing from localStorage', {
       storedOrgId,
-      storedOrgName
+      storedOrgName,
     });
 
     if (storedOrgName) {
@@ -67,15 +67,15 @@ export function TenantProvider({ children }: TenantProviderProps) {
   // Sync organization data to localStorage and state
   const syncOrganizationData = (orgId: string, orgName: string) => {
     console.log('TenantContext: Syncing organization data', { orgId, orgName });
-    
+
     // Update localStorage
     localStorage.setItem('selectedOrganizationId', orgId);
     localStorage.setItem('selectedOrganizationName', orgName);
-    
+
     // Update cookies for SSR
     document.cookie = `selectedOrganizationId=${orgId}; path=/; max-age=31536000; SameSite=Lax`;
     document.cookie = `selectedOrganizationName=${encodeURIComponent(orgName)}; path=/; max-age=31536000; SameSite=Lax`;
-    
+
     // Update state
     setSelectedOrgNameState(orgName);
   };
@@ -84,16 +84,16 @@ export function TenantProvider({ children }: TenantProviderProps) {
   const ensureOrganizationDataExists = () => {
     const storedOrgId = localStorage.getItem('selectedOrganizationId');
     const storedOrgName = localStorage.getItem('selectedOrganizationName');
-    
+
     console.log('TenantContext: Checking organization data existence', {
       storedOrgId,
       storedOrgName,
-      stateOrgName: selectedOrgName
+      stateOrgName: selectedOrgName,
     });
-    
+
     return {
       id: storedOrgId,
-      name: storedOrgName || selectedOrgName
+      name: storedOrgName || selectedOrgName,
     };
   };
 

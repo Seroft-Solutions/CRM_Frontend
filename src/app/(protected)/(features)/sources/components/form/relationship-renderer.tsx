@@ -5,16 +5,15 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useCallback } from "react";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { PaginatedRelationshipCombobox } from "@/app/(protected)/(features)/sources/components/form/paginated-relationship-combobox";
+import React, { useCallback } from 'react';
+import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/sources/components/form/paginated-relationship-combobox';
 
 // Import all hooks statically for the specific entity
 
-
-import type { RelationshipConfig } from "./form-types";
+import type { RelationshipConfig } from './form-types';
 
 interface RelationshipRendererProps {
   relConfig: RelationshipConfig;
@@ -25,51 +24,54 @@ interface RelationshipRendererProps {
 }
 
 // Generic relationship component that uses hooks based on the relationship name
-export function RelationshipRenderer({ 
-  relConfig, 
-  field, 
-  form, 
-  actions, 
-  config 
+export function RelationshipRenderer({
+  relConfig,
+  field,
+  form,
+  actions,
+  config,
 }: RelationshipRendererProps) {
-  
   // Handle data loading for auto-population
-  const handleDataLoaded = React.useCallback((relationshipName: string, data: any[]) => {
-    // Find relationships that should auto-populate from this field
-    const autoPopulateRelationships = config.relationships.filter((rel: any) => 
-      rel.autoPopulate?.sourceField === relationshipName
-    );
-    
-    autoPopulateRelationships.forEach((targetRel: any) => {
-      const sourceValue = form.getValues(relationshipName);
-      if (sourceValue && data.length > 0) {
-        // Find the selected source item
-        const selectedItem = data.find((item: any) => item.id === sourceValue);
-        if (selectedItem) {
-          const sourceProperty = targetRel.autoPopulate.sourceProperty;
-          const targetField = targetRel.autoPopulate.targetField;
-          
-          // Get the value to populate
-          const relatedValue = selectedItem[sourceProperty];
-          const valueToPopulate = typeof relatedValue === 'object' ? relatedValue.id : relatedValue;
-          
-          if (valueToPopulate !== undefined) {
-            // Check if the target field is empty or should be overwritten
-            const currentTargetValue = form.getValues(targetField);
-            const shouldPopulate = targetRel.autoPopulate.allowOverride || !currentTargetValue;
-            
-            if (shouldPopulate && currentTargetValue !== valueToPopulate) {
-              // Use setTimeout to avoid infinite loops
-              setTimeout(() => {
-                form.setValue(targetField, valueToPopulate);
-              }, 0);
+  const handleDataLoaded = React.useCallback(
+    (relationshipName: string, data: any[]) => {
+      // Find relationships that should auto-populate from this field
+      const autoPopulateRelationships = config.relationships.filter(
+        (rel: any) => rel.autoPopulate?.sourceField === relationshipName
+      );
+
+      autoPopulateRelationships.forEach((targetRel: any) => {
+        const sourceValue = form.getValues(relationshipName);
+        if (sourceValue && data.length > 0) {
+          // Find the selected source item
+          const selectedItem = data.find((item: any) => item.id === sourceValue);
+          if (selectedItem) {
+            const sourceProperty = targetRel.autoPopulate.sourceProperty;
+            const targetField = targetRel.autoPopulate.targetField;
+
+            // Get the value to populate
+            const relatedValue = selectedItem[sourceProperty];
+            const valueToPopulate =
+              typeof relatedValue === 'object' ? relatedValue.id : relatedValue;
+
+            if (valueToPopulate !== undefined) {
+              // Check if the target field is empty or should be overwritten
+              const currentTargetValue = form.getValues(targetField);
+              const shouldPopulate = targetRel.autoPopulate.allowOverride || !currentTargetValue;
+
+              if (shouldPopulate && currentTargetValue !== valueToPopulate) {
+                // Use setTimeout to avoid infinite loops
+                setTimeout(() => {
+                  form.setValue(targetField, valueToPopulate);
+                }, 0);
+              }
             }
           }
         }
-      }
-    });
-  }, [form, config]);
-  
+      });
+    },
+    [form, config]
+  );
+
   // Use hooks based on relationship name - this ensures hooks are called consistently
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
@@ -91,9 +93,7 @@ export function RelationshipRenderer({
         {relConfig.ui.label}
         {relConfig.required && <span className="text-red-500 ml-1">*</span>}
       </FormLabel>
-      <FormControl>
-        {renderRelationshipWithHooks()}
-      </FormControl>
+      <FormControl>{renderRelationshipWithHooks()}</FormControl>
       <FormMessage />
     </FormItem>
   );

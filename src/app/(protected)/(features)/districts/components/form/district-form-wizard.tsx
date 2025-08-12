@@ -5,27 +5,33 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { DistrictFormProvider, useEntityForm } from "@/app/(protected)/(features)/districts/components/form/district-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/districts/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/districts/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/districts/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/districts/components/form/form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { Form } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  DistrictFormProvider,
+  useEntityForm,
+} from '@/app/(protected)/(features)/districts/components/form/district-form-provider';
+import { FormProgressIndicator } from '@/app/(protected)/(features)/districts/components/form/form-progress-indicator';
+import { FormStepRenderer } from '@/app/(protected)/(features)/districts/components/form/form-step-renderer';
+import { FormNavigation } from '@/app/(protected)/(features)/districts/components/form/form-navigation';
+import { FormStateManager } from '@/app/(protected)/(features)/districts/components/form/form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import { Form } from '@/components/ui/form';
+import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
 // import { stepComponents } from "@/app/(protected)/(features)/districts/components/form/steps";
-import { 
+import {
   useCreateDistrict,
   useUpdateDistrict,
   useGetDistrict,
-} from "@/core/api/generated/spring/endpoints/district-resource/district-resource.gen";
-import { districtToast, handleDistrictError } from "@/app/(protected)/(features)/districts/components/district-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+import {
+  districtToast,
+  handleDistrictError,
+} from '@/app/(protected)/(features)/districts/components/district-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface DistrictFormProps {
@@ -42,7 +48,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetDistrict(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-district", id]
+      queryKey: ['get-district', id],
     },
   });
 
@@ -52,9 +58,9 @@ function DistrictFormContent({ id }: DistrictFormProps) {
       const formValues: Record<string, any> = {};
 
       // Handle regular fields
-      config.fields.forEach(fieldConfig => {
+      config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
-        
+
         if (fieldConfig.type === 'date') {
           // Convert to datetime-local format for the input
           if (value) {
@@ -63,30 +69,32 @@ function DistrictFormContent({ id }: DistrictFormProps) {
               if (!isNaN(date.getTime())) {
                 // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
-                const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
               } else {
-                formValues[fieldConfig.name] = "";
+                formValues[fieldConfig.name] = '';
               }
             } catch {
-              formValues[fieldConfig.name] = "";
+              formValues[fieldConfig.name] = '';
             }
           } else {
-            formValues[fieldConfig.name] = "";
+            formValues[fieldConfig.name] = '';
           }
         } else if (fieldConfig.type === 'number') {
-          formValues[fieldConfig.name] = value != null ? String(value) : "";
+          formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
-          formValues[fieldConfig.name] = value || "";
+          formValues[fieldConfig.name] = value || '';
         }
       });
 
       // Handle relationships
-      config.relationships.forEach(relConfig => {
+      config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
-        
+
         if (relConfig.multiple) {
-          formValues[relConfig.name] = value ? value.map((item: any) => item[relConfig.primaryKey]) : [];
+          formValues[relConfig.name] = value
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
@@ -105,7 +113,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
       form,
       config: config,
       actions,
-      entity
+      entity,
     };
 
     // Use imported step components (requires manual import after generation)
@@ -127,7 +135,8 @@ function DistrictFormContent({ id }: DistrictFormProps) {
           Generated step components for "{currentStepConfig.id}" step would render here.
         </p>
         <p className="text-sm text-muted-foreground mt-2">
-          1. Run: <code>node src/core/step-generator.js District</code><br/>
+          1. Run: <code>node src/core/step-generator.js District</code>
+          <br />
           2. Uncomment the import and usage above
         </p>
       </div>
@@ -142,15 +151,15 @@ function DistrictFormContent({ id }: DistrictFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/districts";
-      
+      const backRoute = returnUrl || '/districts';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -194,9 +203,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
         <Form {...form}>
           <form className="space-y-6">
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                {renderGeneratedStep()}
-              </CardContent>
+              <CardContent className="p-4 sm:p-6">{renderGeneratedStep()}</CardContent>
             </Card>
           </form>
         </Form>
@@ -206,7 +213,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
       )}
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -231,23 +238,22 @@ export function DistrictForm({ id }: DistrictFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -255,7 +261,7 @@ export function DistrictForm({ id }: DistrictFormProps) {
         } else {
           setIsRedirecting(true);
           districtToast.created();
-          router.push("/districts");
+          router.push('/districts');
         }
       },
       onError: (error) => {
@@ -268,24 +274,23 @@ export function DistrictForm({ id }: DistrictFormProps) {
     mutation: {
       onSuccess: () => {
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchDistricts'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         setIsRedirecting(true);
         districtToast.updated();
-        router.push("/districts");
+        router.push('/districts');
       },
       onError: (error) => {
         handleDistrictError(error);
@@ -306,11 +311,11 @@ export function DistrictForm({ id }: DistrictFormProps) {
   }
 
   return (
-    <DistrictFormProvider 
+    <DistrictFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });

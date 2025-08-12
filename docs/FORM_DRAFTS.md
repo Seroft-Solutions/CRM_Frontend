@@ -1,10 +1,12 @@
 # Form Drafts Functionality
 
-This document explains the new form drafts functionality that allows users to save their form progress when navigating away from forms.
+This document explains the new form drafts functionality that allows users to
+save their form progress when navigating away from forms.
 
 ## Overview
 
 The drafts functionality allows users to:
+
 - Save form data as drafts when navigating away from a form
 - Restore previous drafts when starting a new form
 - Manage multiple drafts per entity type
@@ -13,20 +15,29 @@ The drafts functionality allows users to:
 ## How It Works
 
 ### 1. Draft Dialog on Navigation
-When a user attempts to navigate away from a form with unsaved changes (e.g., clicking to add a customer), a dialog appears with three options:
-- **Save as Draft**: Saves the current form data to the server and proceeds with navigation
+
+When a user attempts to navigate away from a form with unsaved changes (e.g.,
+clicking to add a customer), a dialog appears with three options:
+
+- **Save as Draft**: Saves the current form data to the server and proceeds with
+  navigation
 - **Discard Changes**: Discards all changes and proceeds with navigation
 - **Cancel**: Stays on the current form
 
 ### 2. Draft Restoration
-When starting a new form, if drafts exist for that entity type, a restoration dialog appears showing:
+
+When starting a new form, if drafts exist for that entity type, a restoration
+dialog appears showing:
+
 - List of available drafts with timestamps and step information
 - Option to restore a specific draft
 - Option to delete unwanted drafts
 - Option to start fresh (ignoring existing drafts)
 
 ### 3. API Integration
+
 Drafts are stored using the UserDrafts API:
+
 - **Entity Type**: The entity name (e.g., "Call", "Customer")
 - **JSON Payload**: Serialized form data including current step and metadata
 - **User Context**: Automatically associated with the current user
@@ -34,6 +45,7 @@ Drafts are stored using the UserDrafts API:
 ## Configuration
 
 ### Form-Level Configuration
+
 Each entity form can configure drafts behavior in the form config:
 
 ```typescript
@@ -53,20 +65,25 @@ behavior: {
 
 - **enabled**: Master switch for draft functionality
 - **saveBehavior**: When to trigger draft saves
-  - `onNavigation`: Only when navigating to other forms (cross-entity navigation)
+  - `onNavigation`: Only when navigating to other forms (cross-entity
+    navigation)
   - `onUnload`: On page unload/refresh
   - `both`: Both scenarios
 - **confirmDialog**: Whether to show the save draft confirmation dialog
 - **autoSave**: Automatically save drafts as user types (debounced)
 - **maxDrafts**: Limit number of drafts stored per entity type per user
-- **showRestorationDialog**: Show draft restoration dialog when starting new forms
+- **showRestorationDialog**: Show draft restoration dialog when starting new
+  forms
 
 ## Usage Examples
 
 ### Basic Usage
-The drafts functionality is automatically enabled for all generated forms when `drafts.enabled: true` is set in the form configuration.
+
+The drafts functionality is automatically enabled for all generated forms when
+`drafts.enabled: true` is set in the form configuration.
 
 ### Customizing Behavior
+
 To disable drafts for a specific entity:
 
 ```typescript
@@ -93,16 +110,19 @@ behavior: {
 ## Technical Implementation
 
 ### Components
+
 - **SaveDraftDialog**: Dialog for asking user about saving drafts
 - **DraftRestorationDialog**: Dialog for restoring existing drafts
 - **useEntityDrafts**: Hook for managing draft operations
 
 ### API Integration
+
 - Uses existing UserDrafts API endpoints
 - Stores form data as JSON in `jsonPayload` field
 - Automatically manages user context and timestamps
 
 ### Cross-Form Navigation
+
 - Integrates with existing cross-form navigation system
 - Shows draft dialog before navigation when form is dirty
 - Supports both keyboard and mouse navigation triggers

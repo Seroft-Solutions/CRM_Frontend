@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { AvailableTimeSlotForm } from "@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-wizard";
+import React from 'react';
+import { AvailableTimeSlotForm } from '@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-wizard';
 
 interface AvailableTimeSlotFormProps {
   id?: number;

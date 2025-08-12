@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Priority form
@@ -13,37 +13,30 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const priorityFormConfig: FormConfig = {
   entity: 'Priority',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'name',
-        'description',
-        'remark',
-      ],
-      relationships: [
-      ],
+      fields: ['name', 'description', 'remark'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -60,8 +53,7 @@ export const priorityFormConfig: FormConfig = {
         minLength: 2,
         maxLength: 50,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'description',
@@ -73,8 +65,7 @@ export const priorityFormConfig: FormConfig = {
         required: false,
         maxLength: 255,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'remark',
@@ -86,14 +77,12 @@ export const priorityFormConfig: FormConfig = {
         required: false,
         maxLength: 1000,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
   // Relationship definitions
-  relationships: [
-  ],
+  relationships: [],
 
   // Global form configuration
   validation: {
@@ -116,7 +105,7 @@ export const priorityFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -150,17 +139,19 @@ export const priorityFormConfig: FormConfig = {
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
       showRestorationDialog: true,
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const priorityFormHelpers = {
-  getStepById: (stepId: string) => priorityFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => priorityFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => priorityFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => priorityFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    priorityFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    priorityFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = priorityFormConfig.steps.find(s => s.id === stepId);
+    const step = priorityFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

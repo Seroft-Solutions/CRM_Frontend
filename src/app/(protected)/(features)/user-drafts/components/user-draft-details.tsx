@@ -5,17 +5,20 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { Trash2, ArrowLeft, Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { userDraftToast, handleUserDraftError } from "@/app/(protected)/(features)/user-drafts/components/user-draft-toast";
-import { userDraftFormConfig } from "@/app/(protected)/(features)/user-drafts/components/form/user-draft-form-config";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  userDraftToast,
+  handleUserDraftError,
+} from '@/app/(protected)/(features)/user-drafts/components/user-draft-toast';
+import { userDraftFormConfig } from '@/app/(protected)/(features)/user-drafts/components/form/user-draft-form-config';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,35 +28,25 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 import {
   useGetUserDraft,
   useDeleteUserDraft,
-} from "@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen";
-
-
-
-
+} from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
 
 interface UserDraftDetailsProps {
   id: number;
 }
 
 // Component to display relationship values by fetching related entity data
-function RelationshipDisplayValue({ 
-  value, 
-  relConfig
-}: { 
-  value: any; 
-  relConfig: any;
-}) {
+function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   // Get the appropriate hook for this relationship
 
   if (!value) {
     return (
       <span className="text-muted-foreground italic">
-        {relConfig.multiple ? "None selected" : "Not selected"}
+        {relConfig.multiple ? 'None selected' : 'Not selected'}
       </span>
     );
   }
@@ -67,8 +60,10 @@ function RelationshipDisplayValue({
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">None selected</span>;
       }
-      const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
-      return <span>{displayValues.join(", ")}</span>;
+      const displayValues = value.map(
+        (item: any) => item[relConfig.displayField] || item.id || item
+      );
+      return <span>{displayValues.join(', ')}</span>;
     } else {
       const displayValue = value[relConfig.displayField] || value.id || value;
       return <span>{displayValue}</span>;
@@ -76,41 +71,41 @@ function RelationshipDisplayValue({
   }
 
   // Extract data array from response (handle both direct array and paginated response)
-  const dataArray = Array.isArray(allData) ? allData : 
-                   allData.content ? allData.content : 
-                   allData.data ? allData.data : [];
+  const dataArray = Array.isArray(allData)
+    ? allData
+    : allData.content
+      ? allData.content
+      : allData.data
+        ? allData.data
+        : [];
 
   if (relConfig.multiple && Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground italic">None selected</span>;
     }
-    
-    const selectedItems = dataArray.filter((item: any) => 
+
+    const selectedItems = dataArray.filter((item: any) =>
       value.some((v: any) => {
         const valueId = typeof v === 'object' ? v[relConfig.primaryKey] : v;
         return item[relConfig.primaryKey] === valueId;
       })
     );
-    
+
     if (selectedItems.length === 0) {
       return <span className="text-muted-foreground italic">{value.length} selected</span>;
     }
-    
+
     const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
-    return <span>{displayValues.join(", ")}</span>;
+    return <span>{displayValues.join(', ')}</span>;
   } else {
     // Single value
     const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
-    const selectedItem = dataArray.find((item: any) => 
-      item[relConfig.primaryKey] === valueId
-    );
-    
+    const selectedItem = dataArray.find((item: any) => item[relConfig.primaryKey] === valueId);
+
     return selectedItem ? (
       <span>{selectedItem[relConfig.displayField]}</span>
     ) : (
-      <span className="text-muted-foreground italic">
-        Selected (ID: {valueId})
-      </span>
+      <span className="text-muted-foreground italic">Selected (ID: {valueId})</span>
     );
   }
 }
@@ -134,7 +129,7 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
     mutation: {
       onSuccess: () => {
         userDraftToast.deleted();
-        router.push("/user-drafts");
+        router.push('/user-drafts');
       },
       onError: (error) => {
         handleUserDraftError(error);
@@ -150,31 +145,31 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
   // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
-      return value ? "Yes" : "No";
+      return value ? 'Yes' : 'No';
     }
-    
+
     if (fieldConfig.type === 'date') {
-      return value ? format(new Date(value), "PPP") : (
+      return value ? (
+        format(new Date(value), 'PPP')
+      ) : (
         <span className="text-muted-foreground italic">Not set</span>
       );
     }
-    
+
     if (fieldConfig.type === 'file') {
-      return value ? "File uploaded" : (
+      return value ? (
+        'File uploaded'
+      ) : (
         <span className="text-muted-foreground italic">No file</span>
       );
     }
-    
+
     if (fieldConfig.type === 'enum') {
-      return value || (
-        <span className="text-muted-foreground italic">Not set</span>
-      );
+      return value || <span className="text-muted-foreground italic">Not set</span>;
     }
-    
+
     // Default text/number fields
-    return value || (
-      <span className="text-muted-foreground italic">Not set</span>
-    );
+    return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
   // Render relationship value using the enhanced display component
@@ -199,9 +194,8 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
   }
 
   // Filter out review step and empty steps
-  const displaySteps = formConfig.steps.filter(step => 
-    step.id !== 'review' && 
-    (step.fields.length > 0 || step.relationships.length > 0)
+  const displaySteps = formConfig.steps.filter(
+    (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );
 
   return (
@@ -229,12 +223,12 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Render Fields */}
-                {step.fields.map(fieldName => {
-                  const fieldConfig = formConfig.fields.find(f => f.name === fieldName);
+                {step.fields.map((fieldName) => {
+                  const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
                   if (!fieldConfig) return null;
-                  
+
                   const value = entity[fieldName];
-                  
+
                   return (
                     <div key={fieldName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -248,12 +242,14 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
                 })}
 
                 {/* Render Relationships */}
-                {step.relationships.map(relationshipName => {
-                  const relConfig = formConfig.relationships.find(r => r.name === relationshipName);
+                {step.relationships.map((relationshipName) => {
+                  const relConfig = formConfig.relationships.find(
+                    (r) => r.name === relationshipName
+                  );
                   if (!relConfig) return null;
-                  
+
                   const value = entity[relationshipName];
-                  
+
                   return (
                     <div key={relationshipName} className="space-y-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -280,7 +276,7 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
             className="flex items-center gap-2 justify-center"
@@ -296,8 +292,8 @@ export function UserDraftDetails({ id }: UserDraftDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              userdraft and remove its data from the server.
+              This action cannot be undone. This will permanently delete the userdraft and remove
+              its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -6,17 +6,12 @@
 /**
  * Organization/tenant-related localStorage keys that need cleanup
  */
-const ORGANIZATION_KEYS = [
-  'selectedOrganizationId',
-  'selectedOrganizationName',
-] as const;
+const ORGANIZATION_KEYS = ['selectedOrganizationId', 'selectedOrganizationName'] as const;
 
 /**
  * Authentication-related keys that need cleanup
  */
-const AUTH_KEYS = [
-  'access_token',
-] as const;
+const AUTH_KEYS = ['access_token'] as const;
 
 /**
  * Form and entity-related keys that should be cleared on logout
@@ -33,16 +28,14 @@ const FORM_KEYS = [
 /**
  * Debug and development keys
  */
-const DEBUG_KEYS = [
-  'debug_logs',
-] as const;
+const DEBUG_KEYS = ['debug_logs'] as const;
 
 /**
  * Gets all localStorage keys that start with a given prefix
  */
 function getKeysByPrefix(prefix: string): string[] {
   if (typeof window === 'undefined') return [];
-  
+
   const keys: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -61,9 +54,9 @@ export function cleanupOrganizationData(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Cleaning up organization data from localStorage');
-  
+
   // Remove organization keys
-  ORGANIZATION_KEYS.forEach(key => {
+  ORGANIZATION_KEYS.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage key: ${key}`);
   });
@@ -76,9 +69,9 @@ export function cleanupAuthTokens(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Cleaning up auth tokens from storage');
-  
+
   // Remove from localStorage
-  AUTH_KEYS.forEach(key => {
+  AUTH_KEYS.forEach((key) => {
     localStorage.removeItem(key);
     sessionStorage.removeItem(key);
     console.log(`Removed storage key: ${key}`);
@@ -93,9 +86,9 @@ export function cleanupFormData(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Cleaning up form data from localStorage');
-  
+
   // Remove form keys
-  FORM_KEYS.forEach(key => {
+  FORM_KEYS.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage key: ${key}`);
   });
@@ -105,15 +98,15 @@ export function cleanupFormData(): void {
   const userProfileDraftKeys = getKeysByPrefix('userprofiles_draft_');
   const roleDraftKeys = getKeysByPrefix('roles_draft_');
   const userDraftKeys = getKeysByPrefix('userdrafts_draft_');
-  
-  [...formDraftKeys, ...userProfileDraftKeys, ...roleDraftKeys, ...userDraftKeys].forEach(key => {
+
+  [...formDraftKeys, ...userProfileDraftKeys, ...roleDraftKeys, ...userDraftKeys].forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage draft key: ${key}`);
   });
 
   // Remove cross-entity keys (they have dynamic suffixes)
   const crossEntityKeys = getKeysByPrefix('cross_entity_');
-  crossEntityKeys.forEach(key => {
+  crossEntityKeys.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage cross-entity key: ${key}`);
   });
@@ -127,10 +120,10 @@ export function cleanupTablePreferences(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Cleaning up table preferences from localStorage');
-  
+
   // Remove column visibility keys
   const columnVisibilityKeys = getKeysByPrefix('columnVisibility_');
-  columnVisibilityKeys.forEach(key => {
+  columnVisibilityKeys.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage column visibility key: ${key}`);
   });
@@ -143,8 +136,8 @@ export function cleanupDebugData(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Cleaning up debug data from localStorage');
-  
-  DEBUG_KEYS.forEach(key => {
+
+  DEBUG_KEYS.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage debug key: ${key}`);
   });
@@ -158,18 +151,18 @@ export function cleanupOnLogout(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Performing complete logout cleanup');
-  
+
   cleanupOrganizationData();
   cleanupAuthTokens();
   cleanupFormData();
   // Note: Not cleaning up table preferences on logout as users may want to keep them
   // cleanupTablePreferences();
-  
+
   // Only cleanup debug data in development
   if (process.env.NODE_ENV === 'development') {
     cleanupDebugData();
   }
-  
+
   console.log('Logout cleanup completed');
 }
 
@@ -181,10 +174,10 @@ export function cleanupOnOrganizationSwitch(): void {
   if (typeof window === 'undefined') return;
 
   console.log('Performing organization switch cleanup');
-  
+
   cleanupOrganizationData();
   cleanupFormData(); // Clear form drafts as they're organization-specific
-  
+
   console.log('Organization switch cleanup completed');
 }
 
@@ -198,14 +191,14 @@ export const localStorageCleanup = {
   forms: cleanupFormData,
   tables: cleanupTablePreferences,
   debug: cleanupDebugData,
-  
+
   // Scenario-based cleanup
   logout: cleanupOnLogout,
   organizationSwitch: cleanupOnOrganizationSwitch,
-  
+
   // Utility functions
   getKeysByPrefix,
-  
+
   // List of managed keys for reference
   keys: {
     organization: ORGANIZATION_KEYS,

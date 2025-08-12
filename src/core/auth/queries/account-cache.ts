@@ -1,21 +1,21 @@
 /**
  * Account Cache Management Utilities
- * 
+ *
  * Provides utilities for managing account data cache lifecycle,
  * including invalidation, prefetching, and synchronization.
  */
 
 import { QueryClient } from '@tanstack/react-query';
-import { accountQueryKeys } from "@/core/auth/queries/account-keys";
+import { accountQueryKeys } from '@/core/auth/queries/account-keys';
 
 /**
  * Invalidates all account-related queries
  * Use this when account data might have changed (e.g., after profile update)
  */
 export function invalidateAccountCache(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ 
+  return queryClient.invalidateQueries({
     queryKey: accountQueryKeys.all,
-    refetchType: 'active' // Only refetch active queries
+    refetchType: 'active', // Only refetch active queries
   });
 }
 
@@ -24,8 +24,8 @@ export function invalidateAccountCache(queryClient: QueryClient) {
  * Use this on logout or when switching users
  */
 export function clearAccountCache(queryClient: QueryClient) {
-  return queryClient.removeQueries({ 
-    queryKey: accountQueryKeys.all 
+  return queryClient.removeQueries({
+    queryKey: accountQueryKeys.all,
   });
 }
 
@@ -44,9 +44,9 @@ export function prefetchAccountData(queryClient: QueryClient) {
  * Use this when you need to ensure data is completely up-to-date
  */
 export function refetchAccountData(queryClient: QueryClient) {
-  return queryClient.refetchQueries({ 
+  return queryClient.refetchQueries({
     queryKey: accountQueryKeys.all,
-    type: 'active'
+    type: 'active',
   });
 }
 

@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import {InlinePermissionGuard, PermissionGuard, useAuth} from '@/core/auth';
+import { InlinePermissionGuard, PermissionGuard, useAuth } from '@/core/auth';
 import { useUserAuthorities } from '@/core/auth/hooks';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Briefcase } from 'lucide-react';
 
 // Custom Coffee/Tea Cup Icon Component (same as organization-switcher)
-const CupIcon = ({ className = "size-4" }: { className?: string }) => (
+const CupIcon = ({ className = 'size-4' }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"
@@ -104,7 +104,7 @@ export function TenantHeader() {
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
             </div>
-            
+
             {/* Organization Details */}
             <div className="space-y-1">
               <div className="flex items-center gap-3">
@@ -127,13 +127,26 @@ export function TenantHeader() {
             {/* Instructions - Desktop */}
             <div className="hidden lg:flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-gray-200/80 rounded-lg px-4 py-3 shadow-sm">
               <div className="bg-amber-100 p-2 rounded-lg">
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div className="text-sm">
                 <div className="text-gray-700 font-medium">Switch organizations?</div>
-                <div className="text-gray-500 text-xs">Use <span className="font-semibold text-blue-600">Organization Switcher</span> in sidebar</div>
+                <div className="text-gray-500 text-xs">
+                  Use <span className="font-semibold text-blue-600">Organization Switcher</span> in
+                  sidebar
+                </div>
               </div>
             </div>
 
@@ -161,14 +174,25 @@ export function TenantHeader() {
           <div className="bg-white/60 backdrop-blur-sm border border-gray-200/80 rounded-lg p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <div className="bg-amber-100 p-2 rounded-lg flex-shrink-0">
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div className="text-sm">
                 <div className="text-gray-700 font-medium mb-1">Switch organizations?</div>
                 <div className="text-gray-600">
-                  Use the <span className="font-semibold text-blue-600">Organization Switcher</span> in the sidebar to select a different organization
+                  Use the <span className="font-semibold text-blue-600">Organization Switcher</span>{' '}
+                  in the sidebar to select a different organization
                 </div>
               </div>
             </div>

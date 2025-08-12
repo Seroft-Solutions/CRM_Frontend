@@ -6,7 +6,7 @@
 import {
   AvailabilityService,
   DEFAULT_AVAILABILITY_CONFIG,
-} from "@/app/(protected)/(features)/shared/services/availability-service";
+} from '@/app/(protected)/(features)/shared/services/availability-service';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -14,9 +14,7 @@ import {
   useGetAllUserAvailabilities,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
-import {
-  useCreateAvailableTimeSlot,
-} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { useCreateAvailableTimeSlot } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 
 /**
  * React hook to handle real availability creation for specific users
@@ -25,114 +23,121 @@ export function useUserAvailabilityCreation() {
   const queryClient = useQueryClient();
   const { mutate: createUserAvailability } = useCreateUserAvailability();
   const { mutate: createAvailableTimeSlot } = useCreateAvailableTimeSlot();
-  const { data: existingAvailabilities, refetch: refetchAvailabilities } = useGetAllUserAvailabilities(
-    undefined,
-    { 
-      query: { 
+  const { data: existingAvailabilities, refetch: refetchAvailabilities } =
+    useGetAllUserAvailabilities(undefined, {
+      query: {
         staleTime: 5 * 60 * 1000, // 5 minutes
         cacheTime: 10 * 60 * 1000, // 10 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-        refetchInterval: false
-      } 
-    }
-  );
-  
+        refetchInterval: false,
+      },
+    });
+
   const ensureUserHasAvailability = async (userId: number | string): Promise<boolean> => {
     try {
       console.log('🔍 Checking availability for user:', userId);
-      
+
       // Check if this user already has availability
-      const userExistingAvailability = existingAvailabilities?.filter(
-        avail => avail.user?.id?.toString() === userId.toString()
-      ) || [];
-      
+      const userExistingAvailability =
+        existingAvailabilities?.filter(
+          (avail) => avail.user?.id?.toString() === userId.toString()
+        ) || [];
+
       if (userExistingAvailability.length > 0) {
-        console.log('✅ User already has availability:', userExistingAvailability.length, 'schedules');
+        console.log(
+          '✅ User already has availability:',
+          userExistingAvailability.length,
+          'schedules'
+        );
         return true;
       }
-      
+
       console.log('🆕 Creating availability for user:', userId);
-      
+
       // Generate availability records for this specific user
       const generated = AvailabilityService.generateCompleteAvailability(
         typeof userId === 'string' ? userId : userId // Handle both string and number IDs
       );
-      
+
       console.log('📊 Creating records for user', userId, ':', {
         userAvailabilities: generated.userAvailabilities.length,
-        timeSlots: generated.timeSlots.length
+        timeSlots: generated.timeSlots.length,
       });
-      
+
       // Create UserAvailability records (weekly schedule)
-      const availabilityPromises = generated.userAvailabilities.map(availability => 
-        new Promise<void>((resolve, reject) => {
-          createUserAvailability(
-            { data: availability as any },
-            {
-              onSuccess: () => {
-                console.log('✅ Created UserAvailability for', availability.dayOfWeek);
-                resolve();
-              },
-              onError: (error) => {
-                console.error('❌ Failed to create UserAvailability:', error);
-                reject(error);
+      const availabilityPromises = generated.userAvailabilities.map(
+        (availability) =>
+          new Promise<void>((resolve, reject) => {
+            createUserAvailability(
+              { data: availability as any },
+              {
+                onSuccess: () => {
+                  console.log('✅ Created UserAvailability for', availability.dayOfWeek);
+                  resolve();
+                },
+                onError: (error) => {
+                  console.error('❌ Failed to create UserAvailability:', error);
+                  reject(error);
+                },
               }
-            }
-          );
-        })
+            );
+          })
       );
-      
+
       await Promise.all(availabilityPromises);
       console.log('✅ All UserAvailability records created for user:', userId);
-      
+
       // Create AvailableTimeSlot records (specific time slots)
       const batchSize = 10; // Create in batches to avoid overwhelming the API
       for (let i = 0; i < generated.timeSlots.length; i += batchSize) {
         const batch = generated.timeSlots.slice(i, i + batchSize);
-        
-        const batchPromises = batch.map(timeSlot => 
-          new Promise<void>((resolve, reject) => {
-            createAvailableTimeSlot(
-              { data: timeSlot as any },
-              {
-                onSuccess: () => resolve(),
-                onError: (error) => {
-                  console.error('❌ Failed to create AvailableTimeSlot:', error);
-                  reject(error);
+
+        const batchPromises = batch.map(
+          (timeSlot) =>
+            new Promise<void>((resolve, reject) => {
+              createAvailableTimeSlot(
+                { data: timeSlot as any },
+                {
+                  onSuccess: () => resolve(),
+                  onError: (error) => {
+                    console.error('❌ Failed to create AvailableTimeSlot:', error);
+                    reject(error);
+                  },
                 }
-              }
-            );
-          })
+              );
+            })
         );
-        
+
         await Promise.all(batchPromises);
-        console.log(`✅ Created batch ${Math.floor(i/batchSize) + 1} of time slots for user:`, userId);
+        console.log(
+          `✅ Created batch ${Math.floor(i / batchSize) + 1} of time slots for user:`,
+          userId
+        );
       }
-      
+
       // Invalidate related caches for immediate UI updates
       await Promise.all([
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['useGetAllUserAvailabilities'],
-          exact: false 
+          exact: false,
         }),
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['useGetAllAvailableTimeSlots'],
-          exact: false 
+          exact: false,
         }),
-        refetchAvailabilities()
+        refetchAvailabilities(),
       ]);
       console.log('✅ Availability caches invalidated after creation');
-      
+
       console.log('🎉 Successfully created all availability records for user:', userId);
       return true;
-      
     } catch (error) {
       console.error('❌ Failed to create availability for user:', userId, error);
       return false;
     }
   };
-  
+
   return { ensureUserHasAvailability };
 }
 
@@ -141,8 +146,12 @@ export function useUserAvailabilityCreation() {
  */
 export function useCustomerAvailabilityCreation() {
   const createAvailabilityForCustomer = async (customerId: number): Promise<void> => {
-    console.log('🆕 Customer created:', customerId, '- availability will be created when needed for meetings');
+    console.log(
+      '🆕 Customer created:',
+      customerId,
+      '- availability will be created when needed for meetings'
+    );
   };
-  
+
   return { createAvailabilityForCustomer };
 }

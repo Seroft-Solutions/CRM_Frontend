@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useUserAuthorities } from "@/core/auth/hooks/use-user-authorities";
-import { normalizeAuthority } from "@/core/auth/utils";
+import { useUserAuthorities } from '@/core/auth/hooks/use-user-authorities';
+import { normalizeAuthority } from '@/core/auth/utils';
 
 export function useRBAC() {
   const {
@@ -28,31 +28,29 @@ export function useRBAC() {
     groups,
     authorities,
     isLoading,
-    
+
     // Single checks
     hasRole,
     hasGroup,
     hasAuthority,
     hasPermission: hasAuthority, // Alias for consistency
-    
+
     // Multiple checks
     hasAnyRole,
     hasAnyGroup,
     hasAnyAuthority,
     hasAnyPermission: hasAnyAuthority, // Alias for consistency
-    
+
     // Convenience methods
-    hasAllRoles: (rolesToCheck: string[]) => 
-      rolesToCheck.every(role => hasRole(role)),
-    hasAllGroups: (groupsToCheck: string[]) => 
-      groupsToCheck.every(group => hasGroup(group)),
-    hasAllAuthorities: (authoritiesToCheck: string[]) => 
-      authoritiesToCheck.every(auth => hasAuthority(auth)),
-    
+    hasAllRoles: (rolesToCheck: string[]) => rolesToCheck.every((role) => hasRole(role)),
+    hasAllGroups: (groupsToCheck: string[]) => groupsToCheck.every((group) => hasGroup(group)),
+    hasAllAuthorities: (authoritiesToCheck: string[]) =>
+      authoritiesToCheck.every((auth) => hasAuthority(auth)),
+
     // Admin checks
     isAdmin: () => hasAnyRole(['ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN']),
     isSuperAdmin: () => hasRole('SUPER_ADMIN'),
-    
+
     // Utility
     normalizeAuthority,
   };

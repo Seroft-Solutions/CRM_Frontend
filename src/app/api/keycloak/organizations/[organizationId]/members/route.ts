@@ -239,9 +239,9 @@ export async function GET(
           // Add groups and roles to member object
           return {
             ...member,
-            groups: memberGroups.map(g => g.name).filter(Boolean), // Array of group names
+            groups: memberGroups.map((g) => g.name).filter(Boolean), // Array of group names
             groupDetails: memberGroups, // Full group objects
-            realmRoles: memberRoles.map(r => r.name).filter(Boolean), // Array of role names
+            realmRoles: memberRoles.map((r) => r.name).filter(Boolean), // Array of role names
             roleDetails: memberRoles, // Full role objects
           };
         } catch (error) {
@@ -255,9 +255,9 @@ export async function GET(
     const filteredMembers = enhancedMembers.filter((member) => {
       const memberGroups = member.groups || [];
       const memberRoles = member.realmRoles || [];
-      
+
       // Check for business partner indicators
-      const hasBusinessPartnerGroup = memberGroups.some(groupName => {
+      const hasBusinessPartnerGroup = memberGroups.some((groupName) => {
         const groupLower = groupName?.toLowerCase() || '';
         return (
           groupLower === 'business partners' ||
@@ -266,8 +266,8 @@ export async function GET(
           (groupLower.includes('business') && groupLower.includes('partner'))
         );
       });
-      
-      const hasBusinessPartnerRole = memberRoles.some(roleName => {
+
+      const hasBusinessPartnerRole = memberRoles.some((roleName) => {
         const roleLower = roleName?.toLowerCase() || '';
         return (
           roleLower === 'business partners' ||
@@ -276,9 +276,9 @@ export async function GET(
           (roleLower.includes('business') && roleLower.includes('partner'))
         );
       });
-      
+
       const isBusinessPartner = hasBusinessPartnerGroup || hasBusinessPartnerRole;
-      
+
       if (isBusinessPartner) {
         console.log('Filtering out business partner user:', {
           email: member.email,
@@ -286,11 +286,13 @@ export async function GET(
           roles: memberRoles,
         });
       }
-      
+
       return !isBusinessPartner;
     });
 
-    console.log(`Enhanced members API: ${members.length} total, ${filteredMembers.length} after filtering`);
+    console.log(
+      `Enhanced members API: ${members.length} total, ${filteredMembers.length} after filtering`
+    );
 
     return NextResponse.json(filteredMembers);
   } catch (error: any) {
@@ -341,10 +343,10 @@ export async function POST(
       // Check if this is organization owner setup (indicated by isOrganizationOwner flag)
       if (body.isOrganizationOwner) {
         console.log('Setting up organization owner with admin privileges:', body.userId);
-        
+
         // Use the organization owner group assignment function
         const ownerGroupResult = await ensureOrganizationOwnerGroupAssignment(realm, body.userId);
-        
+
         return NextResponse.json({
           message: 'Organization owner added successfully with admin privileges',
           organizationId,

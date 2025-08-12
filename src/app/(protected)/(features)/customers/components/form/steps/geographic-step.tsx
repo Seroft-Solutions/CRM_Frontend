@@ -5,13 +5,13 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/customers/components/form/relationship-renderer";
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { RelationshipRenderer } from '@/app/(protected)/(features)/customers/components/form/relationship-renderer';
 
 interface CustomerGeographicStepProps {
   form: any;
@@ -20,14 +20,19 @@ interface CustomerGeographicStepProps {
   entity?: any;
 }
 
-export function CustomerGeographicStep({ form, config, actions, entity }: CustomerGeographicStepProps) {
+export function CustomerGeographicStep({
+  form,
+  config,
+  actions,
+  entity,
+}: CustomerGeographicStepProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
-        
+
         {/* Generated Relationship Fields */}
-        
+
         {/* State Relationship */}
         <FormField
           control={form.control}
@@ -57,7 +62,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                   label: 'State',
                   placeholder: 'Select state',
                   icon: '🔗',
-                }
+                },
               }}
               field={field}
               form={form}
@@ -66,7 +71,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
             />
           )}
         />
-        
+
         {/* District Relationship */}
         <FormField
           control={form.control}
@@ -100,7 +105,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                   label: 'District',
                   placeholder: 'Select district',
                   icon: '🔗',
-                }
+                },
               }}
               field={field}
               form={form}
@@ -109,7 +114,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
             />
           )}
         />
-        
+
         {/* City Relationship */}
         <FormField
           control={form.control}
@@ -124,10 +129,10 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                  cascadingFilter: {
-                      parentField: 'district',
-                      filterField: 'district',
-                  },
+                cascadingFilter: {
+                  parentField: 'district',
+                  filterField: 'district',
+                },
                 api: {
                   useGetAllHook: 'useGetAllCities',
                   useSearchHook: 'useSearchCities',
@@ -143,7 +148,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                   label: 'City',
                   placeholder: 'Select city',
                   icon: '🔗',
-                }
+                },
               }}
               field={field}
               form={form}
@@ -152,7 +157,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
             />
           )}
         />
-        
+
         {/* Area Relationship */}
         <FormField
           control={form.control}
@@ -167,10 +172,10 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
-                  cascadingFilter: {
-                      parentField: 'city',
-                      filterField: 'city',
-                  },
+                cascadingFilter: {
+                  parentField: 'city',
+                  filterField: 'city',
+                },
                 api: {
                   useGetAllHook: 'useGetAllAreas',
                   useSearchHook: 'useSearchAreas',
@@ -186,7 +191,7 @@ export function CustomerGeographicStep({ form, config, actions, entity }: Custom
                   label: 'Area',
                   placeholder: 'Select area',
                   icon: '🔗',
-                }
+                },
               }}
               field={field}
               form={form}

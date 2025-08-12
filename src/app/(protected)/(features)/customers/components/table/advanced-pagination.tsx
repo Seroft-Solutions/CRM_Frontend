@@ -6,36 +6,36 @@
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
 
-"use client";
+'use client';
 
-import React from "react";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronsLeft, 
+import React from 'react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
   ChevronsRight,
-  MoreHorizontal
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+  MoreHorizontal,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 interface AdvancedPaginationProps {
   // Current pagination state
   currentPage: number;
   pageSize: number;
   totalItems: number;
-  
+
   // Pagination controls
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  
+
   // Customization options
   pageSizeOptions?: number[];
   showPageSizeSelector?: boolean;
@@ -43,10 +43,10 @@ interface AdvancedPaginationProps {
   showItemsInfo?: boolean;
   showFirstLastButtons?: boolean;
   maxPageButtons?: number;
-  
+
   // Loading states
   isLoading?: boolean;
-  
+
   // Responsive settings
   compact?: boolean;
 }
@@ -69,24 +69,24 @@ export function AdvancedPagination({
   const totalPages = Math.ceil(totalItems / pageSize);
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
-  
+
   // Calculate which page numbers to show
   const getPageNumbers = () => {
     if (totalPages <= maxPageButtons) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
+
     const halfWindow = Math.floor(maxPageButtons / 2);
     let start = Math.max(1, currentPage - halfWindow);
     let end = Math.min(totalPages, start + maxPageButtons - 1);
-    
+
     // Adjust start if we're near the end
     if (end - start + 1 < maxPageButtons) {
       start = Math.max(1, end - maxPageButtons + 1);
     }
-    
+
     const pages = [];
-    
+
     // Always show first page
     if (start > 1) {
       pages.push(1);
@@ -94,12 +94,12 @@ export function AdvancedPagination({
         pages.push('ellipsis-start');
       }
     }
-    
+
     // Show middle pages
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
+
     // Always show last page
     if (end < totalPages) {
       if (end < totalPages - 1) {
@@ -107,33 +107,37 @@ export function AdvancedPagination({
       }
       pages.push(totalPages);
     }
-    
+
     return pages;
   };
-  
+
   const pageNumbers = getPageNumbers();
-  
+
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value >= 1 && value <= totalPages) {
       onPageChange(value);
     }
   };
-  
+
   const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handlePageInputChange(e as any);
     }
   };
-  
+
   if (totalItems === 0) {
     return null;
   }
-  
+
   return (
-    <div className={`flex flex-col gap-3 ${compact ? 'sm:flex-row sm:items-center sm:justify-between' : 'lg:flex-row lg:items-center lg:justify-between'}`}>
+    <div
+      className={`flex flex-col gap-3 ${compact ? 'sm:flex-row sm:items-center sm:justify-between' : 'lg:flex-row lg:items-center lg:justify-between'}`}
+    >
       {/* Items Info & Page Size Selector */}
-      <div className={`flex flex-col gap-2 ${compact ? 'sm:flex-row sm:items-center' : 'lg:flex-row lg:items-center'}`}>
+      <div
+        className={`flex flex-col gap-2 ${compact ? 'sm:flex-row sm:items-center' : 'lg:flex-row lg:items-center'}`}
+      >
         {showItemsInfo && (
           <div className="text-sm text-muted-foreground whitespace-nowrap">
             {compact ? (
@@ -152,7 +156,7 @@ export function AdvancedPagination({
             </span>
           </div>
         )}
-        
+
         {showPageSizeSelector && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -177,15 +181,15 @@ export function AdvancedPagination({
           </div>
         )}
       </div>
-      
+
       {/* Pagination Controls */}
-      <div className={`flex items-center gap-2 ${compact ? '' : 'flex-wrap justify-center lg:justify-end'}`}>
+      <div
+        className={`flex items-center gap-2 ${compact ? '' : 'flex-wrap justify-center lg:justify-end'}`}
+      >
         {/* Page Input */}
         {showPageInput && !compact && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              Page
-            </span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Page</span>
             <Input
               type="number"
               min={1}
@@ -196,12 +200,10 @@ export function AdvancedPagination({
               className="w-16 h-8 text-center"
               disabled={isLoading}
             />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              of {totalPages}
-            </span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">of {totalPages}</span>
           </div>
         )}
-        
+
         {/* Navigation Buttons */}
         <div className="flex items-center gap-1">
           {/* First Page */}
@@ -217,7 +219,7 @@ export function AdvancedPagination({
               <ChevronsLeft className="h-4 w-4" />
             </Button>
           )}
-          
+
           {/* Previous Page */}
           <Button
             variant="outline"
@@ -230,7 +232,7 @@ export function AdvancedPagination({
             <ChevronLeft className="h-4 w-4" />
             {!compact && <span className="ml-1 hidden sm:inline">Previous</span>}
           </Button>
-          
+
           {/* Page Numbers */}
           <div className="flex items-center gap-1">
             {pageNumbers.map((page, index) => {
@@ -247,14 +249,14 @@ export function AdvancedPagination({
                   </Button>
                 );
               }
-              
+
               const pageNum = page as number;
               const isActive = pageNum === currentPage;
-              
+
               return (
                 <Button
                   key={pageNum}
-                  variant={isActive ? "default" : "outline"}
+                  variant={isActive ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}
                   disabled={isLoading}
@@ -267,7 +269,7 @@ export function AdvancedPagination({
               );
             })}
           </div>
-          
+
           {/* Next Page */}
           <Button
             variant="outline"
@@ -280,7 +282,7 @@ export function AdvancedPagination({
             <ChevronRight className="h-4 w-4" />
             {!compact && <span className="mr-1 hidden sm:inline">Next</span>}
           </Button>
-          
+
           {/* Last Page */}
           {showFirstLastButtons && (
             <Button
@@ -295,7 +297,7 @@ export function AdvancedPagination({
             </Button>
           )}
         </div>
-        
+
         {/* Compact Page Input */}
         {showPageInput && compact && (
           <div className="flex items-center gap-1 ml-2">
@@ -310,9 +312,7 @@ export function AdvancedPagination({
               disabled={isLoading}
               placeholder={currentPage.toString()}
             />
-            <span className="text-xs text-muted-foreground">
-              /{totalPages}
-            </span>
+            <span className="text-xs text-muted-foreground">/{totalPages}</span>
           </div>
         )}
       </div>
@@ -321,26 +321,23 @@ export function AdvancedPagination({
 }
 
 // Export a hook for easy pagination state management
-export function usePaginationState(
-  initialPage: number = 1,
-  initialPageSize: number = 10
-) {
+export function usePaginationState(initialPage: number = 1, initialPageSize: number = 10) {
   const [page, setPage] = React.useState(initialPage);
   const [pageSize, setPageSize] = React.useState(initialPageSize);
-  
+
   const handlePageChange = React.useCallback((newPage: number) => {
     setPage(newPage);
   }, []);
-  
+
   const handlePageSizeChange = React.useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1); // Reset to first page when page size changes
   }, []);
-  
+
   const resetPagination = React.useCallback(() => {
     setPage(1);
   }, []);
-  
+
   return {
     page,
     pageSize,

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDistanceToNow } from "date-fns";
-import { FileText, Plus, Loader2, Trash2 } from "lucide-react";
-import type { DraftItem } from "@/core/hooks/use-entity-drafts";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { formatDistanceToNow } from 'date-fns';
+import { FileText, Plus, Loader2, Trash2 } from 'lucide-react';
+import type { DraftItem } from '@/core/hooks/use-entity-drafts';
 
 export interface DraftRestorationDialogProps {
   open: boolean;
@@ -70,16 +70,16 @@ export function DraftRestorationDialog({
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "Unknown";
+    if (!dateString) return 'Unknown';
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
     } catch {
-      return "Unknown";
+      return 'Unknown';
     }
   };
 
   const getStepText = (currentStep?: number, totalSteps = 5) => {
-    if (currentStep === undefined) return "Unknown step";
+    if (currentStep === undefined) return 'Unknown step';
     return `Step ${currentStep + 1} of ${totalSteps}`;
   };
 
@@ -92,8 +92,9 @@ export function DraftRestorationDialog({
             Found Existing Drafts
           </DialogTitle>
           <DialogDescription>
-            You have {drafts.length} saved draft{drafts.length !== 1 ? 's' : ''} for {entityType.toLowerCase()} forms. 
-            Would you like to continue from a draft or start fresh?
+            You have {drafts.length} saved draft{drafts.length !== 1 ? 's' : ''} for{' '}
+            {entityType.toLowerCase()} forms. Would you like to continue from a draft or start
+            fresh?
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +108,9 @@ export function DraftRestorationDialog({
                     <div
                       key={draft.id}
                       className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                        restoringDraftId ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-muted/50'
+                        restoringDraftId
+                          ? 'cursor-not-allowed opacity-50'
+                          : 'cursor-pointer hover:bg-muted/50'
                       } ${restoringDraftId === draft.id ? 'bg-blue-50 border-blue-200' : ''}`}
                       onClick={() => !restoringDraftId && handleRestoreDraft(draft.id)}
                     >
@@ -127,7 +130,7 @@ export function DraftRestorationDialog({
                           )}
                         </p>
                       </div>
-                      
+
                       <Button
                         size="sm"
                         variant="ghost"

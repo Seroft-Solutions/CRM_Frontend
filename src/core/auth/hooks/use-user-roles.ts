@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useUserAuthorities } from "@/core/auth/hooks/use-user-authorities";
+import { useUserAuthorities } from '@/core/auth/hooks/use-user-authorities';
 
 export function useUserRoles() {
   const { roles, isLoading, hasRole } = useUserAuthorities();

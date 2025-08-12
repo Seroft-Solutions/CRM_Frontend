@@ -3,17 +3,17 @@
 // - Enhanced calls page with meeting scheduler dialog integration
 // - Handles URL parameters from call creation to trigger meeting dialog
 // ===============================================================
-import { Suspense } from "react";
-import { CallsPageWithMeetingDialog } from "@/app/(protected)/(features)/calls/components/calls-page-with-meeting-dialog";
-import { PermissionGuard, InlinePermissionGuard } from "@/core/auth";
+import { Suspense } from 'react';
+import { CallsPageWithMeetingDialog } from '@/app/(protected)/(features)/calls/components/calls-page-with-meeting-dialog';
+import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: "Calls",
+  title: 'Calls',
 };
 
 export default function CallPage() {
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="call:read"
       unauthorizedTitle="Access Denied to Calls"
       unauthorizedDescription="You don't have permission to view calls."

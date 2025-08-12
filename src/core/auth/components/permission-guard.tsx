@@ -6,10 +6,10 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { useAuth } from "@/core/auth/providers/session-provider";
-import { useUserRoles } from "@/core/auth/hooks/use-user-roles";
-import { UnauthorizedPage } from "@/core/auth/components/unauthorized-page";
-import { normalizeRole } from "@/core/auth/utils";
+import { useAuth } from '@/core/auth/providers/session-provider';
+import { useUserRoles } from '@/core/auth/hooks/use-user-roles';
+import { UnauthorizedPage } from '@/core/auth/components/unauthorized-page';
+import { normalizeRole } from '@/core/auth/utils';
 import type { PermissionGuardProps } from '../types';
 
 /**
@@ -140,7 +140,7 @@ export function useAnyPermission(roles: string[]): boolean {
 
   // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedRequiredRoles = roles.map(normalizeRole);
-  
+
   return normalizedRequiredRoles.some((permission) => userRoles.includes(permission));
 }
 
@@ -157,6 +157,6 @@ export function useAllRoles(roles: string[]): boolean {
 
   // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedRequiredRoles = roles.map(normalizeRole);
-  
+
   return normalizedRequiredRoles.every((permission) => userRoles.includes(permission));
 }

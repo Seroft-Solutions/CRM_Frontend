@@ -10,14 +10,14 @@ export const AUTH_CACHE_CONFIG = {
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   },
-  
+
   // Authorities/roles caching
   authorities: {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchInterval: 15 * 60 * 1000, // Background refetch every 15 minutes (less frequent)
   },
-  
+
   // Session monitoring
   session: {
     checkInterval: 60 * 1000, // Check every minute
@@ -25,13 +25,13 @@ export const AUTH_CACHE_CONFIG = {
     gracePeriod: 3, // Wait 3 minutes after login
     idleTimeout: 5, // 5 minutes of inactivity
   },
-  
+
   // Activity tracking
   activity: {
     timeout: 5 * 60 * 1000, // 5 minutes idle timeout
     events: ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'],
   },
-  
+
   // Retry configuration
   retry: {
     maxAttempts: 3,

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useSessionManager } from "@/core/auth/providers/session-manager";
+import { useSessionManager } from '@/core/auth/providers/session-manager';
 
 export function useIdleTimeout() {
   const { isIdle, minutesIdle, resetIdleTimer, isAuthenticated } = useSessionManager();

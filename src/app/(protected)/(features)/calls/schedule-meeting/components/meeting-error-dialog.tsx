@@ -32,7 +32,7 @@ export function MeetingErrorDialog({
 
   const handleClose = () => {
     onOpenChange(false);
-    
+
     // Redirect to calls page when dialog closes
     if (redirectToCalls) {
       setTimeout(() => {
@@ -75,9 +75,8 @@ export function MeetingErrorDialog({
                   Unable to Schedule Meeting
                 </h4>
                 <p className="text-sm text-red-700">
-                  {errorMessage || 
-                    "We're unable to schedule the meeting at this time. Please try again later or contact support if the issue persists."
-                  }
+                  {errorMessage ||
+                    "We're unable to schedule the meeting at this time. Please try again later or contact support if the issue persists."}
                 </p>
               </div>
             </div>

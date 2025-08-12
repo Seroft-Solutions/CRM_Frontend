@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./form-types";
+import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for CallRemark form
@@ -13,63 +13,52 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from "./fo
  */
 export const callRemarkFormConfig: FormConfig = {
   entity: 'CallRemark',
-  
+
   // Form steps configuration
   steps: [
     {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: [
-        'remark',
-      ],
-      relationships: [
-      ],
+      fields: ['remark'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'assignment',
       title: 'Assignment & Date',
       description: 'Assign users, set dates and status',
-      fields: [
-        'dateTime',
-      ],
-      relationships: [
-      ],
+      fields: ['dateTime'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'other',
       title: 'Additional Relations',
       description: 'Other connections and references',
-      fields: [
-      ],
-      relationships: [
-        'call',
-      ],
+      fields: [],
+      relationships: ['call'],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
     {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
-      fields: [
-      ],
-      relationships: [
-      ],
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
-        validateOnNext: true
-      }
+        validateOnNext: true,
+      },
     },
   ],
 
@@ -85,8 +74,7 @@ export const callRemarkFormConfig: FormConfig = {
         required: true,
         maxLength: 2000,
       },
-      ui: {
-      }
+      ui: {},
     },
     {
       name: 'dateTime',
@@ -97,8 +85,7 @@ export const callRemarkFormConfig: FormConfig = {
       validation: {
         required: true,
       },
-      ui: {
-      }
+      ui: {},
     },
   ],
 
@@ -128,7 +115,7 @@ export const callRemarkFormConfig: FormConfig = {
         label: 'Call',
         placeholder: 'Select call',
         icon: '🔗',
-      }
+      },
     },
   ],
 
@@ -153,7 +140,7 @@ export const callRemarkFormConfig: FormConfig = {
       stepGap: 'space-y-6',
       fieldGap: 'gap-4 sm:gap-6',
       sectionGap: 'space-y-4',
-    }
+    },
   },
 
   behavior: {
@@ -187,17 +174,19 @@ export const callRemarkFormConfig: FormConfig = {
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
       showRestorationDialog: true,
-    }
-  }
+    },
+  },
 };
 
 // Export utility functions for external use
 export const callRemarkFormHelpers = {
-  getStepById: (stepId: string) => callRemarkFormConfig.steps.find(step => step.id === stepId),
-  getFieldConfig: (fieldName: string) => callRemarkFormConfig.fields.find(field => field.name === fieldName),
-  getRelationshipConfig: (relationshipName: string) => callRemarkFormConfig.relationships.find(rel => rel.name === relationshipName),
+  getStepById: (stepId: string) => callRemarkFormConfig.steps.find((step) => step.id === stepId),
+  getFieldConfig: (fieldName: string) =>
+    callRemarkFormConfig.fields.find((field) => field.name === fieldName),
+  getRelationshipConfig: (relationshipName: string) =>
+    callRemarkFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
-    const step = callRemarkFormConfig.steps.find(s => s.id === stepId);
+    const step = callRemarkFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
-  }
+  },
 };

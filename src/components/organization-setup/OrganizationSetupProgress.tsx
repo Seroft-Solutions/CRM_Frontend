@@ -48,7 +48,7 @@ export function OrganizationSetupProgress({
    */
   const formatProgressMessage = (message: string | undefined): string => {
     if (!message) return '';
-    
+
     // If message contains changeset details, clean it up
     if (message.includes(' - ')) {
       const [mainPart, changesetPart] = message.split(' - ');
@@ -58,7 +58,7 @@ export function OrganizationSetupProgress({
       }
       return mainPart + ' • ' + changesetPart;
     }
-    
+
     return message;
   };
 
@@ -298,7 +298,9 @@ export function OrganizationSetupProgress({
             {!isComplete && (
               <p className="text-xs text-muted-foreground/70">
                 ⚡ Setting up your personalized CRM workspace
-                {progressData?.includes(' - ') ? ' • Processing database changes...' : ' (2-5 minutes)'}
+                {progressData?.includes(' - ')
+                  ? ' • Processing database changes...'
+                  : ' (2-5 minutes)'}
               </p>
             )}
           </div>

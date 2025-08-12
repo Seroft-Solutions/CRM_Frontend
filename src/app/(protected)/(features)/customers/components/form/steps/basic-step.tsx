@@ -5,14 +5,14 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { RelationshipRenderer } from "@/app/(protected)/(features)/customers/components/form/relationship-renderer";
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { RelationshipRenderer } from '@/app/(protected)/(features)/customers/components/form/relationship-renderer';
 
 interface CustomerBasicStepProps {
   form: any;
@@ -26,7 +26,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Generated Form Fields */}
-        
+
         {/* Customer Business Name Field */}
         <FormField
           control={form.control}
@@ -52,7 +52,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
+
         {/* Email Field */}
         <FormField
           control={form.control}
@@ -78,7 +78,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
+
         {/* Mobile Field */}
         <FormField
           control={form.control}
@@ -105,7 +105,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
+
         {/* Whats App Field */}
         <FormField
           control={form.control}
@@ -130,7 +130,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
+
         {/* Contact Person Field */}
         <FormField
           control={form.control}
@@ -156,7 +156,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
+
         {/* Generated Relationship Fields */}
       </div>
     </div>

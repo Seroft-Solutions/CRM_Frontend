@@ -1,14 +1,10 @@
-import { Metadata } from "next";
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "My Drafts | CRM Platform",
-  description: "Manage your saved form drafts",
+  title: 'My Drafts | CRM Platform',
+  description: 'Manage your saved form drafts',
 };
 
-export default function DraftsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DraftsLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

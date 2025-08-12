@@ -8,20 +8,20 @@
 /**
  * Call form validation schema with user-friendly messages
  */
-import { z } from "zod";
+import { z } from 'zod';
 
 // Override the channelType validation to make it optional
 export const callFormSchemaFields = {
-  priority: z.number({ message: "Please select priority from the dropdown" }),
-  callType: z.number({ message: "Please select call type from the dropdown" }),
-  subCallType: z.number({ message: "Please select sub call type from the dropdown" }),
-  source: z.number({ message: "Please select source from the dropdown" }),
-  customer: z.number({ message: "Please select customer from the dropdown" }),
-  product: z.number({ message: "Please select product from the dropdown" }),
-  channelType: z.number({ message: "Please select channel type from the dropdown" }).optional(), // Made optional
+  priority: z.number({ message: 'Please select priority from the dropdown' }),
+  callType: z.number({ message: 'Please select call type from the dropdown' }),
+  subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
+  source: z.number({ message: 'Please select source from the dropdown' }),
+  customer: z.number({ message: 'Please select customer from the dropdown' }),
+  product: z.number({ message: 'Please select product from the dropdown' }),
+  channelType: z.number({ message: 'Please select channel type from the dropdown' }).optional(), // Made optional
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
-  callStatus: z.number({ message: "Please select call status from the dropdown" }),
+  callStatus: z.number({ message: 'Please select call status from the dropdown' }),
 };
 
 export const callFormSchema = z.object(callFormSchemaFields);
@@ -30,16 +30,16 @@ export type CallFormValues = z.infer<typeof callFormSchema>;
 
 // Individual field schemas for granular validation
 export const callFieldSchemas = {
-  priority: z.number({ message: "Please select priority from the dropdown" }),
-  callType: z.number({ message: "Please select call type from the dropdown" }),
-  subCallType: z.number({ message: "Please select sub call type from the dropdown" }),
-  source: z.number({ message: "Please select source from the dropdown" }),
-  customer: z.number({ message: "Please select customer from the dropdown" }),
-  product: z.number({ message: "Please select product from the dropdown" }),
-  channelType: z.number({ message: "Please select channel type from the dropdown" }).optional(), // Made optional
+  priority: z.number({ message: 'Please select priority from the dropdown' }),
+  callType: z.number({ message: 'Please select call type from the dropdown' }),
+  subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
+  source: z.number({ message: 'Please select source from the dropdown' }),
+  customer: z.number({ message: 'Please select customer from the dropdown' }),
+  product: z.number({ message: 'Please select product from the dropdown' }),
+  channelType: z.number({ message: 'Please select channel type from the dropdown' }).optional(), // Made optional
   channelParties: z.string().optional(),
   assignedTo: z.string().optional(),
-  callStatus: z.number({ message: "Please select call status from the dropdown" }),
+  callStatus: z.number({ message: 'Please select call status from the dropdown' }),
 };
 
 // Step-specific validation schemas

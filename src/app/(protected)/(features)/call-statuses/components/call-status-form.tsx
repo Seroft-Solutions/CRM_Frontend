@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { CallStatusForm } from "@/app/(protected)/(features)/call-statuses/components/form/call-status-form-wizard";
+import React from 'react';
+import { CallStatusForm } from '@/app/(protected)/(features)/call-statuses/components/form/call-status-form-wizard';
 
 interface CallStatusFormProps {
   id?: number;

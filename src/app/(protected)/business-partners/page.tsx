@@ -91,20 +91,20 @@ export default function BusinessPartnersPage() {
   const getChannelTypeInfo = (partner: BusinessPartner): ChannelTypeInfo | null => {
     // Get channel type ID from Keycloak attributes
     const channelTypeId = partner.attributes?.channel_type_id?.[0];
-    
+
     if (!channelTypeId) {
       return null;
     }
 
     // Try to resolve with channel types API data (parallel processing)
     if (channelTypes) {
-      const channelType = channelTypes.find(ct => ct.id === parseInt(channelTypeId));
+      const channelType = channelTypes.find((ct) => ct.id === parseInt(channelTypeId));
       if (channelType) {
         return {
           id: channelType.id!,
           name: channelType.name!,
           commissionRate: channelType.commissionRate,
-          source: 'keycloak'
+          source: 'keycloak',
         };
       }
     }
@@ -114,7 +114,7 @@ export default function BusinessPartnersPage() {
       id: parseInt(channelTypeId),
       name: `Channel Type ${channelTypeId}`,
       commissionRate: undefined,
-      source: 'unknown'
+      source: 'unknown',
     };
   };
 
@@ -123,7 +123,7 @@ export default function BusinessPartnersPage() {
     // Show exactly what Keycloak says - enabled or disabled
     return {
       status: partner.enabled ? 'Active' : 'Inactive',
-      variant: partner.enabled ? 'default' : 'secondary' as const
+      variant: partner.enabled ? 'default' : ('secondary' as const),
     };
   };
 
@@ -138,7 +138,7 @@ export default function BusinessPartnersPage() {
         throw new Error('Failed to fetch business partners');
       }
       const data = await response.json();
-      
+
       // Show all business partners (verification status affects status, not visibility)
       setPartners(data);
     } catch (error) {
@@ -182,7 +182,7 @@ export default function BusinessPartnersPage() {
         // Handle different error scenarios with specific toast messages
         if (responseData.details) {
           const { keycloakRemoval, springRemoval, rollback } = responseData.details;
-          
+
           if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
             // Rollback scenario - Spring failed but Keycloak was restored
             toast.error('Partner removal failed: Backend sync issue. No changes were made.', {
@@ -192,7 +192,8 @@ export default function BusinessPartnersPage() {
           } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
             // Critical failure - data inconsistency
             toast.error('CRITICAL: Partner removal partially failed!', {
-              description: 'Please contact system administrator immediately. Data may be inconsistent.',
+              description:
+                'Please contact system administrator immediately. Data may be inconsistent.',
               duration: 10000,
             });
           } else if (responseData.error?.includes('not found')) {
@@ -208,7 +209,7 @@ export default function BusinessPartnersPage() {
             description: responseData.error || 'Unknown error occurred',
           });
         }
-        
+
         console.error('Partner removal failed:', responseData);
         return;
       }
@@ -321,7 +322,8 @@ export default function BusinessPartnersPage() {
                           Loading business partners...
                         </div>
                       </TableCell>
-                    </TableRow>                  ) : filteredPartners.length === 0 ? (
+                    </TableRow>
+                  ) : filteredPartners.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
@@ -346,7 +348,7 @@ export default function BusinessPartnersPage() {
                     filteredPartners.map((partner) => {
                       const channelTypeInfo = getChannelTypeInfo(partner);
                       const statusInfo = getPartnerStatus(partner);
-                      
+
                       return (
                         <TableRow key={partner.id}>
                           <TableCell>
@@ -369,11 +371,12 @@ export default function BusinessPartnersPage() {
                               <Mail className="h-4 w-4 text-muted-foreground" />
                               {partner.email}
                             </div>
-                          </TableCell>                          <TableCell>
+                          </TableCell>{' '}
+                          <TableCell>
                             {channelTypeInfo ? (
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <Badge 
+                                  <Badge
                                     variant="outline"
                                     className={
                                       channelTypeInfo.source === 'keycloak'
@@ -391,16 +394,14 @@ export default function BusinessPartnersPage() {
                                 )}
                               </div>
                             ) : (
-                              <div className="text-sm text-muted-foreground">
-                                No channel type
-                              </div>
+                              <div className="text-sm text-muted-foreground">No channel type</div>
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant={statusInfo.variant}
                               className={
-                                partner.enabled 
+                                partner.enabled
                                   ? 'bg-green-100 border-green-300 text-green-800 hover:bg-green-200'
                                   : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
                               }
@@ -409,7 +410,7 @@ export default function BusinessPartnersPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant={partner.emailVerified ? 'default' : 'outline'}
                               className={
                                 partner.emailVerified
@@ -429,7 +430,8 @@ export default function BusinessPartnersPage() {
                                 <Button variant="ghost" size="sm">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                              </DropdownMenuTrigger>                              <DropdownMenuContent align="end">
+                              </DropdownMenuTrigger>{' '}
+                              <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem

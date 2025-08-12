@@ -1,4 +1,4 @@
-import { BaseServiceConfig } from "@/core/api/services/base/base-service";
+import { BaseServiceConfig } from '@/core/api/services/base/base-service';
 
 export const SPRING_SERVICE_CONFIG: BaseServiceConfig = {
   baseURL: process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com',

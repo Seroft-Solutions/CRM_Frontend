@@ -5,10 +5,10 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React from "react";
-import { SourceForm } from "@/app/(protected)/(features)/sources/components/form/source-form-wizard";
+import React from 'react';
+import { SourceForm } from '@/app/(protected)/(features)/sources/components/form/source-form-wizard';
 
 interface SourceFormProps {
   id?: number;

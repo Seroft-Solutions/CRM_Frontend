@@ -5,9 +5,6 @@
     "auto_reference_requirements": true,
     "enforce_approval_workflow": true,
     "default_feature_prefix": "feature-",
-    "supported_formats": [
-      "markdown",
-      "mermaid"
-    ]
+    "supported_formats": ["markdown", "mermaid"]
   }
 }

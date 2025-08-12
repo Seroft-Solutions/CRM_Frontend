@@ -5,27 +5,33 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { StateFormProvider, useEntityForm } from "@/app/(protected)/(features)/states/components/form/state-form-provider";
-import { FormProgressIndicator } from "@/app/(protected)/(features)/states/components/form/form-progress-indicator";
-import { FormStepRenderer } from "@/app/(protected)/(features)/states/components/form/form-step-renderer";
-import { FormNavigation } from "@/app/(protected)/(features)/states/components/form/form-navigation";
-import { FormStateManager } from "@/app/(protected)/(features)/states/components/form/form-state-manager";
-import { FormErrorsDisplay } from "@/components/form-errors-display";
-import { Form } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  StateFormProvider,
+  useEntityForm,
+} from '@/app/(protected)/(features)/states/components/form/state-form-provider';
+import { FormProgressIndicator } from '@/app/(protected)/(features)/states/components/form/form-progress-indicator';
+import { FormStepRenderer } from '@/app/(protected)/(features)/states/components/form/form-step-renderer';
+import { FormNavigation } from '@/app/(protected)/(features)/states/components/form/form-navigation';
+import { FormStateManager } from '@/app/(protected)/(features)/states/components/form/form-state-manager';
+import { FormErrorsDisplay } from '@/components/form-errors-display';
+import { Form } from '@/components/ui/form';
+import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
 // import { stepComponents } from "@/app/(protected)/(features)/states/components/form/steps";
-import { 
+import {
   useCreateState,
   useUpdateState,
   useGetState,
-} from "@/core/api/generated/spring/endpoints/state-resource/state-resource.gen";
-import { stateToast, handleStateError } from "@/app/(protected)/(features)/states/components/state-toast";
-import { useCrossFormNavigation } from "@/context/cross-form-navigation";
+} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+import {
+  stateToast,
+  handleStateError,
+} from '@/app/(protected)/(features)/states/components/state-toast';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface StateFormProps {
@@ -42,7 +48,7 @@ function StateFormContent({ id }: StateFormProps) {
   const { data: entity, isLoading: isLoadingEntity } = useGetState(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ["get-state", id]
+      queryKey: ['get-state', id],
     },
   });
 
@@ -52,9 +58,9 @@ function StateFormContent({ id }: StateFormProps) {
       const formValues: Record<string, any> = {};
 
       // Handle regular fields
-      config.fields.forEach(fieldConfig => {
+      config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
-        
+
         if (fieldConfig.type === 'date') {
           // Convert to datetime-local format for the input
           if (value) {
@@ -63,30 +69,32 @@ function StateFormContent({ id }: StateFormProps) {
               if (!isNaN(date.getTime())) {
                 // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
-                const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
               } else {
-                formValues[fieldConfig.name] = "";
+                formValues[fieldConfig.name] = '';
               }
             } catch {
-              formValues[fieldConfig.name] = "";
+              formValues[fieldConfig.name] = '';
             }
           } else {
-            formValues[fieldConfig.name] = "";
+            formValues[fieldConfig.name] = '';
           }
         } else if (fieldConfig.type === 'number') {
-          formValues[fieldConfig.name] = value != null ? String(value) : "";
+          formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
-          formValues[fieldConfig.name] = value || "";
+          formValues[fieldConfig.name] = value || '';
         }
       });
 
       // Handle relationships
-      config.relationships.forEach(relConfig => {
+      config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
-        
+
         if (relConfig.multiple) {
-          formValues[relConfig.name] = value ? value.map((item: any) => item[relConfig.primaryKey]) : [];
+          formValues[relConfig.name] = value
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
@@ -105,7 +113,7 @@ function StateFormContent({ id }: StateFormProps) {
       form,
       config: config,
       actions,
-      entity
+      entity,
     };
 
     // Use imported step components (requires manual import after generation)
@@ -127,7 +135,8 @@ function StateFormContent({ id }: StateFormProps) {
           Generated step components for "{currentStepConfig.id}" step would render here.
         </p>
         <p className="text-sm text-muted-foreground mt-2">
-          1. Run: <code>node src/core/step-generator.js State</code><br/>
+          1. Run: <code>node src/core/step-generator.js State</code>
+          <br />
           2. Uncomment the import and usage above
         </p>
       </div>
@@ -142,15 +151,15 @@ function StateFormContent({ id }: StateFormProps) {
     } else {
       // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || "/states";
-      
+      const backRoute = returnUrl || '/states';
+
       // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
         localStorage.removeItem('returnUrl');
       }
-      
+
       router.push(backRoute);
     }
   };
@@ -194,9 +203,7 @@ function StateFormContent({ id }: StateFormProps) {
         <Form {...form}>
           <form className="space-y-6">
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                {renderGeneratedStep()}
-              </CardContent>
+              <CardContent className="p-4 sm:p-6">{renderGeneratedStep()}</CardContent>
             </Card>
           </form>
         </Form>
@@ -206,7 +213,7 @@ function StateFormContent({ id }: StateFormProps) {
       )}
 
       {/* Navigation */}
-      <FormNavigation 
+      <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}} // Empty function since submission is handled by form provider
         isSubmitting={false} // Will be handled by form provider state
@@ -231,23 +238,22 @@ export function StateForm({ id }: StateFormProps) {
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
-        
+
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         if (hasReferrer() && entityId) {
           // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
@@ -255,7 +261,7 @@ export function StateForm({ id }: StateFormProps) {
         } else {
           setIsRedirecting(true);
           stateToast.created();
-          router.push("/states");
+          router.push('/states');
         }
       },
       onError: (error) => {
@@ -268,24 +274,23 @@ export function StateForm({ id }: StateFormProps) {
     mutation: {
       onSuccess: () => {
         // Invalidate queries to trigger table refetch
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['getAllStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['countStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        queryClient.invalidateQueries({ 
+
+        queryClient.invalidateQueries({
           queryKey: ['searchStates'],
-          refetchType: 'active'
+          refetchType: 'active',
         });
-        
-        
+
         setIsRedirecting(true);
         stateToast.updated();
-        router.push("/states");
+        router.push('/states');
       },
       onError: (error) => {
         handleStateError(error);
@@ -306,11 +311,11 @@ export function StateForm({ id }: StateFormProps) {
   }
 
   return (
-    <StateFormProvider 
+    <StateFormProvider
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        
+
         // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });
