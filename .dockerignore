@@ -1,6 +1,10 @@
 # Exclude .env files since they're handled separately in Dockerfile
 .env
-.env.*
+.env.local
+.env.development
+.env.test
+# Keep .env.production for production builds
+# .env.production
 
 # Exclude development files
 node_modules
