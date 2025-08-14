@@ -1,6 +1,6 @@
 /**
  * FIXED: Calendar Service integrated with actual backend endpoints
- * 
+ *
  * This service now properly integrates with the existing backend
  * GoogleCalendarService and SchedulerService.
  */
@@ -88,8 +88,10 @@ class IntegratedCalendarService {
   async checkCalendarAuth(userEmail: string): Promise<CalendarAuthStatus> {
     try {
       // Check if credentials exist by trying to get auth URL
-      const response = await fetch(`${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`);
-      
+      const response = await fetch(
+        `${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`
+      );
+
       if (response.ok) {
         // If we can get auth URL, user needs to authenticate
         return {
@@ -101,7 +103,7 @@ class IntegratedCalendarService {
       } else {
         // Check error response to determine status
         const errorData = await response.json();
-        
+
         if (errorData.includes?.('No credentials found')) {
           return {
             isAuthenticated: false,
@@ -110,7 +112,7 @@ class IntegratedCalendarService {
             error: `No calendar credentials found for ${userEmail}. Please authorize access.`,
           };
         }
-        
+
         // If error is something else, assume authenticated
         return {
           isAuthenticated: true,
@@ -134,12 +136,14 @@ class IntegratedCalendarService {
    */
   async getAuthorizationUrl(userEmail: string): Promise<string> {
     try {
-      const response = await fetch(`${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`);
-      
+      const response = await fetch(
+        `${this.baseApiUrl}/calendar/oauth2/authorize?userEmail=${encodeURIComponent(userEmail)}`
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to get authorization URL: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return data.authUrl;
     } catch (error) {
@@ -164,7 +168,7 @@ class IntegratedCalendarService {
         startTime: eventData.start.dateTime,
         endTime: eventData.end.dateTime,
         timeZone: eventData.start.timeZone,
-        attendees: eventData.attendees.map(a => a.email),
+        attendees: eventData.attendees.map((a) => a.email),
         userEmail: organizerEmail,
       };
 
@@ -180,23 +184,23 @@ class IntegratedCalendarService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        
+
         // Handle specific authentication errors
         if (response.status === 400 && errorText.includes('No credentials found')) {
           throw new Error(
             `Calendar authentication required for ${organizerEmail}. ` +
-            `Please authorize calendar access before scheduling meetings.`
+              `Please authorize calendar access before scheduling meetings.`
           );
         }
-        
+
         throw new Error(`Failed to create calendar event: ${errorText}`);
       }
 
       const responseText = await response.text();
-      
+
       // Backend returns: "Event created successfully: [event_link]"
       const eventLink = responseText.replace('Event created successfully: ', '');
-      
+
       return {
         eventId: 'backend-generated-id', // Backend doesn't return ID directly
         meetingUrl: eventLink,
@@ -228,7 +232,9 @@ class IntegratedCalendarService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Failed to send meeting invitation: ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to send meeting invitation: ${errorData.message || response.statusText}`
+        );
       }
 
       console.log(`Meeting invitation sent to ${notificationData.participantEmail}`);
@@ -269,11 +275,11 @@ The Meeting System
   async checkEmailServiceStatus(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseApiUrl}/email/status`);
-      
+
       if (!response.ok) {
         return false;
       }
-      
+
       const data = await response.json();
       return data.success === true;
     } catch (error) {
@@ -355,13 +361,18 @@ The Meeting System
     organizerEmail: string,
     organizerName: string,
     timeZone = 'UTC'
-  ): Promise<{ meetingId: string; googleEventId: string; meetingUrl?: string; authRequired?: boolean }> {
+  ): Promise<{
+    meetingId: string;
+    googleEventId: string;
+    meetingUrl?: string;
+    authRequired?: boolean;
+  }> {
     try {
       console.log('Starting complete meeting workflow for:', organizerEmail);
 
       // 1. Check if organizer has calendar authentication
       const authStatus = await this.checkCalendarAuth(organizerEmail);
-      
+
       if (!authStatus.isAuthenticated || !authStatus.hasValidToken) {
         console.warn('Calendar authentication required for:', organizerEmail);
         return {
@@ -372,7 +383,11 @@ The Meeting System
       }
 
       // 2. Create calendar event using backend
-      const calendarEvent = this.createCalendarEventFromMeeting(meetingData, organizerEmail, timeZone);
+      const calendarEvent = this.createCalendarEventFromMeeting(
+        meetingData,
+        organizerEmail,
+        timeZone
+      );
       const { eventId, meetingUrl } = await this.createCalendarEvent(calendarEvent, organizerEmail);
 
       console.log('Calendar event created:', { eventId, meetingUrl });
@@ -397,7 +412,9 @@ The Meeting System
       console.log('Meeting invitations sent to all participants');
 
       // 4. Note: Meeting reminders are automatically handled by backend SchedulerService
-      console.log('Meeting reminders will be automatically sent by backend scheduler 2 hours before the meeting');
+      console.log(
+        'Meeting reminders will be automatically sent by backend scheduler 2 hours before the meeting'
+      );
 
       return {
         meetingId: meetingData.id || 'backend-generated',
@@ -407,7 +424,7 @@ The Meeting System
       };
     } catch (error) {
       console.error('Error in complete meeting workflow:', error);
-      
+
       // Check if it's an authentication error
       if (error instanceof Error && error.message.includes('authentication required')) {
         return {
@@ -416,7 +433,7 @@ The Meeting System
           authRequired: true,
         };
       }
-      
+
       throw error;
     }
   }

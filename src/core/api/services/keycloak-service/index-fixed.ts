@@ -8,7 +8,7 @@ import {
 
 /**
  * FIXED: Unified Keycloak Admin Client Service
- * 
+ *
  * Key improvements:
  * 1. Added request retry limits to prevent infinite loops
  * 2. Better error handling with circuit breaker pattern
@@ -20,7 +20,7 @@ export class KeycloakService extends BaseService {
   private adminAccessToken: string | null = null;
   private adminTokenExpiry: number = 0;
   private adminTokenRefreshPromise: Promise<string | null> | null = null;
-  
+
   // FIXED: Add circuit breaker and retry control
   private failureCount: number = 0;
   private lastFailureTime: number = 0;
@@ -106,32 +106,37 @@ export class KeycloakService extends BaseService {
    */
   private async refreshAdminTokenWithRetry(): Promise<string | null> {
     let lastError: Error;
-    
+
     for (let attempt = 1; attempt <= this.maxRetryAttempts; attempt++) {
       try {
         return await this.refreshAdminToken();
       } catch (error: any) {
         lastError = error;
-        
+
         if (KEYCLOAK_DEBUG.enabled) {
-          console.warn(`Admin token refresh attempt ${attempt}/${this.maxRetryAttempts} failed:`, error.message);
+          console.warn(
+            `Admin token refresh attempt ${attempt}/${this.maxRetryAttempts} failed:`,
+            error.message
+          );
         }
-        
+
         // Don't retry on certain errors
         if (error.status === 401 || error.status === 403 || error.message.includes('credentials')) {
           console.error('Authentication credentials invalid, not retrying');
           throw error;
         }
-        
+
         // Exponential backoff for retries
         if (attempt < this.maxRetryAttempts) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10s delay
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
-    
-    throw new Error(`Failed to refresh admin token after ${this.maxRetryAttempts} attempts: ${lastError!.message}`);
+
+    throw new Error(
+      `Failed to refresh admin token after ${this.maxRetryAttempts} attempts: ${lastError!.message}`
+    );
   }
 
   /**
@@ -258,11 +263,11 @@ export class KeycloakService extends BaseService {
       return this.adminAccessToken;
     } catch (error: any) {
       clearTimeout(timeoutId);
-      
+
       if (error.name === 'AbortError') {
         throw new Error('Authentication request timed out');
       }
-      
+
       throw error;
     }
   }
@@ -315,13 +320,13 @@ export class KeycloakService extends BaseService {
     operation: () => Promise<T>
   ): Promise<T> {
     const attempts = this.requestAttempts.get(requestKey) || 0;
-    
+
     if (attempts >= this.maxRetryAttempts) {
       throw new Error(`Maximum retry attempts exceeded for request: ${requestKey}`);
     }
-    
+
     this.requestAttempts.set(requestKey, attempts + 1);
-    
+
     try {
       const result = await operation();
       this.requestAttempts.delete(requestKey); // Clear on success
@@ -362,7 +367,7 @@ export class KeycloakService extends BaseService {
   async adminGet<T>(endpoint: string, config?: any): Promise<T> {
     const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
     const requestKey = `GET:${url}`;
-    
+
     return this.executeWithDeduplication(requestKey, async () => {
       if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
         console.log('Admin GET:', url);
@@ -374,7 +379,7 @@ export class KeycloakService extends BaseService {
   async adminPost<T>(endpoint: string, data?: any, config?: any): Promise<T> {
     const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
     const requestKey = `POST:${url}:${JSON.stringify(data)}`;
-    
+
     return this.executeWithDeduplication(requestKey, async () => {
       if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
         console.log('Admin POST:', url, data ? 'with data' : 'no data');
@@ -386,7 +391,7 @@ export class KeycloakService extends BaseService {
   async adminPut<T>(endpoint: string, data?: any, config?: any): Promise<T> {
     const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
     const requestKey = `PUT:${url}:${JSON.stringify(data)}`;
-    
+
     return this.executeWithDeduplication(requestKey, async () => {
       if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
         console.log('Admin PUT:', url, data ? 'with data' : 'no data');
@@ -398,7 +403,7 @@ export class KeycloakService extends BaseService {
   async adminPatch<T>(endpoint: string, data?: any, config?: any): Promise<T> {
     const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
     const requestKey = `PATCH:${url}:${JSON.stringify(data)}`;
-    
+
     return this.executeWithDeduplication(requestKey, async () => {
       if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
         console.log('Admin PATCH:', url, data ? 'with data' : 'no data');
@@ -410,7 +415,7 @@ export class KeycloakService extends BaseService {
   async adminDelete<T>(endpoint: string, config?: any): Promise<T> {
     const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
     const requestKey = `DELETE:${url}`;
-    
+
     return this.executeWithDeduplication(requestKey, async () => {
       if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
         console.log('Admin DELETE:', url);
