@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { CallTable } from '@/app/(protected)/(features)/calls/components/call-table';
-import {InlinePermissionGuard, useUserAuthorities} from '@/core/auth';
+import { InlinePermissionGuard, useUserAuthorities } from '@/core/auth';
 import { MeetingSchedulerDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-scheduler-dialog';
 
 export function CallsPageWithMeetingDialog() {
@@ -133,18 +133,18 @@ export function CallsPageWithMeetingDialog() {
       {/* Meeting Scheduler Dialog */}
 
       {!isBusinessPartner && (
-          <MeetingSchedulerDialog
-              open={showMeetingDialog}
-              onOpenChangeAction={handleCloseMeetingDialog}
-              callId={meetingDialogData.callId}
-              customerId={meetingDialogData.customerId}
-              assignedUserId={meetingDialogData.assignedUserId}
-              onMeetingScheduledAction={handleMeetingScheduled}
-              onError={(error) => {
-                console.error('Meeting scheduling error:', error);
-                handleCloseMeetingDialog();
-              }}
-          />
+        <MeetingSchedulerDialog
+          open={showMeetingDialog}
+          onOpenChangeAction={handleCloseMeetingDialog}
+          callId={meetingDialogData.callId}
+          customerId={meetingDialogData.customerId}
+          assignedUserId={meetingDialogData.assignedUserId}
+          onMeetingScheduledAction={handleMeetingScheduled}
+          onError={(error) => {
+            console.error('Meeting scheduling error:', error);
+            handleCloseMeetingDialog();
+          }}
+        />
       )}
     </>
   );
