@@ -1,6 +1,6 @@
 /**
  * FIXED: Enhanced Email Service for User and Partner Invitations
- * 
+ *
  * This service addresses invitation email delivery issues by:
  * 1. Adding email delivery validation and retry mechanisms
  * 2. Providing fallback email methods
@@ -61,16 +61,16 @@ class EnhancedEmailService {
     this.emailQueue.set(emailKey, emailData);
 
     let lastError: Error | null = null;
-    
+
     // Try different email delivery methods in order of preference
     const deliveryMethods = this.getAvailableDeliveryMethods();
-    
+
     for (const method of deliveryMethods) {
       try {
         console.log(`Attempting email delivery via ${method} for ${emailData.recipientEmail}`);
-        
+
         const result = await this.attemptEmailDelivery(emailData, method, organizationId);
-        
+
         if (result.sent) {
           console.log(`Email successfully sent via ${method}:`, result);
           this.deliveryStatus.set(emailKey, result);
@@ -80,12 +80,12 @@ class EnhancedEmailService {
       } catch (error: any) {
         console.warn(`Email delivery via ${method} failed:`, error.message);
         lastError = error;
-        
+
         // Add delay before trying next method
         await this.delay(this.config.retryDelayMs);
       }
     }
-    
+
     // All methods failed
     const failureStatus: EmailDeliveryStatus = {
       sent: false,
@@ -93,12 +93,12 @@ class EnhancedEmailService {
       retryCount: deliveryMethods.length,
       method: 'manual',
     };
-    
+
     this.deliveryStatus.set(emailKey, failureStatus);
-    
+
     // Schedule for manual notification as fallback
     await this.scheduleManualNotification(emailData, failureStatus.error!);
-    
+
     return failureStatus;
   }
 
@@ -107,11 +107,11 @@ class EnhancedEmailService {
    */
   private getAvailableDeliveryMethods(): ('keycloak' | 'smtp' | 'sendgrid')[] {
     const methods: ('keycloak' | 'smtp' | 'sendgrid')[] = [];
-    
+
     if (this.config.keycloakEnabled) methods.push('keycloak');
     if (this.config.smtpEnabled) methods.push('smtp');
     if (this.config.sendgridEnabled) methods.push('sendgrid');
-    
+
     return methods;
   }
 
@@ -143,9 +143,10 @@ class EnhancedEmailService {
     organizationId?: string
   ): Promise<EmailDeliveryStatus> {
     try {
-      const endpoint = emailData.invitationType === 'business_partner' 
-        ? `/api/keycloak/organizations/${organizationId}/partners`
-        : `/api/keycloak/organizations/${organizationId}/members`;
+      const endpoint =
+        emailData.invitationType === 'business_partner'
+          ? `/api/keycloak/organizations/${organizationId}/partners`
+          : `/api/keycloak/organizations/${organizationId}/members`;
 
       const payload = {
         email: emailData.recipientEmail,
@@ -171,7 +172,7 @@ class EnhancedEmailService {
       }
 
       const result = await response.json();
-      
+
       return {
         sent: true,
         messageId: result.invitationId || 'keycloak-invitation',
@@ -191,7 +192,7 @@ class EnhancedEmailService {
   private async sendViaSmtp(emailData: InvitationEmailData): Promise<EmailDeliveryStatus> {
     try {
       const emailTemplate = this.generateEmailTemplate(emailData);
-      
+
       const response = await fetch('/api/email/send', {
         method: 'POST',
         headers: {
@@ -212,7 +213,7 @@ class EnhancedEmailService {
       }
 
       const result = await response.json();
-      
+
       return {
         sent: true,
         messageId: result.messageId,
@@ -232,7 +233,7 @@ class EnhancedEmailService {
   private async sendViaSendGrid(emailData: InvitationEmailData): Promise<EmailDeliveryStatus> {
     try {
       const emailTemplate = this.generateEmailTemplate(emailData);
-      
+
       const response = await fetch('/api/email/sendgrid', {
         method: 'POST',
         headers: {
@@ -252,7 +253,7 @@ class EnhancedEmailService {
       }
 
       const result = await response.json();
-      
+
       return {
         sent: true,
         messageId: result.messageId,
@@ -272,8 +273,10 @@ class EnhancedEmailService {
   private generateEmailTemplate(emailData: InvitationEmailData): { html: string; text: string } {
     const actionUrl = emailData.resetPasswordUrl || emailData.organizationInviteUrl || '#';
     const actionText = emailData.resetPasswordUrl ? 'Set Your Password' : 'Accept Invitation';
-    const expiryText = emailData.expiryHours ? `This invitation expires in ${emailData.expiryHours} hours.` : '';
-    
+    const expiryText = emailData.expiryHours
+      ? `This invitation expires in ${emailData.expiryHours} hours.`
+      : '';
+
     const html = `
     <!DOCTYPE html>
     <html>
@@ -301,12 +304,16 @@ class EnhancedEmailService {
                 <h2>Hello ${emailData.recipientName},</h2>
                 <p>${emailData.inviterName} has invited you to join <strong>${emailData.organizationName}</strong> as a ${emailData.invitationType === 'business_partner' ? 'Business Partner' : 'Team Member'}.</p>
                 
-                ${emailData.customMessage ? `
+                ${
+                  emailData.customMessage
+                    ? `
                 <div class="custom-message">
                     <h3>Personal Message:</h3>
                     <p>${emailData.customMessage}</p>
                 </div>
-                ` : ''}
+                `
+                    : ''
+                }
                 
                 <p>To get started, click the button below to ${emailData.resetPasswordUrl ? 'set up your account and password' : 'accept the invitation'}:</p>
                 
@@ -359,7 +366,10 @@ If you didn't expect this invitation, you can safely ignore this email.
   /**
    * FIXED: Schedule manual notification when all email methods fail
    */
-  private async scheduleManualNotification(emailData: InvitationEmailData, error: string): Promise<void> {
+  private async scheduleManualNotification(
+    emailData: InvitationEmailData,
+    error: string
+  ): Promise<void> {
     try {
       // Create a notification for administrators
       await fetch('/api/notifications/manual-invitation', {
@@ -394,33 +404,37 @@ If you didn't expect this invitation, you can safely ignore this email.
         return status;
       }
     }
-    
+
     return null;
   }
 
   /**
    * Retry failed email delivery
    */
-  async retryEmailDelivery(recipientEmail: string, organizationId?: string): Promise<EmailDeliveryStatus> {
-    const queuedEmail = Array.from(this.emailQueue.entries())
-      .find(([key, _]) => key.includes(recipientEmail));
-    
+  async retryEmailDelivery(
+    recipientEmail: string,
+    organizationId?: string
+  ): Promise<EmailDeliveryStatus> {
+    const queuedEmail = Array.from(this.emailQueue.entries()).find(([key, _]) =>
+      key.includes(recipientEmail)
+    );
+
     if (!queuedEmail) {
       throw new Error(`No queued email found for ${recipientEmail}`);
     }
-    
+
     const [key, emailData] = queuedEmail;
     this.emailQueue.delete(key);
-    
+
     return this.sendInvitationEmail(emailData, organizationId);
   }
 
   /**
    * Test email service configuration
    */
-  async testEmailService(): Promise<{ 
-    keycloak: boolean; 
-    smtp: boolean; 
+  async testEmailService(): Promise<{
+    keycloak: boolean;
+    smtp: boolean;
     sendgrid: boolean;
     errors: string[];
   }> {
@@ -492,7 +506,7 @@ If you didn't expect this invitation, you can safely ignore this email.
    * Utility delay function
    */
   private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 

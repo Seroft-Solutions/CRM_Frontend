@@ -1,6 +1,6 @@
 /**
  * FIXED: Enhanced error handling for call deletion with constraint violations
- * 
+ *
  * This utility provides better error handling for database constraint violations
  * and gives users clear guidance on how to resolve them.
  */
@@ -34,7 +34,7 @@ export class CallDeletionErrorHandler {
     // Check if it's a 500 error with constraint violation indicators
     if (error.status === 500 && error.response?.data?.detail) {
       const detail = error.response.data.detail;
-      
+
       // Check for common constraint violation patterns
       if (detail.includes('Failure during data access')) {
         return {
@@ -52,11 +52,11 @@ export class CallDeletionErrorHandler {
         };
       }
     }
-    
+
     // Check for specific constraint violation keywords
     if (error.message && typeof error.message === 'string') {
       const message = error.message.toLowerCase();
-      
+
       if (message.includes('foreign key') || message.includes('constraint violation')) {
         return {
           type: 'constraint_violation',
@@ -65,13 +65,10 @@ export class CallDeletionErrorHandler {
           relatedEntities: ['Related Records'],
           message: error.message,
           userMessage: 'This call has related data that prevents deletion.',
-          suggestedActions: [
-            'Remove related data first',
-            'Contact administrator for assistance',
-          ],
+          suggestedActions: ['Remove related data first', 'Contact administrator for assistance'],
         };
       }
-      
+
       if (message.includes('cannot delete') || message.includes('still referenced')) {
         return {
           type: 'constraint_violation',
@@ -87,7 +84,7 @@ export class CallDeletionErrorHandler {
         };
       }
     }
-    
+
     // Return as generic error if not a constraint violation
     return error;
   }
@@ -101,14 +98,14 @@ export class CallDeletionErrorHandler {
   ): Promise<DeleteOperationResult> {
     try {
       await deleteOperation();
-      
+
       return {
         success: true,
         message: 'Call deleted successfully',
       };
     } catch (error: any) {
       const parsedError = this.parseError(error);
-      
+
       if (parsedError.type === 'constraint_violation') {
         // Show detailed error message for constraint violations
         toast.error(parsedError.userMessage, {
@@ -119,7 +116,7 @@ export class CallDeletionErrorHandler {
             onClick: () => this.showConstraintViolationDetails(parsedError),
           },
         });
-        
+
         return {
           success: false,
           error: parsedError,
@@ -132,7 +129,7 @@ export class CallDeletionErrorHandler {
           description: errorMessage,
           duration: 5000,
         });
-        
+
         return {
           success: false,
           error: parsedError,
@@ -154,11 +151,11 @@ export class CallDeletionErrorHandler {
       **Related Data:** ${error.relatedEntities.join(', ')}
       
       **Suggested Actions:**
-      ${error.suggestedActions.map(action => `• ${action}`).join('\n')}
+      ${error.suggestedActions.map((action) => `• ${action}`).join('\n')}
       
       **Technical Details:** ${error.message}
     `;
-    
+
     toast.info('Deletion Requirements', {
       description: detailsMessage,
       duration: 15000,
@@ -178,7 +175,7 @@ export class CallDeletionErrorHandler {
       const response = await fetch(`/api/calls/${callId}/validation`, {
         method: 'GET',
       });
-      
+
       if (response.ok) {
         return await response.json();
       } else {
@@ -209,7 +206,7 @@ export class CallDeletionErrorHandler {
   ): Promise<DeleteOperationResult> {
     // First validate if deletion is possible
     const validation = await this.validateCallDeletion(callId);
-    
+
     if (!validation.canDelete) {
       toast.warning('Cannot Delete Call', {
         description: `Blocked by: ${validation.blockers.join(', ')}`,
@@ -224,13 +221,13 @@ export class CallDeletionErrorHandler {
           },
         },
       });
-      
+
       return {
         success: false,
         message: `Cannot delete: ${validation.blockers.join(', ')}`,
       };
     }
-    
+
     // Proceed with deletion if validation passes
     return this.handleCallDeletion(callId, deleteOperation);
   }
@@ -248,17 +245,14 @@ export function useCallDeletion() {
       validateBeforeDelete?: boolean;
     } = {}
   ): Promise<DeleteOperationResult> => {
-    const { 
-      showConfirmation = true, 
-      validateBeforeDelete = true 
-    } = options;
-    
+    const { showConfirmation = true, validateBeforeDelete = true } = options;
+
     // Show confirmation dialog if requested
     if (showConfirmation) {
       const confirmed = window.confirm(
         'Are you sure you want to delete this call? This action cannot be undone.'
       );
-      
+
       if (!confirmed) {
         return {
           success: false,
@@ -266,7 +260,7 @@ export function useCallDeletion() {
         };
       }
     }
-    
+
     // Use safe delete with validation if requested
     if (validateBeforeDelete) {
       return CallDeletionErrorHandler.safeDeleteCall(callId, deleteOperation);
@@ -282,16 +276,16 @@ export function useCallDeletion() {
     // Special handling for calls with remarks
     const confirmed = window.confirm(
       'This call has remarks or other related data. Are you sure you want to delete it? ' +
-      'Consider archiving instead of deleting to preserve data relationships.'
+        'Consider archiving instead of deleting to preserve data relationships.'
     );
-    
+
     if (!confirmed) {
       return {
         success: false,
         message: 'Deletion cancelled by user',
       };
     }
-    
+
     return CallDeletionErrorHandler.handleCallDeletion(callId, deleteOperation);
   };
 
@@ -312,11 +306,11 @@ export function useConstraintViolationHandler() {
     entityId: string | number
   ): DeleteOperationResult => {
     const parsedError = CallDeletionErrorHandler.parseError(error);
-    
+
     if (parsedError.type === 'constraint_violation') {
       const constraintError = parsedError as ConstraintViolationError;
       constraintError.entity = entityType;
-      
+
       toast.error(`Cannot delete ${entityType.toLowerCase()}`, {
         description: constraintError.userMessage,
         duration: 8000,
@@ -330,21 +324,21 @@ export function useConstraintViolationHandler() {
           },
         },
       });
-      
+
       return {
         success: false,
         error: constraintError,
         message: constraintError.userMessage,
       };
     }
-    
+
     // Handle as generic error
     const errorMessage = error.message || `Failed to delete ${entityType.toLowerCase()}`;
     toast.error('Delete Operation Failed', {
       description: errorMessage,
       duration: 5000,
     });
-    
+
     return {
       success: false,
       error: parsedError,

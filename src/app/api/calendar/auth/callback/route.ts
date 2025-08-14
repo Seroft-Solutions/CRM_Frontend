@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Calendar auth callback failed:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to process calendar authentication callback',
-        details: error.message 
+        details: error.message,
       },
       { status: 500 }
     );

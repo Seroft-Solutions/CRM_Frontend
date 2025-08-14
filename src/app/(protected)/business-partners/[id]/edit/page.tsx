@@ -146,7 +146,7 @@ export default function EditPartnerPage() {
     if (!partner || !organizationId) return;
 
     setIsUpdating(true);
-    
+
     try {
       await updatePartner(async () => {
         console.log('Updating partner:', {
@@ -154,7 +154,7 @@ export default function EditPartnerPage() {
           organizationId,
           updateData: data,
         });
-        
+
         const updatePayload = {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -192,7 +192,6 @@ export default function EditPartnerPage() {
 
       // Success - the updatePartner hook will handle success toast and cache invalidation
       router.push('/business-partners');
-      
     } catch (error) {
       console.error('Failed to update partner:', error);
       // Error handling is done by the updatePartner hook

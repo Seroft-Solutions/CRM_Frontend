@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
     const { userEmail } = await request.json();
 
     if (!userEmail) {
-      return NextResponse.json(
-        { error: 'User email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'User email is required' }, { status: 400 });
     }
 
     // For now, return a mock response indicating authentication is required
@@ -30,9 +27,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Calendar auth status check failed:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to check calendar auth status',
-        details: error.message 
+        details: error.message,
       },
       { status: 500 }
     );
