@@ -174,7 +174,7 @@ export default function BusinessPartnersPage() {
     if (!partnerToRemove || !organizationId) return;
 
     setIsRemoving(true);
-    
+
     try {
       await deletePartner(async () => {
         const response = await fetch(
@@ -191,10 +191,14 @@ export default function BusinessPartnersPage() {
 
             if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
               // Rollback scenario - Spring failed but Keycloak was restored
-              throw new Error('Partner removal failed: Backend sync issue. No changes were made. The partner remains in the system. Please try again later.');
+              throw new Error(
+                'Partner removal failed: Backend sync issue. No changes were made. The partner remains in the system. Please try again later.'
+              );
             } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
               // Critical failure - data inconsistency
-              throw new Error('CRITICAL: Partner removal partially failed! Please contact system administrator immediately. Data may be inconsistent.');
+              throw new Error(
+                'CRITICAL: Partner removal partially failed! Please contact system administrator immediately. Data may be inconsistent.'
+              );
             } else if (responseData.error?.includes('not found')) {
               throw new Error('Partner not found or already removed');
             } else {
@@ -213,7 +217,6 @@ export default function BusinessPartnersPage() {
 
       // Success - the deletePartner hook will handle success toast and cache invalidation
       setPartnerToRemove(null);
-      
     } catch (error) {
       console.error('Failed to remove partner:', error);
       // Error handling is done by the deletePartner hook
