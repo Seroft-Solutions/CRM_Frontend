@@ -18,13 +18,13 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies with retry mechanism for reliability
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps
 
-# Copy source files (node_modules excluded by .dockerignore)
+# Copy source files
 COPY src ./src
 COPY public ./public
 COPY *.config.* ./
@@ -32,8 +32,9 @@ COPY *.json ./
 COPY *.md ./
 COPY components.json ./
 
+# Build the application (use explicit path if PATH issues persist)
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN find node_modules/next -name "next" -type f && node $(find node_modules/next -name "next" -type f | head -1) build
+RUN npm run build || node node_modules/next/dist/bin/next build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
