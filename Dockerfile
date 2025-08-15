@@ -5,6 +5,14 @@ WORKDIR /app
 # Build arguments
 ARG ENV_FILE=.env.production
 ARG BUILD_VERSION=unknown
+ARG NODE_ENV=production
+ARG NEXT_TELEMETRY_DISABLED=1
+
+# Environment variables to optimize build
+ENV NODE_ENV=${NODE_ENV}
+ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
+ENV CI=true
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Copy environment file
 COPY ${ENV_FILE} .env
@@ -16,7 +24,6 @@ RUN npm --version && \
     npm ci --legacy-peer-deps
 
 COPY . .
-ENV PATH=/app/node_modules/.bin:$PATH
 RUN npm run build
 
 # Production stage
