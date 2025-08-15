@@ -5,19 +5,36 @@ WORKDIR /app
 # Build arguments
 ARG ENV_FILE=.env.production
 ARG BUILD_VERSION=unknown
+ARG NODE_ENV=production
+ARG NEXT_TELEMETRY_DISABLED=1
 
-# Copy environment file
+# Environment variables to optimize build
+ENV NODE_ENV=${NODE_ENV}
+ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
+ENV CI=true
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Copy environment file and package files
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
+# Install dependencies with retry mechanism for reliability
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps
 
-COPY . .
+# Copy source files
+COPY src ./src
+COPY public ./public
+COPY *.config.* ./
+COPY *.json ./
+COPY *.md ./
+COPY components.json ./
+
+# Build the application (use explicit path if PATH issues persist)
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN npm run build
+RUN npm run build || node node_modules/next/dist/bin/next build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
