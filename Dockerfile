@@ -23,7 +23,7 @@ COPY package*.json ./
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
-    npm ci --legacy-peer-deps
+    npm ci --include=dev
 
 # Copy source files
 COPY src ./src
