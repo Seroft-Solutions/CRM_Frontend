@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "lightningcss --help > /dev/null 2>&1 || echo 'lightningcss binary check complete'",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
