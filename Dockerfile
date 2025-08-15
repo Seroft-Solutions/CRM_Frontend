@@ -23,7 +23,8 @@ COPY package*.json ./
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
-    npm ci --legacy-peer-deps
+    npm ci --legacy-peer-deps && \
+    npm ls @tailwindcss/postcss || npm install @tailwindcss/postcss@4.1.8
 
 # Copy source files
 COPY src ./src
