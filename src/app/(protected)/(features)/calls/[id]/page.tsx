@@ -18,7 +18,7 @@ import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 import { ContextAwareBackButton } from '@/components/context-aware-back-button';
 import { CallRemarksSection } from '@/app/(protected)/(features)/calls/components/call-remarks-section';
 import { CallMeetingsSection } from '@/app/(protected)/(features)/calls/components/call-meetings-section';
-import { useGetCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { useGetCall } from '@/core/api/generated/spring';
 
 interface CallPageProps {
   params: Promise<{
