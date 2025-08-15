@@ -13,6 +13,7 @@ ENV NODE_ENV=${NODE_ENV}
 ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
 ENV CI=true
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NEXT_CONFIG_IGNORE_CSS_LOAD_ERROR=true
 
 # Copy environment file and package files
 COPY ${ENV_FILE} .env
@@ -32,9 +33,9 @@ COPY *.json ./
 COPY *.md ./
 COPY components.json ./
 
-# Build the application (use explicit path if PATH issues persist)
+# Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN npm run build || node node_modules/next/dist/bin/next build
+RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
