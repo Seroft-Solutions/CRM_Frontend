@@ -5,25 +5,15 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      release_type:
-        description: "Type of release"
+      tag:
+        description: "Release tag (e.g., v1.5.6 or 1.5.6)"
         required: true
-        default: "patch"
-        type: choice
-        options:
-          - major
-          - minor
-          - patch
-          - prerelease
+        type: string
       prerelease:
         description: "Create pre-release"
         required: false
         default: false
         type: boolean
-      custom_version:
-        description: "Custom version (optional, overrides release_type)"
-        required: false
-        type: string
 
 env:
   NODE_VERSION: "20"
@@ -35,8 +25,8 @@ jobs:
     name: Validate Release Prerequisites
     runs-on: ubuntu-latest
     outputs:
-      new-version: ${{ steps.version.outputs.new-version }}
-      current-version: ${{ steps.version.outputs.current-version }}
+      release-tag: ${{ steps.version.outputs.release-tag }}
+      release-version: ${{ steps.version.outputs.release-version }}
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout repository
@@ -54,81 +44,58 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Get current version
-        id: current-version
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION"
-
-      - name: Calculate new version
+      - name: Process release tag
         id: version
         run: |
-          CURRENT_VERSION="${{ steps.current-version.outputs.current-version }}"
-
-          if [ -n "${{ github.event.inputs.custom_version }}" ]; then
-            NEW_VERSION="${{ github.event.inputs.custom_version }}"
-            echo "Using custom version: $NEW_VERSION"
-          else
-            # Calculate version based on release type
-            IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          INPUT_TAG="${{ github.event.inputs.tag }}"
+          
+          # Remove 'v' prefix if present
+          VERSION=$(echo "$INPUT_TAG" | sed 's/^v//')
+          
+          # Ensure we have the 'v' prefix for the tag
+          RELEASE_TAG="v$VERSION"
+          
+          echo "Input tag: $INPUT_TAG"
+          echo "Release version: $VERSION"
+          echo "Release tag: $RELEASE_TAG"
+          
+          # Check if tag already exists
+          if git tag | grep -q "^$RELEASE_TAG$"; then
+            echo "⚠️ Tag $RELEASE_TAG already exists. Auto-incrementing..."
+            
+            # Extract version parts
+            IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
             MAJOR=${VERSION_PARTS[0]}
             MINOR=${VERSION_PARTS[1]}
             PATCH=${VERSION_PARTS[2]}
             
-            case "${{ github.event.inputs.release_type }}" in
-              major)
-                MAJOR=$((MAJOR + 1))
-                MINOR=0
-                PATCH=0
-                ;;
-              minor)
-                MINOR=$((MINOR + 1))
-                PATCH=0
-                ;;
-              patch)
-                PATCH=$((PATCH + 1))
-                ;;
-              prerelease)
-                PATCH=$((PATCH + 1))
-                NEW_VERSION="$MAJOR.$MINOR.$PATCH-beta.$(date +%Y%m%d%H%M%S)"
-                ;;
-            esac
+            # Increment patch version
+            PATCH=$((PATCH + 1))
+            VERSION="$MAJOR.$MINOR.$PATCH"
+            RELEASE_TAG="v$VERSION"
             
-            if [ "${{ github.event.inputs.release_type }}" != "prerelease" ]; then
-              NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-            fi
+            echo "Auto-incremented to: $RELEASE_TAG"
+            
+            # Check again if the incremented version exists
+            while git tag | grep -q "^$RELEASE_TAG$"; do
+              PATCH=$((PATCH + 1))
+              VERSION="$MAJOR.$MINOR.$PATCH"
+              RELEASE_TAG="v$VERSION"
+              echo "Tag exists, incrementing to: $RELEASE_TAG"
+            done
           fi
-
-          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "New version will be: $NEW_VERSION"
-
-      - name: Validate version format
-        run: |
-          NEW_VERSION="${{ steps.version.outputs.new-version }}"
-          if ! echo "$NEW_VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$'; then
-            echo "❌ Invalid version format: $NEW_VERSION"
-            exit 1
-          fi
-          echo "✅ Version format is valid: $NEW_VERSION"
-
-      - name: Check if version already exists
-        run: |
-          NEW_VERSION="${{ steps.version.outputs.new-version }}"
-          if git tag | grep -q "^v$NEW_VERSION$"; then
-            echo "❌ Version v$NEW_VERSION already exists"
-            exit 1
-          fi
-          echo "✅ Version v$NEW_VERSION is available"
+          
+          echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "release-version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Final release tag: $RELEASE_TAG"
 
       - name: Generate changelog
         id: changelog
         run: |
-          NEW_VERSION="${{ steps.version.outputs.new-version }}"
-          CURRENT_VERSION="${{ steps.version.outputs.current-version }}"
+          RELEASE_TAG="${{ steps.version.outputs.release-tag }}"
+          RELEASE_VERSION="${{ steps.version.outputs.release-version }}"
 
-          echo "Generating changelog from v$CURRENT_VERSION to v$NEW_VERSION"
+          echo "Generating changelog for $RELEASE_TAG"
 
           # Get commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -140,14 +107,13 @@ jobs:
           fi
 
           # Create changelog file
-          echo "## Release v$NEW_VERSION" > RELEASE_CHANGELOG.md
+          echo "## Release $RELEASE_TAG" > RELEASE_CHANGELOG.md
           echo "" >> RELEASE_CHANGELOG.md
           echo "### Changes" >> RELEASE_CHANGELOG.md
           echo "$COMMITS" >> RELEASE_CHANGELOG.md
           echo "" >> RELEASE_CHANGELOG.md
           echo "### Release Information" >> RELEASE_CHANGELOG.md
-          echo "- **Version**: v$NEW_VERSION" >> RELEASE_CHANGELOG.md
-          echo "- **Release Type**: ${{ github.event.inputs.release_type }}" >> RELEASE_CHANGELOG.md
+          echo "- **Version**: $RELEASE_TAG" >> RELEASE_CHANGELOG.md
           echo "- **Pre-release**: ${{ github.event.inputs.prerelease }}" >> RELEASE_CHANGELOG.md
           echo "- **Released by**: ${{ github.actor }}" >> RELEASE_CHANGELOG.md
           echo "- **Release Date**: $(date -u)" >> RELEASE_CHANGELOG.md
@@ -223,18 +189,18 @@ jobs:
 
       - name: Update package.json version
         run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
-          npm version $NEW_VERSION --no-git-tag-version
+          RELEASE_VERSION="${{ needs.validate-release.outputs.release-version }}"
+          npm version $RELEASE_VERSION --no-git-tag-version
 
-          echo "Updated package.json to version $NEW_VERSION"
+          echo "Updated package.json to version $RELEASE_VERSION"
 
       - name: Update version in other files
         run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
+          RELEASE_VERSION="${{ needs.validate-release.outputs.release-version }}"
 
           # Update version in Dockerfile if needed
           if [ -f Dockerfile ]; then
-            sed -i "s/LABEL version=.*/LABEL version=\"$NEW_VERSION\"/" Dockerfile
+            sed -i "s/LABEL version=.*/LABEL version=\"$RELEASE_VERSION\"/" Dockerfile
           fi
 
           # Update any other version references
@@ -242,26 +208,25 @@ jobs:
 
       - name: Commit version changes
         run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
+          RELEASE_TAG="${{ needs.validate-release.outputs.release-tag }}"
           git add package.json package-lock.json
 
           # Add other files if they were modified
           [ -f Dockerfile ] && git add Dockerfile
 
-          git commit -m "chore: bump version to v$NEW_VERSION" || echo "No changes to commit"
+          git commit -m "chore: bump version to $RELEASE_TAG" || echo "No changes to commit"
 
       - name: Create and push tag
         id: create-tag
         run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.new-version }}"
-          TAG="v$NEW_VERSION"
+          RELEASE_TAG="${{ needs.validate-release.outputs.release-tag }}"
 
-          git tag -a $TAG -m "Release $TAG"
-          git push origin $TAG
+          git tag -a $RELEASE_TAG -m "Release $RELEASE_TAG"
+          git push origin $RELEASE_TAG
           git push origin HEAD:${{ github.ref_name }}
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Created and pushed tag: $TAG"
+          echo "tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "Created and pushed tag: $RELEASE_TAG"
 
       - name: Download changelog
         uses: actions/download-artifact@v4
@@ -304,11 +269,11 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: 1
-          BUILD_VERSION: ${{ needs.validate-release.outputs.new-version }}
+          BUILD_VERSION: ${{ needs.validate-release.outputs.release-version }}
 
       - name: Create release archive
         run: |
-          tar -czf crm-frontend-${{ needs.validate-release.outputs.new-version }}.tar.gz \
+          tar -czf crm-frontend-${{ needs.validate-release.outputs.release-version }}.tar.gz \
             .next/ \
             public/ \
             package.json \
@@ -321,8 +286,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ needs.validate-release.outputs.new-version }}
-          artifacts: crm-frontend-${{ needs.validate-release.outputs.new-version }}.tar.gz
+          tag: ${{ needs.validate-release.outputs.release-tag }}
+          artifacts: crm-frontend-${{ needs.validate-release.outputs.release-version }}.tar.gz
           allowUpdates: true
           updateOnlyUnreleased: false
 
@@ -362,13 +327,13 @@ jobs:
         with:
           images: syedus06/crm-frontend
           tags: |
-            type=raw,value=${{ needs.validate-release.outputs.new-version }}
-            type=raw,value=v${{ needs.validate-release.outputs.new-version }}
+            type=raw,value=${{ needs.validate-release.outputs.release-version }}
+            type=raw,value=${{ needs.validate-release.outputs.release-tag }}
             type=raw,value=latest,enable=${{ github.event.inputs.prerelease != 'true' }}
           labels: |
             org.opencontainers.image.title=CRM Frontend
             org.opencontainers.image.description=Customer Relationship Management Frontend Application
-            org.opencontainers.image.version=${{ needs.validate-release.outputs.new-version }}
+            org.opencontainers.image.version=${{ needs.validate-release.outputs.release-version }}
             org.opencontainers.image.created={{date 'YYYY-MM-DDTHH:mm:ssZ'}}
             org.opencontainers.image.revision={{sha}}
             org.opencontainers.image.source={{repo}}
@@ -387,7 +352,7 @@ jobs:
           build-args: |
             NODE_ENV=production
             NEXT_TELEMETRY_DISABLED=1
-            BUILD_VERSION=${{ needs.validate-release.outputs.new-version }}
+            BUILD_VERSION=${{ needs.validate-release.outputs.release-version }}
             ENV_FILE=.env.production
 
   # Notify team of release
@@ -400,27 +365,26 @@ jobs:
       - name: Notify team of release
         run: |
           if [ "${{ needs.create-release.result }}" = "success" ]; then
-            echo "🎉 Release v${{ needs.validate-release.outputs.new-version }} created successfully!"
+            echo "🎉 Release ${{ needs.validate-release.outputs.release-tag }} created successfully!"
             echo "📦 Release URL: ${{ needs.create-release.outputs.release-url }}"
             echo "🏷️ Tag: ${{ needs.create-release.outputs.release-tag }}"
-            echo "📋 Type: ${{ github.event.inputs.release_type }}"
             echo "🧪 Pre-release: ${{ github.event.inputs.prerelease }}"
             echo "🐳 Docker Images:"
-            echo "   - syedus06/crm-frontend:${{ needs.validate-release.outputs.new-version }}"
-            echo "   - syedus06/crm-frontend:v${{ needs.validate-release.outputs.new-version }}"
+            echo "   - syedus06/crm-frontend:${{ needs.validate-release.outputs.release-version }}"
+            echo "   - syedus06/crm-frontend:${{ needs.validate-release.outputs.release-tag }}"
             if [ "${{ github.event.inputs.prerelease }}" != "true" ]; then
               echo "   - syedus06/crm-frontend:latest"
             fi
             echo ""
             echo "🚀 Deployment Commands:"
             echo "   Development: docker-compose up -d"
-            echo "   Production:  export CRM_VERSION=${{ needs.validate-release.outputs.new-version }} && docker-compose -f docker-compose.prod.yml up -d"
+            echo "   Production:  export CRM_VERSION=${{ needs.validate-release.outputs.release-version }} && docker-compose -f docker-compose.prod.yml up -d"
             echo ""
             echo "📖 See DEPLOYMENT_GUIDE.md for detailed deployment instructions"
             
             # Send notifications to team channels
             # curl -X POST -H 'Content-type: application/json' \
-            #   --data '{"text":"🎉 New release v${{ needs.validate-release.outputs.new-version }} is available! Docker: syedus06/crm-frontend:${{ needs.validate-release.outputs.new-version }}"}' \
+            #   --data '{"text":"🎉 New release ${{ needs.validate-release.outputs.release-tag }} is available! Docker: syedus06/crm-frontend:${{ needs.validate-release.outputs.release-version }}"}' \
             #   ${{ secrets.SLACK_WEBHOOK_URL }}
           else
             echo "❌ Release creation failed"
