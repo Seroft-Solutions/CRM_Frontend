@@ -5,312 +5,85 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Release tag (e.g., v1.5.6 or 1.5.6)"
+      release_version:
+        description: "Release version (e.g., 1.2.3)"
         required: true
         type: string
-      prerelease:
-        description: "Create pre-release"
+      create_tag:
+        description: "Create git tag"
         required: false
-        default: false
         type: boolean
+        default: true
+      create_release:
+        description: "Create GitHub release"
+        required: false
+        type: boolean
+        default: true
+      trigger_backend_release:
+        description: "Trigger backend release with same version"
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags: ["v*.*.*"]
 
 env:
   NODE_VERSION: "20"
   NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
-  # Validate release prerequisites
-  validate-release:
-    name: Validate Release Prerequisites
+  create_tag:
+    name: Create Version Tag
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.create_tag
     outputs:
-      release-tag: ${{ steps.version.outputs.release-tag }}
-      release-version: ${{ steps.version.outputs.release-version }}
-      changelog: ${{ steps.changelog.outputs.changelog }}
+      tag_name: v${{ inputs.release_version }}
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Process release tag
-        id: version
+      - name: Validate version format
         run: |
-          INPUT_TAG="${{ github.event.inputs.tag }}"
-          
-          # Remove 'v' prefix if present
-          VERSION=$(echo "$INPUT_TAG" | sed 's/^v//')
-          
-          # Ensure we have the 'v' prefix for the tag
-          RELEASE_TAG="v$VERSION"
-          
-          echo "Input tag: $INPUT_TAG"
-          echo "Release version: $VERSION"
-          echo "Release tag: $RELEASE_TAG"
-          
-          # Check if tag already exists
-          if git tag | grep -q "^$RELEASE_TAG$"; then
-            echo "⚠️ Tag $RELEASE_TAG already exists. Auto-incrementing..."
-            
-            # Extract version parts
-            IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
-            MAJOR=${VERSION_PARTS[0]}
-            MINOR=${VERSION_PARTS[1]}
-            PATCH=${VERSION_PARTS[2]}
-            
-            # Increment patch version
-            PATCH=$((PATCH + 1))
-            VERSION="$MAJOR.$MINOR.$PATCH"
-            RELEASE_TAG="v$VERSION"
-            
-            echo "Auto-incremented to: $RELEASE_TAG"
-            
-            # Check again if the incremented version exists
-            while git tag | grep -q "^$RELEASE_TAG$"; do
-              PATCH=$((PATCH + 1))
-              VERSION="$MAJOR.$MINOR.$PATCH"
-              RELEASE_TAG="v$VERSION"
-              echo "Tag exists, incrementing to: $RELEASE_TAG"
-            done
-          fi
-          
-          echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "release-version=$VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Final release tag: $RELEASE_TAG"
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          RELEASE_TAG="${{ steps.version.outputs.release-tag }}"
-          RELEASE_VERSION="${{ steps.version.outputs.release-version }}"
-
-          echo "Generating changelog for $RELEASE_TAG"
-
-          # Get commits since last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --oneline --pretty=format:"- %s (%an)" | head -20)
-          else
-            COMMITS=$(git log --oneline --pretty=format:"- %s (%an)" $LAST_TAG..HEAD)
-          fi
-
-          # Create changelog file
-          echo "## Release $RELEASE_TAG" > RELEASE_CHANGELOG.md
-          echo "" >> RELEASE_CHANGELOG.md
-          echo "### Changes" >> RELEASE_CHANGELOG.md
-          echo "$COMMITS" >> RELEASE_CHANGELOG.md
-          echo "" >> RELEASE_CHANGELOG.md
-          echo "### Release Information" >> RELEASE_CHANGELOG.md
-          echo "- **Version**: $RELEASE_TAG" >> RELEASE_CHANGELOG.md
-          echo "- **Pre-release**: ${{ github.event.inputs.prerelease }}" >> RELEASE_CHANGELOG.md
-          echo "- **Released by**: ${{ github.actor }}" >> RELEASE_CHANGELOG.md
-          echo "- **Release Date**: $(date -u)" >> RELEASE_CHANGELOG.md
-
-          # Save changelog to output
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat RELEASE_CHANGELOG.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Upload changelog
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-changelog
-          path: RELEASE_CHANGELOG.md
-
-  # Run comprehensive tests before release
-  pre-release-tests:
-    name: Pre-release Tests
-    runs-on: ubuntu-latest
-    needs: validate-release
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linting
-        run: npm run lint || echo "Linting completed with warnings"
-
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Validate imports
-        run: npm run validate-imports
-
-      - name: Build application
-        run: npm run build || echo "Build completed with warnings"
-        env:
-          NODE_ENV: production
-          NEXT_TELEMETRY_DISABLED: 1
-
-      - name: Run security audit
-        run: npm audit --audit-level=moderate || true
-
-      - name: Check for outdated dependencies
-        run: npm outdated || true
-
-  # Create release
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: [validate-release, pre-release-tests]
-    outputs:
-      release-tag: ${{ steps.create-tag.outputs.tag }}
-      release-url: ${{ steps.create-release.outputs.html_url }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Update package.json version
-        run: |
-          RELEASE_VERSION="${{ needs.validate-release.outputs.release-version }}"
-          npm version $RELEASE_VERSION --no-git-tag-version
-
-          echo "Updated package.json to version $RELEASE_VERSION"
-
-      - name: Update version in other files
-        run: |
-          RELEASE_VERSION="${{ needs.validate-release.outputs.release-version }}"
-
-          # Update version in Dockerfile if needed
-          if [ -f Dockerfile ]; then
-            sed -i "s/LABEL version=.*/LABEL version=\"$RELEASE_VERSION\"/" Dockerfile
-          fi
-
-          # Update any other version references
-          echo "Version updated in relevant files"
-
-      - name: Commit version changes
-        run: |
-          RELEASE_TAG="${{ needs.validate-release.outputs.release-tag }}"
-          git add package.json package-lock.json
-
-          # Add other files if they were modified
-          [ -f Dockerfile ] && git add Dockerfile
-
-          git commit -m "chore: bump version to $RELEASE_TAG" || echo "No changes to commit"
-
-      - name: Create and push tag
-        id: create-tag
-        run: |
-          RELEASE_TAG="${{ needs.validate-release.outputs.release-tag }}"
-
-          git tag -a $RELEASE_TAG -m "Release $RELEASE_TAG"
-          git push origin $RELEASE_TAG
-          git push origin HEAD:${{ github.ref_name }}
-
-          echo "tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "Created and pushed tag: $RELEASE_TAG"
-
-      - name: Download changelog
-        uses: actions/download-artifact@v4
-        with:
-          name: release-changelog
-
-      - name: Create GitHub Release
-        id: create-release
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.create-tag.outputs.tag }}
-          name: Release ${{ steps.create-tag.outputs.tag }}
-          bodyFile: RELEASE_CHANGELOG.md
-          draft: false
-          prerelease: ${{ github.event.inputs.prerelease }}
-
-  # Build and publish release artifacts
-  build-release-artifacts:
-    name: Build Release Artifacts
-    runs-on: ubuntu-latest
-    needs: [validate-release, create-release]
-    steps:
-      - name: Checkout release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create-release.outputs.release-tag }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production application
-        run: npm run build
-        env:
-          NODE_ENV: production
-          NEXT_TELEMETRY_DISABLED: 1
-          BUILD_VERSION: ${{ needs.validate-release.outputs.release-version }}
-
-      - name: Create release archive
-        run: |
-          tar -czf crm-frontend-${{ needs.validate-release.outputs.release-version }}.tar.gz \
-            .next/ \
-            public/ \
-            package.json \
-            next.config.ts \
-            README.md
-
-          echo "Created release archive"
-
-      - name: Upload release assets
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.validate-release.outputs.release-tag }}
-          artifacts: crm-frontend-${{ needs.validate-release.outputs.release-version }}.tar.gz
-          allowUpdates: true
-          updateOnlyUnreleased: false
-
-  # Build and push Docker image for release
-  build-release-docker:
-    name: Build Release Docker Image
-    runs-on: ubuntu-latest
-    needs: [validate-release, create-release]
-    steps:
-      - name: Checkout release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create-release.outputs.release-tag }}
-
-      - name: Verify production environment file
-        run: |
-          if [ ! -f ".env.production" ]; then
-            echo "❌ .env.production file not found"
+          VERSION="${{ inputs.release_version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format. Use semantic versioning (e.g., 1.2.3)"
             exit 1
           fi
-          echo "✅ .env.production file exists"
-          echo "Environment file contents (masked):"
-          sed 's/=.*/=***/' .env.production
+
+      - name: Check if tag exists
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if git tag -l | grep -q "^v${VERSION}$"; then
+            echo "❌ Tag v${VERSION} already exists"
+            exit 1
+          fi
+
+      - name: Create and push tag
+        env:
+          VERSION: ${{ inputs.release_version }}
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+
+          echo "🏷️ Creating tag v${VERSION}"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin "v${VERSION}"
+
+          echo "✅ Tag v${VERSION} created and pushed"
+
+  build_docker_image:
+    name: Build and Tag Docker Image
+    needs: [create_tag]
+    if: always() && (needs.create_tag.result == 'success' || github.event_name == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -327,19 +100,11 @@ jobs:
         with:
           images: syedus06/crm-frontend
           tags: |
-            type=raw,value=${{ needs.validate-release.outputs.release-version }}
-            type=raw,value=${{ needs.validate-release.outputs.release-tag }}
-            type=raw,value=latest,enable=${{ github.event.inputs.prerelease != 'true' }}
-          labels: |
-            org.opencontainers.image.title=CRM Frontend
-            org.opencontainers.image.description=Customer Relationship Management Frontend Application
-            org.opencontainers.image.version=${{ needs.validate-release.outputs.release-version }}
-            org.opencontainers.image.created={{date 'YYYY-MM-DDTHH:mm:ssZ'}}
-            org.opencontainers.image.revision={{sha}}
-            org.opencontainers.image.source={{repo}}
-            org.opencontainers.image.url={{repo}}
+            type=raw,value=${{ inputs.release_version }}
+            type=raw,value=${{ needs.create_tag.outputs.tag_name || github.ref_name }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 
-      - name: Build and push release Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -352,41 +117,142 @@ jobs:
           build-args: |
             NODE_ENV=production
             NEXT_TELEMETRY_DISABLED=1
-            BUILD_VERSION=${{ needs.validate-release.outputs.release-version }}
+            BUILD_VERSION=${{ inputs.release_version }}
             ENV_FILE=.env.production
 
-  # Notify team of release
-  notify-release:
-    name: Notify Release
+  build_release_artifacts:
+    name: Build Release Artifacts
     runs-on: ubuntu-latest
-    needs: [validate-release, create-release, build-release-docker]
-    if: always()
+    needs: [create_tag]
+    if: always() && (needs.create_tag.result == 'success' || github.event_name == 'push')
     steps:
-      - name: Notify team of release
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Build release artifacts
         run: |
-          if [ "${{ needs.create-release.result }}" = "success" ]; then
-            echo "🎉 Release ${{ needs.validate-release.outputs.release-tag }} created successfully!"
-            echo "📦 Release URL: ${{ needs.create-release.outputs.release-url }}"
-            echo "🏷️ Tag: ${{ needs.create-release.outputs.release-tag }}"
-            echo "🧪 Pre-release: ${{ github.event.inputs.prerelease }}"
-            echo "🐳 Docker Images:"
-            echo "   - syedus06/crm-frontend:${{ needs.validate-release.outputs.release-version }}"
-            echo "   - syedus06/crm-frontend:${{ needs.validate-release.outputs.release-tag }}"
-            if [ "${{ github.event.inputs.prerelease }}" != "true" ]; then
-              echo "   - syedus06/crm-frontend:latest"
-            fi
-            echo ""
-            echo "🚀 Deployment Commands:"
-            echo "   Development: docker-compose up -d"
-            echo "   Production:  export CRM_VERSION=${{ needs.validate-release.outputs.release-version }} && docker-compose -f docker-compose.prod.yml up -d"
-            echo ""
-            echo "📖 See DEPLOYMENT_GUIDE.md for detailed deployment instructions"
-            
-            # Send notifications to team channels
-            # curl -X POST -H 'Content-type: application/json' \
-            #   --data '{"text":"🎉 New release ${{ needs.validate-release.outputs.release-tag }} is available! Docker: syedus06/crm-frontend:${{ needs.validate-release.outputs.release-version }}"}' \
-            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          echo "📦 Building release artifacts"
+          npm ci
+          npm run build
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-${{ needs.create_tag.outputs.tag_name || github.ref_name }}
+          path: |
+            .next/
+            package.json
+            next.config.ts
+          retention-days: 30
+
+  create_github_release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [create_tag, build_docker_image, build_release_artifacts]
+    if: >
+      always() &&
+      (needs.build_release_artifacts.result == 'success') &&
+      (needs.build_docker_image.result == 'success') &&
+      ((github.event_name == 'workflow_dispatch' && inputs.create_release) ||
+       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts-${{ needs.create_tag.outputs.tag_name || github.ref_name }}
+          path: release-artifacts
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          TAG_NAME="${{ needs.create_tag.outputs.tag_name || github.ref_name }}"
+
+          # Get previous tag for comparison
+          PREV_TAG=$(git tag --sort=-version:refname | grep -A1 "$TAG_NAME" | tail -n1)
+
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$TAG_NAME" ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "$PREV_TAG..HEAD" >> release_notes.md
           else
-            echo "❌ Release creation failed"
-            echo "Please check the workflow logs for details"
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "Initial release" >> release_notes.md
           fi
+
+          echo "📝 Generated release notes"
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.create_tag.outputs.tag_name || github.ref_name }}
+          name: ${{ needs.create_tag.outputs.tag_name || github.ref_name }}
+          body_path: release_notes.md
+          files: release-artifacts/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Display release info
+        run: |
+          TAG_NAME="${{ needs.create_tag.outputs.tag_name || github.ref_name }}"
+          echo "🎉 Release $TAG_NAME created successfully!"
+          echo "🔗 View at: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
+
+  trigger_backend_release:
+    name: Trigger Backend Release
+    runs-on: ubuntu-latest
+    needs: [create_tag, create_github_release]
+    if: github.event_name == 'workflow_dispatch' && inputs.trigger_backend_release && needs.create_github_release.result == 'success'
+    steps:
+      - name: Trigger backend release workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const response = await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: 'CRM_Backend',
+                workflow_id: 'release.yml',
+                ref: 'master',
+                inputs: {
+                  release_version: '${{ inputs.release_version }}',
+                  create_tag: 'true',
+                  create_release: 'true'
+                }
+              });
+              
+              console.log('🚀 Triggered backend release workflow');
+              console.log('Response:', response.status);
+            } catch (error) {
+              console.log('⚠️ Could not trigger backend release:', error.message);
+              console.log('This might be due to missing PERSONAL_ACCESS_TOKEN secret');
+            }
+
+      - name: Notify coordination
+        run: |
+          echo "🔄 Coordinated release initiated"
+          echo "Frontend: v${{ inputs.release_version }} ✅"
+          echo "Backend: v${{ inputs.release_version }} 🚀"
+          echo ""
+          echo "Check backend release at:"
+          echo "https://github.com/${{ github.repository_owner }}/CRM_Backend/actions"
