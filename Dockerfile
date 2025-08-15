@@ -14,17 +14,26 @@ ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
 ENV CI=true
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Copy environment file
+# Copy environment file and package files
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
+# Install dependencies
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps
 
-COPY . .
-RUN npm run build
+# Copy source files (node_modules excluded by .dockerignore)
+COPY src ./src
+COPY public ./public
+COPY *.config.* ./
+COPY *.json ./
+COPY *.md ./
+COPY components.json ./
+
+ENV PATH=/app/node_modules/.bin:$PATH
+RUN find node_modules/next -name "next" -type f && node $(find node_modules/next -name "next" -type f | head -1) build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
