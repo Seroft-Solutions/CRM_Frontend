@@ -45,7 +45,7 @@ ARG BUILD_VERSION=unknown
 
 # Labels for image metadata
 LABEL maintainer="CRM Team"
-LABEL version="1.2.1"
+LABEL version="1.3.1"
 LABEL description="CRM Frontend Application"
 
 COPY --from=builder /app/.env ./
