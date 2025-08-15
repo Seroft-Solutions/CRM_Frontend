@@ -19,11 +19,6 @@ on:
         required: false
         type: boolean
         default: true
-      trigger_backend_release:
-        description: "Trigger backend release with same version"
-        required: false
-        type: boolean
-        default: false
   push:
     tags: ["v*.*.*"]
 
@@ -217,42 +212,3 @@ jobs:
           echo "🎉 Release $TAG_NAME created successfully!"
           echo "🔗 View at: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
 
-  trigger_backend_release:
-    name: Trigger Backend Release
-    runs-on: ubuntu-latest
-    needs: [create_tag, create_github_release]
-    if: github.event_name == 'workflow_dispatch' && inputs.trigger_backend_release && needs.create_github_release.result == 'success'
-    steps:
-      - name: Trigger backend release workflow
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              const response = await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: 'CRM_Backend',
-                workflow_id: 'release.yml',
-                ref: 'master',
-                inputs: {
-                  release_version: '${{ inputs.release_version }}',
-                  create_tag: 'true',
-                  create_release: 'true'
-                }
-              });
-              
-              console.log('🚀 Triggered backend release workflow');
-              console.log('Response:', response.status);
-            } catch (error) {
-              console.log('⚠️ Could not trigger backend release:', error.message);
-              console.log('This might be due to missing PERSONAL_ACCESS_TOKEN secret');
-            }
-
-      - name: Notify coordination
-        run: |
-          echo "🔄 Coordinated release initiated"
-          echo "Frontend: v${{ inputs.release_version }} ✅"
-          echo "Backend: v${{ inputs.release_version }} 🚀"
-          echo ""
-          echo "Check backend release at:"
-          echo "https://github.com/${{ github.repository_owner }}/CRM_Backend/actions"
