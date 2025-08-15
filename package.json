@@ -86,7 +86,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "4.1.8",
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.17.47",
@@ -111,7 +111,7 @@
     "pluralize": "^8.0.0",
     "prettier": "^3.5.3",
     "shx": "^0.4.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "4.1.8",
     "ts-morph": "^25.0.1",
     "tsx": "^4.19.4",
     "tw-animate-css": "^1.2.9",
