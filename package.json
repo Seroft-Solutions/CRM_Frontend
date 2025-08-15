@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "lightningcss --help > /dev/null 2>&1 || echo 'lightningcss binary check complete'",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -121,5 +120,14 @@
   },
   "overrides": {
     "ajv": "8.12.0"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "1.30.1",
+    "lightningcss-linux-x64-musl": "1.30.1", 
+    "lightningcss-linux-arm64-gnu": "1.30.1",
+    "lightningcss-linux-arm64-musl": "1.30.1",
+    "lightningcss-win32-x64-msvc": "1.30.1",
+    "lightningcss-darwin-x64": "1.30.1",
+    "lightningcss-darwin-arm64": "1.30.1"
   }
 }
