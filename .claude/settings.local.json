@@ -15,5 +15,6 @@
       "Bash(rg:*)"
     ],
     "deny": []
-  }
+  },
+  "outputStyle": "default"
 }
