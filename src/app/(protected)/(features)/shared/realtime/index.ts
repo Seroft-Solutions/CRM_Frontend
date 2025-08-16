@@ -3,6 +3,7 @@ export { PresenceIndicator } from './components/presence-indicator'
 export { NotificationCenter } from './components/notification-center'
 export { ConflictResolutionModal } from './components/conflict-resolution-modal'
 export { ActivityFeed } from './components/activity-feed'
+export { CollaborativeForm } from './components/collaborative-form'
 
 // Realtime hooks exports
 export { useLiveData } from './hooks/use-live-data'

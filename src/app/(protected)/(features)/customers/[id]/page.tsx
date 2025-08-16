@@ -6,9 +6,10 @@
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CustomerDetails } from '@/app/(protected)/(features)/customers/components/customer-details';
+import { EnhancedCustomerDetails } from '@/app/(protected)/(features)/customers/components/enhanced-customer-details';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
 import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { PresenceIndicator } from '@/app/(protected)/(features)/shared/realtime/components/presence-indicator';
 
 interface CustomerPageProps {
   params: Promise<{
@@ -76,8 +77,13 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <CustomerDetails id={id} />
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm relative">
+          <PresenceIndicator 
+            roomId={`customer:${id}`} 
+            position="top-right"
+            className="!absolute !top-4 !right-4"
+          />
+          <EnhancedCustomerDetails id={id} />
         </div>
       </div>
     </PermissionGuard>
