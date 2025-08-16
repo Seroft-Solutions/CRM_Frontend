@@ -15,20 +15,16 @@ ENV CI=true
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NEXT_CONFIG_IGNORE_CSS_LOAD_ERROR=true
 
-# Copy environment file and package files
-COPY ${ENV_FILE} .env
+# Copy package files and install dependencies
 COPY package*.json ./
 
 # Install dependencies with retry mechanism for reliability
 RUN npm --version &&     node --version &&     npm cache clean --force &&     npm ci
 
-# Copy source files
-COPY src ./src
-COPY public ./public
-COPY *.config.* ./
-COPY *.json ./
-COPY *.md ./
-COPY components.json ./
+# Copy project sources (includes optional environment file)
+COPY . .
+# Create .env if missing to prevent build failures
+RUN if [ -f "$ENV_FILE" ]; then cp "$ENV_FILE" .env; else echo "No $ENV_FILE provided" && touch .env; fi
 
 # Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
