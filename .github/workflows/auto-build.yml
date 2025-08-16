@@ -61,6 +61,10 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
           platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Summary
         run: |
