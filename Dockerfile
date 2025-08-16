@@ -1,5 +1,5 @@
-# Build stage
-FROM node:20.17.0-alpine AS builder
+# Build stage - Using standard Node.js image for better TailwindCSS v4 compatibility
+FROM node:20.17.0-slim AS builder
 WORKDIR /app
 
 # Build arguments
@@ -12,32 +12,52 @@ ARG NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=${NODE_ENV}
 ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
 ENV CI=true
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV NEXT_CONFIG_IGNORE_CSS_LOAD_ERROR=true
+
+# Install system dependencies for TailwindCSS v4 and LightningCSS
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install dependencies
 COPY package*.json ./
 
-# Install dependencies with retry mechanism for reliability
+# Install dependencies with specific flags for TailwindCSS v4 and LightningCSS
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
     rm -rf node_modules && \
-    npm ci && \
+    npm ci --prefer-offline --no-audit --progress=false && \
     npm list tailwindcss && \
-    npm list autoprefixer # Debug: Verify both tailwindcss and autoprefixer are installed
+    npm list autoprefixer
 
 # Copy project sources (includes optional environment file)
 COPY . .
 # Create .env if missing to prevent build failures
 RUN if [ -f "$ENV_FILE" ]; then cp "$ENV_FILE" .env; else echo "No $ENV_FILE provided" && touch .env; fi
 
-# Build the application with TailwindCSS v4 support
+# Build the application with TailwindCSS v4 and LightningCSS support
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
+ENV LIGHTNINGCSS_CACHE_DIR=/tmp/lightningcss-cache
+ENV NEXT_PRIVATE_STANDALONE=true
+
+# Create cache directory and build with optimizations
+RUN mkdir -p /tmp/lightningcss-cache && \
+    echo "Starting TailwindCSS v4 build..." && \
+    NODE_OPTIONS="--max-old-space-size=8192 --no-warnings" \
+    TAILWIND_DISABLE_TOUCH=true \
+    NEXT_PRIVATE_ALLOW_STANDALONE=1 \
+    npm run build:docker || \
+    (echo "Build failed, trying with fallback options..." && \
+     NODE_OPTIONS="--max-old-space-size=4096" \
+     NEXT_PRIVATE_ALLOW_STANDALONE=1 \
+     npm run build)
 
 # Production stage
-FROM node:20.17.0-alpine AS runner
+FROM node:20.17.0-slim AS runner
 WORKDIR /app
 
 # Build arguments
