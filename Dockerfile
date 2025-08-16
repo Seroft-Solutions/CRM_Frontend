@@ -10,14 +10,17 @@ ARG BUILD_VERSION=unknown
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
+# Install dependencies with error handling and debugging
 RUN npm --version && \
     node --version && \
+    npm config set strict-ssl false && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps
 
 COPY . .
+# Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN npm run build
+RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
