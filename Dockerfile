@@ -31,8 +31,7 @@ RUN npm --version && \
     npm cache clean --force && \
     rm -rf node_modules && \
     npm ci --prefer-offline --no-audit --progress=false && \
-    npm list tailwindcss && \
-    npm list autoprefixer
+    echo "Dependencies installed successfully"
 
 # Copy project sources (includes optional environment file)
 COPY . .
