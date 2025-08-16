@@ -19,7 +19,13 @@ ENV NEXT_CONFIG_IGNORE_CSS_LOAD_ERROR=true
 COPY package*.json ./
 
 # Install dependencies with retry mechanism for reliability
-RUN npm --version &&     node --version &&     npm cache clean --force &&     npm ci
+RUN npm --version && \
+    node --version && \
+    npm cache clean --force && \
+    rm -rf node_modules && \
+    npm ci && \
+    npm list tailwindcss && \
+    npm list autoprefixer # Debug: Verify both tailwindcss and autoprefixer are installed
 
 # Copy project sources (includes optional environment file)
 COPY . .
@@ -39,7 +45,7 @@ ARG BUILD_VERSION=unknown
 
 # Labels for image metadata
 LABEL maintainer="CRM Team"
-LABEL version="1.3.1"
+LABEL version="${BUILD_VERSION}"
 LABEL description="CRM Frontend Application"
 
 COPY --from=builder /app/.env ./
