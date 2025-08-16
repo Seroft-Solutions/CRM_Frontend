@@ -1,38 +1,50 @@
-name: Release Management
+name: 🎯 Frontend Release (Docker Build Only)
+
 permissions:
   contents: write
 
 on:
+  repository_dispatch:
+    types: [coordinated_release]
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Release version (e.g., 1.2.3)"
+        description: "Release version (e.g., 1.4.0)"
         required: true
         type: string
-      create_tag:
-        description: "Create git tag"
-        required: false
-        type: boolean
-        default: true
-      create_release:
-        description: "Create GitHub release"
-        required: false
-        type: boolean
-        default: true
-  push:
-    tags: ["v*.*.*"]
-
-env:
-  NODE_VERSION: "20"
-  NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
-  create_tag:
-    name: Create Version Tag
+  setup_release:
+    name: 🏷️ Setup Frontend Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && inputs.create_tag
     outputs:
-      tag_name: v${{ inputs.release_version }}
+      version: ${{ steps.version.outputs.version }}
+      tag_name: ${{ steps.version.outputs.tag_name }}
+      triggered_by_backend: ${{ steps.version.outputs.triggered_by_backend }}
+    steps:
+      - name: Determine version and source
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            VERSION="${{ github.event.client_payload.version }}"
+            TAG_NAME="${{ github.event.client_payload.tag_name }}"
+            TRIGGERED_BY_BACKEND="true"
+            echo "🎯 Release triggered by backend: $VERSION"
+          else
+            VERSION="${{ inputs.release_version }}"
+            TAG_NAME="v${VERSION}"
+            TRIGGERED_BY_BACKEND="false"
+            echo "👤 Manual release triggered: $VERSION"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "triggered_by_backend=$TRIGGERED_BY_BACKEND" >> $GITHUB_OUTPUT
+
+  create_frontend_tag:
+    name: 🏷️ Create Frontend Tag
+    runs-on: ubuntu-latest
+    needs: [setup_release]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,47 +52,42 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate version format
-        run: |
-          VERSION="${{ inputs.release_version }}"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid version format. Use semantic versioning (e.g., 1.2.3)"
-            exit 1
-          fi
-
-      - name: Check if tag exists
-        run: |
-          VERSION="${{ inputs.release_version }}"
-          if git tag -l | grep -q "^v${VERSION}$"; then
-            echo "❌ Tag v${VERSION} already exists"
-            exit 1
-          fi
-
       - name: Create and push tag
-        env:
-          VERSION: ${{ inputs.release_version }}
         run: |
+          TAG_NAME="${{ needs.setup_release.outputs.tag_name }}"
+
+          if git tag -l | grep -q "^${TAG_NAME}$"; then
+            echo "⚠️ Tag ${TAG_NAME} already exists, skipping"
+            exit 0
+          fi
+
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag -a "$TAG_NAME" -m "Frontend Release $TAG_NAME"
+          git push origin "$TAG_NAME"
 
-          echo "🏷️ Creating tag v${VERSION}"
-          git tag -a "v${VERSION}" -m "Release v${VERSION}"
-          git push origin "v${VERSION}"
-
-          echo "✅ Tag v${VERSION} created and pushed"
-
-  build_docker_image:
-    name: Build and Tag Docker Image
-    needs: [create_tag]
-    if: always() && (needs.create_tag.result == 'success' || github.event_name == 'push')
+  build_frontend_docker:
+    name: 🐳 Build Frontend Docker Image
     runs-on: ubuntu-latest
+    needs: [setup_release, create_frontend_tag]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
+          ref: ${{ needs.setup_release.outputs.tag_name }}
 
-      - name: Set up Docker Buildx
+      - name: Setup Node.js and build
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
@@ -89,125 +96,30 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: syedus06/crm-frontend
-          tags: |
-            type=raw,value=${{ inputs.release_version }}
-            type=raw,value=${{ needs.create_tag.outputs.tag_name || github.ref_name }}
-            type=raw,value=latest,enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            NODE_ENV=production
-            NEXT_TELEMETRY_DISABLED=1
-            BUILD_VERSION=${{ inputs.release_version }}
-            ENV_FILE=.env.production
-
-  build_release_artifacts:
-    name: Build Release Artifacts
-    runs-on: ubuntu-latest
-    needs: [create_tag]
-    if: always() && (needs.create_tag.result == 'success' || github.event_name == 'push')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Build release artifacts
-        run: |
-          echo "📦 Building release artifacts"
-          npm ci
-          npm run build
-        env:
-          NODE_ENV: production
-          NEXT_TELEMETRY_DISABLED: 1
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts-${{ needs.create_tag.outputs.tag_name || github.ref_name }}
-          path: |
-            .next/
-            package.json
-            next.config.ts
-          retention-days: 30
-
-  create_github_release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: [create_tag, build_docker_image, build_release_artifacts]
-    if: >
-      always() &&
-      (needs.build_release_artifacts.result == 'success') &&
-      (needs.build_docker_image.result == 'success') &&
-      ((github.event_name == 'workflow_dispatch' && inputs.create_release) ||
-       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')))
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create_tag.outputs.tag_name || github.ref }}
-
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts-${{ needs.create_tag.outputs.tag_name || github.ref_name }}
-          path: release-artifacts
-
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          TAG_NAME="${{ needs.create_tag.outputs.tag_name || github.ref_name }}"
-
-          # Get previous tag for comparison
-          PREV_TAG=$(git tag --sort=-version:refname | grep -A1 "$TAG_NAME" | tail -n1)
-
-          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$TAG_NAME" ]; then
-            echo "## What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            git log --pretty=format:"- %s (%h)" "$PREV_TAG..HEAD" >> release_notes.md
-          else
-            echo "## What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            echo "Initial release" >> release_notes.md
-          fi
-
-          echo "📝 Generated release notes"
-          cat release_notes.md
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}
+            ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
+          platforms: linux/amd64,linux/arm64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.create_tag.outputs.tag_name || github.ref_name }}
-          name: ${{ needs.create_tag.outputs.tag_name || github.ref_name }}
-          body_path: release_notes.md
-          files: release-artifacts/*
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ needs.setup_release.outputs.tag_name }}
+          name: Frontend ${{ needs.setup_release.outputs.tag_name }}
+          body: |
+            ## 🎯 Frontend Release ${{ needs.setup_release.outputs.tag_name }}
 
-      - name: Display release info
+            **Docker Image:** `${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}`
+
+            📝 **Note:** Deployment is handled by the backend repository.
+
+      - name: Summary
         run: |
-          TAG_NAME="${{ needs.create_tag.outputs.tag_name || github.ref_name }}"
-          echo "🎉 Release $TAG_NAME created successfully!"
-          echo "🔗 View at: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
+          echo "✅ Frontend Docker image built and pushed"
+          echo "🐳 ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}"
+          echo "📝 Deployment will be handled by backend repository"

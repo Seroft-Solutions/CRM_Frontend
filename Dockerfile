@@ -5,34 +5,19 @@ WORKDIR /app
 # Build arguments
 ARG ENV_FILE=.env.production
 ARG BUILD_VERSION=unknown
-ARG NODE_ENV=production
-ARG NEXT_TELEMETRY_DISABLED=1
 
-# Environment variables to optimize build
-ENV NODE_ENV=${NODE_ENV}
-ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
-ENV CI=true
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-ENV NEXT_CONFIG_IGNORE_CSS_LOAD_ERROR=true
-
-# Copy environment file and package files
+# Copy environment file
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
-# Install dependencies with retry mechanism for reliability
+# Install dependencies with error handling and debugging
 RUN npm --version && \
     node --version && \
+    npm config set strict-ssl false && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps
 
-# Copy source files
-COPY src ./src
-COPY public ./public
-COPY *.config.* ./
-COPY *.json ./
-COPY *.md ./
-COPY components.json ./
-
+COPY . .
 # Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
 RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
@@ -46,7 +31,7 @@ ARG BUILD_VERSION=unknown
 
 # Labels for image metadata
 LABEL maintainer="CRM Team"
-LABEL version="1.3.1"
+LABEL version="1.2.1"
 LABEL description="CRM Frontend Application"
 
 COPY --from=builder /app/.env ./

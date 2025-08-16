@@ -1,0 +1,68 @@
+name: 🐳 Frontend Docker Build
+
+on:
+  repository_dispatch:
+    types: [build_latest]
+  push:
+    branches: [master]
+
+jobs:
+  check_ci_trigger:
+    name: Check CI Trigger
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          if [[ "${{ github.event.head_commit.message }}" == *"[CI]"* ]]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "✅ [CI] found - will build"
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "❌ [CI] not found - skipping build"
+          fi
+
+  build_latest:
+    name: Build & Push Latest
+    runs-on: ubuntu-latest
+    needs: [check_ci_trigger]
+    if: always() && (needs.check_ci_trigger.outputs.should_build == 'true' || github.event_name == 'repository_dispatch')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Build application
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push latest
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
+          platforms: linux/amd64,linux/arm64
+
+      - name: Summary
+        run: |
+          echo "✅ Frontend Docker image built: ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest"
+          echo "📝 Deployment handled by backend repository"

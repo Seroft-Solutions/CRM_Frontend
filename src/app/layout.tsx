@@ -1,12 +1,24 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import './globals.css';
 import { QueryClientProvider } from '@/core';
 import { AppSessionProvider } from '@/core/auth';
 import { CrossFormNavigationProvider } from '@/context/cross-form-navigation';
 import { auth } from '@/auth';
 
-// Use CSS variables for fonts instead of next/font/google for builds
-const fontVariables = 'font-geist-sans font-geist-mono';
+const geistSans = localFont({
+  src: './fonts/GeistVF.woff2',
+  variable: '--font-geist-sans',
+  weight: '100 900',
+  fallback: ['system-ui', 'arial'],
+});
+
+const geistMono = localFont({
+  src: './fonts/GeistMonoVF.woff2',
+  variable: '--font-geist-mono',
+  weight: '100 900',
+  fallback: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+});
 
 export const metadata: Metadata = {
   title: 'CRM Cup - Customer Relationship Management',
@@ -23,7 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${fontVariables} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {' '}
         <AppSessionProvider session={session}>
           <QueryClientProvider>
