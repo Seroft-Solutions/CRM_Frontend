@@ -20,10 +20,7 @@ COPY ${ENV_FILE} .env
 COPY package*.json ./
 
 # Install dependencies with retry mechanism for reliability
-RUN npm --version && \
-    node --version && \
-    npm cache clean --force && \
-    npm install --include=dev
+RUN npm --version &&     node --version &&     npm cache clean --force &&     npm ci
 
 # Copy source files
 COPY src ./src
