@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: 'Release version (e.g., 1.4.0)'
+        description: "Release version (e.g., 1.4.0)"
         required: true
         type: string
 
@@ -36,7 +36,7 @@ jobs:
             TRIGGERED_BY_BACKEND="false"
             echo "👤 Manual release triggered: $VERSION"
           fi
-          
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "triggered_by_backend=$TRIGGERED_BY_BACKEND" >> $GITHUB_OUTPUT
@@ -55,12 +55,12 @@ jobs:
       - name: Create and push tag
         run: |
           TAG_NAME="${{ needs.setup_release.outputs.tag_name }}"
-          
+
           if git tag -l | grep -q "^${TAG_NAME}$"; then
             echo "⚠️ Tag ${TAG_NAME} already exists, skipping"
             exit 0
           fi
-          
+
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git tag -a "$TAG_NAME" -m "Frontend Release $TAG_NAME"
@@ -79,8 +79,8 @@ jobs:
       - name: Setup Node.js and build
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install and build
         run: |
@@ -113,9 +113,9 @@ jobs:
           name: Frontend ${{ needs.setup_release.outputs.tag_name }}
           body: |
             ## 🎯 Frontend Release ${{ needs.setup_release.outputs.tag_name }}
-            
+
             **Docker Image:** `${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}`
-            
+
             📝 **Note:** Deployment is handled by the backend repository.
 
       - name: Summary
