@@ -25,13 +25,13 @@ RUN apt-get update && apt-get install -y \
 # Copy package files and install dependencies
 COPY package*.json ./
 
-# Install dependencies with specific flags for TailwindCSS v4 and LightningCSS
+# Install dependencies for TailwindCSS v4 and LightningCSS
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
     rm -rf node_modules && \
     npm ci --prefer-offline --no-audit --progress=false && \
-    echo "Dependencies installed successfully"
+    echo "All dependencies installed successfully for TailwindCSS v4"
 
 # Copy project sources (includes optional environment file)
 COPY . .
