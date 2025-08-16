@@ -38,8 +38,30 @@ RUN npm --version && \
 # Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
 ENV CI=true
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Create cache directory and build with optimizations
+RUN mkdir -p /tmp/lightningcss-cache && \
+    echo "Starting TailwindCSS v4 build..." && \
+    NODE_OPTIONS="--max-old-space-size=8192 --no-warnings" \
+    TAILWIND_DISABLE_TOUCH=true \
+    NEXT_PRIVATE_ALLOW_STANDALONE=1 \
+    npm run build:docker || \
+    (echo "Build failed, trying with fallback options..." && \
+     NODE_OPTIONS="--max-old-space-size=4096" \
+     NEXT_PRIVATE_ALLOW_STANDALONE=1 \
+     npm run build)
+```
+
+#### Required package.json script:
+
+```json
+{
+  "scripts": {
+    "build:docker": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_TELEMETRY_DISABLED=1 next build"
+  }
+}
 ```
 
 ## Key Benefits
@@ -66,6 +88,45 @@ If you encounter out-of-memory errors:
 ```dockerfile
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 ```
+
+### TailwindCSS v4 Build Failures
+
+If you encounter CSS compilation errors or webpack failures with TailwindCSS v4:
+
+1. **Ensure build:docker script exists** in package.json:
+   ```json
+   "build:docker": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_TELEMETRY_DISABLED=1 next build"
+   ```
+
+2. **Use proper PostCSS configuration** in `postcss.config.mjs`:
+   ```javascript
+   const config = {
+     plugins: {
+       '@tailwindcss/postcss': {},
+     },
+   };
+   export default config;
+   ```
+
+3. **Add cache directory** for Lightning CSS:
+   ```dockerfile
+   RUN mkdir -p /tmp/lightningcss-cache
+   ```
+
+4. **Environment variables for stable builds**:
+   ```dockerfile
+   ENV TAILWIND_DISABLE_TOUCH=true
+   ENV NEXT_TELEMETRY_DISABLED=1
+   ENV NODE_ENV=production
+   ```
+
+### CSS Import Errors
+
+For webpack CSS loader errors with `globals.css`:
+
+- Ensure PostCSS plugins are configured as objects, not arrays
+- Verify TailwindCSS v4 syntax: `@import 'tailwindcss';`
+- Check that all CSS custom properties are properly defined
 
 ### Native Dependencies
 
