@@ -6,20 +6,27 @@ WORKDIR /app
 ARG ENV_FILE=.env.production
 ARG BUILD_VERSION=unknown
 
-# Copy environment file
+# Copy environment file and package files first for better layer caching
 COPY ${ENV_FILE} .env
 COPY package*.json ./
 
-# Install dependencies with error handling and debugging
+# Install dependencies with optimizations for CI/CD environments
 RUN npm --version && \
     node --version && \
     npm config set strict-ssl false && \
+    npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retries 3 && \
+    npm config set fetch-retry-mintimeout 10000 && \
+    npm config set fetch-retry-maxtimeout 60000 && \
     npm cache clean --force && \
-    npm ci --legacy-peer-deps
+    npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
 
 COPY . .
+
 # Build the application with TailwindCSS v4 support
 ENV PATH=/app/node_modules/.bin:$PATH
+ENV CI=true
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN NEXT_PRIVATE_ALLOW_STANDALONE=1 npm run build
 
 # Production stage
