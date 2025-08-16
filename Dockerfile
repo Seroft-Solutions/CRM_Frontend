@@ -23,7 +23,7 @@ COPY package*.json ./
 RUN npm --version && \
     node --version && \
     npm cache clean --force && \
-    npm ci --include=dev
+    npm install --include=dev
 
 # Copy source files
 COPY src ./src
