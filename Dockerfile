@@ -19,7 +19,7 @@ RUN npm --version && \
     npm config set fetch-retry-mintimeout 10000 && \
     npm config set fetch-retry-maxtimeout 60000 && \
     npm cache clean --force && \
-    npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+    npm install --legacy-peer-deps --no-audit --no-fund --platform=linux --arch=x64
 
 COPY . .
 
@@ -35,11 +35,7 @@ RUN mkdir -p /tmp/lightningcss-cache && \
     NODE_OPTIONS="--max-old-space-size=8192 --no-warnings" \
     TAILWIND_DISABLE_TOUCH=true \
     NEXT_PRIVATE_ALLOW_STANDALONE=1 \
-    npm run build:docker || \
-    (echo "Build failed, trying with fallback options..." && \
-     NODE_OPTIONS="--max-old-space-size=4096" \
-     NEXT_PRIVATE_ALLOW_STANDALONE=1 \
-     npm run build)
+    npm run build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
