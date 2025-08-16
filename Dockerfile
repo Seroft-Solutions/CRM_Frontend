@@ -2,30 +2,26 @@
 FROM node:20.17.0-alpine AS builder
 WORKDIR /app
 
-# Copy package files
+ARG ENV_FILE
+COPY ${ENV_FILE} .env
 COPY package*.json ./
 
-# Install ALL dependencies - no complexity, just install everything
-RUN npm install
+RUN npm --version && \
+    node --version && \
+    npm cache clean --force && \
+    npm ci --legacy-peer-deps --verbose || (cat /root/.npm/_logs/*-debug.log && exit 1)
 
-# Copy source code
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Production stage  
+# Production stage
 FROM node:20.17.0-alpine AS runner
 WORKDIR /app
 
-# Copy environment file
-COPY .env.production .env
-
-# Create user
+COPY --from=builder /app/.env ./
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
