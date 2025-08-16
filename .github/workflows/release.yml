@@ -105,6 +105,10 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}
             ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
           platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
