@@ -19,7 +19,8 @@ RUN npm --version && \
     npm config set fetch-retry-mintimeout 10000 && \
     npm config set fetch-retry-maxtimeout 60000 && \
     npm cache clean --force && \
-    npm install --legacy-peer-deps --no-audit --no-fund --platform=linux --arch=x64
+    (test -f package-lock.json && npm ci --legacy-peer-deps --no-audit --no-fund || npm install --legacy-peer-deps --no-audit --no-fund) && \
+    npm install @tailwindcss/postcss --save
 
 COPY . .
 
