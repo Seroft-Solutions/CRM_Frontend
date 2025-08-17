@@ -11,6 +11,7 @@ RUN npm --version && \
     npm cache clean --force && \
     npm ci --legacy-peer-deps --verbose || (cat /root/.npm/_logs/*-debug.log && exit 1)
 
+
 COPY . .
 RUN npm run build
 
