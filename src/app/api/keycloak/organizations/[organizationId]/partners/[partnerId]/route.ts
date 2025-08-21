@@ -15,7 +15,7 @@ import {
   updateUserProfile,
   UserProfileDTO,
   deleteUserProfile,
-  searchUserProfiles,
+  searchUserProfiles, getUserProfile,
 } from '@/core/api/generated/spring';
 import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
 export async function DELETE(
@@ -53,123 +53,6 @@ export async function DELETE(
     } catch (keycloakError: any) {
       console.error('Failed to remove partner from Keycloak:', keycloakError);
       throw new Error(`Keycloak removal failed: ${keycloakError.message}`);
-    }
-
-    // Step 2: Remove partner from Spring backend
-    try {
-      console.log('Removing partner from Spring backend...');
-
-      // First, search for the user profile by keycloakId to get the database ID
-      console.log('Searching for user profile by keycloakId:', partnerId);
-      const searchPromise = searchUserProfiles({
-        query: `keycloakId:${partnerId}`,
-      });
-      const searchTimeoutPromise = new Promise<any>((_, reject) =>
-        setTimeout(() => reject(new Error('Spring backend search timeout')), 10000)
-      );
-
-      const existingUsers = await Promise.race([searchPromise, searchTimeoutPromise]);
-
-      if (!existingUsers || existingUsers.length === 0) {
-        console.log(
-          'Partner not found in Spring backend by keycloakId, considering removal successful'
-        );
-        springRemovalSucceeded = true;
-      } else {
-        // User profile exists, delete it using the database ID
-        const userProfile = existingUsers[0];
-        const userProfileDatabaseId = userProfile.id;
-
-        console.log(`Found user profile in Spring backend:`, {
-          databaseId: userProfileDatabaseId,
-          keycloakId: userProfile.keycloakId,
-          email: userProfile.email,
-        });
-
-        // Delete using the database ID
-        const deletePromise = deleteUserProfile(userProfileDatabaseId);
-        const deleteTimeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Spring backend delete timeout')), 10000)
-        );
-
-        await Promise.race([deletePromise, deleteTimeoutPromise]);
-        springRemovalSucceeded = true;
-        console.log(
-          `Successfully removed partner from Spring backend using database ID: ${userProfileDatabaseId}`
-        );
-      }
-    } catch (springError: any) {
-      console.error('Failed to remove partner from Spring backend:', springError);
-
-      // Check if it's a redirect error (which might indicate auth issues)
-      const isRedirectError =
-        springError.message?.includes('Maximum number of redirects exceeded') ||
-        springError.message?.includes('redirect') ||
-        springError.status === 302;
-
-      const isNotFoundError =
-        springError.status === 404 || springError.message?.includes('not found');
-
-      const isTimeoutError = springError.message?.includes('timeout');
-
-      // If user doesn't exist in Spring backend, consider it a successful removal
-      if (isNotFoundError) {
-        console.log('Partner not found in Spring backend, considering removal successful');
-        springRemovalSucceeded = true;
-      } else if (isRedirectError) {
-        console.warn(
-          'Spring backend redirect error - likely auth issue, but partner may not exist in backend, considering successful'
-        );
-        springRemovalSucceeded = true;
-      } else if (isTimeoutError) {
-        console.warn(
-          'Spring backend timeout - backend may be slow, but will proceed with rollback to be safe'
-        );
-        // Don't mark as successful, proceed with rollback
-      } else {
-        console.error('Genuine Spring backend error occurred');
-        // Don't mark as successful, proceed with rollback
-      }
-
-      if (!springRemovalSucceeded) {
-        // ROLLBACK: Re-add partner to Keycloak organization since Spring removal failed
-        console.log('Attempting rollback: Re-adding partner to Keycloak organization...');
-        try {
-          await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, partnerId);
-          console.log('Rollback successful: Partner restored to Keycloak organization');
-
-          return NextResponse.json(
-            {
-              error:
-                'Partner removal failed: Spring backend removal failed, changes have been rolled back',
-              details: {
-                keycloakRemoval: 'succeeded',
-                springRemoval: 'failed',
-                rollback: 'successful',
-                springError: springError.message || 'Unknown Spring backend error',
-              },
-            },
-            { status: 500 }
-          );
-        } catch (rollbackError: any) {
-          console.error('CRITICAL: Rollback failed:', rollbackError);
-
-          return NextResponse.json(
-            {
-              error: 'CRITICAL: Partner removal partially completed with rollback failure',
-              details: {
-                keycloakRemoval: 'succeeded',
-                springRemoval: 'failed',
-                rollback: 'failed',
-                springError: springError.message || 'Unknown Spring backend error',
-                rollbackError: rollbackError.message || 'Unknown rollback error',
-                warning: 'Data inconsistency detected - manual intervention required',
-              },
-            },
-            { status: 500 }
-          );
-        }
-      }
     }
 
     // Success: Both removals completed

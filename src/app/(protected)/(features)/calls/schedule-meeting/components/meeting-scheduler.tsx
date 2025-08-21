@@ -89,7 +89,7 @@ interface ReminderDetails {
 
 interface MeetingSchedulerProps {
   customerId?: number;
-  assignedUserId?: number | string; // Can be either number ID or string UUID
+  assignedUserId?: string; // Can be either number ID or string UUID
   callId?: number;
   onMeetingScheduledAction: (meetingData: any) => void;
   onError?: (error: any) => void;
