@@ -83,7 +83,7 @@ import type { MeetingDTO } from '@/core/api/generated/spring/schemas/MeetingDTO'
 interface CallMeetingsSectionProps {
   callId: number;
   customerId?: number;
-  assignedUserId?: number | string;
+  assignedUserId?: string;
 }
 
 export function CallMeetingsSection({
