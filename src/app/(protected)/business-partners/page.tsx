@@ -55,8 +55,8 @@ import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-with-refresh';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-import {deleteUserProfile, getUserProfile} from "@/core/api/generated/spring";
-import {postAdminRealmsRealmOrganizationsOrgIdMembers} from "@/core/api/generated/keycloak";
+import { deleteUserProfile, getUserProfile } from '@/core/api/generated/spring';
+import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
 
 interface BusinessPartner {
   id: string;
@@ -234,7 +234,7 @@ export default function BusinessPartnersPage() {
 
       if (!userProfile) {
         console.log(
-            'Partner not found in Spring backend by keycloakId, considering removal successful'
+          'Partner not found in Spring backend by keycloakId, considering removal successful'
         );
         springRemovalSucceeded = true;
       } else {
@@ -250,27 +250,26 @@ export default function BusinessPartnersPage() {
         // Delete using the database ID
         const deletePromise = deleteUserProfile(userProfileDatabaseId);
         const deleteTimeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Spring backend delete timeout')), 10000)
+          setTimeout(() => reject(new Error('Spring backend delete timeout')), 10000)
         );
 
         await Promise.race([deletePromise, deleteTimeoutPromise]);
         springRemovalSucceeded = true;
         console.log(
-            `Successfully removed partner from Spring backend using database ID: ${userProfileDatabaseId}`
+          `Successfully removed partner from Spring backend using database ID: ${userProfileDatabaseId}`
         );
       }
-    }
-    catch (springError: any) {
+    } catch (springError: any) {
       console.error('Failed to remove partner from Spring backend:', springError);
 
       // Check if it's a redirect error (which might indicate auth issues)
       const isRedirectError =
-          springError.message?.includes('Maximum number of redirects exceeded') ||
-          springError.message?.includes('redirect') ||
-          springError.status === 302;
+        springError.message?.includes('Maximum number of redirects exceeded') ||
+        springError.message?.includes('redirect') ||
+        springError.status === 302;
 
       const isNotFoundError =
-          springError.status === 404 || springError.message?.includes('not found');
+        springError.status === 404 || springError.message?.includes('not found');
 
       const isTimeoutError = springError.message?.includes('timeout');
 
@@ -280,12 +279,12 @@ export default function BusinessPartnersPage() {
         springRemovalSucceeded = true;
       } else if (isRedirectError) {
         console.warn(
-            'Spring backend redirect error - likely auth issue, but partner may not exist in backend, considering successful'
+          'Spring backend redirect error - likely auth issue, but partner may not exist in backend, considering successful'
         );
         springRemovalSucceeded = true;
       } else if (isTimeoutError) {
         console.warn(
-            'Spring backend timeout - backend may be slow, but will proceed with rollback to be safe'
+          'Spring backend timeout - backend may be slow, but will proceed with rollback to be safe'
         );
         // Don't mark as successful, proceed with rollback
       } else {

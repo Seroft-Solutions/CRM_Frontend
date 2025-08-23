@@ -15,7 +15,8 @@ import {
   updateUserProfile,
   UserProfileDTO,
   deleteUserProfile,
-  searchUserProfiles, getUserProfile,
+  searchUserProfiles,
+  getUserProfile,
 } from '@/core/api/generated/spring';
 import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
 export async function DELETE(
