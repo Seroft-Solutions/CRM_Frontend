@@ -1,20 +1,26 @@
 # Docker Build Optimization Guide
 
-This document outlines the optimizations implemented to improve Docker build performance and prevent timeout issues in CI/CD environments.
+This document outlines the optimizations implemented to improve Docker build
+performance and prevent timeout issues in CI/CD environments.
 
 ## Recent Optimizations
 
 ### 1. Dockerfile Improvements
 
-- **Better Layer Caching**: Package files are copied before source code to improve layer caching
-- **NPM Configuration**: Added timeout and retry configurations for better reliability in CI environments
+- **Better Layer Caching**: Package files are copied before source code to
+  improve layer caching
+- **NPM Configuration**: Added timeout and retry configurations for better
+  reliability in CI environments
 - **Memory Optimization**: Increased Node.js memory limit for large builds
-- **Build Flags**: Added CI-specific environment variables and build optimizations
+- **Build Flags**: Added CI-specific environment variables and build
+  optimizations
 
 ### 2. GitHub Actions Cache Integration
 
-- **GitHub Actions Cache**: Enabled `cache-from` and `cache-to` for BuildKit cache
-- **Inline Cache**: Added `BUILDKIT_INLINE_CACHE=1` for better cross-build caching
+- **GitHub Actions Cache**: Enabled `cache-from` and `cache-to` for BuildKit
+  cache
+- **Inline Cache**: Added `BUILDKIT_INLINE_CACHE=1` for better cross-build
+  caching
 - **Max Cache Mode**: Using `mode=max` to cache all layers
 
 ### 3. NPM Installation Optimizations
@@ -94,11 +100,13 @@ ENV NODE_OPTIONS="--max-old-space-size=8192"
 If you encounter CSS compilation errors or webpack failures with TailwindCSS v4:
 
 1. **Ensure build:docker script exists** in package.json:
+
    ```json
    "build:docker": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_TELEMETRY_DISABLED=1 next build"
    ```
 
 2. **Use proper PostCSS configuration** in `postcss.config.mjs`:
+
    ```javascript
    const config = {
      plugins: {
@@ -109,6 +117,7 @@ If you encounter CSS compilation errors or webpack failures with TailwindCSS v4:
    ```
 
 3. **Add cache directory** for Lightning CSS:
+
    ```dockerfile
    RUN mkdir -p /tmp/lightningcss-cache
    ```
@@ -147,6 +156,7 @@ Track build times in GitHub Actions to identify performance regressions:
 
 ## Future Optimizations
 
-1. **Multi-stage optimization**: Consider separating dependency installation and build stages
+1. **Multi-stage optimization**: Consider separating dependency installation and
+   build stages
 2. **BuildKit features**: Explore additional BuildKit optimizations
 3. **Registry caching**: Implement Docker registry caching for base images
