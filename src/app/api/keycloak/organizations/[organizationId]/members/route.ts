@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
   getAdminRealmsRealmOrganizationsOrgIdMembers,
+  getAdminRealmsRealmOrganizationsOrgId,
   postAdminRealmsRealmOrganizationsOrgIdMembers,
   postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
   postAdminRealmsRealmOrganizationsOrgIdMembersInviteUser,
@@ -28,6 +29,7 @@ import type {
   MemberRepresentation,
   UserRepresentation,
   GroupRepresentation,
+  OrganizationRepresentation,
   CredentialRepresentation,
 } from '@/core/api/generated/keycloak';
 import type {
@@ -380,7 +382,7 @@ export async function POST(
       selectedRoles: body.selectedRoles || [],
       invitationNote: body.invitationNote,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
-      sendPasswordReset: body.sendPasswordReset !== false, // New option for password reset
+      sendPasswordReset: body.sendPasswordReset === true, // Only send password reset if explicitly requested
     };
 
     // Validate required fields
@@ -392,6 +394,12 @@ export async function POST(
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteData.email)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
+    // Fetch organization details for multi-tenant email templates
+    const organization = await getAdminRealmsRealmOrganizationsOrgId(realm, organizationId);
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
     // CLEAR SCENARIO-BASED FLOW
@@ -422,9 +430,9 @@ export async function POST(
         groupManagement.adminsGroupRemoved =
           groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // Then send appropriate email
-        if (inviteData.sendPasswordReset !== false) {
-          // Send UPDATE_PASSWORD email if user needs to set/reset password
+        // Send appropriate email - prioritize invitation over password reset
+        if (inviteData.sendPasswordReset === true) {
+          // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -436,12 +444,12 @@ export async function POST(
                 redirect_uri: body.redirectUri,
               }
             );
-            console.log('Sent UPDATE_PASSWORD email to existing user');
+            console.log('Sent UPDATE_PASSWORD email to existing user (explicitly requested)');
           } catch (emailError) {
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
           }
-        } else {
-          // Send organization invite
+        } else if (inviteData.sendWelcomeEmail !== false) {
+          // Default: Send organization invitation email
           const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -452,7 +460,7 @@ export async function POST(
             organizationId,
             inviteExistingUserData
           );
-          console.log('Invited existing user to organization');
+          console.log('Sent organization invitation email to existing user');
         }
       } else {
         // SCENARIO 1: User doesn't exist - create then invite
@@ -467,6 +475,12 @@ export async function POST(
           emailVerified: false,
           attributes: {
             organization: [organizationId],
+            // Organization details for multi-tenant email templates
+            organization_id: [organizationId],
+            organization_name: [organization.name || 'Organization'],
+            organization_display_name: [organization.displayName || organization.name || 'Organization'],
+            // User type classification
+            user_type: ['user'], // Set user_type for regular users
           },
         };
 
@@ -503,9 +517,9 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added user to organization');
 
-        // 5. Send appropriate email based on configuration
-        if (inviteData.sendPasswordReset !== false) {
-          // Send UPDATE_PASSWORD email for new users to set their password
+        // 5. Send appropriate email - prioritize invitation over password reset
+        if (inviteData.sendPasswordReset === true) {
+          // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -517,13 +531,13 @@ export async function POST(
                 redirect_uri: body.redirectUri, // Optional redirect after password setup
               }
             );
-            console.log('Sent UPDATE_PASSWORD email to new user');
+            console.log('Sent UPDATE_PASSWORD email to new user (explicitly requested)');
           } catch (emailError) {
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
             // Continue with invitation flow even if email fails
           }
         } else if (inviteData.sendWelcomeEmail !== false) {
-          // Fallback to organization invite email
+          // Default: Send organization invitation email  
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -534,7 +548,7 @@ export async function POST(
             organizationId,
             inviteUserData
           );
-          console.log('Sent organization invitation email');
+          console.log('Sent organization invitation email to new user');
         }
       }
 
@@ -606,7 +620,7 @@ export async function POST(
       userId,
       invitationId,
       selectedGroups: inviteData.selectedGroups?.length || 0,
-      emailType: inviteData.sendPasswordReset !== false ? 'password_reset' : 'organization_invite',
+      emailType: inviteData.sendPasswordReset === true ? 'password_reset' : 'organization_invite',
       groupManagement: {
         usersGroupAssigned: groupManagement.usersGroupAssigned,
         adminsGroupRemoved: groupManagement.adminsGroupRemoved,

@@ -52,7 +52,7 @@ export class UserOnboardingService {
       // Prepare partner invitation data with proper defaults
       const partnerData = {
         ...inviteData,
-        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true
+        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true for partner onboarding
         sendWelcomeEmail: false, // Prefer password reset over org invite
         redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
       };
@@ -109,7 +109,7 @@ export class UserOnboardingService {
       // Prepare invitation data with proper defaults
       const onboardingData: UserInvitationWithGroups = {
         ...inviteData,
-        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true
+        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true for user onboarding
         sendWelcomeEmail: false, // Prefer password reset over org invite
         redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
         selectedGroups: [
