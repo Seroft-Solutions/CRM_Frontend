@@ -18,7 +18,7 @@ export function CallsPageWithMeetingDialog() {
   const [meetingDialogData, setMeetingDialogData] = useState<{
     callId?: number;
     customerId?: number;
-    assignedUserId?: number;
+    assignedUserId?: string;
   }>({});
 
   // Check for URL parameters that indicate a call was just created
@@ -33,7 +33,7 @@ export function CallsPageWithMeetingDialog() {
       setMeetingDialogData({
         callId: parseInt(callId, 10),
         customerId: customerId ? parseInt(customerId, 10) : undefined,
-        assignedUserId: assignedUserId ? parseInt(assignedUserId, 10) : undefined,
+        assignedUserId: assignedUserId ? assignedUserId : undefined,
       });
 
       // Show the meeting dialog
