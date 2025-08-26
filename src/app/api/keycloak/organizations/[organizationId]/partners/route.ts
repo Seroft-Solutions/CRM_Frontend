@@ -5,8 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import { getChannelType } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import type { ChannelTypeDTO } from '@/core/api/generated/spring/schemas';
 import {
   getAdminRealmsRealmOrganizationsOrgIdMembers,
+  getAdminRealmsRealmOrganizationsOrgId,
   postAdminRealmsRealmOrganizationsOrgIdMembers,
   postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
   getAdminRealmsRealmUsers,
@@ -24,6 +27,7 @@ import type {
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
   UserRepresentation,
   GroupRepresentation,
+  OrganizationRepresentation,
   CredentialRepresentation,
 } from '@/core/api/generated/keycloak';
 
@@ -98,10 +102,23 @@ function generateInvitationId(): string {
   return `partner_inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Helper function to fetch channel type details
+async function fetchChannelTypeDetails(channelTypeId: number): Promise<ChannelTypeDTO | null> {
+  try {
+    const channelType = await getChannelType(channelTypeId);
+    return channelType;
+  } catch (error) {
+    console.warn(`Failed to fetch channel type ${channelTypeId}:`, error);
+    return null;
+  }
+}
+
 // Helper function to store partner invitation metadata in user attributes
 function createPartnerInvitationUserAttributes(
   invitation: PendingPartnerInvitation,
-  channelTypeId: number
+  channelTypeId: number,
+  channelType?: ChannelTypeDTO | null,
+  organization?: OrganizationRepresentation | null
 ) {
   return {
     partner_invitation_id: invitation.id,
@@ -111,7 +128,15 @@ function createPartnerInvitationUserAttributes(
     partner_invitation_organization_id: invitation.organizationId,
     partner_invitation_note: invitation.invitationNote || '',
     partner_invitation_expires_at: invitation.expiresAt?.toString() || '',
-    channel_type_id: channelTypeId.toString(), // Ensure channelType is always stored
+    // Organization details for multi-tenant email templates
+    organization_id: invitation.organizationId,
+    organization_name: organization?.name || 'Organization',
+    organization_display_name: organization?.displayName || organization?.name || 'Organization',
+    // Channel type details
+    channel_type_id: channelTypeId.toString(),
+    channel_type_name: channelType?.name || 'Business Partner',
+    channel_type_commission_rate: channelType?.commissionRate?.toString() || '0',
+    // User type classification
     user_type: 'partner',
     invited_as: 'business_partner',
   };
@@ -239,6 +264,26 @@ export async function POST(
       return NextResponse.json({ error: 'Channel Type is required' }, { status: 400 });
     }
 
+    // Fetch channel type details and organization info for proper email template data
+    const [channelType, organization] = await Promise.all([
+      fetchChannelTypeDetails(inviteData.channelTypeId),
+      getAdminRealmsRealmOrganizationsOrgId(realm, organizationId)
+    ]);
+
+    if (!channelType) {
+      return NextResponse.json(
+        { error: 'Invalid channel type ID or channel type not found' },
+        { status: 400 }
+      );
+    }
+
+    if (!organization) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 404 }
+      );
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteData.email)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
@@ -273,9 +318,17 @@ export async function POST(
             attributes: {
               ...existingUsers[0].attributes,
               organization: [organizationId],
+              // Organization details for multi-tenant email templates
+              organization_id: [organizationId],
+              organization_name: [organization.name || 'Organization'],
+              organization_display_name: [organization.displayName || organization.name || 'Organization'],
+              // User type and partner classification
               user_type: ['partner'],
-              channel_type_id: [inviteData.channelTypeId.toString()],
               invited_as: ['business_partner'],
+              // Channel type details for email templates
+              channel_type_id: [inviteData.channelTypeId.toString()],
+              channel_type_name: [channelType.name],
+              channel_type_commission_rate: [channelType.commissionRate?.toString() || '0'],
             },
           };
 
@@ -377,9 +430,17 @@ export async function POST(
             attributes: {
               ...createdUsers[0].attributes,
               organization: [organizationId],
+              // Organization details for multi-tenant email templates
+              organization_id: [organizationId],
+              organization_name: [organization.name || 'Organization'],
+              organization_display_name: [organization.displayName || organization.name || 'Organization'],
+              // User type and partner classification
               user_type: ['partner'],
-              channel_type_id: [inviteData.channelTypeId.toString()],
               invited_as: ['business_partner'],
+              // Channel type details for email templates
+              channel_type_id: [inviteData.channelTypeId.toString()],
+              channel_type_name: [channelType.name],
+              channel_type_commission_rate: [channelType.commissionRate?.toString() || '0'],
             },
           };
 
@@ -457,7 +518,9 @@ export async function POST(
 
       const invitationAttributes = createPartnerInvitationUserAttributes(
         pendingInvitation,
-        inviteData.channelTypeId
+        inviteData.channelTypeId,
+        channelType,
+        organization
       );
 
       // Update user with partner invitation metadata (gracefully handle failures)
