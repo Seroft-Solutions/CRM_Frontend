@@ -26,7 +26,12 @@
     "sync:jhipster": "shx rm -rf .jhipster && shx cp -r ../CRM_Backend/.jhipster .",
     "openapi:fetch": "shx mkdir -p openapi && curl -L --fail http://localhost:8080/v3/api-docs -o openapi/openapi.json",
     "openapi:generate": "orval --config orval.config.cjs",
-    "sync": "npm run openapi:fetch && npm run openapi:generate && npm run sync:jhipster"
+    "sync": "npm run openapi:fetch && npm run openapi:generate && npm run sync:jhipster",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -90,6 +95,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.0",
+    "@playwright/test": "^1.55.0",
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.17.47",
