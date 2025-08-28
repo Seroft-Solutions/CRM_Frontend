@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250803230947"
+    "changelogDate": "20250828083531"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -24,6 +24,12 @@
     {
       "fieldName": "bookedAt",
       "fieldType": "Instant"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
       "fieldName": "createdBy",

@@ -13,6 +13,10 @@ import type { CountMeetingsMeetingTypeEquals } from './CountMeetingsMeetingTypeE
 import type { CountMeetingsMeetingTypeNotEquals } from './CountMeetingsMeetingTypeNotEquals';
 import type { CountMeetingsMeetingTypeInItem } from './CountMeetingsMeetingTypeInItem';
 import type { CountMeetingsMeetingTypeNotInItem } from './CountMeetingsMeetingTypeNotInItem';
+import type { CountMeetingsStatusEquals } from './CountMeetingsStatusEquals';
+import type { CountMeetingsStatusNotEquals } from './CountMeetingsStatusNotEquals';
+import type { CountMeetingsStatusInItem } from './CountMeetingsStatusInItem';
+import type { CountMeetingsStatusNotInItem } from './CountMeetingsStatusNotInItem';
 
 export type CountMeetingsParams = {
 'id.greaterThan'?: number;
@@ -99,6 +103,11 @@ export type CountMeetingsParams = {
 'meetingType.specified'?: boolean;
 'meetingType.in'?: CountMeetingsMeetingTypeInItem[];
 'meetingType.notIn'?: CountMeetingsMeetingTypeNotInItem[];
+'status.equals'?: CountMeetingsStatusEquals;
+'status.notEquals'?: CountMeetingsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountMeetingsStatusInItem[];
+'status.notIn'?: CountMeetingsStatusNotInItem[];
 'createdAt.greaterThan'?: string;
 'createdAt.lessThan'?: string;
 'createdAt.greaterThanOrEqual'?: string;

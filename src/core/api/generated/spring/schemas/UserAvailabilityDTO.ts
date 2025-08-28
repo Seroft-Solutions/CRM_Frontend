@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { UserAvailabilityDTODayOfWeek } from './UserAvailabilityDTODayOfWeek';
+import type { UserAvailabilityDTOStatus } from './UserAvailabilityDTOStatus';
 import type { UserProfileDTO } from './UserProfileDTO';
 
 export interface UserAvailabilityDTO {
@@ -23,6 +24,7 @@ export interface UserAvailabilityDTO {
    * @maxLength 50
    */
   timeZone?: string;
+  status: UserAvailabilityDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

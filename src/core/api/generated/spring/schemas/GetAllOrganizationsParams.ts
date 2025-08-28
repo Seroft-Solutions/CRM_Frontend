@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllOrganizationsStatusEquals } from './GetAllOrganizationsStatusEquals';
+import type { GetAllOrganizationsStatusNotEquals } from './GetAllOrganizationsStatusNotEquals';
+import type { GetAllOrganizationsStatusInItem } from './GetAllOrganizationsStatusInItem';
+import type { GetAllOrganizationsStatusNotInItem } from './GetAllOrganizationsStatusNotInItem';
 
 export type GetAllOrganizationsParams = {
 'id.greaterThan'?: number;
@@ -44,11 +48,11 @@ export type GetAllOrganizationsParams = {
 'domain.specified'?: boolean;
 'domain.in'?: string[];
 'domain.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
+'status.equals'?: GetAllOrganizationsStatusEquals;
+'status.notEquals'?: GetAllOrganizationsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllOrganizationsStatusInItem[];
+'status.notIn'?: GetAllOrganizationsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

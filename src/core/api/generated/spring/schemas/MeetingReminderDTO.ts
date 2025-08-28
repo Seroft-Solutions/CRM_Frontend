@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { MeetingReminderDTOReminderType } from './MeetingReminderDTOReminderType';
+import type { MeetingReminderDTOStatus } from './MeetingReminderDTOStatus';
 import type { MeetingDTO } from './MeetingDTO';
 
 export interface MeetingReminderDTO {
@@ -23,6 +24,7 @@ export interface MeetingReminderDTO {
    * @maxLength 500
    */
   failureReason?: string;
+  status: MeetingReminderDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

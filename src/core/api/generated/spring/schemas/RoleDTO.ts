@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { RoleDTOStatus } from './RoleDTOStatus';
 
 export interface RoleDTO {
   id?: number;
@@ -20,7 +21,7 @@ export interface RoleDTO {
    * @maxLength 200
    */
   description?: string;
-  isActive: boolean;
+  status: RoleDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountUserProfilesStatusEquals } from './CountUserProfilesStatusEquals';
+import type { CountUserProfilesStatusNotEquals } from './CountUserProfilesStatusNotEquals';
+import type { CountUserProfilesStatusInItem } from './CountUserProfilesStatusInItem';
+import type { CountUserProfilesStatusNotInItem } from './CountUserProfilesStatusNotInItem';
 
 export type CountUserProfilesParams = {
 'id.contains'?: string;
@@ -56,6 +60,11 @@ export type CountUserProfilesParams = {
 'displayName.specified'?: boolean;
 'displayName.in'?: string[];
 'displayName.notIn'?: string[];
+'status.equals'?: CountUserProfilesStatusEquals;
+'status.notEquals'?: CountUserProfilesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountUserProfilesStatusInItem[];
+'status.notIn'?: CountUserProfilesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

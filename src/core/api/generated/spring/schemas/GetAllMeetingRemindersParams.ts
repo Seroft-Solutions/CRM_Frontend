@@ -9,6 +9,10 @@ import type { GetAllMeetingRemindersReminderTypeEquals } from './GetAllMeetingRe
 import type { GetAllMeetingRemindersReminderTypeNotEquals } from './GetAllMeetingRemindersReminderTypeNotEquals';
 import type { GetAllMeetingRemindersReminderTypeInItem } from './GetAllMeetingRemindersReminderTypeInItem';
 import type { GetAllMeetingRemindersReminderTypeNotInItem } from './GetAllMeetingRemindersReminderTypeNotInItem';
+import type { GetAllMeetingRemindersStatusEquals } from './GetAllMeetingRemindersStatusEquals';
+import type { GetAllMeetingRemindersStatusNotEquals } from './GetAllMeetingRemindersStatusNotEquals';
+import type { GetAllMeetingRemindersStatusInItem } from './GetAllMeetingRemindersStatusInItem';
+import type { GetAllMeetingRemindersStatusNotInItem } from './GetAllMeetingRemindersStatusNotInItem';
 
 export type GetAllMeetingRemindersParams = {
 'id.greaterThan'?: number;
@@ -55,6 +59,11 @@ export type GetAllMeetingRemindersParams = {
 'failureReason.specified'?: boolean;
 'failureReason.in'?: string[];
 'failureReason.notIn'?: string[];
+'status.equals'?: GetAllMeetingRemindersStatusEquals;
+'status.notEquals'?: GetAllMeetingRemindersStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllMeetingRemindersStatusInItem[];
+'status.notIn'?: GetAllMeetingRemindersStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

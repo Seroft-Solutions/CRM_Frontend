@@ -13,6 +13,10 @@ import type { GetAllMeetingsMeetingTypeEquals } from './GetAllMeetingsMeetingTyp
 import type { GetAllMeetingsMeetingTypeNotEquals } from './GetAllMeetingsMeetingTypeNotEquals';
 import type { GetAllMeetingsMeetingTypeInItem } from './GetAllMeetingsMeetingTypeInItem';
 import type { GetAllMeetingsMeetingTypeNotInItem } from './GetAllMeetingsMeetingTypeNotInItem';
+import type { GetAllMeetingsStatusEquals } from './GetAllMeetingsStatusEquals';
+import type { GetAllMeetingsStatusNotEquals } from './GetAllMeetingsStatusNotEquals';
+import type { GetAllMeetingsStatusInItem } from './GetAllMeetingsStatusInItem';
+import type { GetAllMeetingsStatusNotInItem } from './GetAllMeetingsStatusNotInItem';
 
 export type GetAllMeetingsParams = {
 'id.greaterThan'?: number;
@@ -99,6 +103,11 @@ export type GetAllMeetingsParams = {
 'meetingType.specified'?: boolean;
 'meetingType.in'?: GetAllMeetingsMeetingTypeInItem[];
 'meetingType.notIn'?: GetAllMeetingsMeetingTypeNotInItem[];
+'status.equals'?: GetAllMeetingsStatusEquals;
+'status.notEquals'?: GetAllMeetingsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllMeetingsStatusInItem[];
+'status.notIn'?: GetAllMeetingsStatusNotInItem[];
 'createdAt.greaterThan'?: string;
 'createdAt.lessThan'?: string;
 'createdAt.greaterThanOrEqual'?: string;

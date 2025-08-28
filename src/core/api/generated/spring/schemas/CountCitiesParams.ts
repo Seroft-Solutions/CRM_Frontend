@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountCitiesStatusEquals } from './CountCitiesStatusEquals';
+import type { CountCitiesStatusNotEquals } from './CountCitiesStatusNotEquals';
+import type { CountCitiesStatusInItem } from './CountCitiesStatusInItem';
+import type { CountCitiesStatusNotInItem } from './CountCitiesStatusNotInItem';
 
 export type CountCitiesParams = {
 'id.greaterThan'?: number;
@@ -23,6 +27,11 @@ export type CountCitiesParams = {
 'name.specified'?: boolean;
 'name.in'?: string[];
 'name.notIn'?: string[];
+'status.equals'?: CountCitiesStatusEquals;
+'status.notEquals'?: CountCitiesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountCitiesStatusInItem[];
+'status.notIn'?: CountCitiesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CustomerDTOStatus } from './CustomerDTOStatus';
 import type { StateDTO } from './StateDTO';
 import type { DistrictDTO } from './DistrictDTO';
 import type { CityDTO } from './CityDTO';
@@ -32,6 +33,7 @@ export interface CustomerDTO {
    * @maxLength 100
    */
   contactPerson?: string;
+  status: CustomerDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

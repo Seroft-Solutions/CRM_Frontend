@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountAvailableTimeSlotsStatusEquals } from './CountAvailableTimeSlotsStatusEquals';
+import type { CountAvailableTimeSlotsStatusNotEquals } from './CountAvailableTimeSlotsStatusNotEquals';
+import type { CountAvailableTimeSlotsStatusInItem } from './CountAvailableTimeSlotsStatusInItem';
+import type { CountAvailableTimeSlotsStatusNotInItem } from './CountAvailableTimeSlotsStatusNotInItem';
 
 export type CountAvailableTimeSlotsParams = {
 'id.greaterThan'?: number;
@@ -48,6 +52,11 @@ export type CountAvailableTimeSlotsParams = {
 'bookedAt.specified'?: boolean;
 'bookedAt.in'?: string[];
 'bookedAt.notIn'?: string[];
+'status.equals'?: CountAvailableTimeSlotsStatusEquals;
+'status.notEquals'?: CountAvailableTimeSlotsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountAvailableTimeSlotsStatusInItem[];
+'status.notIn'?: CountAvailableTimeSlotsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

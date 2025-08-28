@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { AvailableTimeSlotDTOStatus } from './AvailableTimeSlotDTOStatus';
 import type { UserProfileDTO } from './UserProfileDTO';
 
 export interface AvailableTimeSlotDTO {
@@ -17,6 +18,7 @@ export interface AvailableTimeSlotDTO {
   duration: number;
   isBooked?: boolean;
   bookedAt?: string;
+  status: AvailableTimeSlotDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

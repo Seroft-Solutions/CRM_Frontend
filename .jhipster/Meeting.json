@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250803230943"
+    "changelogDate": "20250828083527"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -69,6 +69,12 @@
       "fieldType": "MeetingType",
       "fieldValidateRules": ["required"],
       "fieldValues": "VIRTUAL,IN_PERSON,PHONE_CALL"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
       "fieldName": "createdAt",

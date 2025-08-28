@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { StateDTOStatus } from './StateDTOStatus';
 
 export interface StateDTO {
   id?: number;
@@ -18,6 +19,7 @@ export interface StateDTO {
    * @maxLength 50
    */
   country: string;
+  status: StateDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

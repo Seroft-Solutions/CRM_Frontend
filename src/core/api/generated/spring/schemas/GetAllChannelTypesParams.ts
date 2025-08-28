@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllChannelTypesStatusEquals } from './GetAllChannelTypesStatusEquals';
+import type { GetAllChannelTypesStatusNotEquals } from './GetAllChannelTypesStatusNotEquals';
+import type { GetAllChannelTypesStatusInItem } from './GetAllChannelTypesStatusInItem';
+import type { GetAllChannelTypesStatusNotInItem } from './GetAllChannelTypesStatusNotInItem';
 
 export type GetAllChannelTypesParams = {
 'id.greaterThan'?: number;
@@ -39,6 +43,11 @@ export type GetAllChannelTypesParams = {
 'commissionRate.specified'?: boolean;
 'commissionRate.in'?: number[];
 'commissionRate.notIn'?: number[];
+'status.equals'?: GetAllChannelTypesStatusEquals;
+'status.notEquals'?: GetAllChannelTypesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllChannelTypesStatusInItem[];
+'status.notIn'?: GetAllChannelTypesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

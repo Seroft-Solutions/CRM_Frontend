@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GroupDTOStatus } from './GroupDTOStatus';
 
 /**
  * Group is scoped per organization.
@@ -28,7 +29,7 @@ export interface GroupDTO {
    * @maxLength 255
    */
   description?: string;
-  isActive: boolean;
+  status: GroupDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

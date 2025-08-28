@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountProductsStatusEquals } from './CountProductsStatusEquals';
+import type { CountProductsStatusNotEquals } from './CountProductsStatusNotEquals';
+import type { CountProductsStatusInItem } from './CountProductsStatusInItem';
+import type { CountProductsStatusNotInItem } from './CountProductsStatusNotInItem';
 
 export type CountProductsParams = {
 'id.greaterThan'?: number;
@@ -78,6 +82,11 @@ export type CountProductsParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'status.equals'?: CountProductsStatusEquals;
+'status.notEquals'?: CountProductsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountProductsStatusInItem[];
+'status.notIn'?: CountProductsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

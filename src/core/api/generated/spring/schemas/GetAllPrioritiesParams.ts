@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllPrioritiesStatusEquals } from './GetAllPrioritiesStatusEquals';
+import type { GetAllPrioritiesStatusNotEquals } from './GetAllPrioritiesStatusNotEquals';
+import type { GetAllPrioritiesStatusInItem } from './GetAllPrioritiesStatusInItem';
+import type { GetAllPrioritiesStatusNotInItem } from './GetAllPrioritiesStatusNotInItem';
 
 export type GetAllPrioritiesParams = {
 'id.greaterThan'?: number;
@@ -37,6 +41,11 @@ export type GetAllPrioritiesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'status.equals'?: GetAllPrioritiesStatusEquals;
+'status.notEquals'?: GetAllPrioritiesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllPrioritiesStatusInItem[];
+'status.notIn'?: GetAllPrioritiesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

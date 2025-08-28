@@ -7,6 +7,7 @@
  */
 import type { MeetingDTOMeetingStatus } from './MeetingDTOMeetingStatus';
 import type { MeetingDTOMeetingType } from './MeetingDTOMeetingType';
+import type { MeetingDTOStatus } from './MeetingDTOStatus';
 import type { UserProfileDTO } from './UserProfileDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { CallDTO } from './CallDTO';
@@ -52,6 +53,7 @@ export interface MeetingDTO {
   timeZone?: string;
   meetingStatus: MeetingDTOMeetingStatus;
   meetingType: MeetingDTOMeetingType;
+  status: MeetingDTOStatus;
   createdAt?: string;
   updatedAt?: string;
   /**

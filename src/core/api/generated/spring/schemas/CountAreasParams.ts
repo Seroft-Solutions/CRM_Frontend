@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountAreasStatusEquals } from './CountAreasStatusEquals';
+import type { CountAreasStatusNotEquals } from './CountAreasStatusNotEquals';
+import type { CountAreasStatusInItem } from './CountAreasStatusInItem';
+import type { CountAreasStatusNotInItem } from './CountAreasStatusNotInItem';
 
 export type CountAreasParams = {
 'id.greaterThan'?: number;
@@ -30,6 +34,11 @@ export type CountAreasParams = {
 'pincode.specified'?: boolean;
 'pincode.in'?: string[];
 'pincode.notIn'?: string[];
+'status.equals'?: CountAreasStatusEquals;
+'status.notEquals'?: CountAreasStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountAreasStatusInItem[];
+'status.notIn'?: CountAreasStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

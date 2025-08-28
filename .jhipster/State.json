@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250803230936"
+    "changelogDate": "20250828083520"
   },
   "applications": ["crmBackend"],
   "dto": "mapstruct",
@@ -18,6 +18,12 @@
       "fieldValidateRules": ["required", "minlength", "maxlength"],
       "fieldValidateRulesMaxlength": "50",
       "fieldValidateRulesMinlength": "2"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
       "fieldName": "createdBy",

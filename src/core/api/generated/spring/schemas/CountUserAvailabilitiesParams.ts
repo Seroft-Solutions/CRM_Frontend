@@ -9,6 +9,10 @@ import type { CountUserAvailabilitiesDayOfWeekEquals } from './CountUserAvailabi
 import type { CountUserAvailabilitiesDayOfWeekNotEquals } from './CountUserAvailabilitiesDayOfWeekNotEquals';
 import type { CountUserAvailabilitiesDayOfWeekInItem } from './CountUserAvailabilitiesDayOfWeekInItem';
 import type { CountUserAvailabilitiesDayOfWeekNotInItem } from './CountUserAvailabilitiesDayOfWeekNotInItem';
+import type { CountUserAvailabilitiesStatusEquals } from './CountUserAvailabilitiesStatusEquals';
+import type { CountUserAvailabilitiesStatusNotEquals } from './CountUserAvailabilitiesStatusNotEquals';
+import type { CountUserAvailabilitiesStatusInItem } from './CountUserAvailabilitiesStatusInItem';
+import type { CountUserAvailabilitiesStatusNotInItem } from './CountUserAvailabilitiesStatusNotInItem';
 
 export type CountUserAvailabilitiesParams = {
 'id.greaterThan'?: number;
@@ -69,6 +73,11 @@ export type CountUserAvailabilitiesParams = {
 'timeZone.specified'?: boolean;
 'timeZone.in'?: string[];
 'timeZone.notIn'?: string[];
+'status.equals'?: CountUserAvailabilitiesStatusEquals;
+'status.notEquals'?: CountUserAvailabilitiesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountUserAvailabilitiesStatusInItem[];
+'status.notIn'?: CountUserAvailabilitiesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

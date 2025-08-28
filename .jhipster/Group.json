@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250803230926"
+    "changelogDate": "20250828083510"
   },
   "applications": ["crmBackend"],
   "documentation": "Group is scoped per organization.",
@@ -33,9 +33,10 @@
       "fieldValidateRulesMaxlength": "255"
     },
     {
-      "fieldName": "isActive",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
       "fieldName": "createdBy",

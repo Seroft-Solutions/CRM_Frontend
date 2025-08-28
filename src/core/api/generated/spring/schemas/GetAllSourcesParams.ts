@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllSourcesStatusEquals } from './GetAllSourcesStatusEquals';
+import type { GetAllSourcesStatusNotEquals } from './GetAllSourcesStatusNotEquals';
+import type { GetAllSourcesStatusInItem } from './GetAllSourcesStatusInItem';
+import type { GetAllSourcesStatusNotInItem } from './GetAllSourcesStatusNotInItem';
 
 export type GetAllSourcesParams = {
 'id.greaterThan'?: number;
@@ -37,6 +41,11 @@ export type GetAllSourcesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'status.equals'?: GetAllSourcesStatusEquals;
+'status.notEquals'?: GetAllSourcesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllSourcesStatusInItem[];
+'status.notIn'?: GetAllSourcesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

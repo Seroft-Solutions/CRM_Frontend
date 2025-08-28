@@ -33,3 +33,4 @@ export * from './schemas';
 export * from './endpoints/user-draft-resource/user-draft-resource.gen';
 export * from './endpoints/authority-resource/authority-resource.gen';
 export * from './endpoints/public-user-resource/public-user-resource.gen';
+export * from './endpoints/index-controller/index-controller.gen';

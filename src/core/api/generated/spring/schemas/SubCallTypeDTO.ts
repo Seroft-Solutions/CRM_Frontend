@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { SubCallTypeDTOStatus } from './SubCallTypeDTOStatus';
 import type { CallTypeDTO } from './CallTypeDTO';
 
 export interface SubCallTypeDTO {
@@ -24,6 +25,7 @@ export interface SubCallTypeDTO {
    * @maxLength 1000
    */
   remark?: string;
+  status: SubCallTypeDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

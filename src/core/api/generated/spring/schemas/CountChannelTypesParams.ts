@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountChannelTypesStatusEquals } from './CountChannelTypesStatusEquals';
+import type { CountChannelTypesStatusNotEquals } from './CountChannelTypesStatusNotEquals';
+import type { CountChannelTypesStatusInItem } from './CountChannelTypesStatusInItem';
+import type { CountChannelTypesStatusNotInItem } from './CountChannelTypesStatusNotInItem';
 
 export type CountChannelTypesParams = {
 'id.greaterThan'?: number;
@@ -39,6 +43,11 @@ export type CountChannelTypesParams = {
 'commissionRate.specified'?: boolean;
 'commissionRate.in'?: number[];
 'commissionRate.notIn'?: number[];
+'status.equals'?: CountChannelTypesStatusEquals;
+'status.notEquals'?: CountChannelTypesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountChannelTypesStatusInItem[];
+'status.notIn'?: CountChannelTypesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;
