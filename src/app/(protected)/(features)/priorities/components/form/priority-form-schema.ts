@@ -21,6 +21,7 @@ export const priorityFormSchemaFields = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 export const priorityFormSchema = z.object(priorityFormSchemaFields);
@@ -39,6 +40,7 @@ export const priorityFieldSchemas = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 // Step-specific validation schemas
@@ -47,6 +49,7 @@ export const priorityStepSchemas = {
     name: priorityFieldSchemas.name,
     description: priorityFieldSchemas.description,
     remark: priorityFieldSchemas.remark,
+    status: priorityFieldSchemas.status,
     createdBy: priorityFieldSchemas.createdBy,
     createdDate: priorityFieldSchemas.createdDate,
     lastModifiedBy: priorityFieldSchemas.lastModifiedBy,

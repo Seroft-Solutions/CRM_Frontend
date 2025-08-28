@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { RoleDetails } from '@/app/(protected)/(features)/roles/components/role-details';
+import { RoleDetails } from '../components/role-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface RolePageProps {

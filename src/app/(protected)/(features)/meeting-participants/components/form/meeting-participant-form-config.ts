@@ -20,7 +20,7 @@ export const meetingParticipantFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['email', 'name'],
+      fields: ['email', 'name', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -141,6 +141,17 @@ export const meetingParticipantFormConfig: FormConfig = {
       required: false,
       validation: {
         required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

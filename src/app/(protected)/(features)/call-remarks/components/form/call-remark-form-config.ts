@@ -20,7 +20,7 @@ export const callRemarkFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['remark'],
+      fields: ['remark', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -81,6 +81,17 @@ export const callRemarkFormConfig: FormConfig = {
       type: 'date',
       label: 'Date Time',
       placeholder: 'Enter date time',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

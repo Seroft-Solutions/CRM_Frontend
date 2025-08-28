@@ -10,12 +10,22 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import {
-  groupToast,
-  handleGroupError,
-} from '@/app/(protected)/(features)/groups/components/group-toast';
+import { groupToast, handleGroupError } from './group-toast';
+import { GroupDTOStatus } from '@/core/api/generated/spring/schemas/GroupDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
-import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import {
+  Search,
+  X,
+  Download,
+  Settings2,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Archive,
+  RotateCcw,
+  Trash2,
+  AlertTriangle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -37,6 +47,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+
+// Configuration for table features
+const TABLE_CONFIG = {
+  showDraftTab: false, // Set to true to show Draft tab
+  centerAlignActions: true, // Center align action icons
+};
+
+// Utility function to transform enum values from UPPERCASE to Title Case
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 // Add custom scrollbar styles
 const tableScrollStyles = `
@@ -77,14 +113,11 @@ import {
 
 import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
-import { GroupSearchAndFilters } from '@/app/(protected)/(features)/groups/components/table/group-search-filters';
-import { GroupTableHeader } from '@/app/(protected)/(features)/groups/components/table/group-table-header';
-import { GroupTableRow } from '@/app/(protected)/(features)/groups/components/table/group-table-row';
-import { BulkRelationshipAssignment } from '@/app/(protected)/(features)/groups/components/table/bulk-relationship-assignment';
-import {
-  AdvancedPagination,
-  usePaginationState,
-} from '@/app/(protected)/(features)/groups/components/table/advanced-pagination';
+import { GroupSearchAndFilters } from './table/group-search-filters';
+import { GroupTableHeader } from './table/group-table-header';
+import { GroupTableRow } from './table/group-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 // Define sort ordering constants
 const ASC = 'asc';
@@ -148,9 +181,9 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'isActive',
-    label: 'Is Active',
-    accessor: 'isActive',
+    id: 'status',
+    label: 'Status',
+    accessor: 'status',
     type: 'field',
     visible: true,
     sortable: true,
@@ -224,12 +257,18 @@ export function GroupTable() {
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [archiveId, setArchiveId] = useState<number | null>(null);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [statusChangeId, setStatusChangeId] = useState<number | null>(null);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
+  const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
+  const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [filters, setFilters] = useState<FilterState>({});
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkArchiveDialog, setShowBulkArchiveDialog] = useState(false);
+  const [showBulkStatusChangeDialog, setShowBulkStatusChangeDialog] = useState(false);
+  const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
   // Track individual cell updates instead of global state
@@ -405,9 +444,53 @@ export function GroupTable() {
     return entity?.id;
   };
 
+  // Status configuration
+  const statusOptions = [
+    {
+      value: GroupDTOStatus.DRAFT,
+      label: transformEnumValue('DRAFT'),
+      color: 'bg-gray-100 text-gray-800',
+    },
+    {
+      value: GroupDTOStatus.ACTIVE,
+      label: transformEnumValue('ACTIVE'),
+      color: 'bg-green-100 text-green-800',
+    },
+    {
+      value: GroupDTOStatus.INACTIVE,
+      label: transformEnumValue('INACTIVE'),
+      color: 'bg-yellow-100 text-yellow-800',
+    },
+    {
+      value: GroupDTOStatus.ARCHIVED,
+      label: transformEnumValue('ARCHIVED'),
+      color: 'bg-red-100 text-red-800',
+    },
+  ];
+
+  // Get status filter based on active tab
+  const getStatusFilter = () => {
+    switch (activeStatusTab) {
+      case 'draft':
+        return { 'status.equals': GroupDTOStatus.DRAFT };
+      case 'active':
+        return { 'status.equals': GroupDTOStatus.ACTIVE };
+      case 'inactive':
+        return { 'status.equals': GroupDTOStatus.INACTIVE };
+      case 'archived':
+        return { 'status.equals': GroupDTOStatus.ARCHIVED };
+      case 'all':
+        return {};
+      default:
+        return { 'status.equals': GroupDTOStatus.ACTIVE };
+    }
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
-    const params: Record<string, any> = {};
+    const params: Record<string, any> = {
+      ...getStatusFilter(), // Add status filtering based on active tab
+    };
 
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
@@ -432,11 +515,6 @@ export function GroupTable() {
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
-        }
-
-        // Handle isActive boolean filter
-        else if (key === 'isActive') {
-          params['isActive.equals'] = value === 'true';
         }
 
         // Handle createdDate date filter
@@ -482,6 +560,13 @@ export function GroupTable() {
         else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['description.contains'] = value;
+          }
+        }
+
+        // Handle status text filter with contains
+        else if (key === 'status') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['status.contains'] = value;
           }
         }
 
@@ -702,18 +787,27 @@ export function GroupTable() {
         }
         handleGroupError(error);
       },
-      onSettled: () => {
-        // Force a background refetch to ensure eventual consistency
-        queryClient.invalidateQueries({
+      onSettled: async () => {
+        // Force active refetch to ensure immediate consistency
+        await queryClient.invalidateQueries({
           queryKey: ['getAllGroups'],
-          refetchType: 'none', // Don't refetch immediately, just mark as stale
+          refetchType: 'active',
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['countGroups'],
+          refetchType: 'active',
+        });
+
+        await queryClient.invalidateQueries({
+          queryKey: ['searchGroups'],
+          refetchType: 'active',
         });
       },
     },
   });
 
-  // Delete mutation with optimistic updates
-  const { mutate: deleteEntity, isPending: isDeleting } = useDeleteGroup({
+  // Status update mutation for soft delete (archive) with optimistic updates
+  const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateGroup({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({ queryKey: ['getAllGroups'] });
@@ -728,7 +822,7 @@ export function GroupTable() {
           },
         ]);
 
-        // Optimistically remove the item
+        // Optimistically update or remove the item based on status change
         queryClient.setQueryData(
           [
             'getAllGroups',
@@ -739,17 +833,60 @@ export function GroupTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) => old?.filter((group) => group.id !== variables.id)
+          (old: any[]) => {
+            if (!old) return old;
+
+            // If the new status matches the current filter, update in place
+            // Otherwise, remove from current view
+            const newStatus = variables.data.status;
+            const currentFilter = getStatusFilter();
+            const currentStatusFilter = currentFilter['status.equals'];
+
+            // Debug logging to help troubleshoot
+            console.log('Optimistic Update Debug:', {
+              newStatus,
+              currentStatusFilter,
+              activeStatusTab,
+              shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
+              comparison: `${currentStatusFilter} === ${newStatus}`,
+              entityId: variables.id,
+            });
+
+            if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
+              // Update in place - status matches current tab filter
+              console.log(`Updating item ${variables.id} in place`);
+              return old.map((group) =>
+                group.id === variables.id ? { ...group, ...variables.data } : group
+              );
+            } else {
+              // Remove from current filtered view - status no longer matches tab filter
+              console.log(`Removing item ${variables.id} from current view`);
+              return old.filter((group) => group.id !== variables.id);
+            }
+          }
         );
 
         return { previousData };
       },
-      onSuccess: () => {
-        groupToast.deleted();
-        // Update count cache
-        queryClient.setQueryData(['countGroups', filterParams], (old: number) =>
-          Math.max(0, (old || 0) - 1)
-        );
+      onSuccess: (data, variables) => {
+        const statusLabel =
+          statusOptions.find((opt) => opt.value.includes(variables.data.status))?.label ||
+          variables.data.status;
+        groupToast.custom.success(`Status Updated`, `Group status changed to ${statusLabel}`);
+
+        // Update count cache if item was removed from current view
+        const currentFilter = getStatusFilter();
+        const currentStatusFilter = currentFilter['status.equals'];
+        const newStatus = variables.data.status;
+
+        if (currentStatusFilter !== newStatus && activeStatusTab !== 'all') {
+          console.log(
+            `Updating count cache - removing 1 item due to status change from ${currentStatusFilter} to ${newStatus}`
+          );
+          queryClient.setQueryData(['countGroups', filterParams], (old: number) =>
+            Math.max(0, (old || 0) - 1)
+          );
+        }
       },
       onError: (error, variables, context) => {
         if (context?.previousData) {
@@ -767,6 +904,22 @@ export function GroupTable() {
           );
         }
         handleGroupError(error);
+      },
+      onSettled: async () => {
+        // Force active refetch to ensure immediate consistency
+        await queryClient.invalidateQueries({
+          queryKey: ['getAllGroups'],
+          refetchType: 'active',
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['countGroups'],
+          refetchType: 'active',
+        });
+
+        await queryClient.invalidateQueries({
+          queryKey: ['searchGroups'],
+          refetchType: 'active',
+        });
       },
     },
   });
@@ -789,17 +942,46 @@ export function GroupTable() {
     return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
-  // Handle delete
-  const handleDelete = (id: number) => {
-    setDeleteId(id);
-    setShowDeleteDialog(true);
+  // Handle status change (archive by default)
+  const handleArchive = (id: number) => {
+    setArchiveId(id);
+    setShowArchiveDialog(true);
   };
 
-  const confirmDelete = () => {
-    if (deleteId) {
-      deleteEntity({ id: deleteId });
+  const handleStatusChange = (id: number, status: string) => {
+    setStatusChangeId(id);
+    setNewStatus(status);
+    setShowStatusChangeDialog(true);
+  };
+
+  const confirmArchive = () => {
+    if (archiveId) {
+      const currentEntity = data?.find((item) => item.id === archiveId);
+      if (currentEntity) {
+        updateEntityStatus({
+          id: archiveId,
+          data: { ...currentEntity, status: GroupDTOStatus.ARCHIVED },
+        });
+      }
     }
-    setShowDeleteDialog(false);
+    setShowArchiveDialog(false);
+    setArchiveId(null);
+  };
+
+  const confirmStatusChange = () => {
+    if (statusChangeId && newStatus) {
+      const currentEntity = data?.find((item) => item.id === statusChangeId);
+      if (currentEntity) {
+        const statusValue = GroupDTOStatus[newStatus as keyof typeof GroupDTOStatus];
+        updateEntityStatus({
+          id: statusChangeId,
+          data: { ...currentEntity, status: statusValue },
+        });
+      }
+    }
+    setShowStatusChangeDialog(false);
+    setStatusChangeId(null);
+    setNewStatus(null);
   };
 
   // Handle filter change
@@ -851,12 +1033,18 @@ export function GroupTable() {
     }
   };
 
-  // Handle bulk delete
-  const handleBulkDelete = () => {
-    setShowBulkDeleteDialog(true);
+  // Handle bulk archive
+  const handleBulkArchive = () => {
+    setShowBulkArchiveDialog(true);
   };
 
-  const confirmBulkDelete = async () => {
+  // Handle bulk status change
+  const handleBulkStatusChange = (status: string) => {
+    setBulkNewStatus(status);
+    setShowBulkStatusChangeDialog(true);
+  };
+
+  const confirmBulkArchive = async () => {
     // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllGroups'] });
 
@@ -872,42 +1060,48 @@ export function GroupTable() {
     ]);
 
     try {
-      // Optimistically remove all selected items
-      queryClient.setQueryData(
-        [
-          'getAllGroups',
-          {
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          },
-        ],
-        (old: any[]) => old?.filter((group) => !selectedRows.has(group.id || 0))
-      );
-
-      // Process deletions
-      const deletePromises = Array.from(selectedRows).map(
-        (id) =>
-          new Promise<void>((resolve, reject) => {
-            deleteEntity(
-              { id },
+      // Process status updates to ARCHIVED
+      const updatePromises = Array.from(selectedRows).map(async (id) => {
+        const currentEntity = data?.find((item) => item.id === id);
+        if (currentEntity) {
+          return new Promise<void>((resolve, reject) => {
+            updateEntityStatus(
+              {
+                id,
+                data: { ...currentEntity, status: GroupDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
                 onError: (error) => reject(error),
               }
             );
-          })
-      );
+          });
+        }
+        return Promise.resolve();
+      });
 
-      await Promise.all(deletePromises);
-      groupToast.bulkDeleted(selectedRows.size);
+      await Promise.all(updatePromises);
+
+      // Force refetch to ensure table is up to date
+      await queryClient.invalidateQueries({
+        queryKey: ['getAllGroups'],
+        refetchType: 'active',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['countGroups'],
+        refetchType: 'active',
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['searchGroups'],
+        refetchType: 'active',
+      });
+
+      groupToast.custom.success(
+        'Bulk Archive Complete',
+        `${selectedRows.size} item${selectedRows.size > 1 ? 's' : ''} archived successfully`
+      );
       setSelectedRows(new Set());
-
-      // Update count cache
-      queryClient.setQueryData(['countGroups', filterParams], (old: number) =>
-        Math.max(0, (old || 0) - selectedRows.size)
-      );
     } catch (error) {
       // Rollback optimistic update on error
       if (previousData) {
@@ -924,9 +1118,100 @@ export function GroupTable() {
           previousData
         );
       }
-      groupToast.bulkDeleteError();
+      groupToast.custom.error(
+        'Bulk Archive Failed',
+        'Some items could not be archived. Please try again.'
+      );
     }
-    setShowBulkDeleteDialog(false);
+    setShowBulkArchiveDialog(false);
+  };
+
+  const confirmBulkStatusChange = async () => {
+    if (!bulkNewStatus) return;
+
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllGroups'] });
+
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData([
+      'getAllGroups',
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+    ]);
+
+    try {
+      // Process bulk status updates
+      const statusValue = GroupDTOStatus[bulkNewStatus as keyof typeof GroupDTOStatus];
+      const updatePromises = Array.from(selectedRows).map(async (id) => {
+        const currentEntity = data?.find((item) => item.id === id);
+        if (currentEntity) {
+          return new Promise<void>((resolve, reject) => {
+            updateEntityStatus(
+              {
+                id,
+                data: { ...currentEntity, status: statusValue },
+              },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              }
+            );
+          });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+
+      // Force refetch to ensure table is up to date
+      await queryClient.invalidateQueries({
+        queryKey: ['getAllGroups'],
+        refetchType: 'active',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['countGroups'],
+        refetchType: 'active',
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['searchGroups'],
+        refetchType: 'active',
+      });
+
+      const statusLabel =
+        statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
+      groupToast.custom.success(
+        'Bulk Status Update Complete',
+        `${selectedRows.size} item${selectedRows.size > 1 ? 's' : ''} updated to ${statusLabel}`
+      );
+      setSelectedRows(new Set());
+    } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(
+          [
+            'getAllGroups',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          previousData
+        );
+      }
+      groupToast.custom.error(
+        'Bulk Status Update Failed',
+        'Some items could not be updated. Please try again.'
+      );
+    }
+    setShowBulkStatusChangeDialog(false);
+    setBulkNewStatus(null);
   };
 
   // Enhanced relationship update handler with individual cell tracking
@@ -1158,6 +1443,33 @@ export function GroupTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
+        {/* Status Filter Tabs */}
+        <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
+          <TabsList
+            className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-5' : 'grid-cols-4'}`}
+          >
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="inactive" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              Inactive
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              Archived
+            </TabsTrigger>
+            {TABLE_CONFIG.showDraftTab && (
+              <TabsTrigger value="draft" className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                Draft
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="all">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {/* Table Controls */}
         <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -1250,9 +1562,60 @@ export function GroupTable() {
                   Assign Associations
                 </Button>
               )}
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                Delete Selected
-              </Button>
+
+              {/* Bulk Status Change Dropdown */}
+              <Select onValueChange={(status) => handleBulkStatusChange(status)}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue
+                    placeholder={
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Change Status
+                      </div>
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="h-4 w-4 text-green-600" />
+                      Set {transformEnumValue('ACTIVE')}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="INACTIVE">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      Set {transformEnumValue('INACTIVE')}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ARCHIVED">
+                    <div className="flex items-center gap-2">
+                      <Archive className="h-4 w-4 text-red-600" />
+                      {transformEnumValue('ARCHIVED')}
+                    </div>
+                  </SelectItem>
+                  {TABLE_CONFIG.showDraftTab && (
+                    <SelectItem value="DRAFT">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border border-gray-400 rounded" />
+                        Set {transformEnumValue('DRAFT')}
+                      </div>
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+
+              {activeStatusTab !== 'archived' && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkArchive}
+                  className="gap-2"
+                >
+                  <Archive className="h-4 w-4" />
+                  Archive Selected
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -1283,8 +1646,10 @@ export function GroupTable() {
                     <GroupTableRow
                       key={group.id}
                       group={group}
-                      onDelete={handleDelete}
-                      isDeleting={isDeleting}
+                      onArchive={handleArchive}
+                      onStatusChange={handleStatusChange}
+                      isUpdatingStatus={isUpdatingStatus}
+                      statusOptions={statusOptions}
                       isSelected={selectedRows.has(group.id || 0)}
                       onSelect={handleSelectRow}
                       relationshipConfigs={relationshipConfigs}
@@ -1328,47 +1693,99 @@ export function GroupTable() {
           />
         </div>
 
-        {/* Bulk Delete Dialog */}
-        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        {/* Bulk Archive Dialog */}
+        <AlertDialog open={showBulkArchiveDialog} onOpenChange={setShowBulkArchiveDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+                Archive {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the selected groups and
-                remove their data from the server.
+                This will change the status of the selected groups to "Archived". They will no
+                longer appear in the active view but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={confirmBulkDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={confirmBulkArchive}
+                className="bg-red-600 text-white hover:bg-red-700"
               >
-                Delete All
+                <Archive className="w-4 h-4 mr-2" />
+                Archive All
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Delete Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        {/* Bulk Status Change Dialog */}
+        <AlertDialog open={showBulkStatusChangeDialog} onOpenChange={setShowBulkStatusChangeDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>
+                Change Status for {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the group and remove its
-                data from the server.
+                This will update the status of the selected groups to "
+                {statusOptions.find((opt) => opt.value.includes(bulkNewStatus || ''))?.label ||
+                  bulkNewStatus}
+                ".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={confirmDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={confirmBulkStatusChange}
+                className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Delete
+                Update Status
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Archive Dialog */}
+        <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Archive this group?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will change the status to "Archived". The group will no longer appear in the
+                active view but can be restored later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmArchive}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Status Change Dialog */}
+        <AlertDialog open={showStatusChangeDialog} onOpenChange={setShowStatusChangeDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Change Status</AlertDialogTitle>
+              <AlertDialogDescription>
+                Change the status of this group to "
+                {statusOptions.find((opt) => opt.value.includes(newStatus || ''))?.label ||
+                  newStatus}
+                "?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmStatusChange}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Update Status
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

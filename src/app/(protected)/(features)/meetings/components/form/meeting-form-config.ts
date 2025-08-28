@@ -29,6 +29,7 @@ export const meetingFormConfig: FormConfig = {
         'timeZone',
         'meetingStatus',
         'meetingType',
+        'status',
         'duration',
       ],
       relationships: [],
@@ -233,6 +234,17 @@ export const meetingFormConfig: FormConfig = {
       type: 'text',
       label: 'Meeting Type',
       placeholder: 'Enter meeting type',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

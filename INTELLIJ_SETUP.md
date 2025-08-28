@@ -87,18 +87,15 @@ Install these plugins for better development experience:
 ### If Path Resolution Still Doesn't Work:
 
 1. **Invalidate Caches**:
-
    - Go to **File → Invalidate Caches and Restart**
    - Select "Invalidate and Restart"
 
 2. **Reimport Project**:
-
    - Close IntelliJ
    - Delete `.idea` folder
    - Reopen the project folder in IntelliJ
 
 3. **Check tsconfig.json**:
-
    - Ensure the `paths` configuration is correct:
      ```json
      {

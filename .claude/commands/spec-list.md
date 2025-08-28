@@ -13,13 +13,11 @@ List all specs in the current project.
 Display a comprehensive list of all specs in the project.
 
 1. **Scan Directory**
-
    - Look in `.claude/specs/` directory
    - Find all spec directories
    - Check for required files (requirements.md, design.md, tasks.md)
 
 2. **Display Information**
-
    - Feature name
    - Current phase
    - Completion status

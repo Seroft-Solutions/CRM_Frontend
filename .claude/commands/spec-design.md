@@ -13,14 +13,12 @@ Generate design document based on approved requirements.
 You are working on the design phase of the spec workflow.
 
 1. **Prerequisites**
-
    - Ensure requirements.md exists and is approved
    - Load the requirements document for context
    - **Load steering documents**: Check for and load tech.md and structure.md
    - Research existing codebase patterns and architecture
 
 2. **Generate Design Document**
-
    - Create comprehensive design following the template
    - Include all required sections:
      - Overview
@@ -31,7 +29,6 @@ You are working on the design phase of the spec workflow.
      - Testing Strategy
 
 3. **Codebase Research Phase** (MANDATORY)
-
    - **Map existing patterns**: Identify data models, API patterns, component
      structures that match your needs
    - **Cross-reference with tech.md**: Ensure patterns align with documented
@@ -50,7 +47,6 @@ You are working on the design phase of the spec workflow.
      extended
 
 4. **Design Content** (leverage codebase research and steering documents)
-
    - **Reuse Architecture**: Build on existing patterns rather than creating new
      ones
    - **Follow tech.md standards**: Ensure design adheres to documented technical

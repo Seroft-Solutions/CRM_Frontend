@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { UserProfileDetails } from '@/app/(protected)/(features)/user-profiles/components/user-profile-details';
+import { UserProfileDetails } from '../components/user-profile-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface UserProfilePageProps {

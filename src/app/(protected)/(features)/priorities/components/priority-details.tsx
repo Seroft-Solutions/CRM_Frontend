@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  priorityToast,
-  handlePriorityError,
-} from '@/app/(protected)/(features)/priorities/components/priority-toast';
-import { priorityFormConfig } from '@/app/(protected)/(features)/priorities/components/form/priority-form-config';
+import { priorityToast, handlePriorityError } from './priority-toast';
+import { priorityFormConfig } from './form/priority-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

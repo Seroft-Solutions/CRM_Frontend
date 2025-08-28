@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { AvailableTimeSlotDetails } from '@/app/(protected)/(features)/available-time-slots/components/available-time-slot-details';
+import { AvailableTimeSlotDetails } from '../components/available-time-slot-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface AvailableTimeSlotPageProps {

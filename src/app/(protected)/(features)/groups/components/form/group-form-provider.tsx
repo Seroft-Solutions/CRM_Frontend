@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { groupFormConfig } from '@/app/(protected)/(features)/groups/components/form/group-form-config';
-import { groupFormSchema } from '@/app/(protected)/(features)/groups/components/form/group-form-schema';
-import {
-  groupToast,
-  handleGroupError,
-} from '@/app/(protected)/(features)/groups/components/group-toast';
+import { groupFormConfig } from './group-form-config';
+import { groupFormSchema } from './group-form-schema';
+import { groupToast, handleGroupError } from '../group-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

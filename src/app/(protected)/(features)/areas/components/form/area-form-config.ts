@@ -20,7 +20,7 @@ export const areaFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'pincode'],
+      fields: ['name', 'pincode', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -77,6 +77,17 @@ export const areaFormConfig: FormConfig = {
         minLength: 6,
         maxLength: 6,
         pattern: /^[0-9]{6}$/,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

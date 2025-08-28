@@ -16,6 +16,7 @@ export const userDraftFormSchemaFields = {
   jsonPayload: z
     .string({ message: 'Please enter jsonpayload' })
     .min(1, { message: 'Please enter jsonpayload' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 export const userDraftFormSchema = z.object(userDraftFormSchemaFields);
@@ -29,6 +30,7 @@ export const userDraftFieldSchemas = {
   jsonPayload: z
     .string({ message: 'Please enter jsonpayload' })
     .min(1, { message: 'Please enter jsonpayload' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 // Step-specific validation schemas
@@ -37,6 +39,7 @@ export const userDraftStepSchemas = {
     keycloakUserId: userDraftFieldSchemas.keycloakUserId,
     type: userDraftFieldSchemas.type,
     jsonPayload: userDraftFieldSchemas.jsonPayload,
+    status: userDraftFieldSchemas.status,
     createdBy: userDraftFieldSchemas.createdBy,
     createdDate: userDraftFieldSchemas.createdDate,
     lastModifiedBy: userDraftFieldSchemas.lastModifiedBy,

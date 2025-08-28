@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createUserDraft,
   updateUserDraft,
-  deleteUserDraft,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
-import { userDraftToast } from '@/app/(protected)/(features)/user-drafts/components/user-draft-toast';
+import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
+import { userDraftToast } from '../components/user-draft-toast';
 
 export async function createUserDraftAction(data: any) {
   try {
@@ -54,41 +54,135 @@ export async function updateUserDraftAction(id: number, data: any) {
   }
 }
 
-export async function deleteUserDraftAction(id: number) {
+export async function archiveUserDraftAction(id: number, entityData: any) {
   try {
-    await deleteUserDraft(id);
+    const archivedEntity = {
+      ...entityData,
+      status: UserDraftDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateUserDraft(id, archivedEntity);
 
     revalidatePath('/user-drafts');
-    userDraftToast.deleted();
+    userDraftToast.custom.success('Archived Successfully', 'UserDraft has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete userdraft:', error);
-    userDraftToast.deleteError(error?.message);
+    console.error('Failed to archive userdraft:', error);
+    userDraftToast.custom.error('Archive Failed', error?.message || 'Could not archive userdraft');
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteUserDraftAction(ids: number[]) {
+export async function updateStatusUserDraftAction(id: number, entityData: any, newStatus: string) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteUserDraft(id)));
+    const statusValue = UserDraftDTOStatus[newStatus as keyof typeof UserDraftDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateUserDraft(id, updatedEntity);
+
+    revalidatePath('/user-drafts');
+    userDraftToast.custom.success(
+      'Status Updated',
+      `UserDraft status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update userdraft status:', error);
+    userDraftToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update userdraft status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveUserDraftAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: UserDraftDTOStatus.ARCHIVED,
+        };
+        return updateUserDraft(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/user-drafts');
 
     if (errorCount === 0) {
-      userDraftToast.bulkDeleted(successCount);
+      userDraftToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      userDraftToast.bulkDeleteError();
+      userDraftToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    userDraftToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    userDraftToast.custom.error('Bulk Archive Failed', error?.message || 'Could not archive items');
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusUserDraftAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = UserDraftDTOStatus[newStatus as keyof typeof UserDraftDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateUserDraft(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/user-drafts');
+
+    if (errorCount === 0) {
+      userDraftToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      userDraftToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    userDraftToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

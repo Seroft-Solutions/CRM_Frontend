@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { customerFormConfig } from '@/app/(protected)/(features)/customers/components/form/customer-form-config';
-import { customerFormSchema } from '@/app/(protected)/(features)/customers/components/form/customer-form-schema';
-import {
-  customerToast,
-  handleCustomerError,
-} from '@/app/(protected)/(features)/customers/components/customer-toast';
+import { customerFormConfig } from './customer-form-config';
+import { customerFormSchema } from './customer-form-schema';
+import { customerToast, handleCustomerError } from '../customer-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

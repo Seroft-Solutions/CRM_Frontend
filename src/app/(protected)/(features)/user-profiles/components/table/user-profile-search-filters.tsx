@@ -121,6 +121,9 @@ export function UserProfileSearchAndFilters({
     if (key === 'displayName') {
       return 'displayName';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

@@ -62,7 +62,6 @@ graph TD
 ### Error Scenarios
 
 1. **Scenario 1:** [Description]
-
    - **Handling:** [How to handle]
    - **User Impact:** [What user sees]
 

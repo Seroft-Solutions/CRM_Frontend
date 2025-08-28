@@ -28,6 +28,7 @@ export const availableTimeSlotFormSchemaFields = {
       message: 'Please select a valid date and time',
     })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   user: z.string().optional(),
 };
 
@@ -54,6 +55,7 @@ export const availableTimeSlotFieldSchemas = {
       message: 'Please select a valid date and time',
     })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   user: z.string().optional(),
 };
 
@@ -63,6 +65,7 @@ export const availableTimeSlotStepSchemas = {
     slotDateTime: availableTimeSlotFieldSchemas.slotDateTime,
     duration: availableTimeSlotFieldSchemas.duration,
     bookedAt: availableTimeSlotFieldSchemas.bookedAt,
+    status: availableTimeSlotFieldSchemas.status,
     createdBy: availableTimeSlotFieldSchemas.createdBy,
     createdDate: availableTimeSlotFieldSchemas.createdDate,
     lastModifiedBy: availableTimeSlotFieldSchemas.lastModifiedBy,

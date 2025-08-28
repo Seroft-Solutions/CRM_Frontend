@@ -9,28 +9,22 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CallTypeFormProvider,
-  useEntityForm,
-} from '@/app/(protected)/(features)/call-types/components/form/call-type-form-provider';
-import { FormProgressIndicator } from '@/app/(protected)/(features)/call-types/components/form/form-progress-indicator';
-import { FormStepRenderer } from '@/app/(protected)/(features)/call-types/components/form/form-step-renderer';
-import { FormNavigation } from '@/app/(protected)/(features)/call-types/components/form/form-navigation';
-import { FormStateManager } from '@/app/(protected)/(features)/call-types/components/form/form-state-manager';
+import { CallTypeFormProvider, useEntityForm } from './call-type-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/call-types/components/form/steps";
+// import { stepComponents } from './steps';
 import {
   useCreateCallType,
   useUpdateCallType,
   useGetCallType,
 } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
-import {
-  callTypeToast,
-  handleCallTypeError,
-} from '@/app/(protected)/(features)/call-types/components/call-type-toast';
+import { callTypeToast, handleCallTypeError } from '../call-type-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -195,6 +189,7 @@ function CallTypeFormContent({ id }: CallTypeFormProps) {
           'name': '',
           'description': '',
           'remark': '',
+          'status': '',
         }}
       /> */}
 

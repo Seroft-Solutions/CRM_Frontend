@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { UserProfileForm } from '@/app/(protected)/(features)/user-profiles/components/user-profile-form';
+import { UserProfileForm } from '../components/user-profile-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

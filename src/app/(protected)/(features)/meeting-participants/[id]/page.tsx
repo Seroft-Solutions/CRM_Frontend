@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { MeetingParticipantDetails } from '@/app/(protected)/(features)/meeting-participants/components/meeting-participant-details';
+import { MeetingParticipantDetails } from '../components/meeting-participant-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface MeetingParticipantPageProps {

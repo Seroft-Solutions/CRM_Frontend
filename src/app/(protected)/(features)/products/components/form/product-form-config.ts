@@ -26,6 +26,7 @@ export const productFormConfig: FormConfig = {
         'description',
         'category',
         'remark',
+        'status',
         'basePrice',
         'minPrice',
         'maxPrice',
@@ -156,6 +157,17 @@ export const productFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 1000,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

@@ -20,7 +20,7 @@ export const stateFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'country'],
+      fields: ['name', 'country', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -65,6 +65,17 @@ export const stateFormConfig: FormConfig = {
         required: true,
         minLength: 2,
         maxLength: 50,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

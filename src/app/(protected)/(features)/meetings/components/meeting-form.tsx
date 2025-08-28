@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { MeetingForm } from '@/app/(protected)/(features)/meetings/components/form/meeting-form-wizard';
+import { MeetingForm } from './form/meeting-form-wizard';
 
 interface MeetingFormProps {
   id?: number;

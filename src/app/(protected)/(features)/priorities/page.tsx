@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
-import { PriorityTable } from '@/app/(protected)/(features)/priorities/components/priority-table';
+import { PriorityTable } from './components/priority-table';
 import { PageHeader } from '@/components/page-header';
 import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';

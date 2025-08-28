@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallRemarkForm } from '@/app/(protected)/(features)/call-remarks/components/call-remark-form';
+import { CallRemarkForm } from '../components/call-remark-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

@@ -121,6 +121,9 @@ export function UserAvailabilitySearchAndFilters({
     if (key === 'timeZone') {
       return 'timeZone';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

@@ -127,6 +127,9 @@ export function CallSearchAndFilters({
     if (key === 'lastModifiedDate') {
       return 'lastModifiedDate';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }
@@ -356,6 +359,16 @@ export function CallSearchAndFilters({
                   Other Fields
                 </DropdownMenuLabel>
                 <div className="space-y-2 mt-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">status</label>
+                    <Input
+                      placeholder="Filter by status..."
+                      value={(filters['status'] as string) || ''}
+                      onChange={(e) => onFilterChange('status', e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">createdBy</label>
                     <Input

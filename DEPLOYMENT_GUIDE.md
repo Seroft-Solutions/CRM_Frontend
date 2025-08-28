@@ -8,13 +8,11 @@ application using tagged Docker images.
 ### Creating a New Release
 
 1. **Navigate to GitHub Actions**
-
    - Go to your repository on GitHub
    - Click on the "Actions" tab
    - Select "Release Management" workflow
 
 2. **Trigger a Release**
-
    - Click "Run workflow" button
    - Choose your release type:
      - `major` - For breaking changes (1.0.0 → 2.0.0)

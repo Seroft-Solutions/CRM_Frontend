@@ -17,13 +17,11 @@ vision, technology stack, and project structure.
 ## Process
 
 1. **Check for Existing Steering Documents**
-
    - Look for `.claude/steering/` directory
    - Check for existing product.md, tech.md, structure.md files
    - If they exist, load and display current content
 
 2. **Analyze the Project**
-
    - Review the codebase to understand:
      - Project type and purpose
      - Technology stack in use
@@ -37,7 +35,6 @@ vision, technology stack, and project structure.
      - Source code structure
 
 3. **Present Inferred Details**
-
    - Show the user what you've learned about:
      - **Product**: Purpose, features, target users
      - **Technology**: Frameworks, libraries, tools
@@ -64,31 +61,26 @@ vision, technology stack, and project structure.
      to keep or discard."
 
 4. **Gather Missing Information**
-
    - Based on user feedback, identify gaps
    - Ask targeted questions to fill in missing details:
 
      **Product Questions:**
-
      - What is the main problem this product solves?
      - Who are the primary users?
      - What are the key business objectives?
      - What metrics define success?
 
      **Technology Questions:**
-
      - Are there any technical constraints or requirements?
      - What third-party services are integrated?
      - What are the performance requirements?
 
      **Structure Questions:**
-
      - Are there specific coding standards to follow?
      - How should new features be organized?
      - What are the testing requirements?
 
 5. **Generate Steering Documents**
-
    - Create `.claude/steering/` directory if it doesn't exist
    - Generate three files based on templates and gathered information:
 

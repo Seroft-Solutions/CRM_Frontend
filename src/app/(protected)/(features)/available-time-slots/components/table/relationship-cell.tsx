@@ -23,7 +23,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { availableTimeSlotToast } from '@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast';
+import { availableTimeSlotToast } from '../available-time-slot-toast';
 
 interface RelationshipCellProps {
   entityId: number;

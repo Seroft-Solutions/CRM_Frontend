@@ -17,14 +17,12 @@ Create Tasks → Get Approval → Ask User → Generate Commands **DO NOT** run 
 command generation until tasks are approved.
 
 1. **Prerequisites**
-
    - Ensure design.md exists and is approved
    - Load both requirements.md and design.md for context
    - **Load structure.md**: Check for project structure conventions
    - Understand the complete feature scope
 
 2. **Generate Task List** (prioritize code reuse and follow conventions)
-
    - Break design into atomic, executable coding tasks
    - **Follow structure.md**: Ensure tasks respect project file organization
    - **Prioritize extending/adapting existing code** over building from scratch
@@ -34,7 +32,6 @@ command generation until tasks are approved.
    - Focus ONLY on coding tasks (no deployment, user testing, etc.)
 
 3. **Task Guidelines**
-
    - Tasks should be concrete and actionable
    - **Reference existing code to reuse**: Include specific files/components to
      extend or adapt
@@ -54,7 +51,6 @@ command generation until tasks are approved.
    ```
 
 5. **Excluded Tasks**
-
    - User acceptance testing
    - Deployment to production
    - Performance metrics gathering
@@ -62,7 +58,6 @@ command generation until tasks are approved.
    - Business process changes
 
 6. **Approval Process**
-
    - Present the complete task list
    - Ask: "Do the tasks look good?"
    - Make revisions based on feedback
@@ -92,7 +87,6 @@ command generation until tasks are approved.
 # Implementation Plan
 
 - [ ] 1. Setup project structure
-
   - Create directory structure following existing patterns
   - Define core interfaces extending existing base classes
   - _Leverage: src/types/base.ts, src/models/BaseModel.ts_

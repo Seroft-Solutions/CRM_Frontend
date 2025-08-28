@@ -30,7 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { meetingReminderToast } from '@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast';
+import { meetingReminderToast } from '../meeting-reminder-toast';
 
 interface BulkRelationshipAssignmentProps {
   open: boolean;

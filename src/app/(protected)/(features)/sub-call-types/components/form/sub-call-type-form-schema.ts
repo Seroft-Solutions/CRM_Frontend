@@ -21,6 +21,7 @@ export const subCallTypeFormSchemaFields = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
 };
 
@@ -40,6 +41,7 @@ export const subCallTypeFieldSchemas = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
 };
 
@@ -49,6 +51,7 @@ export const subCallTypeStepSchemas = {
     name: subCallTypeFieldSchemas.name,
     description: subCallTypeFieldSchemas.description,
     remark: subCallTypeFieldSchemas.remark,
+    status: subCallTypeFieldSchemas.status,
     createdBy: subCallTypeFieldSchemas.createdBy,
     createdDate: subCallTypeFieldSchemas.createdDate,
     lastModifiedBy: subCallTypeFieldSchemas.lastModifiedBy,

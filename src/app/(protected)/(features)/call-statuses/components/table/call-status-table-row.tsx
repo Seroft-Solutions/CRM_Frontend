@@ -8,15 +8,34 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from '@/app/(protected)/(features)/call-statuses/components/table/relationship-cell';
+import { RelationshipCell } from './relationship-cell';
 import type { CallStatusDTO } from '@/core/api/generated/spring/schemas/CallStatusDTO';
+import { CallStatusDTOStatus } from '@/core/api/generated/spring/schemas/CallStatusDTOStatus';
+
+// Utility function to transform enum values from UPPERCASE to Title Case
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 interface RelationshipConfig {
   name: string;
@@ -26,10 +45,18 @@ interface RelationshipConfig {
   isEditable: boolean;
 }
 
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+}
+
 interface CallStatusTableRowProps {
   callStatus: CallStatusDTO;
-  onDelete: (id: number) => void;
-  isDeleting: boolean;
+  onArchive: (id: number) => void;
+  onStatusChange: (id: number, status: string) => void;
+  isUpdatingStatus: boolean;
+  statusOptions: StatusOption[];
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
@@ -52,8 +79,10 @@ interface CallStatusTableRowProps {
 
 export function CallStatusTableRow({
   callStatus,
-  onDelete,
-  isDeleting,
+  onArchive,
+  onStatusChange,
+  isUpdatingStatus,
+  statusOptions,
   isSelected,
   onSelect,
   relationshipConfigs = [],
@@ -61,6 +90,25 @@ export function CallStatusTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: CallStatusTableRowProps) {
+  // Get current status display info
+  const currentStatus = callStatus.status;
+  const statusInfo = statusOptions.find(
+    (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
+  );
+
+  // Helper function to get status badge
+  const getStatusBadge = (status: string) => {
+    const info = statusOptions.find(
+      (opt) => opt.value === status || opt.value.toString() === status
+    );
+    if (!info) return <Badge variant="secondary">{transformEnumValue(status)}</Badge>;
+
+    return (
+      <Badge variant="secondary" className={`${info.color} border-0 text-xs font-medium`}>
+        {transformEnumValue(status)}
+      </Badge>
+    );
+  };
   return (
     <TableRow className="hover:bg-gray-50 transition-colors">
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
@@ -95,6 +143,10 @@ export function CallStatusTableRow({
                   return field?.toString() || '';
                 }
 
+                if (column.id === 'status') {
+                  return getStatusBadge(field as string);
+                }
+
                 if (column.id === 'createdBy') {
                   return field?.toString() || '';
                 }
@@ -119,8 +171,8 @@ export function CallStatusTableRow({
               })()}
         </TableCell>
       ))}
-      <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[100px] sm:w-[120px]">
-        <div className="flex items-center gap-0.5 sm:gap-1">
+      <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
+        <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="callStatus:read">
             <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
               <Link href={`/call-statuses/${callStatus.id}`}>
@@ -137,17 +189,63 @@ export function CallStatusTableRow({
               </Link>
             </Button>
           </InlinePermissionGuard>
-          <InlinePermissionGuard requiredPermission="callStatus:delete">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive"
-              onClick={() => callStatus.id && onDelete(callStatus.id)}
-              disabled={isDeleting || !callStatus.id}
-            >
-              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="sr-only">Delete</span>
-            </Button>
+
+          {/* Status Management Dropdown */}
+          <InlinePermissionGuard requiredPermission="callStatus:update">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                  disabled={isUpdatingStatus}
+                >
+                  <MoreVertical className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="sr-only">Status Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {currentStatus !== CallStatusDTOStatus.ACTIVE && (
+                  <DropdownMenuItem
+                    onClick={() => callStatus.id && onStatusChange(callStatus.id, 'ACTIVE')}
+                    className="text-green-700"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Set Active
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== CallStatusDTOStatus.INACTIVE && (
+                  <DropdownMenuItem
+                    onClick={() => callStatus.id && onStatusChange(callStatus.id, 'INACTIVE')}
+                    className="text-yellow-700"
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Set Inactive
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== CallStatusDTOStatus.DRAFT && (
+                  <DropdownMenuItem
+                    onClick={() => callStatus.id && onStatusChange(callStatus.id, 'DRAFT')}
+                    className="text-gray-700"
+                  >
+                    <div className="w-4 h-4 mr-2 border border-current rounded" />
+                    Set Draft
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== CallStatusDTOStatus.ARCHIVED && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => callStatus.id && onArchive(callStatus.id)}
+                      className="text-red-700"
+                    >
+                      <Archive className="w-4 h-4 mr-2" />
+                      Archive
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </InlinePermissionGuard>
         </div>
       </TableCell>

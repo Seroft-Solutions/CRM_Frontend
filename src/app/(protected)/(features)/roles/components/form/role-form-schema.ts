@@ -26,7 +26,7 @@ export const roleFormSchemaFields = {
     .string()
     .max(200, { message: 'Please enter no more than 200 characters' })
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   organization: z.number().optional(),
   users: z.string().optional(),
 };
@@ -52,7 +52,7 @@ export const roleFieldSchemas = {
     .string()
     .max(200, { message: 'Please enter no more than 200 characters' })
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   organization: z.number().optional(),
   users: z.string().optional(),
 };
@@ -63,6 +63,7 @@ export const roleStepSchemas = {
     keycloakRoleId: roleFieldSchemas.keycloakRoleId,
     name: roleFieldSchemas.name,
     description: roleFieldSchemas.description,
+    status: roleFieldSchemas.status,
     createdBy: roleFieldSchemas.createdBy,
     createdDate: roleFieldSchemas.createdDate,
     lastModifiedBy: roleFieldSchemas.lastModifiedBy,

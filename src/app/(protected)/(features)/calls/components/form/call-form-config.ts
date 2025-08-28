@@ -17,6 +17,17 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
+      id: 'basic',
+      title: 'Basic Information',
+      description: 'Enter essential details',
+      fields: ['status'],
+      relationships: [],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
@@ -43,7 +54,7 @@ export const callFormConfig: FormConfig = {
       title: 'Channel Details',
       description: 'Channel type and parties',
       fields: [],
-      relationships: ['channelParties', 'channelType'],
+      relationships: ['channelType', 'channelParties'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -55,17 +66,6 @@ export const callFormConfig: FormConfig = {
       description: 'Assign users, set dates and status',
       fields: [],
       relationships: ['assignedTo'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'remarks',
-      title: 'Remarks',
-      description: 'Add any additional remarks or notes',
-      fields: [],
-      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -85,7 +85,19 @@ export const callFormConfig: FormConfig = {
   ],
 
   // Field definitions
-  fields: [],
+  fields: [
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
+    },
+  ],
 
   // Relationship definitions
   relationships: [
@@ -250,35 +262,6 @@ export const callFormConfig: FormConfig = {
       },
     },
     {
-      name: 'channelParties',
-      type: 'many-to-one',
-      targetEntity: 'userProfile',
-      displayField: 'displayName',
-      primaryKey: 'id',
-      required: false,
-      multiple: false,
-      category: 'channel',
-      customFilters: {
-        'channelTypeId.specified': true,
-      },
-      api: {
-        useGetAllHook: 'useGetAllUserProfiles',
-        useSearchHook: 'useSearchUserProfiles',
-        useCountHook: 'useCountUserProfiles',
-        entityName: 'UserProfiles',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/user-profiles/new',
-        createPermission: 'userProfile:create:inline',
-      },
-      ui: {
-        label: 'Channel Parties',
-        placeholder: 'Select channel parties',
-        icon: '📞',
-      },
-    },
-    {
       name: 'channelType',
       type: 'many-to-one',
       targetEntity: 'channelType',
@@ -311,6 +294,35 @@ export const callFormConfig: FormConfig = {
       },
     },
     {
+      name: 'channelParties',
+      type: 'many-to-one',
+      targetEntity: 'userProfile',
+      displayField: 'displayName',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'channel',
+      customFilters: {
+        'channelTypeId.specified': true,
+      },
+      api: {
+        useGetAllHook: 'useGetAllUserProfiles',
+        useSearchHook: 'useSearchUserProfiles',
+        useCountHook: 'useCountUserProfiles',
+        entityName: 'UserProfiles',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/user-profiles/new',
+        createPermission: 'userProfile:create:inline',
+      },
+      ui: {
+        label: 'Channel Parties',
+        placeholder: 'Select channel parties',
+        icon: '📞',
+      },
+    },
+    {
       name: 'assignedTo',
       type: 'many-to-one',
       targetEntity: 'userProfile',
@@ -320,7 +332,7 @@ export const callFormConfig: FormConfig = {
       multiple: false,
       category: 'assignment',
       customFilters: {
-        'channelTypeId.specified': false,
+        'activated.equals': true,
       },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
@@ -397,7 +409,7 @@ export const callFormConfig: FormConfig = {
       debounceMs: 2000,
     },
     persistence: {
-      enabled: false,
+      enabled: true,
       sessionTimeoutMinutes: 30,
       storagePrefix: 'CallFormState_',
     },
@@ -413,7 +425,7 @@ export const callFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,

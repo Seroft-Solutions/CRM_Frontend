@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallRemarkDetails } from '@/app/(protected)/(features)/call-remarks/components/call-remark-details';
+import { CallRemarkDetails } from '../components/call-remark-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface CallRemarkPageProps {

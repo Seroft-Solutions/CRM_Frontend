@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { UserAvailabilityDetails } from '@/app/(protected)/(features)/user-availabilities/components/user-availability-details';
+import { UserAvailabilityDetails } from '../components/user-availability-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface UserAvailabilityPageProps {

@@ -1,4 +1,3 @@
-'use client';
 // ===============================================================
 // 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
 // - Source: code generation pipeline
@@ -6,19 +5,8 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { use } from 'react';
-
-import { CallDetails } from '@/app/(protected)/(features)/calls/components/call-details';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
-import { CallRemarksSection } from '@/app/(protected)/(features)/calls/components/call-remarks-section';
-import { CallMeetingsSection } from '@/app/(protected)/(features)/calls/components/call-meetings-section';
-import { useGetCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { CallDetails } from '../components/call-details';
+import { PermissionGuard } from '@/core/auth';
 
 interface CallPageProps {
   params: Promise<{
@@ -26,16 +14,13 @@ interface CallPageProps {
   }>;
 }
 
-export default function CallPage({ params }: CallPageProps) {
-  const { id: idParam } = use(params);
-  const id = parseInt(idParam, 10);
+export const metadata = {
+  title: 'Call Details',
+};
 
-  // Fetch call data to get customer and assigned user info
-  const { data: callData } = useGetCall(id, {
-    query: {
-      enabled: !!id,
-    },
-  });
+export default async function CallPage({ params }: CallPageProps) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam, 10);
 
   return (
     <PermissionGuard
@@ -79,30 +64,14 @@ export default function CallPage({ params }: CallPageProps) {
                 </svg>
               </div>
 
-              {/* Title and Description */}
-              <div>
-                <h1 className="text-xl font-semibold text-white">Call Details</h1>
-                <p className="text-blue-100 text-sm">View and manage call information</p>
+              <div className="text-white">
+                <h1 className="text-2xl font-bold">Call Details</h1>
+                <p className="text-blue-100">View detailed information for this call</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Call Remarks Section */}
-        <div>
-          <CallRemarksSection callId={id} />
-        </div>
-
-        {/* Call Meetings Section */}
-        <div>
-          <CallMeetingsSection
-            callId={id}
-            customerId={callData?.customer?.id}
-            assignedUserId={callData?.assignedTo?.id}
-          />
-        </div>
-
-        {/* Call Details Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <CallDetails id={id} />
         </div>

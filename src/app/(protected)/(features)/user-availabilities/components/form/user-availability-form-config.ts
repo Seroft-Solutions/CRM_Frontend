@@ -20,7 +20,7 @@ export const userAvailabilityFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['dayOfWeek', 'startTime', 'endTime', 'timeZone'],
+      fields: ['dayOfWeek', 'startTime', 'endTime', 'timeZone', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -152,6 +152,17 @@ export const userAvailabilityFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 50,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

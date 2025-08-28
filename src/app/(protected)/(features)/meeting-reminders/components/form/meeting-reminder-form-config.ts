@@ -20,7 +20,7 @@ export const meetingReminderFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['reminderType', 'failureReason', 'reminderMinutesBefore'],
+      fields: ['reminderType', 'failureReason', 'status', 'reminderMinutesBefore'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -132,6 +132,17 @@ export const meetingReminderFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 500,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { CityForm } from '@/app/(protected)/(features)/cities/components/form/city-form-wizard';
+import { CityForm } from './form/city-form-wizard';
 
 interface CityFormProps {
   id?: number;

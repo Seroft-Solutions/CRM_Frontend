@@ -21,6 +21,7 @@ export const stateFormSchemaFields = {
     .min(1, { message: 'Please enter country' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(50, { message: 'Please enter no more than 50 characters' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 export const stateFormSchema = z.object(stateFormSchemaFields);
@@ -39,6 +40,7 @@ export const stateFieldSchemas = {
     .min(1, { message: 'Please enter country' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(50, { message: 'Please enter no more than 50 characters' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 // Step-specific validation schemas
@@ -46,6 +48,7 @@ export const stateStepSchemas = {
   basic: z.object({
     name: stateFieldSchemas.name,
     country: stateFieldSchemas.country,
+    status: stateFieldSchemas.status,
     createdBy: stateFieldSchemas.createdBy,
     createdDate: stateFieldSchemas.createdDate,
     lastModifiedBy: stateFieldSchemas.lastModifiedBy,

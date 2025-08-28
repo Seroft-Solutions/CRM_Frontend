@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CustomerForm } from '@/app/(protected)/(features)/customers/components/customer-form';
+import { CustomerForm } from '../../components/customer-form';
 import { PermissionGuard } from '@/core/auth';
 
 interface EditCustomerPageProps {

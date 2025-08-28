@@ -267,7 +267,7 @@ export async function POST(
     // Fetch channel type details and organization info for proper email template data
     const [channelType, organization] = await Promise.all([
       fetchChannelTypeDetails(inviteData.channelTypeId),
-      getAdminRealmsRealmOrganizationsOrgId(realm, organizationId)
+      getAdminRealmsRealmOrganizationsOrgId(realm, organizationId),
     ]);
 
     if (!channelType) {
@@ -278,10 +278,7 @@ export async function POST(
     }
 
     if (!organization) {
-      return NextResponse.json(
-        { error: 'Organization not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -321,7 +318,9 @@ export async function POST(
               // Organization details for multi-tenant email templates
               organization_id: [organizationId],
               organization_name: [organization.name || 'Organization'],
-              organization_display_name: [organization.displayName || organization.name || 'Organization'],
+              organization_display_name: [
+                organization.displayName || organization.name || 'Organization',
+              ],
               // User type and partner classification
               user_type: ['partner'],
               invited_as: ['business_partner'],
@@ -433,7 +432,9 @@ export async function POST(
               // Organization details for multi-tenant email templates
               organization_id: [organizationId],
               organization_name: [organization.name || 'Organization'],
-              organization_display_name: [organization.displayName || organization.name || 'Organization'],
+              organization_display_name: [
+                organization.displayName || organization.name || 'Organization',
+              ],
               // User type and partner classification
               user_type: ['partner'],
               invited_as: ['business_partner'],

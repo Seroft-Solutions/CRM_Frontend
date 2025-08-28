@@ -1,14 +1,12 @@
 // ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced customer detail page with proper header and action buttons
-// - Added back button, edit button, and consistent styling
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
 // ===============================================================
-import Link from 'next/link';
-import { Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { CustomerDetails } from '@/app/(protected)/(features)/customers/components/customer-details';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import { ContextAwareBackButton } from '@/components/context-aware-back-button';
+import { CustomerDetails } from '../components/customer-details';
+import { PermissionGuard } from '@/core/auth';
 
 interface CustomerPageProps {
   params: Promise<{
@@ -56,21 +54,19 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
-                  <circle cx="9" cy="7" r="4" />
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m22 21-3-3m-18 3v-2a4 4 0 0 1 4-4h4"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                   />
                 </svg>
               </div>
 
-              {/* Title and Description */}
-              <div>
-                <h1 className="text-xl font-semibold text-white">Customer Details</h1>
-                <p className="text-blue-100 text-sm">View and manage customer information</p>
+              <div className="text-white">
+                <h1 className="text-2xl font-bold">Customer Details</h1>
+                <p className="text-blue-100">View detailed information for this customer</p>
               </div>
             </div>
           </div>

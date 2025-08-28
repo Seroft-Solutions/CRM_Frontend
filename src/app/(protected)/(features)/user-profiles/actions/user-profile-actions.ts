@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createUserProfile,
   updateUserProfile,
-  deleteUserProfile,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-import { userProfileToast } from '@/app/(protected)/(features)/user-profiles/components/user-profile-toast';
+import { UserProfileDTOStatus } from '@/core/api/generated/spring/schemas/UserProfileDTOStatus';
+import { userProfileToast } from '../components/user-profile-toast';
 
 export async function createUserProfileAction(data: any) {
   try {
@@ -35,7 +35,7 @@ export async function createUserProfileAction(data: any) {
   }
 }
 
-export async function updateUserProfileAction(id: string, data: any) {
+export async function updateUserProfileAction(id: number, data: any) {
   try {
     // Update entity using the generated API function with correct signature
     const result = await updateUserProfile(id, data);
@@ -54,41 +54,145 @@ export async function updateUserProfileAction(id: string, data: any) {
   }
 }
 
-export async function deleteUserProfileAction(id: number) {
+export async function archiveUserProfileAction(id: number, entityData: any) {
   try {
-    await deleteUserProfile(id);
+    const archivedEntity = {
+      ...entityData,
+      status: UserProfileDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateUserProfile(id, archivedEntity);
 
     revalidatePath('/user-profiles');
-    userProfileToast.deleted();
+    userProfileToast.custom.success('Archived Successfully', 'UserProfile has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete userprofile:', error);
-    userProfileToast.deleteError(error?.message);
+    console.error('Failed to archive userprofile:', error);
+    userProfileToast.custom.error(
+      'Archive Failed',
+      error?.message || 'Could not archive userprofile'
+    );
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteUserProfileAction(ids: number[]) {
+export async function updateStatusUserProfileAction(
+  id: number,
+  entityData: any,
+  newStatus: string
+) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteUserProfile(id)));
+    const statusValue = UserProfileDTOStatus[newStatus as keyof typeof UserProfileDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateUserProfile(id, updatedEntity);
+
+    revalidatePath('/user-profiles');
+    userProfileToast.custom.success(
+      'Status Updated',
+      `UserProfile status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update userprofile status:', error);
+    userProfileToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update userprofile status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveUserProfileAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: UserProfileDTOStatus.ARCHIVED,
+        };
+        return updateUserProfile(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/user-profiles');
 
     if (errorCount === 0) {
-      userProfileToast.bulkDeleted(successCount);
+      userProfileToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      userProfileToast.bulkDeleteError();
+      userProfileToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    userProfileToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    userProfileToast.custom.error(
+      'Bulk Archive Failed',
+      error?.message || 'Could not archive items'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusUserProfileAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = UserProfileDTOStatus[newStatus as keyof typeof UserProfileDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateUserProfile(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/user-profiles');
+
+    if (errorCount === 0) {
+      userProfileToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      userProfileToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    userProfileToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

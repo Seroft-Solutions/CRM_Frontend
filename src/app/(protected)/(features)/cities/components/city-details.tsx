@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  cityToast,
-  handleCityError,
-} from '@/app/(protected)/(features)/cities/components/city-toast';
-import { cityFormConfig } from '@/app/(protected)/(features)/cities/components/form/city-form-config';
+import { cityToast, handleCityError } from './city-toast';
+import { cityFormConfig } from './form/city-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

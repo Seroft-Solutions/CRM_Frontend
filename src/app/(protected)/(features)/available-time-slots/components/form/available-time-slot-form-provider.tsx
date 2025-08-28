@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { availableTimeSlotFormConfig } from '@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-config';
-import { availableTimeSlotFormSchema } from '@/app/(protected)/(features)/available-time-slots/components/form/available-time-slot-form-schema';
-import {
-  availableTimeSlotToast,
-  handleAvailableTimeSlotError,
-} from '@/app/(protected)/(features)/available-time-slots/components/available-time-slot-toast';
+import { availableTimeSlotFormConfig } from './available-time-slot-form-config';
+import { availableTimeSlotFormSchema } from './available-time-slot-form-schema';
+import { availableTimeSlotToast, handleAvailableTimeSlotError } from '../available-time-slot-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

@@ -17,25 +17,21 @@ NOT** run task command generation until the tasks phase is complete and
 approved.
 
 1. **Create Directory Structure**
-
    - Create `.claude/specs/{feature-name}/` directory
    - Initialize empty requirements.md, design.md, and tasks.md files
 
 2. **Check for Steering Documents**
-
    - Look for .claude/product.md (product vision and goals)
    - Look for .claude/tech.md (technical standards and patterns)
    - Look for .claude/structure.md (project structure conventions)
    - Load available steering documents to guide the spec creation
 
 3. **Parse Feature Description**
-
    - Take the feature name and optional description
    - Begin the requirements gathering phase immediately
    - Do not ask sequential questions - generate initial requirements
 
 4. **Analyze Existing Codebase** (BEFORE writing requirements)
-
    - **Search for similar features**: Look for existing authentication, data
      handling, UI patterns, etc.
    - **Identify reusable components**: Find utilities, services, hooks, or
@@ -50,7 +46,6 @@ approved.
      from scratch
 
 5. **Generate Initial Requirements**
-
    - Use the requirements template from
      `.claude/templates/requirements-template.md`
    - **Align with product.md**: Ensure requirements support the product vision
@@ -63,7 +58,6 @@ approved.
      vision
 
 6. **Request User Approval**
-
    - Present the requirements document
    - **Include codebase analysis summary**: Briefly note what existing code can
      be leveraged
@@ -71,7 +65,6 @@ approved.
    - Wait for explicit approval before proceeding
 
 7. **Complete Requirements Phase**
-
    - Present the requirements document with reuse opportunities highlighted
    - Wait for explicit approval
    - **DO NOT** run task command generation yet

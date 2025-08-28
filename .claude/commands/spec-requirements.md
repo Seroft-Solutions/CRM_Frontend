@@ -13,13 +13,11 @@ Generate or update requirements document for an existing spec.
 You are working on the requirements phase of the spec workflow.
 
 1. **Identify Current Spec**
-
    - If no feature-name provided, look for specs in `.claude/specs/` directory
    - If multiple specs exist, ask user to specify which one
    - Load existing requirements.md if it exists
 
 2. **Generate Requirements Document**
-
    - **Load steering documents**: Check for and load product.md for product
      vision alignment
    - Use EARS format (Easy Approach to Requirements Syntax)
@@ -33,7 +31,6 @@ You are working on the requirements phase of the spec workflow.
      product.md
 
 3. **Content Guidelines**
-
    - Consider edge cases and error handling
    - Include non-functional requirements (performance, security, etc.)
    - Reference existing codebase patterns where relevant

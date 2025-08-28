@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createCustomer,
   updateCustomer,
-  deleteCustomer,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import { customerToast } from '@/app/(protected)/(features)/customers/components/customer-toast';
+import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
+import { customerToast } from '../components/customer-toast';
 
 export async function createCustomerAction(data: any) {
   try {
@@ -54,41 +54,135 @@ export async function updateCustomerAction(id: number, data: any) {
   }
 }
 
-export async function deleteCustomerAction(id: number) {
+export async function archiveCustomerAction(id: number, entityData: any) {
   try {
-    await deleteCustomer(id);
+    const archivedEntity = {
+      ...entityData,
+      status: CustomerDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateCustomer(id, archivedEntity);
 
     revalidatePath('/customers');
-    customerToast.deleted();
+    customerToast.custom.success('Archived Successfully', 'Customer has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete customer:', error);
-    customerToast.deleteError(error?.message);
+    console.error('Failed to archive customer:', error);
+    customerToast.custom.error('Archive Failed', error?.message || 'Could not archive customer');
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteCustomerAction(ids: number[]) {
+export async function updateStatusCustomerAction(id: number, entityData: any, newStatus: string) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteCustomer(id)));
+    const statusValue = CustomerDTOStatus[newStatus as keyof typeof CustomerDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateCustomer(id, updatedEntity);
+
+    revalidatePath('/customers');
+    customerToast.custom.success(
+      'Status Updated',
+      `Customer status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update customer status:', error);
+    customerToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update customer status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveCustomerAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: CustomerDTOStatus.ARCHIVED,
+        };
+        return updateCustomer(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/customers');
 
     if (errorCount === 0) {
-      customerToast.bulkDeleted(successCount);
+      customerToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      customerToast.bulkDeleteError();
+      customerToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    customerToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    customerToast.custom.error('Bulk Archive Failed', error?.message || 'Could not archive items');
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusCustomerAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = CustomerDTOStatus[newStatus as keyof typeof CustomerDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateCustomer(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/customers');
+
+    if (errorCount === 0) {
+      customerToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      customerToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    customerToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

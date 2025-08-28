@@ -115,6 +115,9 @@ export function MeetingReminderSearchAndFilters({
     if (key === 'failureReason') {
       return 'failureReason';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

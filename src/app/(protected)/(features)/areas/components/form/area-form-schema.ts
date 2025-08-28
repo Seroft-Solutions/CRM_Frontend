@@ -22,6 +22,7 @@ export const areaFormSchemaFields = {
     .min(6, { message: 'Please enter at least 6 characters' })
     .max(6, { message: 'Please enter no more than 6 characters' })
     .regex(/^[0-9]{6}$/, { message: 'Please enter valid pincode' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   city: z.number({ message: 'Please select city from the dropdown' }),
 };
 
@@ -42,6 +43,7 @@ export const areaFieldSchemas = {
     .min(6, { message: 'Please enter at least 6 characters' })
     .max(6, { message: 'Please enter no more than 6 characters' })
     .regex(/^[0-9]{6}$/, { message: 'Please enter valid pincode' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   city: z.number({ message: 'Please select city from the dropdown' }),
 };
 
@@ -50,6 +52,7 @@ export const areaStepSchemas = {
   basic: z.object({
     name: areaFieldSchemas.name,
     pincode: areaFieldSchemas.pincode,
+    status: areaFieldSchemas.status,
     createdBy: areaFieldSchemas.createdBy,
     createdDate: areaFieldSchemas.createdDate,
     lastModifiedBy: areaFieldSchemas.lastModifiedBy,

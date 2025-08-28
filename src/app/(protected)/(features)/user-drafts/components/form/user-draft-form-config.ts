@@ -20,7 +20,7 @@ export const userDraftFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakUserId', 'type', 'jsonPayload'],
+      fields: ['keycloakUserId', 'type', 'jsonPayload', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -70,6 +70,17 @@ export const userDraftFormConfig: FormConfig = {
       type: 'text',
       label: 'Json Payload',
       placeholder: 'Enter json payload',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

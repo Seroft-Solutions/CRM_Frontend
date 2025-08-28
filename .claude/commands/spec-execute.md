@@ -13,7 +13,6 @@ Execute specific tasks from the approved task list.
 You are executing implementation tasks from the spec workflow.
 
 1. **Prerequisites**
-
    - Ensure tasks.md exists and is approved
    - Load requirements.md, design.md, and tasks.md for context
    - **Load all steering documents**: Load product.md, tech.md, and structure.md
@@ -21,14 +20,12 @@ You are executing implementation tasks from the spec workflow.
    - Identify the specific task to execute
 
 2. **Task Execution**
-
    - Focus on ONE task at a time
    - If task has sub-tasks, start with those
    - Follow the implementation details from design.md
    - Verify against requirements specified in the task
 
 3. **Implementation Guidelines**
-
    - Write clean, maintainable code
    - **Follow steering documents**: Adhere to patterns in tech.md and
      conventions in structure.md
@@ -38,7 +35,6 @@ You are executing implementation tasks from the spec workflow.
    - Document complex logic
 
 4. **Validation**
-
    - Verify implementation meets acceptance criteria
    - Run tests if they exist
    - Check for lint/type errors

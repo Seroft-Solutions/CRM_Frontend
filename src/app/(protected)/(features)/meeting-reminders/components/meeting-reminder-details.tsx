@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  meetingReminderToast,
-  handleMeetingReminderError,
-} from '@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-toast';
-import { meetingReminderFormConfig } from '@/app/(protected)/(features)/meeting-reminders/components/form/meeting-reminder-form-config';
+import { meetingReminderToast, handleMeetingReminderError } from './meeting-reminder-toast';
+import { meetingReminderFormConfig } from './form/meeting-reminder-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

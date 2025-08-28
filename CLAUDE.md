@@ -216,19 +216,16 @@ consistency.
 **CRITICAL**: Follow this exact sequence - do NOT skip steps:
 
 1. **Requirements Phase** (`/spec-create`)
-
    - Create requirements.md
    - Get user approval
    - Proceed to design phase
 
 2. **Design Phase** (`/spec-design`)
-
    - Create design.md
    - Get user approval
    - Proceed to tasks phase
 
 3. **Tasks Phase** (`/spec-tasks`)
-
    - Create tasks.md
    - Get user approval
    - **Ask user if they want task commands generated** (yes/no)

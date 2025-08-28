@@ -106,6 +106,9 @@ export function PrioritySearchAndFilters({
     if (key === 'remark') {
       return 'remark';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

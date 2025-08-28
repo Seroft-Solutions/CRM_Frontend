@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { roleFormConfig } from '@/app/(protected)/(features)/roles/components/form/role-form-config';
-import { roleFormSchema } from '@/app/(protected)/(features)/roles/components/form/role-form-schema';
-import {
-  roleToast,
-  handleRoleError,
-} from '@/app/(protected)/(features)/roles/components/role-toast';
+import { roleFormConfig } from './role-form-config';
+import { roleFormSchema } from './role-form-schema';
+import { roleToast, handleRoleError } from '../role-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

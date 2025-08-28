@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
-import { CityTable } from '@/app/(protected)/(features)/cities/components/city-table';
+import { CityTable } from './components/city-table';
 import { PageHeader } from '@/components/page-header';
 import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';

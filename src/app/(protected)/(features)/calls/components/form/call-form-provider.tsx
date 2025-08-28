@@ -1,30 +1,21 @@
 // ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced form provider with business partner support
-// - Dynamically filters out channel and assignment steps for business partners
-// - Auto-populates channel, assignment, and createdBy data for business partners
-// - Fetches user profile data to get correct channel type information
-// - Review step correctly shows only visible steps (including remarks)
-// - Fixed form submission validation and data population
-// - Added auth hooks for user group detection
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
 // ===============================================================
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
-import { useGetUserProfile } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { callFormConfig } from '@/app/(protected)/(features)/calls/components/form/call-form-config';
-import { callFormSchema } from '@/app/(protected)/(features)/calls/components/form/call-form-schema';
-import {
-  callToast,
-  handleCallError,
-} from '@/app/(protected)/(features)/calls/components/call-toast';
+import { callFormConfig } from './call-form-config';
+import { callFormSchema } from './call-form-schema';
+import { callToast, handleCallError } from '../call-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';
@@ -41,30 +32,7 @@ interface CallFormProviderProps {
 export function CallFormProvider({ children, id, onSuccess, onError }: CallFormProviderProps) {
   const router = useRouter();
   const isNew = !id;
-  const baseConfig = callFormConfig;
-  const { hasGroup } = useUserAuthorities();
-  const { data: accountData } = useAccount();
-  const isBusinessPartner = hasGroup('Business Partners');
-
-  // Fetch user profile data to get channel type information for business partners
-  const { data: userProfile } = useGetUserProfile(accountData?.id, {
-    query: {
-      enabled: isBusinessPartner && !!accountData?.id,
-      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    },
-  });
-
-  // Create filtered config for business partners (exclude channel and assignment steps)
-  const config = React.useMemo(() => {
-    if (isBusinessPartner) {
-      return {
-        ...baseConfig,
-        steps: baseConfig.steps.filter((step) => step.id !== 'channel' && step.id !== 'assignment'),
-      };
-    }
-    return baseConfig;
-  }, [isBusinessPartner, baseConfig]);
-  const formRef = useRef<HTMLDivElement>(null);
+  const config = callFormConfig;
 
   // Cross-form navigation hooks
   const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } =
@@ -89,9 +57,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const [showRestorationDialog, setShowRestorationDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
-
-  // Navigation protection state
-  const [isInsideForm, setIsInsideForm] = useState(false);
 
   // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
@@ -136,42 +101,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     defaultValues: getDefaultValues(),
   });
 
-  // Auto-populate channel and assignment data when account/profile data loads for business partners
-  useEffect(() => {
-    if (isBusinessPartner && accountData && isNew) {
-      // Only set if not already set to avoid overriding user changes
-      const currentChannelParties = form.getValues('channelParties');
-      const currentChannelType = form.getValues('channelType');
-
-      if (!currentChannelParties && typeof accountData.id === 'number') {
-        form.setValue('channelParties', accountData.id);
-      }
-
-      // Use user profile data for channel type
-      if (
-        !currentChannelType &&
-        userProfile?.channelType?.id &&
-        typeof userProfile.channelType.id === 'number'
-      ) {
-        form.setValue('channelType', userProfile.channelType.id);
-      }
-    }
-  }, [isBusinessPartner, accountData, userProfile, isNew, form]);
-
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
-
-    // Auto-populate channel and assignment data for business partners
-    if (isBusinessPartner && accountData) {
-      // Channel data - ensure these are numbers
-      if (typeof accountData.id === 'number') {
-        defaults.channelParties = accountData.id;
-      }
-      // Get channel type from user profile, not account data
-      if (userProfile?.channelType?.id && typeof userProfile.channelType.id === 'number') {
-        defaults.channelType = userProfile.channelType.id;
-      }
-    }
 
     config.fields.forEach((field) => {
       switch (field.type) {
@@ -198,24 +129,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
     return defaults;
   }
-
-  // Check if form has unsaved changes
-  const hasUnsavedChanges = useCallback(() => {
-    return form.formState.isDirty && isNew && draftsEnabled;
-  }, [form.formState.isDirty, isNew, draftsEnabled]);
-
-  // Show draft dialog when trying to navigate with unsaved changes
-  const showDraftDialogForNavigation = useCallback(
-    (navigationCallback: () => void) => {
-      if (hasUnsavedChanges()) {
-        setPendingNavigation(() => navigationCallback);
-        setShowDraftDialog(true);
-        return true; // Navigation blocked
-      }
-      return false; // Navigation allowed
-    },
-    [hasUnsavedChanges]
-  );
 
   // Form state persistence functions - only for cross-form navigation
   const saveFormState = useCallback(
@@ -421,9 +334,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       return;
     }
 
-    // Check if we're on the last step (review step)
-    const reviewStepIndex = config.steps.length - 1;
-    if (currentStep !== reviewStepIndex) {
+    if (currentStep !== config.steps.length - 1) {
       return;
     }
 
@@ -520,31 +431,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     });
 
-    // Handle special fields that are not in config (like tempRemarks)
-    if (data.tempRemarks !== undefined) {
-      entityToSave.tempRemarks = data.tempRemarks;
-    }
-
-    // Add createdBy field for business partners when creating new records
-    if (isNew && isBusinessPartner && accountData?.login) {
-      entityToSave.createdBy = accountData.login;
-    }
-
-    // Auto-populate channel and assignment data for business partners (since these steps are skipped)
-    if (isBusinessPartner && accountData) {
-      // Set the current user as the channel party
-      entityToSave.channelParties = {
-        id: accountData.id,
-      };
-
-      // Set the channel type from user's profile if available
-      if (userProfile?.channelType?.id) {
-        entityToSave.channelType = {
-          id: userProfile.channelType.id,
-        };
-      }
-    }
-
     // Remove undefined values to avoid sending them to the backend
     Object.keys(entityToSave).forEach((key) => {
       if (entityToSave[key] === undefined) {
@@ -583,196 +469,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     setCurrentStep(0);
     setConfirmSubmission(false);
   }, [form]);
-
-  // Browser navigation protection (back/forward buttons, URL changes)
-  useEffect(() => {
-    if (!isNew || !draftsEnabled) return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges()) {
-        const message = 'You have unsaved changes. Are you sure you want to leave?';
-        e.preventDefault();
-        e.returnValue = message;
-        return message;
-      }
-    };
-
-    const handlePopState = (e: PopStateEvent) => {
-      if (hasUnsavedChanges()) {
-        // Prevent the navigation
-        window.history.pushState(null, '', window.location.href);
-
-        // Show draft dialog
-        setPendingNavigation(() => () => {
-          // Allow the navigation to proceed
-          window.history.back();
-        });
-        setShowDraftDialog(true);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
-
-    // Push current state to handle back button
-    if (hasUnsavedChanges()) {
-      window.history.pushState(null, '', window.location.href);
-    }
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [hasUnsavedChanges, isNew, draftsEnabled]);
-
-  // Outside click detection
-  useEffect(() => {
-    if (!isNew || !draftsEnabled) return;
-
-    const handleMouseEnter = () => setIsInsideForm(true);
-    const handleMouseLeave = () => setIsInsideForm(false);
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (formRef.current && !formRef.current.contains(event.target as Node)) {
-        // User clicked outside the form
-        if (hasUnsavedChanges() && isInsideForm) {
-          // Only show dialog if user was previously inside the form
-          setPendingNavigation(() => () => {
-            // Focus is lost, but no actual navigation needed
-            setIsInsideForm(false);
-          });
-          setShowDraftDialog(true);
-        }
-      }
-    };
-
-    const formElement = formRef.current;
-    if (formElement) {
-      formElement.addEventListener('mouseenter', handleMouseEnter);
-      formElement.addEventListener('mouseleave', handleMouseLeave);
-      document.addEventListener('click', handleClickOutside, true);
-    }
-
-    return () => {
-      if (formElement) {
-        formElement.removeEventListener('mouseenter', handleMouseEnter);
-        formElement.removeEventListener('mouseleave', handleMouseLeave);
-      }
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled]);
-
-  // Router event handling for programmatic navigation
-  useEffect(() => {
-    if (!isNew || !draftsEnabled) return;
-
-    const handleRouteChangeStart = (url: string) => {
-      // Only block if we have unsaved changes and it's a different route
-      if (hasUnsavedChanges() && url !== router.asPath) {
-        // This might not work in all cases, but we'll handle it with Link interception
-        console.log('Route change detected:', url);
-      }
-    };
-
-    // Note: Next.js 13+ App Router doesn't have routeChangeStart events
-    // So we rely primarily on Link click interception
-
-    return () => {
-      // Cleanup if needed
-    };
-  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
-
-  // Intercept all Link clicks and navigation attempts
-  useEffect(() => {
-    if (!isNew || !draftsEnabled) return;
-
-    let isNavigating = false;
-
-    // Global click handler to intercept all navigation clicks
-    const handleNavigationClick = (event: Event) => {
-      if (isNavigating) return;
-
-      const target = event.target as Element;
-
-      // Check for Link components (anchor tags)
-      const link = target.closest('a[href]') as HTMLAnchorElement;
-      if (link && hasUnsavedChanges()) {
-        const href = link.getAttribute('href');
-        if (
-          href &&
-          !href.startsWith('http') &&
-          !href.startsWith('mailto:') &&
-          !href.startsWith('tel:') &&
-          !href.startsWith('#')
-        ) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-
-          // Show draft dialog with the navigation callback
-          setPendingNavigation(() => () => {
-            isNavigating = true;
-            router.push(href);
-            setTimeout(() => {
-              isNavigating = false;
-            }, 100);
-          });
-          setShowDraftDialog(true);
-          return;
-        }
-      }
-
-      // Special handling for ContextAwareBackButton (contains a Link inside a Button)
-      const button = target.closest('button') as HTMLButtonElement;
-      if (button && hasUnsavedChanges()) {
-        // Check if this button contains a Link (like ContextAwareBackButton)
-        const linkInsideButton = button.querySelector('a[href]') as HTMLAnchorElement;
-        if (linkInsideButton) {
-          const href = linkInsideButton.getAttribute('href');
-          if (
-            href &&
-            !href.startsWith('http') &&
-            !href.startsWith('mailto:') &&
-            !href.startsWith('tel:') &&
-            !href.startsWith('#')
-          ) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-
-            // Show draft dialog with the navigation callback
-            setPendingNavigation(() => () => {
-              isNavigating = true;
-              router.push(href);
-              setTimeout(() => {
-                isNavigating = false;
-              }, 100);
-            });
-            setShowDraftDialog(true);
-            return;
-          }
-        }
-
-        // Check if this is a navigation button by text content
-        const buttonText = button.textContent?.toLowerCase() || '';
-        const isNavigationButton =
-          buttonText.includes('back') ||
-          buttonText.includes('cancel') ||
-          buttonText.includes('close');
-
-        if (isNavigationButton && formRef.current && !formRef.current.contains(button)) {
-          // For generic navigation buttons, we can't easily determine the target
-          // So we'll just show a warning for now
-          console.log('Navigation button clicked with unsaved changes:', buttonText);
-        }
-      }
-    };
-
-    // Add capture phase listener to catch events before other handlers
-    document.addEventListener('click', handleNavigationClick, true);
-
-    return () => {
-      document.removeEventListener('click', handleNavigationClick, true);
-    };
-  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
 
   // Form restoration on mount and auto-population
   useEffect(() => {
@@ -880,22 +576,10 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     };
 
-    const handleTriggerDraftCheck = (event: CustomEvent) => {
-      const { onProceed } = event.detail;
-      if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
-        setPendingNavigation(() => onProceed);
-        setShowDraftDialog(true);
-      } else {
-        onProceed();
-      }
-    };
-
     window.addEventListener('saveFormState', handleSaveFormState);
-    window.addEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
 
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
-      window.removeEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
     };
   }, [
     restorationAttempted,
@@ -905,7 +589,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     handleEntityCreated,
     clearOldFormStates,
     config,
-    hasUnsavedChanges,
   ]);
 
   // Helper function to get navigation props for relationship components
@@ -1109,7 +792,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
-          if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
+          if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
             // Show draft dialog
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
@@ -1131,7 +814,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     isNew,
     config.entity,
     config.behavior?.drafts?.confirmDialog,
-    hasUnsavedChanges,
+    form.formState.isDirty,
     registerDraftCheck,
     unregisterDraftCheck,
   ]);
@@ -1185,51 +868,49 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   return (
     <FormContext.Provider value={contextValue}>
-      <div ref={formRef} className="relative">
-        {children}
+      {children}
 
-        {/* Draft Dialogs */}
-        {draftsEnabled && (
-          <>
-            <SaveDraftDialog
-              open={showDraftDialog}
-              onOpenChange={setShowDraftDialog}
-              entityType={config.entity}
-              onSaveDraft={async () => {
-                const success = await handleSaveDraft();
-                if (success && pendingNavigation) {
-                  pendingNavigation();
-                  setPendingNavigation(null);
-                }
-                return success;
-              }}
-              onDiscardChanges={() => {
-                if (pendingNavigation) {
-                  pendingNavigation();
-                  setPendingNavigation(null);
-                }
-              }}
-              onCancel={() => {
+      {/* Draft Dialogs */}
+      {draftsEnabled && (
+        <>
+          <SaveDraftDialog
+            open={showDraftDialog}
+            onOpenChange={setShowDraftDialog}
+            entityType={config.entity}
+            onSaveDraft={async () => {
+              const success = await handleSaveDraft();
+              if (success && pendingNavigation) {
+                pendingNavigation();
                 setPendingNavigation(null);
-              }}
-              isDirty={form.formState.isDirty}
-            />
+              }
+              return success;
+            }}
+            onDiscardChanges={() => {
+              if (pendingNavigation) {
+                pendingNavigation();
+                setPendingNavigation(null);
+              }
+            }}
+            onCancel={() => {
+              setPendingNavigation(null);
+            }}
+            isDirty={form.formState.isDirty}
+          />
 
-            <DraftRestorationDialog
-              open={showRestorationDialog}
-              onOpenChange={setShowRestorationDialog}
-              entityType={config.entity}
-              drafts={drafts}
-              onRestoreDraft={handleLoadDraft}
-              onDeleteDraft={handleDeleteDraft}
-              onStartFresh={() => {
-                setShowRestorationDialog(false);
-              }}
-              isLoading={isLoadingDrafts}
-            />
-          </>
-        )}
-      </div>
+          <DraftRestorationDialog
+            open={showRestorationDialog}
+            onOpenChange={setShowRestorationDialog}
+            entityType={config.entity}
+            drafts={drafts}
+            onRestoreDraft={handleLoadDraft}
+            onDeleteDraft={handleDeleteDraft}
+            onStartFresh={() => {
+              setShowRestorationDialog(false);
+            }}
+            isLoading={isLoadingDrafts}
+          />
+        </>
+      )}
     </FormContext.Provider>
   );
 }

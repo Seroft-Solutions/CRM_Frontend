@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createSource,
   updateSource,
-  deleteSource,
 } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
-import { sourceToast } from '@/app/(protected)/(features)/sources/components/source-toast';
+import { SourceDTOStatus } from '@/core/api/generated/spring/schemas/SourceDTOStatus';
+import { sourceToast } from '../components/source-toast';
 
 export async function createSourceAction(data: any) {
   try {
@@ -54,41 +54,135 @@ export async function updateSourceAction(id: number, data: any) {
   }
 }
 
-export async function deleteSourceAction(id: number) {
+export async function archiveSourceAction(id: number, entityData: any) {
   try {
-    await deleteSource(id);
+    const archivedEntity = {
+      ...entityData,
+      status: SourceDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateSource(id, archivedEntity);
 
     revalidatePath('/sources');
-    sourceToast.deleted();
+    sourceToast.custom.success('Archived Successfully', 'Source has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete source:', error);
-    sourceToast.deleteError(error?.message);
+    console.error('Failed to archive source:', error);
+    sourceToast.custom.error('Archive Failed', error?.message || 'Could not archive source');
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteSourceAction(ids: number[]) {
+export async function updateStatusSourceAction(id: number, entityData: any, newStatus: string) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteSource(id)));
+    const statusValue = SourceDTOStatus[newStatus as keyof typeof SourceDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateSource(id, updatedEntity);
+
+    revalidatePath('/sources');
+    sourceToast.custom.success(
+      'Status Updated',
+      `Source status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update source status:', error);
+    sourceToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update source status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveSourceAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: SourceDTOStatus.ARCHIVED,
+        };
+        return updateSource(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/sources');
 
     if (errorCount === 0) {
-      sourceToast.bulkDeleted(successCount);
+      sourceToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      sourceToast.bulkDeleteError();
+      sourceToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    sourceToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    sourceToast.custom.error('Bulk Archive Failed', error?.message || 'Could not archive items');
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusSourceAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = SourceDTOStatus[newStatus as keyof typeof SourceDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateSource(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/sources');
+
+    if (errorCount === 0) {
+      sourceToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      sourceToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    sourceToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

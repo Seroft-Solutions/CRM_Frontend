@@ -26,6 +26,7 @@ export const meetingParticipantFormSchemaFields = {
       message: 'Please select a valid date and time',
     })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   meeting: z.number().optional(),
 };
 
@@ -50,6 +51,7 @@ export const meetingParticipantFieldSchemas = {
       message: 'Please select a valid date and time',
     })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   meeting: z.number().optional(),
 };
 
@@ -59,6 +61,7 @@ export const meetingParticipantStepSchemas = {
     email: meetingParticipantFieldSchemas.email,
     name: meetingParticipantFieldSchemas.name,
     responseDateTime: meetingParticipantFieldSchemas.responseDateTime,
+    status: meetingParticipantFieldSchemas.status,
     createdBy: meetingParticipantFieldSchemas.createdBy,
     createdDate: meetingParticipantFieldSchemas.createdDate,
     lastModifiedBy: meetingParticipantFieldSchemas.lastModifiedBy,

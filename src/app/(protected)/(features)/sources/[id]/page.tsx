@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { SourceDetails } from '@/app/(protected)/(features)/sources/components/source-details';
+import { SourceDetails } from '../components/source-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface SourcePageProps {

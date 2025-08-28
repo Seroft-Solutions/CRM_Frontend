@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallStatusDetails } from '@/app/(protected)/(features)/call-statuses/components/call-status-details';
+import { CallStatusDetails } from '../components/call-status-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface CallStatusPageProps {

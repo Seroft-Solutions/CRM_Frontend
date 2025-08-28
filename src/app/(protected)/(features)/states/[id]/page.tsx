@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { StateDetails } from '@/app/(protected)/(features)/states/components/state-details';
+import { StateDetails } from '../components/state-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface StatePageProps {

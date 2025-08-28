@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { MeetingReminderForm } from '@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-form';
+import { MeetingReminderForm } from '../components/meeting-reminder-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

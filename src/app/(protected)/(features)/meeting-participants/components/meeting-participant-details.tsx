@@ -16,8 +16,8 @@ import { toast } from 'sonner';
 import {
   meetingParticipantToast,
   handleMeetingParticipantError,
-} from '@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast';
-import { meetingParticipantFormConfig } from '@/app/(protected)/(features)/meeting-participants/components/form/meeting-participant-form-config';
+} from './meeting-participant-toast';
+import { meetingParticipantFormConfig } from './form/meeting-participant-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

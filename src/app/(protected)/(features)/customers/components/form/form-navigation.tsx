@@ -10,7 +10,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEntityForm } from '@/app/(protected)/(features)/customers/components/form/customer-form-provider';
+import { useEntityForm } from './customer-form-provider';
 
 interface FormNavigationProps {
   onCancel: () => void;

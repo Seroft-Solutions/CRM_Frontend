@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { GroupForm } from '@/app/(protected)/(features)/groups/components/group-form';
+import { GroupForm } from '../../components/group-form';
 import { PermissionGuard } from '@/core/auth';
 
 interface EditGroupPageProps {

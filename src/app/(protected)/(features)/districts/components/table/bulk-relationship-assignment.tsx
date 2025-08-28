@@ -30,7 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { districtToast } from '@/app/(protected)/(features)/districts/components/district-toast';
+import { districtToast } from '../district-toast';
 
 interface BulkRelationshipAssignmentProps {
   open: boolean;

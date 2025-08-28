@@ -106,6 +106,9 @@ export function CallRemarkSearchAndFilters({
     if (key === 'remark') {
       return 'remark';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }
@@ -238,25 +241,21 @@ export function CallRemarkSearchAndFilters({
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">createdBy</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">status</label>
                     <Input
-                      placeholder="Filter by createdBy..."
-                      value={(filters['createdBy'] as string) || ''}
-                      onChange={(e) => onFilterChange('createdBy', e.target.value || undefined)}
+                      placeholder="Filter by status..."
+                      value={(filters['status'] as string) || ''}
+                      onChange={(e) => onFilterChange('status', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      lastModifiedBy
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">createdBy</label>
                     <Input
-                      placeholder="Filter by lastModifiedBy..."
-                      value={(filters['lastModifiedBy'] as string) || ''}
-                      onChange={(e) =>
-                        onFilterChange('lastModifiedBy', e.target.value || undefined)
-                      }
+                      placeholder="Filter by createdBy..."
+                      value={(filters['createdBy'] as string) || ''}
+                      onChange={(e) => onFilterChange('createdBy', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createCallRemark,
   updateCallRemark,
-  deleteCallRemark,
 } from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
-import { callRemarkToast } from '@/app/(protected)/(features)/call-remarks/components/call-remark-toast';
+import { CallRemarkDTOStatus } from '@/core/api/generated/spring/schemas/CallRemarkDTOStatus';
+import { callRemarkToast } from '../components/call-remark-toast';
 
 export async function createCallRemarkAction(data: any) {
   try {
@@ -54,41 +54,141 @@ export async function updateCallRemarkAction(id: number, data: any) {
   }
 }
 
-export async function deleteCallRemarkAction(id: number) {
+export async function archiveCallRemarkAction(id: number, entityData: any) {
   try {
-    await deleteCallRemark(id);
+    const archivedEntity = {
+      ...entityData,
+      status: CallRemarkDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateCallRemark(id, archivedEntity);
 
     revalidatePath('/call-remarks');
-    callRemarkToast.deleted();
+    callRemarkToast.custom.success('Archived Successfully', 'CallRemark has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete callremark:', error);
-    callRemarkToast.deleteError(error?.message);
+    console.error('Failed to archive callremark:', error);
+    callRemarkToast.custom.error(
+      'Archive Failed',
+      error?.message || 'Could not archive callremark'
+    );
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteCallRemarkAction(ids: number[]) {
+export async function updateStatusCallRemarkAction(id: number, entityData: any, newStatus: string) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteCallRemark(id)));
+    const statusValue = CallRemarkDTOStatus[newStatus as keyof typeof CallRemarkDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateCallRemark(id, updatedEntity);
+
+    revalidatePath('/call-remarks');
+    callRemarkToast.custom.success(
+      'Status Updated',
+      `CallRemark status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update callremark status:', error);
+    callRemarkToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update callremark status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveCallRemarkAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: CallRemarkDTOStatus.ARCHIVED,
+        };
+        return updateCallRemark(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/call-remarks');
 
     if (errorCount === 0) {
-      callRemarkToast.bulkDeleted(successCount);
+      callRemarkToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      callRemarkToast.bulkDeleteError();
+      callRemarkToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    callRemarkToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    callRemarkToast.custom.error(
+      'Bulk Archive Failed',
+      error?.message || 'Could not archive items'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusCallRemarkAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = CallRemarkDTOStatus[newStatus as keyof typeof CallRemarkDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateCallRemark(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/call-remarks');
+
+    if (errorCount === 0) {
+      callRemarkToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      callRemarkToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    callRemarkToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }
