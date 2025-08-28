@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  roleToast,
-  handleRoleError,
-} from '@/app/(protected)/(features)/roles/components/role-toast';
-import { roleFormConfig } from '@/app/(protected)/(features)/roles/components/form/role-form-config';
+import { roleToast, handleRoleError } from './role-toast';
+import { roleFormConfig } from './form/role-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

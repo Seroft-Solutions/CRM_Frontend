@@ -30,7 +30,7 @@ export const groupFormSchemaFields = {
     .string()
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   organization: z.number().optional(),
   members: z.string().optional(),
 };
@@ -60,7 +60,7 @@ export const groupFieldSchemas = {
     .string()
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   organization: z.number().optional(),
   members: z.string().optional(),
 };
@@ -72,6 +72,7 @@ export const groupStepSchemas = {
     name: groupFieldSchemas.name,
     path: groupFieldSchemas.path,
     description: groupFieldSchemas.description,
+    status: groupFieldSchemas.status,
     createdBy: groupFieldSchemas.createdBy,
     createdDate: groupFieldSchemas.createdDate,
     lastModifiedBy: groupFieldSchemas.lastModifiedBy,

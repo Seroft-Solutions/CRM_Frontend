@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { ProductForm } from '@/app/(protected)/(features)/products/components/form/product-form-wizard';
+import { ProductForm } from './form/product-form-wizard';
 
 interface ProductFormProps {
   id?: number;

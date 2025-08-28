@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useEntityForm } from '@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-provider';
+import { useEntityForm } from './call-remark-form-provider';
 
 interface FormStateManagerProps {
   entity?: any;

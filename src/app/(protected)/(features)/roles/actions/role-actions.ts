@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createRole,
   updateRole,
-  deleteRole,
 } from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
-import { roleToast } from '@/app/(protected)/(features)/roles/components/role-toast';
+import { RoleDTOStatus } from '@/core/api/generated/spring/schemas/RoleDTOStatus';
+import { roleToast } from '../components/role-toast';
 
 export async function createRoleAction(data: any) {
   try {
@@ -54,41 +54,129 @@ export async function updateRoleAction(id: number, data: any) {
   }
 }
 
-export async function deleteRoleAction(id: number) {
+export async function archiveRoleAction(id: number, entityData: any) {
   try {
-    await deleteRole(id);
+    const archivedEntity = {
+      ...entityData,
+      status: RoleDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateRole(id, archivedEntity);
 
     revalidatePath('/roles');
-    roleToast.deleted();
+    roleToast.custom.success('Archived Successfully', 'Role has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete role:', error);
-    roleToast.deleteError(error?.message);
+    console.error('Failed to archive role:', error);
+    roleToast.custom.error('Archive Failed', error?.message || 'Could not archive role');
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteRoleAction(ids: number[]) {
+export async function updateStatusRoleAction(id: number, entityData: any, newStatus: string) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteRole(id)));
+    const statusValue = RoleDTOStatus[newStatus as keyof typeof RoleDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateRole(id, updatedEntity);
+
+    revalidatePath('/roles');
+    roleToast.custom.success('Status Updated', `Role status changed to ${newStatus.toLowerCase()}`);
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update role status:', error);
+    roleToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update role status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveRoleAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: RoleDTOStatus.ARCHIVED,
+        };
+        return updateRole(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/roles');
 
     if (errorCount === 0) {
-      roleToast.bulkDeleted(successCount);
+      roleToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      roleToast.bulkDeleteError();
+      roleToast.custom.warning('Partial Archive', `${successCount} archived, ${errorCount} failed`);
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    roleToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    roleToast.custom.error('Bulk Archive Failed', error?.message || 'Could not archive items');
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusRoleAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = RoleDTOStatus[newStatus as keyof typeof RoleDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateRole(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/roles');
+
+    if (errorCount === 0) {
+      roleToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      roleToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    roleToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

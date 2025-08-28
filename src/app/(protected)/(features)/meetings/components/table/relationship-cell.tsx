@@ -23,7 +23,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { meetingToast } from '@/app/(protected)/(features)/meetings/components/meeting-toast';
+import { meetingToast } from '../meeting-toast';
 
 interface RelationshipCellProps {
   entityId: number;

@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { PriorityDetails } from '@/app/(protected)/(features)/priorities/components/priority-details';
+import { PriorityDetails } from '../components/priority-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface PriorityPageProps {

@@ -49,6 +49,7 @@ export const productFormSchemaFields = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 export const productFormSchema = z.object(productFormSchemaFields);
@@ -95,6 +96,7 @@ export const productFieldSchemas = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 // Step-specific validation schemas
@@ -108,6 +110,7 @@ export const productStepSchemas = {
     minPrice: productFieldSchemas.minPrice,
     maxPrice: productFieldSchemas.maxPrice,
     remark: productFieldSchemas.remark,
+    status: productFieldSchemas.status,
     createdBy: productFieldSchemas.createdBy,
     createdDate: productFieldSchemas.createdDate,
     lastModifiedBy: productFieldSchemas.lastModifiedBy,

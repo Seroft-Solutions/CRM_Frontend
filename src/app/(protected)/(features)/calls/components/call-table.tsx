@@ -1,22 +1,31 @@
 // ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced call table with business partner filtering
-// - Business partners only see calls they created (filtered by createdBy)
-// - Added auth hooks for user group detection
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
 // ===============================================================
 
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import {
-  callToast,
-  handleCallError,
-} from '@/app/(protected)/(features)/calls/components/call-toast';
+import { callToast, handleCallError } from './call-toast';
+import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
-import { Search, X, Download, Settings2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import {
+  Search,
+  X,
+  Download,
+  Settings2,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Archive,
+  RotateCcw,
+  Trash2,
+  AlertTriangle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -38,6 +47,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+
+// Configuration for table features
+const TABLE_CONFIG = {
+  showDraftTab: false, // Set to true to show Draft tab
+  centerAlignActions: true, // Center align action icons
+};
+
+// Utility function to transform enum values from UPPERCASE to Title Case
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 // Add custom scrollbar styles
 const tableScrollStyles = `
@@ -94,14 +129,11 @@ import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/use
 
 import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
-import { CallSearchAndFilters } from '@/app/(protected)/(features)/calls/components/table/call-search-filters';
-import { CallTableHeader } from '@/app/(protected)/(features)/calls/components/table/call-table-header';
-import { CallTableRow } from '@/app/(protected)/(features)/calls/components/table/call-table-row';
-import { BulkRelationshipAssignment } from '@/app/(protected)/(features)/calls/components/table/bulk-relationship-assignment';
-import {
-  AdvancedPagination,
-  usePaginationState,
-} from '@/app/(protected)/(features)/calls/components/table/advanced-pagination';
+import { CallSearchAndFilters } from './table/call-search-filters';
+import { CallTableHeader } from './table/call-table-header';
+import { CallTableRow } from './table/call-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 // Define sort ordering constants
 const ASC = 'asc';
@@ -123,6 +155,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
     id: 'id',
     label: 'ID',
     accessor: 'id',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
+    id: 'status',
+    label: 'Status',
+    accessor: 'status',
     type: 'field',
     visible: true,
     sortable: true,
@@ -269,23 +310,26 @@ interface DateRange {
 
 export function CallTable() {
   const queryClient = useQueryClient();
-  const { hasGroup } = useUserAuthorities();
-  const { data: accountData } = useAccount();
-  const isBusinessPartner = hasGroup('Business Partners');
 
   // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10); // Default to 25 items per page
 
-  const [sort, setSort] = useState('lastModifiedDate'); // Default sort by last modified date
-  const [order, setOrder] = useState(DESC);
+  const [sort, setSort] = useState('id');
+  const [order, setOrder] = useState(ASC);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [archiveId, setArchiveId] = useState<number | null>(null);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [statusChangeId, setStatusChangeId] = useState<number | null>(null);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
+  const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
+  const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [filters, setFilters] = useState<FilterState>({});
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkArchiveDialog, setShowBulkArchiveDialog] = useState(false);
+  const [showBulkStatusChangeDialog, setShowBulkStatusChangeDialog] = useState(false);
+  const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
   // Track individual cell updates instead of global state
@@ -352,23 +396,10 @@ export function CallTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
-  // Get visible columns - hide Channel Type and Channel Parties for business partners
+  // Get visible columns
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter((col) => {
-      // Hide columns if visibility is explicitly set to false
-      if (columnVisibility[col.id] === false) return false;
-
-      // For business partners, hide Channel Type, Channel Parties, and Assigned To columns
-      if (
-        isBusinessPartner &&
-        (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [columnVisibility, isBusinessPartner]);
+    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
+  }, [columnVisibility]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
@@ -550,9 +581,53 @@ export function CallTable() {
     return entity?.id;
   };
 
+  // Status configuration
+  const statusOptions = [
+    {
+      value: CallDTOStatus.DRAFT,
+      label: transformEnumValue('DRAFT'),
+      color: 'bg-gray-100 text-gray-800',
+    },
+    {
+      value: CallDTOStatus.ACTIVE,
+      label: transformEnumValue('ACTIVE'),
+      color: 'bg-green-100 text-green-800',
+    },
+    {
+      value: CallDTOStatus.INACTIVE,
+      label: transformEnumValue('INACTIVE'),
+      color: 'bg-yellow-100 text-yellow-800',
+    },
+    {
+      value: CallDTOStatus.ARCHIVED,
+      label: transformEnumValue('ARCHIVED'),
+      color: 'bg-red-100 text-red-800',
+    },
+  ];
+
+  // Get status filter based on active tab
+  const getStatusFilter = () => {
+    switch (activeStatusTab) {
+      case 'draft':
+        return { 'status.equals': CallDTOStatus.DRAFT };
+      case 'active':
+        return { 'status.equals': CallDTOStatus.ACTIVE };
+      case 'inactive':
+        return { 'status.equals': CallDTOStatus.INACTIVE };
+      case 'archived':
+        return { 'status.equals': CallDTOStatus.ARCHIVED };
+      case 'all':
+        return {};
+      default:
+        return { 'status.equals': CallDTOStatus.ACTIVE };
+    }
+  };
+
   // Build filter parameters for API
   const buildFilterParams = () => {
-    const params: Record<string, any> = {};
+    const params: Record<string, any> = {
+      ...getStatusFilter(), // Add status filtering based on active tab
+    };
 
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
@@ -651,6 +726,13 @@ export function CallTable() {
           }
         }
 
+        // Handle status text filter with contains
+        else if (key === 'status') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['status.contains'] = value;
+          }
+        }
+
         // Handle createdBy text filter with contains
         else if (key === 'createdBy') {
           if (typeof value === 'string' && value.trim() !== '') {
@@ -690,11 +772,6 @@ export function CallTable() {
     }
     if (dateRange.to) {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
-
-    // Add business partner filter - only show calls created by the business partner
-    if (isBusinessPartner && accountData?.login) {
-      params['createdBy.equals'] = accountData.login;
     }
 
     return params;
@@ -869,18 +946,27 @@ export function CallTable() {
         }
         handleCallError(error);
       },
-      onSettled: () => {
-        // Force a background refetch to ensure eventual consistency
-        queryClient.invalidateQueries({
+      onSettled: async () => {
+        // Force active refetch to ensure immediate consistency
+        await queryClient.invalidateQueries({
           queryKey: ['getAllCalls'],
-          refetchType: 'none', // Don't refetch immediately, just mark as stale
+          refetchType: 'active',
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['countCalls'],
+          refetchType: 'active',
+        });
+
+        await queryClient.invalidateQueries({
+          queryKey: ['searchCalls'],
+          refetchType: 'active',
         });
       },
     },
   });
 
-  // Delete mutation with optimistic updates
-  const { mutate: deleteEntity, isPending: isDeleting } = useDeleteCall({
+  // Status update mutation for soft delete (archive) with optimistic updates
+  const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateCall({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
@@ -895,7 +981,7 @@ export function CallTable() {
           },
         ]);
 
-        // Optimistically remove the item
+        // Optimistically update or remove the item based on status change
         queryClient.setQueryData(
           [
             'getAllCalls',
@@ -906,17 +992,60 @@ export function CallTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) => old?.filter((call) => call.id !== variables.id)
+          (old: any[]) => {
+            if (!old) return old;
+
+            // If the new status matches the current filter, update in place
+            // Otherwise, remove from current view
+            const newStatus = variables.data.status;
+            const currentFilter = getStatusFilter();
+            const currentStatusFilter = currentFilter['status.equals'];
+
+            // Debug logging to help troubleshoot
+            console.log('Optimistic Update Debug:', {
+              newStatus,
+              currentStatusFilter,
+              activeStatusTab,
+              shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
+              comparison: `${currentStatusFilter} === ${newStatus}`,
+              entityId: variables.id,
+            });
+
+            if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
+              // Update in place - status matches current tab filter
+              console.log(`Updating item ${variables.id} in place`);
+              return old.map((call) =>
+                call.id === variables.id ? { ...call, ...variables.data } : call
+              );
+            } else {
+              // Remove from current filtered view - status no longer matches tab filter
+              console.log(`Removing item ${variables.id} from current view`);
+              return old.filter((call) => call.id !== variables.id);
+            }
+          }
         );
 
         return { previousData };
       },
-      onSuccess: () => {
-        callToast.deleted();
-        // Update count cache
-        queryClient.setQueryData(['countCalls', filterParams], (old: number) =>
-          Math.max(0, (old || 0) - 1)
-        );
+      onSuccess: (data, variables) => {
+        const statusLabel =
+          statusOptions.find((opt) => opt.value.includes(variables.data.status))?.label ||
+          variables.data.status;
+        callToast.custom.success(`Status Updated`, `Call status changed to ${statusLabel}`);
+
+        // Update count cache if item was removed from current view
+        const currentFilter = getStatusFilter();
+        const currentStatusFilter = currentFilter['status.equals'];
+        const newStatus = variables.data.status;
+
+        if (currentStatusFilter !== newStatus && activeStatusTab !== 'all') {
+          console.log(
+            `Updating count cache - removing 1 item due to status change from ${currentStatusFilter} to ${newStatus}`
+          );
+          queryClient.setQueryData(['countCalls', filterParams], (old: number) =>
+            Math.max(0, (old || 0) - 1)
+          );
+        }
       },
       onError: (error, variables, context) => {
         if (context?.previousData) {
@@ -934,6 +1063,22 @@ export function CallTable() {
           );
         }
         handleCallError(error);
+      },
+      onSettled: async () => {
+        // Force active refetch to ensure immediate consistency
+        await queryClient.invalidateQueries({
+          queryKey: ['getAllCalls'],
+          refetchType: 'active',
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['countCalls'],
+          refetchType: 'active',
+        });
+
+        await queryClient.invalidateQueries({
+          queryKey: ['searchCalls'],
+          refetchType: 'active',
+        });
       },
     },
   });
@@ -956,17 +1101,46 @@ export function CallTable() {
     return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
-  // Handle delete
-  const handleDelete = (id: number) => {
-    setDeleteId(id);
-    setShowDeleteDialog(true);
+  // Handle status change (archive by default)
+  const handleArchive = (id: number) => {
+    setArchiveId(id);
+    setShowArchiveDialog(true);
   };
 
-  const confirmDelete = () => {
-    if (deleteId) {
-      deleteEntity({ id: deleteId });
+  const handleStatusChange = (id: number, status: string) => {
+    setStatusChangeId(id);
+    setNewStatus(status);
+    setShowStatusChangeDialog(true);
+  };
+
+  const confirmArchive = () => {
+    if (archiveId) {
+      const currentEntity = data?.find((item) => item.id === archiveId);
+      if (currentEntity) {
+        updateEntityStatus({
+          id: archiveId,
+          data: { ...currentEntity, status: CallDTOStatus.ARCHIVED },
+        });
+      }
     }
-    setShowDeleteDialog(false);
+    setShowArchiveDialog(false);
+    setArchiveId(null);
+  };
+
+  const confirmStatusChange = () => {
+    if (statusChangeId && newStatus) {
+      const currentEntity = data?.find((item) => item.id === statusChangeId);
+      if (currentEntity) {
+        const statusValue = CallDTOStatus[newStatus as keyof typeof CallDTOStatus];
+        updateEntityStatus({
+          id: statusChangeId,
+          data: { ...currentEntity, status: statusValue },
+        });
+      }
+    }
+    setShowStatusChangeDialog(false);
+    setStatusChangeId(null);
+    setNewStatus(null);
   };
 
   // Handle filter change
@@ -1018,12 +1192,18 @@ export function CallTable() {
     }
   };
 
-  // Handle bulk delete
-  const handleBulkDelete = () => {
-    setShowBulkDeleteDialog(true);
+  // Handle bulk archive
+  const handleBulkArchive = () => {
+    setShowBulkArchiveDialog(true);
   };
 
-  const confirmBulkDelete = async () => {
+  // Handle bulk status change
+  const handleBulkStatusChange = (status: string) => {
+    setBulkNewStatus(status);
+    setShowBulkStatusChangeDialog(true);
+  };
+
+  const confirmBulkArchive = async () => {
     // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
 
@@ -1039,42 +1219,48 @@ export function CallTable() {
     ]);
 
     try {
-      // Optimistically remove all selected items
-      queryClient.setQueryData(
-        [
-          'getAllCalls',
-          {
-            page: apiPage,
-            size: pageSize,
-            sort: [`${sort},${order}`],
-            ...filterParams,
-          },
-        ],
-        (old: any[]) => old?.filter((call) => !selectedRows.has(call.id || 0))
-      );
-
-      // Process deletions
-      const deletePromises = Array.from(selectedRows).map(
-        (id) =>
-          new Promise<void>((resolve, reject) => {
-            deleteEntity(
-              { id },
+      // Process status updates to ARCHIVED
+      const updatePromises = Array.from(selectedRows).map(async (id) => {
+        const currentEntity = data?.find((item) => item.id === id);
+        if (currentEntity) {
+          return new Promise<void>((resolve, reject) => {
+            updateEntityStatus(
+              {
+                id,
+                data: { ...currentEntity, status: CallDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
                 onError: (error) => reject(error),
               }
             );
-          })
-      );
+          });
+        }
+        return Promise.resolve();
+      });
 
-      await Promise.all(deletePromises);
-      callToast.bulkDeleted(selectedRows.size);
+      await Promise.all(updatePromises);
+
+      // Force refetch to ensure table is up to date
+      await queryClient.invalidateQueries({
+        queryKey: ['getAllCalls'],
+        refetchType: 'active',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['countCalls'],
+        refetchType: 'active',
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['searchCalls'],
+        refetchType: 'active',
+      });
+
+      callToast.custom.success(
+        'Bulk Archive Complete',
+        `${selectedRows.size} item${selectedRows.size > 1 ? 's' : ''} archived successfully`
+      );
       setSelectedRows(new Set());
-
-      // Update count cache
-      queryClient.setQueryData(['countCalls', filterParams], (old: number) =>
-        Math.max(0, (old || 0) - selectedRows.size)
-      );
     } catch (error) {
       // Rollback optimistic update on error
       if (previousData) {
@@ -1091,9 +1277,100 @@ export function CallTable() {
           previousData
         );
       }
-      callToast.bulkDeleteError();
+      callToast.custom.error(
+        'Bulk Archive Failed',
+        'Some items could not be archived. Please try again.'
+      );
     }
-    setShowBulkDeleteDialog(false);
+    setShowBulkArchiveDialog(false);
+  };
+
+  const confirmBulkStatusChange = async () => {
+    if (!bulkNewStatus) return;
+
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['getAllCalls'] });
+
+    // Get current data for rollback
+    const previousData = queryClient.getQueryData([
+      'getAllCalls',
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+    ]);
+
+    try {
+      // Process bulk status updates
+      const statusValue = CallDTOStatus[bulkNewStatus as keyof typeof CallDTOStatus];
+      const updatePromises = Array.from(selectedRows).map(async (id) => {
+        const currentEntity = data?.find((item) => item.id === id);
+        if (currentEntity) {
+          return new Promise<void>((resolve, reject) => {
+            updateEntityStatus(
+              {
+                id,
+                data: { ...currentEntity, status: statusValue },
+              },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              }
+            );
+          });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+
+      // Force refetch to ensure table is up to date
+      await queryClient.invalidateQueries({
+        queryKey: ['getAllCalls'],
+        refetchType: 'active',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['countCalls'],
+        refetchType: 'active',
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['searchCalls'],
+        refetchType: 'active',
+      });
+
+      const statusLabel =
+        statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
+      callToast.custom.success(
+        'Bulk Status Update Complete',
+        `${selectedRows.size} item${selectedRows.size > 1 ? 's' : ''} updated to ${statusLabel}`
+      );
+      setSelectedRows(new Set());
+    } catch (error) {
+      // Rollback optimistic update on error
+      if (previousData) {
+        queryClient.setQueryData(
+          [
+            'getAllCalls',
+            {
+              page: apiPage,
+              size: pageSize,
+              sort: [`${sort},${order}`],
+              ...filterParams,
+            },
+          ],
+          previousData
+        );
+      }
+      callToast.custom.error(
+        'Bulk Status Update Failed',
+        'Some items could not be updated. Please try again.'
+      );
+    }
+    setShowBulkStatusChangeDialog(false);
+    setBulkNewStatus(null);
   };
 
   // Enhanced relationship update handler with individual cell tracking
@@ -1292,7 +1569,7 @@ export function CallTable() {
       displayName: 'Priority',
       options: priorityOptions || [],
       displayField: 'name',
-      isEditable: true, // Disabled by default
+      isEditable: false, // Disabled by default
     },
 
     {
@@ -1356,7 +1633,7 @@ export function CallTable() {
       displayName: 'AssignedTo',
       options: userprofileOptions || [],
       displayField: 'displayName',
-      isEditable: true,
+      isEditable: false, // Disabled by default
     },
 
     {
@@ -1397,6 +1674,33 @@ export function CallTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
+        {/* Status Filter Tabs */}
+        <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
+          <TabsList
+            className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-5' : 'grid-cols-4'}`}
+          >
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="inactive" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              Inactive
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              Archived
+            </TabsTrigger>
+            {TABLE_CONFIG.showDraftTab && (
+              <TabsTrigger value="draft" className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                Draft
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="all">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {/* Table Controls */}
         <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -1412,18 +1716,7 @@ export function CallTable() {
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {ALL_COLUMNS.filter((column) => {
-                  // Hide Channel Type, Channel Parties, and Assigned To options for business partners
-                  if (
-                    isBusinessPartner &&
-                    (column.id === 'channelType' ||
-                      column.id === 'channelParties' ||
-                      column.id === 'assignedTo')
-                  ) {
-                    return false;
-                  }
-                  return true;
-                }).map((column) => (
+                {ALL_COLUMNS.map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={columnVisibility[column.id] !== false}
@@ -1500,9 +1793,60 @@ export function CallTable() {
                   Assign Associations
                 </Button>
               )}
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                Delete Selected
-              </Button>
+
+              {/* Bulk Status Change Dropdown */}
+              <Select onValueChange={(status) => handleBulkStatusChange(status)}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue
+                    placeholder={
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Change Status
+                      </div>
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="h-4 w-4 text-green-600" />
+                      Set {transformEnumValue('ACTIVE')}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="INACTIVE">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      Set {transformEnumValue('INACTIVE')}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ARCHIVED">
+                    <div className="flex items-center gap-2">
+                      <Archive className="h-4 w-4 text-red-600" />
+                      {transformEnumValue('ARCHIVED')}
+                    </div>
+                  </SelectItem>
+                  {TABLE_CONFIG.showDraftTab && (
+                    <SelectItem value="DRAFT">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border border-gray-400 rounded" />
+                        Set {transformEnumValue('DRAFT')}
+                      </div>
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+
+              {activeStatusTab !== 'archived' && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkArchive}
+                  className="gap-2"
+                >
+                  <Archive className="h-4 w-4" />
+                  Archive Selected
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -1533,8 +1877,10 @@ export function CallTable() {
                     <CallTableRow
                       key={call.id}
                       call={call}
-                      onDelete={handleDelete}
-                      isDeleting={isDeleting}
+                      onArchive={handleArchive}
+                      onStatusChange={handleStatusChange}
+                      isUpdatingStatus={isUpdatingStatus}
+                      statusOptions={statusOptions}
                       isSelected={selectedRows.has(call.id || 0)}
                       onSelect={handleSelectRow}
                       relationshipConfigs={relationshipConfigs}
@@ -1578,47 +1924,99 @@ export function CallTable() {
           />
         </div>
 
-        {/* Bulk Delete Dialog */}
-        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        {/* Bulk Archive Dialog */}
+        <AlertDialog open={showBulkArchiveDialog} onOpenChange={setShowBulkArchiveDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Delete {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+                Archive {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the selected calls and
-                remove their data from the server.
+                This will change the status of the selected calls to "Archived". They will no longer
+                appear in the active view but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={confirmBulkDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={confirmBulkArchive}
+                className="bg-red-600 text-white hover:bg-red-700"
               >
-                Delete All
+                <Archive className="w-4 h-4 mr-2" />
+                Archive All
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Delete Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        {/* Bulk Status Change Dialog */}
+        <AlertDialog open={showBulkStatusChangeDialog} onOpenChange={setShowBulkStatusChangeDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>
+                Change Status for {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the call and remove its
-                data from the server.
+                This will update the status of the selected calls to "
+                {statusOptions.find((opt) => opt.value.includes(bulkNewStatus || ''))?.label ||
+                  bulkNewStatus}
+                ".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={confirmDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={confirmBulkStatusChange}
+                className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Delete
+                Update Status
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Archive Dialog */}
+        <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Archive this call?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will change the status to "Archived". The call will no longer appear in the
+                active view but can be restored later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmArchive}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Status Change Dialog */}
+        <AlertDialog open={showStatusChangeDialog} onOpenChange={setShowStatusChangeDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Change Status</AlertDialogTitle>
+              <AlertDialogDescription>
+                Change the status of this call to "
+                {statusOptions.find((opt) => opt.value.includes(newStatus || ''))?.label ||
+                  newStatus}
+                "?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmStatusChange}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Update Status
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

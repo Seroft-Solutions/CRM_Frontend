@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  callRemarkToast,
-  handleCallRemarkError,
-} from '@/app/(protected)/(features)/call-remarks/components/call-remark-toast';
-import { callRemarkFormConfig } from '@/app/(protected)/(features)/call-remarks/components/form/call-remark-form-config';
+import { callRemarkToast, handleCallRemarkError } from './call-remark-toast';
+import { callRemarkFormConfig } from './form/call-remark-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

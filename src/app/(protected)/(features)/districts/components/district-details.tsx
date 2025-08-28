@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  districtToast,
-  handleDistrictError,
-} from '@/app/(protected)/(features)/districts/components/district-toast';
-import { districtFormConfig } from '@/app/(protected)/(features)/districts/components/form/district-form-config';
+import { districtToast, handleDistrictError } from './district-toast';
+import { districtFormConfig } from './form/district-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

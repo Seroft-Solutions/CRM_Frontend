@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { meetingFormConfig } from '@/app/(protected)/(features)/meetings/components/form/meeting-form-config';
-import { meetingFormSchema } from '@/app/(protected)/(features)/meetings/components/form/meeting-form-schema';
-import {
-  meetingToast,
-  handleMeetingError,
-} from '@/app/(protected)/(features)/meetings/components/meeting-toast';
+import { meetingFormConfig } from './meeting-form-config';
+import { meetingFormSchema } from './meeting-form-schema';
+import { meetingToast, handleMeetingError } from '../meeting-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

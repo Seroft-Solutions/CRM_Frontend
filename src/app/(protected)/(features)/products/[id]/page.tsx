@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { ProductDetails } from '@/app/(protected)/(features)/products/components/product-details';
+import { ProductDetails } from '../components/product-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface ProductPageProps {

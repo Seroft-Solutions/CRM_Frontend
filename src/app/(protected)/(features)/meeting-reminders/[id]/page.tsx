@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { MeetingReminderDetails } from '@/app/(protected)/(features)/meeting-reminders/components/meeting-reminder-details';
+import { MeetingReminderDetails } from '../components/meeting-reminder-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface MeetingReminderPageProps {

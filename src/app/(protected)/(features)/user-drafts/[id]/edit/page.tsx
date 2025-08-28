@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { UserDraftForm } from '@/app/(protected)/(features)/user-drafts/components/user-draft-form';
+import { UserDraftForm } from '../../components/user-draft-form';
 import { PermissionGuard } from '@/core/auth';
 
 interface EditUserDraftPageProps {

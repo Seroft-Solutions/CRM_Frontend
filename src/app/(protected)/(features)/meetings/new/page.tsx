@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { MeetingForm } from '@/app/(protected)/(features)/meetings/components/meeting-form';
+import { MeetingForm } from '../components/meeting-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

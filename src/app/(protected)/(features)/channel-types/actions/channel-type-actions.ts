@@ -13,9 +13,9 @@ import { redirect } from 'next/navigation';
 import {
   createChannelType,
   updateChannelType,
-  deleteChannelType,
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-import { channelTypeToast } from '@/app/(protected)/(features)/channel-types/components/channel-type-toast';
+import { ChannelTypeDTOStatus } from '@/core/api/generated/spring/schemas/ChannelTypeDTOStatus';
+import { channelTypeToast } from '../components/channel-type-toast';
 
 export async function createChannelTypeAction(data: any) {
   try {
@@ -54,41 +54,145 @@ export async function updateChannelTypeAction(id: number, data: any) {
   }
 }
 
-export async function deleteChannelTypeAction(id: number) {
+export async function archiveChannelTypeAction(id: number, entityData: any) {
   try {
-    await deleteChannelType(id);
+    const archivedEntity = {
+      ...entityData,
+      status: ChannelTypeDTOStatus.ARCHIVED,
+    };
+
+    const result = await updateChannelType(id, archivedEntity);
 
     revalidatePath('/channel-types');
-    channelTypeToast.deleted();
+    channelTypeToast.custom.success('Archived Successfully', 'ChannelType has been archived');
 
-    return { success: true };
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to delete channeltype:', error);
-    channelTypeToast.deleteError(error?.message);
+    console.error('Failed to archive channeltype:', error);
+    channelTypeToast.custom.error(
+      'Archive Failed',
+      error?.message || 'Could not archive channeltype'
+    );
     return { success: false, error: error?.message };
   }
 }
 
-export async function bulkDeleteChannelTypeAction(ids: number[]) {
+export async function updateStatusChannelTypeAction(
+  id: number,
+  entityData: any,
+  newStatus: string
+) {
   try {
-    const results = await Promise.allSettled(ids.map((id) => deleteChannelType(id)));
+    const statusValue = ChannelTypeDTOStatus[newStatus as keyof typeof ChannelTypeDTOStatus];
+    const updatedEntity = {
+      ...entityData,
+      status: statusValue,
+    };
+
+    const result = await updateChannelType(id, updatedEntity);
+
+    revalidatePath('/channel-types');
+    channelTypeToast.custom.success(
+      'Status Updated',
+      `ChannelType status changed to ${newStatus.toLowerCase()}`
+    );
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update channeltype status:', error);
+    channelTypeToast.custom.error(
+      'Status Update Failed',
+      error?.message || 'Could not update channeltype status'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkArchiveChannelTypeAction(ids: number[], entitiesData: any[]) {
+  try {
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const archivedEntity = {
+          ...entityData,
+          status: ChannelTypeDTOStatus.ARCHIVED,
+        };
+        return updateChannelType(id, archivedEntity);
+      })
+    );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects deletions
+    // Revalidate to ensure table reflects changes
     revalidatePath('/channel-types');
 
     if (errorCount === 0) {
-      channelTypeToast.bulkDeleted(successCount);
+      channelTypeToast.custom.success(
+        'Bulk Archive Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} archived successfully`
+      );
     } else {
-      channelTypeToast.bulkDeleteError();
+      channelTypeToast.custom.warning(
+        'Partial Archive',
+        `${successCount} archived, ${errorCount} failed`
+      );
     }
 
     return { success: errorCount === 0, successCount, errorCount };
   } catch (error) {
-    console.error('Bulk delete failed:', error);
-    channelTypeToast.bulkDeleteError(error?.message);
+    console.error('Bulk archive failed:', error);
+    channelTypeToast.custom.error(
+      'Bulk Archive Failed',
+      error?.message || 'Could not archive items'
+    );
+    return { success: false, error: error?.message };
+  }
+}
+
+export async function bulkUpdateStatusChannelTypeAction(
+  ids: number[],
+  entitiesData: any[],
+  newStatus: string
+) {
+  try {
+    const statusValue = ChannelTypeDTOStatus[newStatus as keyof typeof ChannelTypeDTOStatus];
+    const results = await Promise.allSettled(
+      ids.map(async (id, index) => {
+        const entityData = entitiesData[index];
+        const updatedEntity = {
+          ...entityData,
+          status: statusValue,
+        };
+        return updateChannelType(id, updatedEntity);
+      })
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    const errorCount = results.filter((r) => r.status === 'rejected').length;
+
+    // Revalidate to ensure table reflects changes
+    revalidatePath('/channel-types');
+
+    if (errorCount === 0) {
+      channelTypeToast.custom.success(
+        'Bulk Status Update Complete',
+        `${successCount} item${successCount > 1 ? 's' : ''} updated to ${newStatus.toLowerCase()}`
+      );
+    } else {
+      channelTypeToast.custom.warning(
+        'Partial Status Update',
+        `${successCount} updated, ${errorCount} failed`
+      );
+    }
+
+    return { success: errorCount === 0, successCount, errorCount };
+  } catch (error) {
+    console.error('Bulk status update failed:', error);
+    channelTypeToast.custom.error(
+      'Bulk Status Update Failed',
+      error?.message || 'Could not update status for items'
+    );
     return { success: false, error: error?.message };
   }
 }

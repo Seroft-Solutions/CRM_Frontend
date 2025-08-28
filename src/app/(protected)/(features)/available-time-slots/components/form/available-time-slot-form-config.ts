@@ -20,7 +20,7 @@ export const availableTimeSlotFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['duration'],
+      fields: ['status', 'duration'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -120,6 +120,17 @@ export const availableTimeSlotFormConfig: FormConfig = {
       required: false,
       validation: {
         required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

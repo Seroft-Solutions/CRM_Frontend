@@ -106,6 +106,9 @@ export function ChannelTypeSearchAndFilters({
     if (key === 'commissionRate') {
       return 'commissionRate';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

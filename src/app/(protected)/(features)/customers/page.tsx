@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
-import { CustomerTable } from '@/app/(protected)/(features)/customers/components/customer-table';
+import { CustomerTable } from './components/customer-table';
 import { PageHeader } from '@/components/page-header';
 import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
@@ -52,13 +52,7 @@ export default function CustomerPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                  />
-                  <circle cx="9" cy="7" r="4" />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m22 21-3-3m-18 3v-2a4 4 0 0 1 4-4h4"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z M3 7l9 6 9-6"
                   />
                 </svg>
               </div>

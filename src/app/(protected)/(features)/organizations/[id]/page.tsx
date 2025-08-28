@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { OrganizationDetails } from '@/app/(protected)/(features)/organizations/components/organization-details';
+import { OrganizationDetails } from '../components/organization-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface OrganizationPageProps {

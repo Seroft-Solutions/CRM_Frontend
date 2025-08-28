@@ -37,6 +37,7 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   state: z.number({ message: 'Please select state from the dropdown' }),
   district: z.number({ message: 'Please select district from the dropdown' }),
   city: z.number({ message: 'Please select city from the dropdown' }),
@@ -75,6 +76,7 @@ export const customerFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   state: z.number({ message: 'Please select state from the dropdown' }),
   district: z.number({ message: 'Please select district from the dropdown' }),
   city: z.number({ message: 'Please select city from the dropdown' }),
@@ -89,6 +91,7 @@ export const customerStepSchemas = {
     mobile: customerFieldSchemas.mobile,
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
+    status: customerFieldSchemas.status,
     createdBy: customerFieldSchemas.createdBy,
     createdDate: customerFieldSchemas.createdDate,
     lastModifiedBy: customerFieldSchemas.lastModifiedBy,

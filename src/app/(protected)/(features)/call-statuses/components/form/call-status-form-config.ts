@@ -20,7 +20,7 @@ export const callStatusFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'remark'],
+      fields: ['name', 'description', 'remark', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -76,6 +76,17 @@ export const callStatusFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 1000,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

@@ -20,7 +20,7 @@ export const groupFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakGroupId', 'name', 'path', 'description'],
+      fields: ['keycloakGroupId', 'name', 'path', 'description', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -33,17 +33,6 @@ export const groupFormConfig: FormConfig = {
       description: 'Assign users and responsibilities',
       fields: [],
       relationships: ['members'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'settings',
-      title: 'Settings & Files',
-      description: 'Configure options',
-      fields: ['isActive'],
-      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -125,10 +114,10 @@ export const groupFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'isActive',
-      type: 'boolean',
-      label: 'Is Active',
-      placeholder: 'Enter is active',
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { SubCallTypeDetails } from '@/app/(protected)/(features)/sub-call-types/components/sub-call-type-details';
+import { SubCallTypeDetails } from '../components/sub-call-type-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface SubCallTypePageProps {

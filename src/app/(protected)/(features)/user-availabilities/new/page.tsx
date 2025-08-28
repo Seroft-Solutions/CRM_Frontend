@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { UserAvailabilityForm } from '@/app/(protected)/(features)/user-availabilities/components/user-availability-form';
+import { UserAvailabilityForm } from '../components/user-availability-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

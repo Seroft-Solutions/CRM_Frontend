@@ -20,7 +20,7 @@ export const customerFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson'],
+      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -113,6 +113,17 @@ export const customerFormConfig: FormConfig = {
         required: false,
         minLength: 2,
         maxLength: 100,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },
@@ -284,7 +295,7 @@ export const customerFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,

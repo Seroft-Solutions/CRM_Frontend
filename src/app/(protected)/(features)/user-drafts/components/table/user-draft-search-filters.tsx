@@ -106,6 +106,9 @@ export function UserDraftSearchAndFilters({
     if (key === 'jsonPayload') {
       return 'jsonPayload';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

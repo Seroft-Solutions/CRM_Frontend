@@ -9,19 +9,16 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  MeetingParticipantFormProvider,
-  useEntityForm,
-} from '@/app/(protected)/(features)/meeting-participants/components/form/meeting-participant-form-provider';
-import { FormProgressIndicator } from '@/app/(protected)/(features)/meeting-participants/components/form/form-progress-indicator';
-import { FormStepRenderer } from '@/app/(protected)/(features)/meeting-participants/components/form/form-step-renderer';
-import { FormNavigation } from '@/app/(protected)/(features)/meeting-participants/components/form/form-navigation';
-import { FormStateManager } from '@/app/(protected)/(features)/meeting-participants/components/form/form-state-manager';
+import { MeetingParticipantFormProvider, useEntityForm } from './meeting-participant-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/meeting-participants/components/form/steps";
+// import { stepComponents } from './steps';
 import {
   useCreateMeetingParticipant,
   useUpdateMeetingParticipant,
@@ -30,7 +27,7 @@ import {
 import {
   meetingParticipantToast,
   handleMeetingParticipantError,
-} from '@/app/(protected)/(features)/meeting-participants/components/meeting-participant-toast';
+} from '../meeting-participant-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -198,6 +195,7 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
           'hasAccepted': '',
           'hasDeclined': '',
           'responseDateTime': '',
+          'status': '',
           'meeting': 'Meeting',
         }}
       /> */}

@@ -1,35 +1,30 @@
 // ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced customer form wizard with step components properly enabled
-// - Uncommented step components import and added entity prop support
-// - Fixed step rendering issue that was showing placeholder text
+// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
+// - Source: code generation pipeline
+// - To customize: use ./overrides/[filename].ts or feature-level
+//   extensions (e.g., ./src/features/.../extensions/)
+// - Direct edits will be overwritten on regeneration
 // ===============================================================
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CustomerFormProvider,
-  useEntityForm,
-} from '@/app/(protected)/(features)/customers/components/form/customer-form-provider';
-import { FormProgressIndicator } from '@/app/(protected)/(features)/customers/components/form/form-progress-indicator';
-import { FormStepRenderer } from '@/app/(protected)/(features)/customers/components/form/form-step-renderer';
-import { FormNavigation } from '@/app/(protected)/(features)/customers/components/form/form-navigation';
-import { FormStateManager } from '@/app/(protected)/(features)/customers/components/form/form-state-manager';
+import { CustomerFormProvider, useEntityForm } from './customer-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-import { stepComponents } from '@/app/(protected)/(features)/customers/components/form/steps';
+// import { stepComponents } from './steps';
 import {
   useCreateCustomer,
   useUpdateCustomer,
   useGetCustomer,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import {
-  customerToast,
-  handleCustomerError,
-} from '@/app/(protected)/(features)/customers/components/customer-toast';
+import { customerToast, handleCustomerError } from '../customer-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -117,12 +112,14 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
     // Use imported step components (requires manual import after generation)
     try {
-      const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      if (StepComponent) {
-        return <StepComponent {...stepProps} />;
-      }
+      // STEP_GENERATOR_START
+      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
+      // if (StepComponent) {
+      //   return <StepComponent {...stepProps} />;
+      // }
+      // STEP_GENERATOR_END
     } catch (error) {
-      console.error('Error loading step component:', error);
+      // Steps not imported yet
     }
 
     // Fallback message - replace with generated steps
@@ -194,6 +191,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
           'mobile': '',
           'whatsApp': '',
           'contactPerson': '',
+          'status': '',
           'state': 'State',
           'district': 'District',
           'city': 'City',

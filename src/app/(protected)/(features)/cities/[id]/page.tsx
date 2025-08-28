@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CityDetails } from '@/app/(protected)/(features)/cities/components/city-details';
+import { CityDetails } from '../components/city-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface CityPageProps {

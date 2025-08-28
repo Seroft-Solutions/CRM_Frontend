@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { SourceForm } from '@/app/(protected)/(features)/sources/components/form/source-form-wizard';
+import { SourceForm } from './form/source-form-wizard';
 
 interface SourceFormProps {
   id?: number;

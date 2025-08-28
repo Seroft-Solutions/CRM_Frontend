@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { RoleForm } from '@/app/(protected)/(features)/roles/components/role-form';
+import { RoleForm } from '../../components/role-form';
 import { PermissionGuard } from '@/core/auth';
 
 interface EditRolePageProps {

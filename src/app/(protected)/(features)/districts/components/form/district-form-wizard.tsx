@@ -9,28 +9,22 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  DistrictFormProvider,
-  useEntityForm,
-} from '@/app/(protected)/(features)/districts/components/form/district-form-provider';
-import { FormProgressIndicator } from '@/app/(protected)/(features)/districts/components/form/form-progress-indicator';
-import { FormStepRenderer } from '@/app/(protected)/(features)/districts/components/form/form-step-renderer';
-import { FormNavigation } from '@/app/(protected)/(features)/districts/components/form/form-navigation';
-import { FormStateManager } from '@/app/(protected)/(features)/districts/components/form/form-state-manager';
+import { DistrictFormProvider, useEntityForm } from './district-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/districts/components/form/steps";
+// import { stepComponents } from './steps';
 import {
   useCreateDistrict,
   useUpdateDistrict,
   useGetDistrict,
 } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import {
-  districtToast,
-  handleDistrictError,
-} from '@/app/(protected)/(features)/districts/components/district-toast';
+import { districtToast, handleDistrictError } from '../district-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -193,6 +187,7 @@ function DistrictFormContent({ id }: DistrictFormProps) {
         errors={state.errors}
         fieldLabels={{
           'name': '',
+          'status': '',
           'state': 'State',
         }}
       /> */}

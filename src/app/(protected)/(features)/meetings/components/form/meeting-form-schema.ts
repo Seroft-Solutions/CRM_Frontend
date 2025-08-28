@@ -47,6 +47,7 @@ export const meetingFormSchemaFields = {
   meetingType: z
     .string({ message: 'Please enter meetingtype' })
     .min(1, { message: 'Please enter meetingtype' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   createdAt: z
     .union([z.date(), z.string().transform((str) => new Date(str))])
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
@@ -106,6 +107,7 @@ export const meetingFieldSchemas = {
   meetingType: z
     .string({ message: 'Please enter meetingtype' })
     .min(1, { message: 'Please enter meetingtype' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   createdAt: z
     .union([z.date(), z.string().transform((str) => new Date(str))])
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
@@ -136,6 +138,7 @@ export const meetingStepSchemas = {
     timeZone: meetingFieldSchemas.timeZone,
     meetingStatus: meetingFieldSchemas.meetingStatus,
     meetingType: meetingFieldSchemas.meetingType,
+    status: meetingFieldSchemas.status,
     createdAt: meetingFieldSchemas.createdAt,
     updatedAt: meetingFieldSchemas.updatedAt,
     createdBy: meetingFieldSchemas.createdBy,

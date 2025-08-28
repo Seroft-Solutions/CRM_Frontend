@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { ChannelTypeDetails } from '@/app/(protected)/(features)/channel-types/components/channel-type-details';
+import { ChannelTypeDetails } from '../components/channel-type-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface ChannelTypePageProps {

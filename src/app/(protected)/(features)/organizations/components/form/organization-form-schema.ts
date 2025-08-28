@@ -34,7 +34,7 @@ export const organizationFormSchemaFields = {
       { message: 'Please enter valid domain' }
     )
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   members: z.string().optional(),
 };
 
@@ -67,7 +67,7 @@ export const organizationFieldSchemas = {
       { message: 'Please enter valid domain' }
     )
     .optional(),
-  isActive: z.boolean(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   members: z.string().optional(),
 };
 
@@ -78,6 +78,7 @@ export const organizationStepSchemas = {
     name: organizationFieldSchemas.name,
     displayName: organizationFieldSchemas.displayName,
     domain: organizationFieldSchemas.domain,
+    status: organizationFieldSchemas.status,
     createdBy: organizationFieldSchemas.createdBy,
     createdDate: organizationFieldSchemas.createdDate,
     lastModifiedBy: organizationFieldSchemas.lastModifiedBy,

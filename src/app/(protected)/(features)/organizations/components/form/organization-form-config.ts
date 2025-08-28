@@ -20,7 +20,7 @@ export const organizationFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakOrgId', 'name', 'displayName', 'domain'],
+      fields: ['keycloakOrgId', 'name', 'displayName', 'domain', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -33,17 +33,6 @@ export const organizationFormConfig: FormConfig = {
       description: 'Assign users and responsibilities',
       fields: [],
       relationships: ['members'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'settings',
-      title: 'Settings & Files',
-      description: 'Configure options',
-      fields: ['isActive'],
-      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -116,10 +105,10 @@ export const organizationFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'isActive',
-      type: 'boolean',
-      label: 'Is Active',
-      placeholder: 'Enter is active',
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

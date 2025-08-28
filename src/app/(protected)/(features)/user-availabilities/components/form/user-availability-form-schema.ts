@@ -36,6 +36,7 @@ export const userAvailabilityFormSchemaFields = {
     })
     .optional(),
   timeZone: z.string().max(50, { message: 'Please enter no more than 50 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   user: z.string().optional(),
 };
 
@@ -70,6 +71,7 @@ export const userAvailabilityFieldSchemas = {
     })
     .optional(),
   timeZone: z.string().max(50, { message: 'Please enter no more than 50 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   user: z.string().optional(),
 };
 
@@ -82,6 +84,7 @@ export const userAvailabilityStepSchemas = {
     effectiveFrom: userAvailabilityFieldSchemas.effectiveFrom,
     effectiveTo: userAvailabilityFieldSchemas.effectiveTo,
     timeZone: userAvailabilityFieldSchemas.timeZone,
+    status: userAvailabilityFieldSchemas.status,
     createdBy: userAvailabilityFieldSchemas.createdBy,
     createdDate: userAvailabilityFieldSchemas.createdDate,
     lastModifiedBy: userAvailabilityFieldSchemas.lastModifiedBy,

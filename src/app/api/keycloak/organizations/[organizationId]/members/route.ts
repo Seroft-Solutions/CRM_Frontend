@@ -478,7 +478,9 @@ export async function POST(
             // Organization details for multi-tenant email templates
             organization_id: [organizationId],
             organization_name: [organization.name || 'Organization'],
-            organization_display_name: [organization.displayName || organization.name || 'Organization'],
+            organization_display_name: [
+              organization.displayName || organization.name || 'Organization',
+            ],
             // User type classification
             user_type: ['user'], // Set user_type for regular users
           },
@@ -537,7 +539,7 @@ export async function POST(
             // Continue with invitation flow even if email fails
           }
         } else if (inviteData.sendWelcomeEmail !== false) {
-          // Default: Send organization invitation email  
+          // Default: Send organization invitation email
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,

@@ -13,8 +13,26 @@ import { Form } from '@/components/ui/form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useEntityForm } from '@/app/(protected)/(features)/states/components/form/state-form-provider';
-import { RelationshipRenderer } from '@/app/(protected)/(features)/states/components/form/relationship-renderer';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useEntityForm } from './state-form-provider';
+import { RelationshipRenderer } from './relationship-renderer';
+
+// Utility function to transform enum values from UPPERCASE to Title Case
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 interface FormStepRendererProps {
   entity?: any;
@@ -204,6 +222,45 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     form.trigger(fieldConfig.name);
                   }}
                 />
+              ) : (fieldConfig.type === 'enum' && fieldConfig.options) ||
+                fieldConfig.name === 'status' ? (
+                <Select
+                  value={
+                    field.value || (fieldConfig.name?.toLowerCase() === 'status' ? 'ACTIVE' : '')
+                  }
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.trigger(fieldConfig.name);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        fieldConfig.name?.toLowerCase() === 'status'
+                          ? field.value
+                            ? transformEnumValue(field.value)
+                            : 'Active'
+                          : fieldConfig.placeholder
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fieldConfig.options ? (
+                      fieldConfig.options.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {transformEnumValue(option.label || option.value)}
+                        </SelectItem>
+                      ))
+                    ) : fieldConfig.name === 'status' ? (
+                      <>
+                        <SelectItem value="DRAFT">Draft</SelectItem>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="INACTIVE">Inactive</SelectItem>
+                        <SelectItem value="ARCHIVED">Archived</SelectItem>
+                      </>
+                    ) : null}
+                  </SelectContent>
+                </Select>
               ) : fieldConfig.name?.toLowerCase().includes('email') ? (
                 <Input
                   type="email"

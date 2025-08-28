@@ -20,6 +20,7 @@ export const callRemarkFormSchemaFields = {
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
       message: 'Please select a valid date and time',
     }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   call: z.number({ message: 'Please select call from the dropdown' }),
 };
 
@@ -38,6 +39,7 @@ export const callRemarkFieldSchemas = {
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
       message: 'Please select a valid date and time',
     }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   call: z.number({ message: 'Please select call from the dropdown' }),
 };
 
@@ -46,6 +48,7 @@ export const callRemarkStepSchemas = {
   basic: z.object({
     remark: callRemarkFieldSchemas.remark,
     dateTime: callRemarkFieldSchemas.dateTime,
+    status: callRemarkFieldSchemas.status,
     createdBy: callRemarkFieldSchemas.createdBy,
     createdDate: callRemarkFieldSchemas.createdDate,
     lastModifiedBy: callRemarkFieldSchemas.lastModifiedBy,

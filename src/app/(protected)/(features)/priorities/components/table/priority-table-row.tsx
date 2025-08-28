@@ -8,15 +8,34 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from '@/app/(protected)/(features)/priorities/components/table/relationship-cell';
+import { RelationshipCell } from './relationship-cell';
 import type { PriorityDTO } from '@/core/api/generated/spring/schemas/PriorityDTO';
+import { PriorityDTOStatus } from '@/core/api/generated/spring/schemas/PriorityDTOStatus';
+
+// Utility function to transform enum values from UPPERCASE to Title Case
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 interface RelationshipConfig {
   name: string;
@@ -26,10 +45,18 @@ interface RelationshipConfig {
   isEditable: boolean;
 }
 
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+}
+
 interface PriorityTableRowProps {
   priority: PriorityDTO;
-  onDelete: (id: number) => void;
-  isDeleting: boolean;
+  onArchive: (id: number) => void;
+  onStatusChange: (id: number, status: string) => void;
+  isUpdatingStatus: boolean;
+  statusOptions: StatusOption[];
   isSelected: boolean;
   onSelect: (id: number) => void;
   relationshipConfigs?: RelationshipConfig[];
@@ -52,8 +79,10 @@ interface PriorityTableRowProps {
 
 export function PriorityTableRow({
   priority,
-  onDelete,
-  isDeleting,
+  onArchive,
+  onStatusChange,
+  isUpdatingStatus,
+  statusOptions,
   isSelected,
   onSelect,
   relationshipConfigs = [],
@@ -61,6 +90,25 @@ export function PriorityTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: PriorityTableRowProps) {
+  // Get current status display info
+  const currentStatus = priority.status;
+  const statusInfo = statusOptions.find(
+    (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
+  );
+
+  // Helper function to get status badge
+  const getStatusBadge = (status: string) => {
+    const info = statusOptions.find(
+      (opt) => opt.value === status || opt.value.toString() === status
+    );
+    if (!info) return <Badge variant="secondary">{transformEnumValue(status)}</Badge>;
+
+    return (
+      <Badge variant="secondary" className={`${info.color} border-0 text-xs font-medium`}>
+        {transformEnumValue(status)}
+      </Badge>
+    );
+  };
   return (
     <TableRow className="hover:bg-gray-50 transition-colors">
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
@@ -95,6 +143,10 @@ export function PriorityTableRow({
                   return field?.toString() || '';
                 }
 
+                if (column.id === 'status') {
+                  return getStatusBadge(field as string);
+                }
+
                 if (column.id === 'createdBy') {
                   return field?.toString() || '';
                 }
@@ -119,8 +171,8 @@ export function PriorityTableRow({
               })()}
         </TableCell>
       ))}
-      <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[100px] sm:w-[120px]">
-        <div className="flex items-center gap-0.5 sm:gap-1">
+      <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
+        <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="priority:read">
             <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
               <Link href={`/priorities/${priority.id}`}>
@@ -137,17 +189,63 @@ export function PriorityTableRow({
               </Link>
             </Button>
           </InlinePermissionGuard>
-          <InlinePermissionGuard requiredPermission="priority:delete">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive"
-              onClick={() => priority.id && onDelete(priority.id)}
-              disabled={isDeleting || !priority.id}
-            >
-              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="sr-only">Delete</span>
-            </Button>
+
+          {/* Status Management Dropdown */}
+          <InlinePermissionGuard requiredPermission="priority:update">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                  disabled={isUpdatingStatus}
+                >
+                  <MoreVertical className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="sr-only">Status Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {currentStatus !== PriorityDTOStatus.ACTIVE && (
+                  <DropdownMenuItem
+                    onClick={() => priority.id && onStatusChange(priority.id, 'ACTIVE')}
+                    className="text-green-700"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Set Active
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== PriorityDTOStatus.INACTIVE && (
+                  <DropdownMenuItem
+                    onClick={() => priority.id && onStatusChange(priority.id, 'INACTIVE')}
+                    className="text-yellow-700"
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Set Inactive
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== PriorityDTOStatus.DRAFT && (
+                  <DropdownMenuItem
+                    onClick={() => priority.id && onStatusChange(priority.id, 'DRAFT')}
+                    className="text-gray-700"
+                  >
+                    <div className="w-4 h-4 mr-2 border border-current rounded" />
+                    Set Draft
+                  </DropdownMenuItem>
+                )}
+                {currentStatus !== PriorityDTOStatus.ARCHIVED && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => priority.id && onArchive(priority.id)}
+                      className="text-red-700"
+                    >
+                      <Archive className="w-4 h-4 mr-2" />
+                      Archive
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </InlinePermissionGuard>
         </div>
       </TableCell>

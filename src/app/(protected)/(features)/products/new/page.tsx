@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { ProductForm } from '@/app/(protected)/(features)/products/components/product-form';
+import { ProductForm } from '../components/product-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

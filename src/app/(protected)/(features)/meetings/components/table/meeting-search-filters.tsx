@@ -145,6 +145,9 @@ export function MeetingSearchAndFilters({
     if (key === 'meetingType') {
       return 'meetingType';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

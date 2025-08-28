@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { AreaDetails } from '@/app/(protected)/(features)/areas/components/area-details';
+import { AreaDetails } from '../components/area-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface AreaPageProps {

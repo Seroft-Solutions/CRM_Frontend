@@ -20,7 +20,7 @@ export const userProfileFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakId', 'firstName', 'lastName', 'email', 'phone', 'displayName'],
+      fields: ['keycloakId', 'firstName', 'lastName', 'email', 'phone', 'displayName', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -147,6 +147,17 @@ export const userProfileFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 200,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { DistrictDetails } from '@/app/(protected)/(features)/districts/components/district-details';
+import { DistrictDetails } from '../components/district-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface DistrictPageProps {

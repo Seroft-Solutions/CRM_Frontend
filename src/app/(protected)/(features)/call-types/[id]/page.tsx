@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallTypeDetails } from '@/app/(protected)/(features)/call-types/components/call-type-details';
+import { CallTypeDetails } from '../components/call-type-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface CallTypePageProps {

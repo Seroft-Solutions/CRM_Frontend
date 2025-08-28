@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { AreaForm } from '@/app/(protected)/(features)/areas/components/area-form';
+import { AreaForm } from '../components/area-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

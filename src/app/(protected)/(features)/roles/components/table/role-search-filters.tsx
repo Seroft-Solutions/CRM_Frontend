@@ -94,9 +94,6 @@ export function RoleSearchAndFilters({
     }
 
     // Handle regular field filters
-    if (key === 'isActive') {
-      return 'isActive';
-    }
     if (key === 'createdDate') {
       return 'createdDate';
     }
@@ -111,6 +108,9 @@ export function RoleSearchAndFilters({
     }
     if (key === 'description') {
       return 'description';
+    }
+    if (key === 'status') {
+      return 'status';
     }
     if (key === 'createdBy') {
       return 'createdBy';
@@ -152,33 +152,6 @@ export function RoleSearchAndFilters({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80 p-4" align="end">
             <div className="space-y-4">
-              <DropdownMenuSeparator />
-
-              {/* Boolean Fields Section */}
-              <div>
-                <DropdownMenuLabel className="px-0 text-sm font-medium">Options</DropdownMenuLabel>
-                <div className="space-y-2 mt-2">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">isActive</label>
-                    <Select
-                      value={(filters['isActive'] as string) || '__all__'}
-                      onValueChange={(value) =>
-                        onFilterChange('isActive', value === '__all__' ? undefined : value)
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__all__">All</SelectItem>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
               <DropdownMenuSeparator />
 
               {/* People Section */}

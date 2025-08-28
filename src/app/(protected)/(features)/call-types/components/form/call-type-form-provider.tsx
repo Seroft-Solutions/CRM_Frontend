@@ -13,12 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
-import { callTypeFormConfig } from '@/app/(protected)/(features)/call-types/components/form/call-type-form-config';
-import { callTypeFormSchema } from '@/app/(protected)/(features)/call-types/components/form/call-type-form-schema';
-import {
-  callTypeToast,
-  handleCallTypeError,
-} from '@/app/(protected)/(features)/call-types/components/call-type-toast';
+import { callTypeFormConfig } from './call-type-form-config';
+import { callTypeFormSchema } from './call-type-form-schema';
+import { callTypeToast, handleCallTypeError } from '../call-type-toast';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';

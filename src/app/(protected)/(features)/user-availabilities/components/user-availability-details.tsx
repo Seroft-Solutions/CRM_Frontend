@@ -13,11 +13,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  userAvailabilityToast,
-  handleUserAvailabilityError,
-} from '@/app/(protected)/(features)/user-availabilities/components/user-availability-toast';
-import { userAvailabilityFormConfig } from '@/app/(protected)/(features)/user-availabilities/components/form/user-availability-form-config';
+import { userAvailabilityToast, handleUserAvailabilityError } from './user-availability-toast';
+import { userAvailabilityFormConfig } from './form/user-availability-form-config';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

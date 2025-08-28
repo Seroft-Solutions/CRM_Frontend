@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { SourceForm } from '@/app/(protected)/(features)/sources/components/source-form';
+import { SourceForm } from '../components/source-form';
 import { PermissionGuard } from '@/core/auth';
 
 export const metadata = {

@@ -20,7 +20,7 @@ export const channelTypeFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'commissionRate'],
+      fields: ['name', 'description', 'status', 'commissionRate'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -70,8 +70,8 @@ export const channelTypeFormConfig: FormConfig = {
     {
       name: 'commissionRate',
       type: 'number',
-      label: 'Commission Rate (%)',
-      placeholder: 'Enter commission rate in percentage',
+      label: 'Commission Rate',
+      placeholder: 'Enter commission rate',
       required: false,
       validation: {
         required: false,
@@ -81,6 +81,17 @@ export const channelTypeFormConfig: FormConfig = {
       ui: {
         inputType: 'number',
       },
+    },
+    {
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
     },
   ],
 

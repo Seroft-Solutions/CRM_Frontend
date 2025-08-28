@@ -16,6 +16,7 @@ export const cityFormSchemaFields = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   district: z.number({ message: 'Please select district from the dropdown' }),
 };
 
@@ -30,6 +31,7 @@ export const cityFieldSchemas = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   district: z.number({ message: 'Please select district from the dropdown' }),
 };
 
@@ -37,6 +39,7 @@ export const cityFieldSchemas = {
 export const cityStepSchemas = {
   basic: z.object({
     name: cityFieldSchemas.name,
+    status: cityFieldSchemas.status,
     createdBy: cityFieldSchemas.createdBy,
     createdDate: cityFieldSchemas.createdDate,
     lastModifiedBy: cityFieldSchemas.lastModifiedBy,

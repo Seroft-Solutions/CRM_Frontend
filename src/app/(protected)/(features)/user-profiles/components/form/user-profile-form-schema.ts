@@ -43,6 +43,7 @@ export const userProfileFormSchemaFields = {
     .string()
     .max(200, { message: 'Please enter no more than 200 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   internalUser: z.string().optional(),
   organizations: z.number().optional(),
   groups: z.number().optional(),
@@ -88,6 +89,7 @@ export const userProfileFieldSchemas = {
     .string()
     .max(200, { message: 'Please enter no more than 200 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   internalUser: z.string().optional(),
   organizations: z.number().optional(),
   groups: z.number().optional(),
@@ -104,6 +106,7 @@ export const userProfileStepSchemas = {
     email: userProfileFieldSchemas.email,
     phone: userProfileFieldSchemas.phone,
     displayName: userProfileFieldSchemas.displayName,
+    status: userProfileFieldSchemas.status,
     createdBy: userProfileFieldSchemas.createdBy,
     createdDate: userProfileFieldSchemas.createdDate,
     lastModifiedBy: userProfileFieldSchemas.lastModifiedBy,

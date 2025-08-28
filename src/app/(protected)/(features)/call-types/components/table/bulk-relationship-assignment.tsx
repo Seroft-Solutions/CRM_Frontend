@@ -30,7 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { callTypeToast } from '@/app/(protected)/(features)/call-types/components/call-type-toast';
+import { callTypeToast } from '../call-type-toast';
 
 interface BulkRelationshipAssignmentProps {
   open: boolean;

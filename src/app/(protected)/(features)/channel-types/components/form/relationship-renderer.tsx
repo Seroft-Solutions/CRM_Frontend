@@ -9,7 +9,7 @@
 
 import React, { useCallback } from 'react';
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/channel-types/components/form/paginated-relationship-combobox';
+import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 // Import all hooks statically for the specific entity
 

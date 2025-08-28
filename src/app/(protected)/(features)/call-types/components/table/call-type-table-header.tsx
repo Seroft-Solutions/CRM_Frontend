@@ -101,7 +101,7 @@ export function CallTypeTableHeader({
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-gray-50 px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
-          <div className="flex items-center gap-1 sm:gap-2 font-medium text-gray-700 text-xs sm:text-sm">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 font-medium text-gray-700 text-xs sm:text-sm">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
             <span className="hidden sm:inline">Actions</span>
           </div>
@@ -152,6 +152,17 @@ export function CallTypeTableHeader({
                         className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
                         value={(filters['remark'] as string) || ''}
                         onChange={(e) => onFilterChange('remark', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'status') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['status'] as string) || ''}
+                        onChange={(e) => onFilterChange('status', e.target.value || undefined)}
                       />
                     );
                   }
@@ -212,7 +223,7 @@ export function CallTypeTableHeader({
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
             <span className="text-xs font-medium text-gray-600 hidden sm:inline">Filters</span>
           </div>

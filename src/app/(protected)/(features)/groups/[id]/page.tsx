@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { GroupDetails } from '@/app/(protected)/(features)/groups/components/group-details';
+import { GroupDetails } from '../components/group-details';
 import { PermissionGuard } from '@/core/auth';
 
 interface GroupPageProps {

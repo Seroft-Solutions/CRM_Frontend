@@ -9,28 +9,22 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  UserAvailabilityFormProvider,
-  useEntityForm,
-} from '@/app/(protected)/(features)/user-availabilities/components/form/user-availability-form-provider';
-import { FormProgressIndicator } from '@/app/(protected)/(features)/user-availabilities/components/form/form-progress-indicator';
-import { FormStepRenderer } from '@/app/(protected)/(features)/user-availabilities/components/form/form-step-renderer';
-import { FormNavigation } from '@/app/(protected)/(features)/user-availabilities/components/form/form-navigation';
-import { FormStateManager } from '@/app/(protected)/(features)/user-availabilities/components/form/form-state-manager';
+import { UserAvailabilityFormProvider, useEntityForm } from './user-availability-form-provider';
+import { FormProgressIndicator } from './form-progress-indicator';
+import { FormStepRenderer } from './form-step-renderer';
+import { FormNavigation } from './form-navigation';
+import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from "@/app/(protected)/(features)/user-availabilities/components/form/steps";
+// import { stepComponents } from './steps';
 import {
   useCreateUserAvailability,
   useUpdateUserAvailability,
   useGetUserAvailability,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
-import {
-  userAvailabilityToast,
-  handleUserAvailabilityError,
-} from '@/app/(protected)/(features)/user-availabilities/components/user-availability-toast';
+import { userAvailabilityToast, handleUserAvailabilityError } from '../user-availability-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -199,6 +193,7 @@ function UserAvailabilityFormContent({ id }: UserAvailabilityFormProps) {
           'effectiveFrom': '',
           'effectiveTo': '',
           'timeZone': '',
+          'status': '',
           'user': 'User',
         }}
       /> */}

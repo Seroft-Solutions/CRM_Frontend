@@ -124,6 +124,9 @@ export function CustomerSearchAndFilters({
     if (key === 'contactPerson') {
       return 'contactPerson';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }

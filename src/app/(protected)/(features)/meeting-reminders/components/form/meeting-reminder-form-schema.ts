@@ -32,6 +32,7 @@ export const meetingReminderFormSchemaFields = {
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   meeting: z.number().optional(),
 };
 
@@ -62,6 +63,7 @@ export const meetingReminderFieldSchemas = {
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   meeting: z.number().optional(),
 };
 
@@ -72,6 +74,7 @@ export const meetingReminderStepSchemas = {
     reminderMinutesBefore: meetingReminderFieldSchemas.reminderMinutesBefore,
     triggeredAt: meetingReminderFieldSchemas.triggeredAt,
     failureReason: meetingReminderFieldSchemas.failureReason,
+    status: meetingReminderFieldSchemas.status,
     createdBy: meetingReminderFieldSchemas.createdBy,
     createdDate: meetingReminderFieldSchemas.createdDate,
     lastModifiedBy: meetingReminderFieldSchemas.lastModifiedBy,

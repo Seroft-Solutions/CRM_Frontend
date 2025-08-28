@@ -20,7 +20,7 @@ export const roleFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakRoleId', 'name', 'description'],
+      fields: ['keycloakRoleId', 'name', 'description', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -33,17 +33,6 @@ export const roleFormConfig: FormConfig = {
       description: 'Assign users and responsibilities',
       fields: [],
       relationships: ['users'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'settings',
-      title: 'Settings & Files',
-      description: 'Configure options',
-      fields: ['isActive'],
-      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -113,10 +102,10 @@ export const roleFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'isActive',
-      type: 'boolean',
-      label: 'Is Active',
-      placeholder: 'Enter is active',
+      name: 'status',
+      type: 'text',
+      label: 'Status',
+      placeholder: 'Enter status',
       required: true,
       validation: {
         required: true,

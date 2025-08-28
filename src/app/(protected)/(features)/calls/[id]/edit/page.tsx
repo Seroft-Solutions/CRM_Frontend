@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import { CallForm } from '@/app/(protected)/(features)/calls/components/call-form';
+import { CallForm } from '../../components/call-form';
 import { PermissionGuard } from '@/core/auth';
 
 interface EditCallPageProps {

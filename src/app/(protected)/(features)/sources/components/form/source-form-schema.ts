@@ -21,6 +21,7 @@ export const sourceFormSchemaFields = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 export const sourceFormSchema = z.object(sourceFormSchemaFields);
@@ -39,6 +40,7 @@ export const sourceFieldSchemas = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
+  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
 // Step-specific validation schemas
@@ -47,6 +49,7 @@ export const sourceStepSchemas = {
     name: sourceFieldSchemas.name,
     description: sourceFieldSchemas.description,
     remark: sourceFieldSchemas.remark,
+    status: sourceFieldSchemas.status,
     createdBy: sourceFieldSchemas.createdBy,
     createdDate: sourceFieldSchemas.createdDate,
     lastModifiedBy: sourceFieldSchemas.lastModifiedBy,

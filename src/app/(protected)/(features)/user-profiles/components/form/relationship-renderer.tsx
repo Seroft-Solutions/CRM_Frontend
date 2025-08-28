@@ -9,13 +9,13 @@
 
 import React, { useCallback } from 'react';
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/user-profiles/components/form/paginated-relationship-combobox';
+import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 // Import all hooks statically for the specific entity
 
 import {
   useGetAllPublicUsers,
-  useSearch as useSearchPublicUsers,
+  useSearchPublicUsers,
 } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 import {
   useGetAllOrganizations,

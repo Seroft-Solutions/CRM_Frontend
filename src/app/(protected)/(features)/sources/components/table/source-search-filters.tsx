@@ -106,6 +106,9 @@ export function SourceSearchAndFilters({
     if (key === 'remark') {
       return 'remark';
     }
+    if (key === 'status') {
+      return 'status';
+    }
     if (key === 'createdBy') {
       return 'createdBy';
     }
