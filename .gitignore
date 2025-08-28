@@ -40,11 +40,25 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Playwright testing artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/tests/test-results/
+/tests/playwright-report/
+/tests/blob-report/
+/tests/screenshots/
+/tests/videos/
+/tests/traces/
+/ms-playwright/
+
 # Added by Claude Task Master
 # Logs
 logs
 *.log
 dev-debug.log
+replay_*.log
+hs_err_*.log
 # Dependency directories
 node_modules/
 # Environment variables
@@ -60,6 +74,4 @@ node_modules/
 # OS specific
 # Task files
 tasks.json
-tasks/ 
-/playwright-report/
-/test-results/
+tasks/
