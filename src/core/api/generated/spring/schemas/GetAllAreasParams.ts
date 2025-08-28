@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllAreasStatusEquals } from './GetAllAreasStatusEquals';
+import type { GetAllAreasStatusNotEquals } from './GetAllAreasStatusNotEquals';
+import type { GetAllAreasStatusInItem } from './GetAllAreasStatusInItem';
+import type { GetAllAreasStatusNotInItem } from './GetAllAreasStatusNotInItem';
 
 export type GetAllAreasParams = {
 'id.greaterThan'?: number;
@@ -30,6 +34,11 @@ export type GetAllAreasParams = {
 'pincode.specified'?: boolean;
 'pincode.in'?: string[];
 'pincode.notIn'?: string[];
+'status.equals'?: GetAllAreasStatusEquals;
+'status.notEquals'?: GetAllAreasStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllAreasStatusInItem[];
+'status.notIn'?: GetAllAreasStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

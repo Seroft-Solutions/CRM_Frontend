@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CityDTOStatus } from './CityDTOStatus';
 import type { DistrictDTO } from './DistrictDTO';
 
 export interface CityDTO {
@@ -14,6 +15,7 @@ export interface CityDTO {
    * @maxLength 100
    */
   name: string;
+  status: CityDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { UserDraftDTOStatus } from './UserDraftDTOStatus';
 
 export interface UserDraftDTO {
   id?: number;
@@ -15,6 +16,7 @@ export interface UserDraftDTO {
    */
   type?: string;
   jsonPayload: string;
+  status: UserDraftDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

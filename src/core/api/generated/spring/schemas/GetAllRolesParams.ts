@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllRolesStatusEquals } from './GetAllRolesStatusEquals';
+import type { GetAllRolesStatusNotEquals } from './GetAllRolesStatusNotEquals';
+import type { GetAllRolesStatusInItem } from './GetAllRolesStatusInItem';
+import type { GetAllRolesStatusNotInItem } from './GetAllRolesStatusNotInItem';
 
 export type GetAllRolesParams = {
 'id.greaterThan'?: number;
@@ -37,11 +41,11 @@ export type GetAllRolesParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
+'status.equals'?: GetAllRolesStatusEquals;
+'status.notEquals'?: GetAllRolesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllRolesStatusInItem[];
+'status.notIn'?: GetAllRolesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CallDTOStatus } from './CallDTOStatus';
 import type { PriorityDTO } from './PriorityDTO';
 import type { CallTypeDTO } from './CallTypeDTO';
 import type { SubCallTypeDTO } from './SubCallTypeDTO';
@@ -17,6 +18,7 @@ import type { CallStatusDTO } from './CallStatusDTO';
 
 export interface CallDTO {
   id?: number;
+  status: CallDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

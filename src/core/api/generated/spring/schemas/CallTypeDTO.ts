@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CallTypeDTOStatus } from './CallTypeDTOStatus';
 
 export interface CallTypeDTO {
   id?: number;
@@ -23,6 +24,7 @@ export interface CallTypeDTO {
    * @maxLength 1000
    */
   remark?: string;
+  status: CallTypeDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

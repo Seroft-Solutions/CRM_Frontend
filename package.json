@@ -26,7 +26,7 @@
     "sync:jhipster": "shx rm -rf .jhipster && shx cp -r ../CRM_Backend/.jhipster .",
     "openapi:fetch": "shx mkdir -p openapi && curl -L --fail http://localhost:8080/v3/api-docs -o openapi/openapi.json",
     "openapi:generate": "orval --config orval.config.cjs",
-    "sync": "npm run openapi:fetch && npm run openapi:generate && npm run sync:jhipster && npm run generate-nextjs"
+    "sync": "npm run openapi:fetch && npm run openapi:generate && npm run sync:jhipster"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

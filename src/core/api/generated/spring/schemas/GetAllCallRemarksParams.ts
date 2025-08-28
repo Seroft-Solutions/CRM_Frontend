@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllCallRemarksStatusEquals } from './GetAllCallRemarksStatusEquals';
+import type { GetAllCallRemarksStatusNotEquals } from './GetAllCallRemarksStatusNotEquals';
+import type { GetAllCallRemarksStatusInItem } from './GetAllCallRemarksStatusInItem';
+import type { GetAllCallRemarksStatusNotInItem } from './GetAllCallRemarksStatusNotInItem';
 
 export type GetAllCallRemarksParams = {
 'id.greaterThan'?: number;
@@ -32,6 +36,11 @@ export type GetAllCallRemarksParams = {
 'dateTime.specified'?: boolean;
 'dateTime.in'?: string[];
 'dateTime.notIn'?: string[];
+'status.equals'?: GetAllCallRemarksStatusEquals;
+'status.notEquals'?: GetAllCallRemarksStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllCallRemarksStatusInItem[];
+'status.notIn'?: GetAllCallRemarksStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

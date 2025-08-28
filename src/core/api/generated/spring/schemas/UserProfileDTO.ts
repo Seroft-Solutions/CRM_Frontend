@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { UserProfileDTOStatus } from './UserProfileDTOStatus';
 import type { UserDTO } from './UserDTO';
 import type { OrganizationDTO } from './OrganizationDTO';
 import type { GroupDTO } from './GroupDTO';
@@ -41,6 +42,7 @@ export interface UserProfileDTO {
    * @maxLength 200
    */
   displayName?: string;
+  status: UserProfileDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250803230924"
+    "changelogDate": "20250828083508"
   },
   "applications": ["crmBackend"],
   "documentation": "Extended user profile linked to Keycloak.",
@@ -44,6 +44,12 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "200"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
     },
     {
       "fieldName": "createdBy",

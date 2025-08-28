@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { OrganizationDTOStatus } from './OrganizationDTOStatus';
 import type { UserProfileDTO } from './UserProfileDTO';
 
 /**
@@ -30,7 +31,7 @@ export interface OrganizationDTO {
    * @pattern ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$
    */
   domain?: string;
-  isActive: boolean;
+  status: OrganizationDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

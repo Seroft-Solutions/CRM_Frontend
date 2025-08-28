@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { SourceDTOStatus } from './SourceDTOStatus';
 
 export interface SourceDTO {
   id?: number;
@@ -23,6 +24,7 @@ export interface SourceDTO {
    * @maxLength 1000
    */
   remark?: string;
+  status: SourceDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

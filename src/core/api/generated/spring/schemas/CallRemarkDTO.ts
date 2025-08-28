@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CallRemarkDTOStatus } from './CallRemarkDTOStatus';
 import type { CallDTO } from './CallDTO';
 
 export interface CallRemarkDTO {
@@ -15,6 +16,7 @@ export interface CallRemarkDTO {
    */
   remark: string;
   dateTime: string;
+  status: CallRemarkDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

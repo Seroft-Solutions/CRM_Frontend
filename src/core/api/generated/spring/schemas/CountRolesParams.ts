@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountRolesStatusEquals } from './CountRolesStatusEquals';
+import type { CountRolesStatusNotEquals } from './CountRolesStatusNotEquals';
+import type { CountRolesStatusInItem } from './CountRolesStatusInItem';
+import type { CountRolesStatusNotInItem } from './CountRolesStatusNotInItem';
 
 export type CountRolesParams = {
 'id.greaterThan'?: number;
@@ -37,11 +41,11 @@ export type CountRolesParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'isActive.equals'?: boolean;
-'isActive.notEquals'?: boolean;
-'isActive.specified'?: boolean;
-'isActive.in'?: boolean[];
-'isActive.notIn'?: boolean[];
+'status.equals'?: CountRolesStatusEquals;
+'status.notEquals'?: CountRolesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountRolesStatusInItem[];
+'status.notIn'?: CountRolesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { ChannelTypeDTOStatus } from './ChannelTypeDTOStatus';
 
 export interface ChannelTypeDTO {
   id?: number;
@@ -23,6 +24,7 @@ export interface ChannelTypeDTO {
    * @maximum 100
    */
   commissionRate?: number;
+  status: ChannelTypeDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

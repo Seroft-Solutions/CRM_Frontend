@@ -9,6 +9,10 @@ import type { GetAllUserAvailabilitiesDayOfWeekEquals } from './GetAllUserAvaila
 import type { GetAllUserAvailabilitiesDayOfWeekNotEquals } from './GetAllUserAvailabilitiesDayOfWeekNotEquals';
 import type { GetAllUserAvailabilitiesDayOfWeekInItem } from './GetAllUserAvailabilitiesDayOfWeekInItem';
 import type { GetAllUserAvailabilitiesDayOfWeekNotInItem } from './GetAllUserAvailabilitiesDayOfWeekNotInItem';
+import type { GetAllUserAvailabilitiesStatusEquals } from './GetAllUserAvailabilitiesStatusEquals';
+import type { GetAllUserAvailabilitiesStatusNotEquals } from './GetAllUserAvailabilitiesStatusNotEquals';
+import type { GetAllUserAvailabilitiesStatusInItem } from './GetAllUserAvailabilitiesStatusInItem';
+import type { GetAllUserAvailabilitiesStatusNotInItem } from './GetAllUserAvailabilitiesStatusNotInItem';
 
 export type GetAllUserAvailabilitiesParams = {
 'id.greaterThan'?: number;
@@ -69,6 +73,11 @@ export type GetAllUserAvailabilitiesParams = {
 'timeZone.specified'?: boolean;
 'timeZone.in'?: string[];
 'timeZone.notIn'?: string[];
+'status.equals'?: GetAllUserAvailabilitiesStatusEquals;
+'status.notEquals'?: GetAllUserAvailabilitiesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllUserAvailabilitiesStatusInItem[];
+'status.notIn'?: GetAllUserAvailabilitiesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

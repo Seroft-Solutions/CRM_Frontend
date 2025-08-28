@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllStatesStatusEquals } from './GetAllStatesStatusEquals';
+import type { GetAllStatesStatusNotEquals } from './GetAllStatesStatusNotEquals';
+import type { GetAllStatesStatusInItem } from './GetAllStatesStatusInItem';
+import type { GetAllStatesStatusNotInItem } from './GetAllStatesStatusNotInItem';
 
 export type GetAllStatesParams = {
 'id.greaterThan'?: number;
@@ -30,6 +34,11 @@ export type GetAllStatesParams = {
 'country.specified'?: boolean;
 'country.in'?: string[];
 'country.notIn'?: string[];
+'status.equals'?: GetAllStatesStatusEquals;
+'status.notEquals'?: GetAllStatesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllStatesStatusInItem[];
+'status.notIn'?: GetAllStatesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountUserDraftsStatusEquals } from './CountUserDraftsStatusEquals';
+import type { CountUserDraftsStatusNotEquals } from './CountUserDraftsStatusNotEquals';
+import type { CountUserDraftsStatusInItem } from './CountUserDraftsStatusInItem';
+import type { CountUserDraftsStatusNotInItem } from './CountUserDraftsStatusNotInItem';
 
 export type CountUserDraftsParams = {
 'id.greaterThan'?: number;
@@ -37,6 +41,11 @@ export type CountUserDraftsParams = {
 'jsonPayload.specified'?: boolean;
 'jsonPayload.in'?: string[];
 'jsonPayload.notIn'?: string[];
+'status.equals'?: CountUserDraftsStatusEquals;
+'status.notEquals'?: CountUserDraftsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountUserDraftsStatusInItem[];
+'status.notIn'?: CountUserDraftsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { ProductDTOStatus } from './ProductDTOStatus';
 
 export interface ProductDTO {
   id?: number;
@@ -49,6 +50,7 @@ export interface ProductDTO {
    * @maxLength 1000
    */
   remark?: string;
+  status: ProductDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

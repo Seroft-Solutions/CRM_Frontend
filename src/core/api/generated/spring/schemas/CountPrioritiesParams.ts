@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CountPrioritiesStatusEquals } from './CountPrioritiesStatusEquals';
+import type { CountPrioritiesStatusNotEquals } from './CountPrioritiesStatusNotEquals';
+import type { CountPrioritiesStatusInItem } from './CountPrioritiesStatusInItem';
+import type { CountPrioritiesStatusNotInItem } from './CountPrioritiesStatusNotInItem';
 
 export type CountPrioritiesParams = {
 'id.greaterThan'?: number;
@@ -37,6 +41,11 @@ export type CountPrioritiesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'status.equals'?: CountPrioritiesStatusEquals;
+'status.notEquals'?: CountPrioritiesStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: CountPrioritiesStatusInItem[];
+'status.notIn'?: CountPrioritiesStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

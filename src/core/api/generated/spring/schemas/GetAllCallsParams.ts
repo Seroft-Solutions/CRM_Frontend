@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllCallsStatusEquals } from './GetAllCallsStatusEquals';
+import type { GetAllCallsStatusNotEquals } from './GetAllCallsStatusNotEquals';
+import type { GetAllCallsStatusInItem } from './GetAllCallsStatusInItem';
+import type { GetAllCallsStatusNotInItem } from './GetAllCallsStatusNotInItem';
 
 export type GetAllCallsParams = {
 'id.greaterThan'?: number;
@@ -16,6 +20,11 @@ export type GetAllCallsParams = {
 'id.specified'?: boolean;
 'id.in'?: number[];
 'id.notIn'?: number[];
+'status.equals'?: GetAllCallsStatusEquals;
+'status.notEquals'?: GetAllCallsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllCallsStatusInItem[];
+'status.notIn'?: GetAllCallsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

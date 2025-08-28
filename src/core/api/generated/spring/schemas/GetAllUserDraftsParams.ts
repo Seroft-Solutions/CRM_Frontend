@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { GetAllUserDraftsStatusEquals } from './GetAllUserDraftsStatusEquals';
+import type { GetAllUserDraftsStatusNotEquals } from './GetAllUserDraftsStatusNotEquals';
+import type { GetAllUserDraftsStatusInItem } from './GetAllUserDraftsStatusInItem';
+import type { GetAllUserDraftsStatusNotInItem } from './GetAllUserDraftsStatusNotInItem';
 
 export type GetAllUserDraftsParams = {
 'id.greaterThan'?: number;
@@ -37,6 +41,11 @@ export type GetAllUserDraftsParams = {
 'jsonPayload.specified'?: boolean;
 'jsonPayload.in'?: string[];
 'jsonPayload.notIn'?: string[];
+'status.equals'?: GetAllUserDraftsStatusEquals;
+'status.notEquals'?: GetAllUserDraftsStatusNotEquals;
+'status.specified'?: boolean;
+'status.in'?: GetAllUserDraftsStatusInItem[];
+'status.notIn'?: GetAllUserDraftsStatusNotInItem[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

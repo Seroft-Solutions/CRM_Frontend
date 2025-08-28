@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { MeetingParticipantDTOStatus } from './MeetingParticipantDTOStatus';
 import type { MeetingDTO } from './MeetingDTO';
 
 export interface MeetingParticipantDTO {
@@ -24,6 +25,7 @@ export interface MeetingParticipantDTO {
   hasAccepted?: boolean;
   hasDeclined?: boolean;
   responseDateTime?: string;
+  status: MeetingParticipantDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

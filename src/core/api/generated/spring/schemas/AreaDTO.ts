@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { AreaDTOStatus } from './AreaDTOStatus';
 import type { CityDTO } from './CityDTO';
 
 export interface AreaDTO {
@@ -20,6 +21,7 @@ export interface AreaDTO {
    * @pattern ^[0-9]{6}$
    */
   pincode: string;
+  status: AreaDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50
