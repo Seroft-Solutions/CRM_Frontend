@@ -69,6 +69,7 @@ export function useUserAvailabilityCreation() {
       const availabilityPromises = generated.userAvailabilities.map(
         (availability) =>
           new Promise<void>((resolve, reject) => {
+            availability.status='ACTIVE',
             createUserAvailability(
               { data: availability as any },
               {

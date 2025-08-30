@@ -180,6 +180,7 @@ export function MeetingScheduler({
                     isRequired: participant.isRequired,
                     hasAccepted: false,
                     hasDeclined: false,
+                    status:'ACTIVE',
                     meeting: meetingData,
                   },
                 })
@@ -196,6 +197,7 @@ export function MeetingScheduler({
                     reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
                     reminderMinutesBefore: reminder.minutesBefore,
                     meeting: meetingData,
+                    status:'ACTIVE'
                   },
                 })
               )
@@ -465,9 +467,10 @@ export function MeetingScheduler({
       isRecurring: false,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       meetingStatus: MeetingDTOMeetingStatus.SCHEDULED,
-      organizer: { id: assignedUserId } as any,
-      assignedCustomer: customerId ? ({ id: customerId } as any) : undefined,
-      call: { id: callId } as any,
+      organizer: {id: assignedUserId} as any,
+      assignedCustomer: customerId ? ({id: customerId} as any) : undefined,
+      call: {id: callId} as any,
+      status: 'ACTIVE'
     };
 
     createMeeting({ data: meetingData });

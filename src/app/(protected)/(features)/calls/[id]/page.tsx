@@ -7,6 +7,10 @@
 // ===============================================================
 import { CallDetails } from '../components/call-details';
 import { PermissionGuard } from '@/core/auth';
+import { CallRemarksSection } from '../components/call-remarks-section';
+import {CallMeetingsSection} from "@/app/(protected)/(features)/calls/components/call-meetings-section";
+import {useGetCall} from "@/core/api/generated/spring";
+import { use } from 'react';
 
 interface CallPageProps {
   params: Promise<{
@@ -18,10 +22,15 @@ export const metadata = {
   title: 'Call Details',
 };
 
-export default async function CallPage({ params }: CallPageProps) {
-  const { id: idParam } = await params;
+export default function CallPage({ params }: CallPageProps) {
+  const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
-
+  // Fetch call data to get customer and assigned user info
+  const { data: callData } = useGetCall(id, {
+    query: {
+      enabled: !!id,
+    },
+  });
   return (
     <PermissionGuard
       requiredPermission="call:read"
@@ -64,14 +73,29 @@ export default async function CallPage({ params }: CallPageProps) {
                 </svg>
               </div>
 
-              <div className="text-white">
-                <h1 className="text-2xl font-bold">Call Details</h1>
-                <p className="text-blue-100">View detailed information for this call</p>
+              {/* Title and Description */}
+              <div>
+                <h1 className="text-xl font-semibold text-white">Call Details</h1>
+                <p className="text-blue-100 text-sm">View and manage call information</p>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Call Remarks Section */}
+        <div>
+          <CallRemarksSection callId={id} />
+        </div>
+        {/* Call Meetings Section */}
+        <div>
+          <CallMeetingsSection
+              callId={id}
+              customerId={callData?.customer?.id}
+              assignedUserId={callData?.assignedTo?.id}
+          />
+        </div>
+
+        {/* Call Details Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <CallDetails id={id} />
         </div>

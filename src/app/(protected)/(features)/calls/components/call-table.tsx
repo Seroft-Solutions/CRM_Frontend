@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserAuthorities } from '@/core/auth';
+import { useAccount } from '@/core/auth';
 import {
   Search,
   X,
@@ -310,13 +312,16 @@ interface DateRange {
 
 export function CallTable() {
   const queryClient = useQueryClient();
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
 
   // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10); // Default to 25 items per page
 
-  const [sort, setSort] = useState('id');
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState('lastModifiedDate'); // Default sort by last modified date
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -396,10 +401,23 @@ export function CallTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
-  // Get visible columns
+  // Get visible columns - hide Channel Type and Channel Parties for business partners
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
-  }, [columnVisibility]);
+    return ALL_COLUMNS.filter((col) => {
+      // Hide columns if visibility is explicitly set to false
+      if (columnVisibility[col.id] === false) return false;
+
+      // For business partners, hide Channel Type, Channel Parties, and Assigned To columns
+      if (
+        isBusinessPartner &&
+        (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [columnVisibility, isBusinessPartner]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
@@ -772,6 +790,11 @@ export function CallTable() {
     }
     if (dateRange.to) {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+
+    // Add business partner filter - only show calls created by the business partner
+    if (isBusinessPartner && accountData?.login) {
+      params['createdBy.equals'] = accountData.login;
     }
 
     return params;
@@ -1569,7 +1592,7 @@ export function CallTable() {
       displayName: 'Priority',
       options: priorityOptions || [],
       displayField: 'name',
-      isEditable: false, // Disabled by default
+      isEditable: true, // Disabled by default
     },
 
     {
@@ -1633,7 +1656,7 @@ export function CallTable() {
       displayName: 'AssignedTo',
       options: userprofileOptions || [],
       displayField: 'displayName',
-      isEditable: false, // Disabled by default
+      isEditable: true,
     },
 
     {
@@ -1716,7 +1739,18 @@ export function CallTable() {
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {ALL_COLUMNS.map((column) => (
+                {ALL_COLUMNS.filter((column) => {
+                  // Hide Channel Type, Channel Parties, and Assigned To options for business partners
+                  if (
+                    isBusinessPartner &&
+                    (column.id === 'channelType' ||
+                      column.id === 'channelParties' ||
+                      column.id === 'assignedTo')
+                  ) {
+                    return false;
+                  }
+                  return true;
+                }).map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={columnVisibility[column.id] !== false}
