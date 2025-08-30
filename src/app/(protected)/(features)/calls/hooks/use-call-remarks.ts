@@ -25,6 +25,7 @@ export async function saveRemarksForCall(callId: number, remarks: CallRemark[]):
         remark: remark.remark,
         dateTime: remark.dateTime,
         call: { id: callId },
+        status: 'ACTIVE',
       };
 
       return await springServiceMutator<CallRemarkDTO>({

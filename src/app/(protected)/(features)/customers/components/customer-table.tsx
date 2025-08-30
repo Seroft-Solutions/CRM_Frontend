@@ -124,6 +124,7 @@ import { CustomerTableHeader } from './table/customer-table-header';
 import { CustomerTableRow } from './table/customer-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
+import {useAccount, useUserAuthorities} from "@/core/auth";
 
 // Define sort ordering constants
 const ASC = 'asc';
@@ -291,7 +292,9 @@ interface DateRange {
 
 export function CustomerTable() {
   const queryClient = useQueryClient();
-
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
   // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10); // Default to 25 items per page
@@ -703,6 +706,11 @@ export function CustomerTable() {
     }
     if (dateRange.to) {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
+    }
+
+// Add business partner filter - only show customers created by the business partner
+    if (isBusinessPartner && accountData?.login) {
+      params['createdBy.equals'] = accountData.login;
     }
 
     return params;

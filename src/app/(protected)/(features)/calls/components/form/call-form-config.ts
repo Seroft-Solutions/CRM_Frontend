@@ -54,8 +54,7 @@ export const callFormConfig: FormConfig = {
       title: 'Channel Details',
       description: 'Channel type and parties',
       fields: [],
-      relationships: ['channelType', 'channelParties'],
-      validation: {
+      relationships: ['channelParties', 'channelType'],      validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
@@ -66,6 +65,17 @@ export const callFormConfig: FormConfig = {
       description: 'Assign users, set dates and status',
       fields: [],
       relationships: ['assignedTo'],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
+      id: 'remarks',
+      title: 'Remarks',
+      description: 'Add any additional remarks or notes',
+      fields: [],
+      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -409,7 +419,7 @@ export const callFormConfig: FormConfig = {
       debounceMs: 2000,
     },
     persistence: {
-      enabled: true,
+      enabled: false,
       sessionTimeoutMinutes: 30,
       storagePrefix: 'CallFormState_',
     },
@@ -425,7 +435,7 @@ export const callFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,
