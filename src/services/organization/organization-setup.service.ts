@@ -190,7 +190,8 @@ export class OrganizationSetupService {
     const organizationDTO: OrganizationDTO = {
       keycloakOrgId,
       name: request.organizationName,
-      isActive: true,
+      displayName: request.organizationName,
+      status: 'ACTIVE', // Required field with enum value
       ...(request.domain && { domain: request.domain }),
     };
 
