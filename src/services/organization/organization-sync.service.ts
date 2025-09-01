@@ -108,7 +108,7 @@ export class OrganizationSyncService {
         name: keycloakOrg.name || sessionOrg.name,
         displayName: keycloakOrg.displayName || sessionOrg.name,
         domain: keycloakOrg.domains?.[0]?.name,
-        isActive: true,
+        status: 'ACTIVE', // Required field with enum value
         createdDate: new Date().toISOString(),
       };
 
@@ -167,7 +167,7 @@ export class OrganizationSyncService {
         email: session.user.email,
         firstName: session.user.name?.split(' ')[0] || '',
         lastName: session.user.name?.split(' ').slice(1).join(' ') || '',
-        isActive: true,
+        status: 'ACTIVE', // Use status instead of isActive
         createdDate: new Date().toISOString(),
         organization: organizationId ? [{ id: organizationId }] : undefined,
       };
