@@ -19,8 +19,14 @@ import { callToast } from '../components/call-toast';
 
 export async function createCallAction(data: any) {
   try {
+    // Ensure status is set to 'ACTIVE' before creating the call record
+    const callData = {
+      ...data,
+      status: 'ACTIVE',
+    };
+
     // Create entity using the generated API function
-    const result = await createCall(data);
+    const result = await createCall(callData);
 
     // Revalidate both the main list page and any related pages
     revalidatePath('/calls');
