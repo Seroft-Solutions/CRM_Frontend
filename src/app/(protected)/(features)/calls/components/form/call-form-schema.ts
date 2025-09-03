@@ -11,7 +11,7 @@
 import { z } from 'zod';
 
 export const callFormSchemaFields = {
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
   subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
@@ -31,7 +31,7 @@ export type CallFormValues = z.infer<typeof callFormSchema>;
 
 // Individual field schemas for granular validation
 export const callFieldSchemas = {
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
   subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
@@ -46,14 +46,7 @@ export const callFieldSchemas = {
 
 // Step-specific validation schemas
 export const callStepSchemas = {
-  basic: z.object({
-    status: callFieldSchemas.status,
-    createdBy: callFieldSchemas.createdBy,
-    createdDate: callFieldSchemas.createdDate,
-    lastModifiedBy: callFieldSchemas.lastModifiedBy,
-    lastModifiedDate: callFieldSchemas.lastModifiedDate,
-  }),
-
+  // Basic step removed since status is now auto-set to 'ACTIVE'
   review: callFormSchema,
 };
 

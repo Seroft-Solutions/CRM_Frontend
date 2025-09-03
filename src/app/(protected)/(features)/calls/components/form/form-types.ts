@@ -32,10 +32,11 @@ export interface FormStep {
 
 export interface FieldConfig {
   name: string;
-  type: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'file' | 'textarea';
+  type: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'file' | 'textarea' | 'hidden';
   label: string;
   placeholder?: string;
   required: boolean;
+  defaultValue?: any;
   options?: Array<{ value: string; label: string }>;
   accept?: string;
   validation: FieldValidation;

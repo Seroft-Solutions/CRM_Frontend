@@ -41,7 +41,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const isBusinessPartner = hasGroup('Business Partners');
 
   // Fetch user profile data to get channel type information for business partners
-  const { data: userProfile } = useGetUserProfile(accountData?.id, {
+  const { data: userProfile } = useGetUserProfile(accountData?.id || '', {
     query: {
       enabled: isBusinessPartner && !!accountData?.id,
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -123,9 +123,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   // Initialize React Hook Form
   const form = useForm<Record<string, any>>({
-    resolver: zodResolver(callFormSchema),
+    resolver: zodResolver(callFormSchema) as any,
     mode: config.validation.mode,
-    revalidateMode: config.validation.revalidateMode,
+    reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
 // Auto-populate channel and assignment data when account/profile data loads for business partners
@@ -167,21 +167,26 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     }
 
     config.fields.forEach((field) => {
-      switch (field.type) {
-        case 'boolean':
-          defaults[field.name] = false;
-          break;
-        case 'number':
-          defaults[field.name] = '';
-          break;
-        case 'date':
-          defaults[field.name] = undefined;
-          break;
-        case 'enum':
-          defaults[field.name] = field.required ? field.options?.[0]?.value : undefined;
-          break;
-        default:
-          defaults[field.name] = '';
+      // Use defaultValue from field config if available
+      if (field.defaultValue !== undefined) {
+        defaults[field.name] = field.defaultValue;
+      } else {
+        switch (field.type) {
+          case 'boolean':
+            defaults[field.name] = false;
+            break;
+          case 'number':
+            defaults[field.name] = '';
+            break;
+          case 'date':
+            defaults[field.name] = undefined;
+            break;
+          case 'enum':
+            defaults[field.name] = field.required ? field.options?.[0]?.value : undefined;
+            break;
+          default:
+            defaults[field.name] = '';
+        }
       }
     });
 
@@ -659,7 +664,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
     const handleRouteChangeStart = (url: string) => {
       // Only block if we have unsaved changes and it's a different route
-      if (hasUnsavedChanges() && url !== router.asPath) {
+      if (hasUnsavedChanges()) {
         // This might not work in all cases, but we'll handle it with Link interception
         console.log('Route change detected:', url);
       }
