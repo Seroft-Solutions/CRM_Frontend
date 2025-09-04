@@ -172,42 +172,35 @@ export function useInviteUserWithGroups() {
       if (result.success) {
         toast.success(result.message || 'User invited successfully');
 
-        // Multiple-step aggressive refresh strategy
+        // Optimized refresh strategy - prevents infinite loops
         const performRefresh = async () => {
-          // Step 1: Immediate invalidation
-          await queryClient.invalidateQueries({
-            queryKey: ['organizationUsers', variables.organizationId],
-            exact: false,
-          });
-
-          await queryClient.invalidateQueries({
-            queryKey: ['pendingInvitations', variables.organizationId],
-            exact: false,
-          });
-
-          // Step 2: Small delay then force refetch
-          setTimeout(async () => {
-            await queryClient.refetchQueries({
+          // Step 1: Invalidate queries (mark as stale)
+          await Promise.all([
+            queryClient.invalidateQueries({
               queryKey: ['organizationUsers', variables.organizationId],
               exact: false,
-            });
-          }, 200);
-
-          // Step 3: Another refetch after a longer delay to catch backend processing
-          setTimeout(async () => {
-            await queryClient.refetchQueries({
-              queryKey: ['organizationUsers', variables.organizationId],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['pendingInvitations', variables.organizationId],
               exact: false,
-            });
-          }, 1000);
+            }),
+          ]);
 
-          // Step 4: Final refetch after 2 seconds
+          // Step 2: Single delayed refetch to allow backend processing
           setTimeout(async () => {
-            await queryClient.refetchQueries({
-              queryKey: ['organizationUsers', variables.organizationId],
-              exact: false,
-            });
-          }, 2000);
+            await Promise.all([
+              queryClient.refetchQueries({
+                queryKey: ['organizationUsers', variables.organizationId],
+                exact: false,
+                type: 'active', // Only refetch active queries
+              }),
+              queryClient.refetchQueries({
+                queryKey: ['pendingInvitations', variables.organizationId],
+                exact: false,
+                type: 'active', // Only refetch active queries
+              }),
+            ]);
+          }, 500); // Single 500ms delay
         };
 
         performRefresh();
