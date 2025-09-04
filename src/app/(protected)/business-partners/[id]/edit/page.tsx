@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -58,7 +58,7 @@ interface BusinessPartner {
   attributes?: Record<string, string[]>;
 }
 
-export default function EditPartnerPage() {
+function EditPartnerPage() {
   const router = useRouter();
   const params = useParams();
   const { organizationId, organizationName } = useOrganizationContext();
@@ -88,8 +88,8 @@ export default function EditPartnerPage() {
   // Get partner ID from URL params and clean it
   const rawPartnerId = params.id as string;
   const partnerId = rawPartnerId?.split(':')[0]; // Remove any extra characters after :
-  // Helper function to get channel type info from attributes
-  const getChannelTypeInfo = (partner: BusinessPartner) => {
+  // Helper function to get channel type info from attributes - memoized
+  const getChannelTypeInfo = useCallback((partner: BusinessPartner) => {
     const channelTypeId = partner.attributes?.channel_type_id?.[0];
     if (!channelTypeId) return null;
 
@@ -101,10 +101,10 @@ export default function EditPartnerPage() {
     }
 
     return parseInt(channelTypeId);
-  };
+  }, [channelTypes]);
 
-  // Fetch partner details from all partners
-  const fetchPartner = async () => {
+  // Fetch partner details from all partners - memoized to prevent infinite re-renders
+  const fetchPartner = useCallback(async () => {
     if (!organizationId || !partnerId) return;
 
     setIsLoading(true);
@@ -139,7 +139,7 @@ export default function EditPartnerPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [organizationId, partnerId, form, router, getChannelTypeInfo]);
 
   // FIXED: Update partner with enhanced error handling and cache invalidation
   const handleUpdatePartner = async (data: UpdatePartnerFormData) => {
@@ -202,7 +202,7 @@ export default function EditPartnerPage() {
 
   useEffect(() => {
     fetchPartner();
-  }, [organizationId, partnerId]);
+  }, [fetchPartner]);
   return (
     <PermissionGuard
       requiredPermission="partner:update"
@@ -382,3 +382,5 @@ export default function EditPartnerPage() {
     </PermissionGuard>
   );
 }
+
+export default memo(EditPartnerPage);
