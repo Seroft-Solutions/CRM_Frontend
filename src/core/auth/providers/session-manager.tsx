@@ -109,6 +109,45 @@ export function SessionManagerProvider({
     });
   }, []);
 
+  const resetIdleTimer = useCallback(() => {
+    const now = Date.now();
+    setLastActivity(now);
+    setIsIdle(false);
+    setMinutesIdle(0);
+
+    // Only hide the modal if it's a warning modal, not if it's expired or idle
+    setModalState((prev) => {
+      if (prev.isOpen && prev.type === 'warning') {
+        return { isOpen: false, type: 'expired' };
+      }
+      return prev;
+    });
+
+    // Clear existing timers
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+
+    // Set warning timer (8 minutes for 10-minute timeout with 2-minute warning)
+    const warningTime = (idleTimeoutMinutes - warningBeforeLogoutMinutes) * 60 * 1000;
+    warningTimerRef.current = setTimeout(() => {
+      setIsIdle(true);
+      showSessionWarningModal(warningBeforeLogoutMinutes);
+    }, warningTime);
+
+    // Set logout timer (full timeout duration)
+    const logoutTime = idleTimeoutMinutes * 60 * 1000;
+    logoutTimerRef.current = setTimeout(() => {
+      showIdleTimeoutModal();
+      // Don't force logout - just show modal and let user decide
+    }, logoutTime);
+  }, [
+    idleTimeoutMinutes,
+    warningBeforeLogoutMinutes,
+    showSessionWarningModal,
+    showIdleTimeoutModal,
+  ]);
+
   const refreshSession = useCallback(async (): Promise<boolean> => {
     try {
       // Force a session refresh by calling NextAuth's session endpoint
@@ -160,45 +199,6 @@ export function SessionManagerProvider({
     }
   }, []);
 
-  const resetIdleTimer = useCallback(() => {
-    const now = Date.now();
-    setLastActivity(now);
-    setIsIdle(false);
-    setMinutesIdle(0);
-
-    // Only hide the modal if it's a warning modal, not if it's expired or idle
-    setModalState((prev) => {
-      if (prev.isOpen && prev.type === 'warning') {
-        return { isOpen: false, type: 'expired' };
-      }
-      return prev;
-    });
-
-    // Clear existing timers
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
-    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-
-    // Set warning timer (8 minutes for 10-minute timeout with 2-minute warning)
-    const warningTime = (idleTimeoutMinutes - warningBeforeLogoutMinutes) * 60 * 1000;
-    warningTimerRef.current = setTimeout(() => {
-      setIsIdle(true);
-      showSessionWarningModal(warningBeforeLogoutMinutes);
-    }, warningTime);
-
-    // Set logout timer (full timeout duration)
-    const logoutTime = idleTimeoutMinutes * 60 * 1000;
-    logoutTimerRef.current = setTimeout(() => {
-      showIdleTimeoutModal();
-      // Don't force logout - just show modal and let user decide
-    }, logoutTime);
-  }, [
-    idleTimeoutMinutes,
-    warningBeforeLogoutMinutes,
-    hideSessionModal,
-    showSessionWarningModal,
-    showIdleTimeoutModal,
-  ]);
 
   const handleActivity = useCallback(() => {
     resetIdleTimer();
