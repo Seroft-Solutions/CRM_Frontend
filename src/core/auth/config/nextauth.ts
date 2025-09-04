@@ -7,6 +7,26 @@ import NextAuth from 'next-auth';
 import Keycloak from 'next-auth/providers/keycloak';
 import type { JWT } from 'next-auth/jwt';
 
+// Extend types for custom properties
+declare module 'next-auth' {
+  interface Session {
+    access_token?: string;
+    refresh_token?: string;
+    error?: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    access_token?: string;
+    refresh_token?: string;
+    expires_at?: number;
+    error?: string;
+    shouldSignOut?: boolean;
+    id_token?: string;
+  }
+}
+
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     if (!token.refresh_token) return token;
@@ -24,7 +44,14 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     });
 
     if (!response.ok) {
-      console.error('Failed to refresh token:', response.status);
+      const errorText = await response.text();
+      console.error('Failed to refresh token:', response.status, errorText);
+      
+      // For 400/401 errors, the refresh token is likely expired
+      if (response.status === 400 || response.status === 401) {
+        return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+      }
+      
       return { ...token, error: 'RefreshAccessTokenError' };
     }
 
@@ -56,6 +83,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours
   },
+  pages: {
+    error: '/auth/error', // Error page for authentication errors
+  },
+  logger: {
+    error(error: Error) {
+      console.error('NextAuth Error:', error);
+    },
+    warn(code: string) {
+      console.warn(`NextAuth Warning: ${code}`);
+    },
+    debug(code: string, metadata?: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`NextAuth Debug: ${code}`, metadata);
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, account }) {
       if (account?.provider === 'keycloak') {
@@ -69,11 +112,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // This avoids JWT token size limits and keeps session lightweight
       }
 
-      // Refresh token if expired
+      // Refresh token if expired (5-minute buffer for better reliability)
       if (
         token.expires_at &&
         typeof token.expires_at === 'number' &&
-        Date.now() / 1000 >= token.expires_at - 60
+        Date.now() / 1000 >= token.expires_at - 300
       ) {
         token = await refreshAccessToken(token);
       }
@@ -81,6 +124,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      // Handle refresh token errors by forcing sign out
+      if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
+        // This will force the user to sign in again
+        return null;
+      }
+
       if (token.sub) {
         session.user.id = token.sub;
       }
@@ -94,6 +143,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (token.refresh_token && typeof token.refresh_token === 'string') {
         session.refresh_token = token.refresh_token;
+      }
+
+      // Include error state for client-side handling
+      if (token.error) {
+        session.error = token.error;
       }
 
       return session;

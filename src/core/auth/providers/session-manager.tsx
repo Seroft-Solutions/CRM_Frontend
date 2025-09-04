@@ -14,7 +14,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { SessionExpiredModal } from '@/core/auth/components/session-expired-modal';
 import { useSessionEvents } from '@/core/auth/session/events';
 
@@ -43,6 +43,7 @@ export function SessionManagerProvider({
   idleTimeoutMinutes = 10,
   warningBeforeLogoutMinutes = 2,
 }: SessionManagerProviderProps) {
+  const { data: session, status } = useSession();
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'expired' | 'warning' | 'idle';
@@ -110,15 +111,41 @@ export function SessionManagerProvider({
 
   const refreshSession = useCallback(async (): Promise<boolean> => {
     try {
-      // Reset activity and hide modal
-      resetIdleTimer();
-      hideSessionModal();
-      return true;
+      // Force a session refresh by calling NextAuth's session endpoint
+      const response = await fetch('/api/auth/session', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const session = await response.json();
+        if (session?.user && !session.error) {
+          // Session is valid, reset activity and hide modal
+          resetIdleTimer();
+          hideSessionModal();
+          
+          // Trigger token refreshed event for API layer
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('token-refreshed'));
+          }
+          
+          return true;
+        }
+      }
+      
+      // Session refresh failed
+      console.error('Session refresh failed - invalid session');
+      showSessionExpiredModal();
+      return false;
     } catch (error) {
       console.error('Session refresh failed:', error);
+      showSessionExpiredModal();
       return false;
     }
-  }, []);
+  }, [resetIdleTimer, hideSessionModal, showSessionExpiredModal]);
 
   const handleManualLogout = useCallback(async () => {
     try {
@@ -194,6 +221,14 @@ export function SessionManagerProvider({
       }
     };
   }, [lastActivity]);
+
+  // Monitor session for errors from NextAuth
+  useEffect(() => {
+    if (session?.error === 'RefreshAccessTokenError') {
+      console.log('Session refresh error detected from NextAuth');
+      showSessionExpiredModal();
+    }
+  }, [session, showSessionExpiredModal]);
 
   // Set up session event listener for API 401 errors
   useEffect(() => {
