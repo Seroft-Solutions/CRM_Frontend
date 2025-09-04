@@ -7,6 +7,7 @@ import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
   deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
   getAdminRealmsRealmUsers,
+  getAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserId,
   type UserRepresentation,
 } from '@/core/api/generated/keycloak';
@@ -154,18 +155,25 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
       }
     }
-    // Get current user data
+    // Get current user data by partnerId (user ID) directly
     console.log('Fetching current user data for partnerId:', partnerId);
-    const currentUsers = await getAdminRealmsRealmUsers(realm, {
-      email: body.email,
-      exact: true,
-    });
-    if (currentUsers.length === 0) {
-      console.log('User not found for partnerId:', partnerId);
-      return NextResponse.json({ error: 'Partner not found' }, { status: 404 });
+    let currentUser: UserRepresentation;
+    
+    try {
+      // Get user directly by ID using the proper Keycloak endpoint
+      currentUser = await getAdminRealmsRealmUsersUserId(realm, partnerId);
+      console.log('Successfully retrieved user by ID:', {
+        id: currentUser.id,
+        username: currentUser.username,
+        email: currentUser.email,
+      });
+    } catch (userLookupError: any) {
+      console.error('Failed to fetch user by ID:', userLookupError);
+      if (userLookupError.status === 404) {
+        return NextResponse.json({ error: 'Partner not found' }, { status: 404 });
+      }
+      throw userLookupError;
     }
-
-    const currentUser = currentUsers[0];
     console.log('Retrieved current user:', {
       id: currentUser.id,
       email: currentUser.email,
@@ -217,8 +225,19 @@ export async function PATCH(
     // Update user in Keycloak
     console.log('Updating user in Keycloak for partnerId:', partnerId);
     await putAdminRealmsRealmUsersUserId(realm, partnerId, updatedUser);
-    console.log(`Successfully updated partner ${partnerId} attributes`);
-    await updateUserProfile(partnerId, updateProfile);
+    console.log(`Successfully updated partner ${partnerId} in Keycloak`);
+    
+    // Update user profile in Spring backend
+    console.log('Updating user profile in Spring backend');
+    try {
+      await updateUserProfile(partnerId, updateProfile);
+      console.log(`Successfully updated partner ${partnerId} profile in Spring`);
+    } catch (springUpdateError: any) {
+      console.error('Failed to update user profile in Spring:', springUpdateError);
+      // Continue with success since Keycloak update succeeded
+      // Spring update failure shouldn't block the entire operation
+      console.warn('Spring profile update failed, but Keycloak update succeeded');
+    }
     // Prepare response
     const response = {
       success: true,
