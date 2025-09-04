@@ -138,6 +138,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
 
       const userDraftDTO: UserDraftDTO = {
         type: entityType,
+        status:'ACTIVE',
         jsonPayload: JSON.stringify(draftData),
       };
 
