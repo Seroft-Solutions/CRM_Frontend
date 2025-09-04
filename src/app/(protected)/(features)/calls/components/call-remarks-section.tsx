@@ -168,6 +168,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         remark: newRemark,
         dateTime: new Date(),
         call: { id: callId },
+        status: "ACTIVE",
       },
     });
   };
