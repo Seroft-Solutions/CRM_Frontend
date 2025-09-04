@@ -48,21 +48,8 @@ class SimpleTokenCache {
   }
 }
 
-// Simple event emitter to avoid circular dependencies
-class SimpleEventEmitter {
-  private listeners: { [key: string]: Array<(event: any) => void> } = {};
-
-  emit(eventType: string, event: any = {}) {
-    if (!this.listeners[eventType]) return;
-    this.listeners[eventType].forEach((callback) => {
-      try {
-        callback({ type: eventType, ...event });
-      } catch (error) {
-        console.error('Error in event listener:', error);
-      }
-    });
-  }
-}
+// Import the proper session event emitter to ensure consistency
+import { sessionEventEmitter } from '@/core/auth/session/events';
 
 // Standalone token fetching function to avoid circular dependencies
 async function fetchAccessTokenStandalone(): Promise<string | null> {
@@ -82,7 +69,6 @@ async function fetchAccessTokenStandalone(): Promise<string | null> {
 }
 
 const tokenCache = new SimpleTokenCache();
-const eventEmitter = new SimpleEventEmitter();
 
 if (typeof window !== 'undefined') {
   window.addEventListener('token-refreshed', (() => {
@@ -162,19 +148,24 @@ export const springServiceMutator = async <T>(
 
             if (response.ok) {
               const session = await response.json();
-              if (session?.access_token) {
+              if (session?.access_token && !session.error) {
+                // Update token cache with new token
+                tokenCache.invalidate();
+                
                 error.config._retry = true;
                 error.config.headers = error.config.headers || {};
                 error.config.headers.Authorization = `Bearer ${session.access_token}`;
                 return instance.request(error.config);
+              } else if (session?.error) {
+                console.error('Session has error:', session.error);
               }
             }
           } catch (refreshError) {
             console.error('Auto refresh failed:', refreshError);
           }
 
-          // Emit session expired event
-          eventEmitter.emit('session-expired', {
+          // Emit session expired event using the proper event emitter
+          sessionEventEmitter.emit('session-expired', {
             message: 'Your session has expired',
             statusCode: 401,
           });
