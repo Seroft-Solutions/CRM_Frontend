@@ -338,14 +338,7 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
               Edit
             </Link>
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setShowDeleteDialog(true)}
-            className="flex items-center gap-2 justify-center"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
+
         </div>
       </div>
 
