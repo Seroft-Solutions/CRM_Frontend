@@ -376,9 +376,15 @@ export function CallForm({ id }: CallFormProps) {
         // Remove tempRemarks from the data to be sent to API (as it's not a real call field)
         const { tempRemarks: _, ...callData } = transformedData as any;
 
+        // Ensure status is set to 'ACTIVE' before creating the call record
+        const callDataWithStatus = {
+          ...callData,
+          status: 'ACTIVE',
+        };
+
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: callData });
+          createEntity({ data: callDataWithStatus });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
           const entityData = { ...callData, id };

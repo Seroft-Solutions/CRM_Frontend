@@ -17,17 +17,6 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
-      id: 'basic',
-      title: 'Basic Information',
-      description: 'Enter essential details',
-      fields: ['status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
@@ -98,14 +87,17 @@ export const callFormConfig: FormConfig = {
   fields: [
     {
       name: 'status',
-      type: 'text',
+      type: 'hidden',
       label: 'Status',
       placeholder: 'Enter status',
       required: true,
+      defaultValue: 'ACTIVE',
       validation: {
         required: true,
       },
-      ui: {},
+      ui: {
+        hidden: true,
+      },
     },
   ],
 

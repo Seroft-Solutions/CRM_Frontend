@@ -1,3 +1,4 @@
+'use client'
 // ===============================================================
 // 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
 // - Source: code generation pipeline
@@ -18,9 +19,6 @@ interface CallPageProps {
   }>;
 }
 
-export const metadata = {
-  title: 'Call Details',
-};
 
 export default function CallPage({ params }: CallPageProps) {
   const { id: idParam } = use(params);
