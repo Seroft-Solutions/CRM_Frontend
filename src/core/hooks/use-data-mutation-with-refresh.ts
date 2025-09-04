@@ -25,25 +25,31 @@ export function useDataMutationWithRefresh() {
 
   const invalidateQueries = useCallback(
     async (queryKeys: string[]) => {
-      // Invalidate specific query keys
+      // Invalidate specific query keys with throttling to prevent excessive calls
+      const uniqueKeys = [...new Set(queryKeys)]; // Remove duplicates
+      
+      // Step 1: Invalidate queries (marks them as stale)
       await Promise.all(
-        queryKeys.map((key) =>
+        uniqueKeys.map((key) =>
           queryClient.invalidateQueries({
-            queryKey: [key],
-            exact: false, // This will invalidate all queries that start with this key
-          })
-        )
-      );
-
-      // Also refetch any active queries to ensure immediate UI update
-      await Promise.all(
-        queryKeys.map((key) =>
-          queryClient.refetchQueries({
             queryKey: [key],
             exact: false,
           })
         )
       );
+
+      // Step 2: Only refetch active queries after a small delay to batch operations
+      setTimeout(async () => {
+        await Promise.all(
+          uniqueKeys.map((key) =>
+            queryClient.refetchQueries({
+              queryKey: [key],
+              exact: false,
+              type: 'active', // Only refetch active queries
+            })
+          )
+        );
+      }, 100); // 100ms delay to batch operations
     },
     [queryClient]
   );
