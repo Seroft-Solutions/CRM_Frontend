@@ -13,3 +13,4 @@ export {
 export { UnauthorizedPage } from './unauthorized-page';
 export { SessionExpiredModal } from './session-expired-modal';
 export { SessionStatus } from './session-status';
+export { AuthErrorBoundary, useAuthErrorHandler } from './auth-error-boundary';

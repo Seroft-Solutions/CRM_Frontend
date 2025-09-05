@@ -226,9 +226,12 @@ export function SessionManagerProvider({
   useEffect(() => {
     if (session?.error === 'RefreshAccessTokenError') {
       console.log('Session refresh error detected from NextAuth');
-      showSessionExpiredModal();
+      // Only show modal if not already shown and not in a refresh loop
+      if (!modalState.isOpen) {
+        showSessionExpiredModal();
+      }
     }
-  }, [session, showSessionExpiredModal]);
+  }, [session?.error, showSessionExpiredModal, modalState.isOpen]);
 
   // Set up session event listener for API 401 errors
   useEffect(() => {
