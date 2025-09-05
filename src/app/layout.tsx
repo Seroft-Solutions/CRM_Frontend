@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { QueryClientProvider } from '@/core';
 import { AppSessionProvider } from '@/core/auth';
+import { AuthErrorBoundary } from '@/core/auth/components/auth-error-boundary';
 import { CrossFormNavigationProvider } from '@/context/cross-form-navigation';
 import { auth } from '@/auth';
 
@@ -31,13 +32,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {' '}
-        <AppSessionProvider session={session}>
-          <QueryClientProvider>
-            <CrossFormNavigationProvider>{children}</CrossFormNavigationProvider>
-          </QueryClientProvider>
-        </AppSessionProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+        <AuthErrorBoundary>
+          <AppSessionProvider session={session}>
+            <QueryClientProvider>
+              <CrossFormNavigationProvider>{children}</CrossFormNavigationProvider>
+            </QueryClientProvider>
+          </AppSessionProvider>
+        </AuthErrorBoundary>
       </body>
     </html>
   );
