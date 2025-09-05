@@ -6,23 +6,10 @@
 'use client';
 
 import { SessionProvider, useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
 import type { Session } from 'next-auth';
 import type { SessionProviderProps } from '../types';
 
 export function AppSessionProvider({ children, session }: SessionProviderProps) {
-  const [mounted, setMounted] = useState(false);
-
-  // Handle hydration mismatch by ensuring client-side mounting
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    // During SSR or initial render, provide minimal structure
-    return <div suppressHydrationWarning>{children}</div>;
-  }
-
   return (
     <SessionProvider 
       session={session}
@@ -30,7 +17,9 @@ export function AppSessionProvider({ children, session }: SessionProviderProps) 
       refetchInterval={0}
       refetchOnWindowFocus={false}
     >
-      {children}
+      <div suppressHydrationWarning>
+        {children}
+      </div>
     </SessionProvider>
   );
 }
