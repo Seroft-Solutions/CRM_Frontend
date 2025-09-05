@@ -7,7 +7,7 @@ import { Coffee } from 'lucide-react';
 import { persistentLog } from '@/lib/debug-logger';
 
 export default function OrganizationPage() {
-  const { data: organizations, isLoading } = useUserOrganizations();
+  const { data: organizations, isLoading, isError } = useUserOrganizations();
   const router = useRouter();
 
   useEffect(() => {
@@ -16,6 +16,13 @@ export default function OrganizationPage() {
   }, []);
 
   useEffect(() => {
+    // Handle error state
+    if (isError) {
+      persistentLog('OrganizationPage: Error loading organizations, redirecting to auth');
+      router.replace('/auth/signin');
+      return;
+    }
+
     if (!isLoading && organizations !== undefined) {
       persistentLog('OrganizationPage: Routing decision', {
         organizationsCount: organizations.length,
@@ -43,7 +50,7 @@ export default function OrganizationPage() {
         router.replace('/organization/organization-select');
       }
     }
-  }, [organizations, isLoading, router]);
+  }, [organizations, isLoading, isError, router]);
 
   persistentLog('OrganizationPage: Render', {
     isLoading,
