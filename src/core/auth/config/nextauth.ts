@@ -29,7 +29,10 @@ declare module 'next-auth/jwt' {
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
-    if (!token.refresh_token) return token;
+    if (!token.refresh_token) {
+      console.warn('No refresh token available for token refresh');
+      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+    }
 
     const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     const response = await fetch(tokenUrl, {
@@ -45,28 +48,52 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Failed to refresh token:', response.status, errorText);
+      console.error('Failed to refresh token:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        tokenUrl,
+        timestamp: new Date().toISOString(),
+      });
       
-      // For 400/401 errors, the refresh token is likely expired
+      // For 400/401 errors, the refresh token is likely expired or invalid
       if (response.status === 400 || response.status === 401) {
+        // Try to parse the error response for more specific error details
+        let errorDetails;
+        try {
+          errorDetails = JSON.parse(errorText);
+        } catch (e) {
+          errorDetails = { error: 'invalid_grant', error_description: errorText };
+        }
+        
+        console.error('Refresh token expired or invalid:', errorDetails);
         return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
       }
       
+      // For other errors (5xx, network issues), don't immediately sign out
+      console.warn('Temporary refresh token error, will retry:', response.status);
       return { ...token, error: 'RefreshAccessTokenError' };
     }
 
     const data = await response.json();
 
+    if (!data.access_token) {
+      console.error('Invalid token response: missing access_token', data);
+      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+    }
+
+    console.log('Token refreshed successfully');
     return {
       ...token,
       access_token: data.access_token,
       refresh_token: data.refresh_token ?? token.refresh_token,
       id_token: data.id_token ?? token.id_token,
-      expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-      // No longer store roles and groups in JWT token to avoid session size limits
+      expires_at: Math.floor(Date.now() / 1000) + (data.expires_in || 300), // Default 5 minutes if not specified
+      error: undefined, // Clear any previous errors
+      shouldSignOut: undefined, // Clear sign out flag
     };
   } catch (error) {
-    console.error('Error refreshing access token:', error);
+    console.error('Network or other error refreshing access token:', error);
     return { ...token, error: 'RefreshAccessTokenError' };
   }
 }
@@ -100,25 +127,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, trigger }) {
       if (account?.provider === 'keycloak') {
-        // Handle login with Keycloak
+        // Handle initial login with Keycloak
+        console.log('Initial Keycloak login, setting up token');
         token.id_token = account.id_token;
         token.access_token = account.access_token;
         token.refresh_token = account.refresh_token;
-        token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 0);
+        token.expires_at = Math.floor(Date.now() / 1000) + (account.expires_in ?? 3600);
+        token.error = undefined; // Clear any previous errors
+        token.shouldSignOut = undefined; // Clear sign out flag
 
         // Roles and authorities are now fetched dynamically from backend API
         // This avoids JWT token size limits and keeps session lightweight
+        return token;
       }
 
-      // Refresh token if expired (5-minute buffer for better reliability)
-      if (
-        token.expires_at &&
-        typeof token.expires_at === 'number' &&
-        Date.now() / 1000 >= token.expires_at - 300
-      ) {
+      // If this is an update trigger, we might want to refresh the token
+      if (trigger === 'update') {
+        console.log('JWT update triggered, checking token validity');
+        if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
+          // Token has already failed refresh, don't retry
+          return token;
+        }
+      }
+
+      // Check if token needs refresh (5-minute buffer for better reliability)
+      const now = Date.now() / 1000;
+      const shouldRefresh = token.expires_at && 
+        typeof token.expires_at === 'number' && 
+        now >= token.expires_at - 300;
+
+      if (shouldRefresh) {
+        console.log('Token expires soon, attempting refresh', {
+          expiresAt: token.expires_at,
+          now: Math.floor(now),
+          timeLeft: Math.floor((token.expires_at as number) - now),
+        });
+        
         token = await refreshAccessToken(token);
+        
+        // If refresh failed with shouldSignOut, log it
+        if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
+          console.error('Token refresh failed permanently, user will need to sign in again');
+        }
       }
 
       return token;
@@ -126,8 +178,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       // Handle refresh token errors by forcing sign out
       if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
-        // This will force the user to sign in again
-        return null;
+        // Clear the session and redirect to sign in
+        session.error = 'RefreshAccessTokenError';
+        return session;
       }
 
       if (token.sub) {

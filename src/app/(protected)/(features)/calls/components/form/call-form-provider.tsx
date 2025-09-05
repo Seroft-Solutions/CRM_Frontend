@@ -549,6 +549,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     });
 
+    // Always ensure status is ACTIVE for new call entities
+    entityToSave.status = 'ACTIVE';
+
     return entityToSave;
   }
 
