@@ -381,8 +381,9 @@ export async function POST(
       selectedGroups: body.selectedGroups || [],
       selectedRoles: body.selectedRoles || [],
       invitationNote: body.invitationNote,
+      redirectUri: body.redirectUri,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
-      sendPasswordReset: body.sendPasswordReset === true, // Only send password reset if explicitly requested
+      sendPasswordReset: body.sendPasswordReset !== false, // Only send password reset if explicitly requested
     };
 
     // Validate required fields
@@ -431,7 +432,7 @@ export async function POST(
           groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
         // Send appropriate email - prioritize invitation over password reset
-        if (inviteData.sendPasswordReset === true) {
+        if (inviteData.sendPasswordReset !== false) {
           // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
@@ -441,14 +442,14 @@ export async function POST(
               {
                 client_id: 'web_app',
                 lifespan: 43200, // 12 hours
-                redirect_uri: body.redirectUri,
+                redirect_uri: inviteData.redirectUri,
               }
             );
             console.log('Sent UPDATE_PASSWORD email to existing user (explicitly requested)');
           } catch (emailError) {
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
           }
-        } else if (inviteData.sendWelcomeEmail !== false) {
+        } else {
           // Default: Send organization invitation email
           const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
@@ -520,7 +521,7 @@ export async function POST(
         console.log('Added user to organization');
 
         // 5. Send appropriate email - prioritize invitation over password reset
-        if (inviteData.sendPasswordReset === true) {
+        if (inviteData.sendPasswordReset !== false) {
           // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
