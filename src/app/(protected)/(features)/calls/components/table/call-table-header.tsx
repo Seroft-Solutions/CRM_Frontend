@@ -82,7 +82,7 @@ export function CallTableHeader({
             key={column.id}
             className={`
               px-2 sm:px-3 py-2 
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
+              ${index === 0 ? 'min-w-[120px]' : 'min-w-[170px]'} 
               whitespace-nowrap
             `}
           >

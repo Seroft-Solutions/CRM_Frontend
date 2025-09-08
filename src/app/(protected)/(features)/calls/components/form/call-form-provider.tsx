@@ -14,7 +14,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
-import { useGetUserProfile } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import {
+  useGetAllUserProfiles,
+  useGetUserProfile
+} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
 import { callFormConfig } from './call-form-config';
 import { callFormSchema } from './call-form-schema';
@@ -47,6 +50,12 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     },
   });
+  const { data: allUsers } = useGetAllUserProfiles();
+
+  const Partners = React.useMemo(() => {
+    if (!allUsers) return [];
+    return allUsers.filter((user) => user.channelType !== null);
+  }, [allUsers]);
 
   // Create filtered config for business partners (exclude channel and assignment steps)
   const config = React.useMemo(() => {
@@ -56,8 +65,16 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         steps: baseConfig.steps.filter((step) => step.id !== 'channel' && step.id !== 'assignment'),
       };
     }
+   if (!Partners?.length) {
+      console.log("ART length checked 2");
+      return {
+        ...baseConfig,
+        steps: baseConfig.steps.filter((step) => step.id !== 'channel'),
+      };
+    }
+
     return baseConfig;
-  }, [isBusinessPartner, baseConfig]);
+  }, [isBusinessPartner, baseConfig, Partners]);
   const formRef = useRef<HTMLDivElement>(null);
 
   // Cross-form navigation hooks
