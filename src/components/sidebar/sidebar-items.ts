@@ -32,10 +32,25 @@ export const sidebarItems: SidebarItem[] = [
   },
   { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
   {
-    key: 'userManagement',
-    label: 'User Management',
-    icon: Users,
+    key: 'calls',
+    label: 'Calls Management',
+    icon: PhoneCall,
     expandable: true,
+    requiredPermission: 'call:sidebar',
+    children: [
+      {
+        key: 'callTracking',
+        label: 'Leads Management',
+        path: '/calls',
+        requiredPermission: 'call:sidebar',
+      },
+    ],
+  },
+  {
+    key: 'userManagement',
+    label: 'My Staff',
+    icon: Users,
+    expandable: false,
     requiredPermission: 'manage:users',
     children: [
       {
@@ -56,7 +71,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'businessPartners',
     label: 'Business Partners',
     icon: Briefcase,
-    expandable: true,
+    expandable: false,
     requiredPermission: 'partner:read',
     children: [
       {
@@ -100,7 +115,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'masters',
     label: 'Masters',
     icon: Settings,
-    expandable: true,
+    expandable: false,
     children: [
       {
         key: 'callType',
@@ -152,19 +167,5 @@ export const sidebarItems: SidebarItem[] = [
       },
     ],
   },
-  {
-    key: 'calls',
-    label: 'Calls Management',
-    icon: PhoneCall,
-    expandable: true,
-    requiredPermission: 'call:sidebar',
-    children: [
-      {
-        key: 'callTracking',
-        label: 'Call Tracking',
-        path: '/calls',
-        requiredPermission: 'call:sidebar',
-      },
-    ],
-  },
+
 ];
