@@ -36,7 +36,7 @@ function transformEnumValue(enumValue: string): string {
 
 import {
   useGetAllPublicUsers,
-  useSearchPublicUsers,
+  useSearch as useSearchPublicUsers,
 } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 import {
   useGetAllOrganizations,
