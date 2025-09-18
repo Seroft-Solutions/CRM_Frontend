@@ -6,6 +6,7 @@ import {
   PhoneCall,
   Map,
   FileText,
+  ArrowDownToLine,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -166,6 +167,12 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'product:sidebar',
       },
     ],
+  },
+  {
+    key: 'import',
+    label: 'Bulk Import',
+    path: '/import',
+    icon: ArrowDownToLine,
   },
 
 ];
