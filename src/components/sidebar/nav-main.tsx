@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar, // Added import for useSidebar
 } from '@/components/ui/sidebar';
 import { type SidebarItem } from '@/components/sidebar/sidebar-items';
 
@@ -79,6 +80,8 @@ function NavItem({
   isActive: (item: SidebarItem) => boolean;
   hasPermission: (requiredPermission?: string) => boolean;
 }) {
+  const { state, setOpen } = useSidebar(); // Added: Access sidebar state and setter
+
   const itemHasPermission = hasPermission(item.requiredPermission);
 
   // If permission is required and user doesn't have it, don't render
@@ -94,52 +97,59 @@ function NavItem({
     return !child.requiredPermission || childHasPermission;
   });
 
+  // Added: Handler to expand sidebar if collapsed
+  const handleClick = () => {
+    if (state === 'collapsed') {
+      setOpen(true);
+    }
+  };
+
   return item.children ? (
-    // Items with children - collapsible menu
-    // Only render if there are visible children or no permission requirement
-    visibleChildren && visibleChildren.length > 0 ? (
-      <Collapsible
-        key={item.key}
-        asChild
-        defaultOpen={item.expandable ?? true}
-        className="group/collapsible"
-      >
-        <SidebarMenuItem>
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton tooltip={item.label} data-active={active}>
-              {item.icon && <item.icon />}
-              <span>{item.label}</span>
-              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              {visibleChildren.map((subItem) => (
-                <SidebarMenuSubItem key={subItem.key}>
-                  <SidebarMenuSubButton
-                    asChild
-                    data-active={subItem.path && pathname === subItem.path}
-                  >
-                    <Link href={subItem.path || '#'}>
-                      <span>{subItem.label}</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              ))}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </SidebarMenuItem>
-      </Collapsible>
-    ) : null
+      // Items with children - collapsible menu
+      // Only render if there are visible children or no permission requirement
+      visibleChildren && visibleChildren.length > 0 ? (
+          <Collapsible
+              key={item.key}
+              asChild
+              defaultOpen={item.expandable ?? true}
+              className="group/collapsible"
+          >
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton tooltip={item.label} data-active={active} onClick={handleClick}>
+                  {item.icon && <item.icon />}
+                  <span>{item.label}</span>
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {visibleChildren.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.key}>
+                        <SidebarMenuSubButton
+                            asChild
+                            data-active={subItem.path && pathname === subItem.path}
+                        >
+                          <Link href={subItem.path || '#'}>
+                            <span>{subItem.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+      ) : null
   ) : (
-    // Items without children - direct link
-    <SidebarMenuItem key={item.key}>
-      <SidebarMenuButton asChild tooltip={item.label} data-active={active}>
-        <Link href={item.path || '#'}>
-          {item.icon && <item.icon />}
-          <span>{item.label}</span>
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+      // Items without children - direct link
+      <SidebarMenuItem key={item.key}>
+        <SidebarMenuButton asChild tooltip={item.label} data-active={active} onClick={handleClick}>
+          <Link href={item.path || '#'}>
+            {item.icon && <item.icon />}
+            <span>{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
   );
 }

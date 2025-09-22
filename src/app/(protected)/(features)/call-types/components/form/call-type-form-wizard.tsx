@@ -311,10 +311,14 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const {  ...callTypeData } = transformedData as any;
+        const callTypeDataWithStatus = {
+          ...callTypeData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: callTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
           const entityData = { ...transformedData, id };

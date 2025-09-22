@@ -21,7 +21,7 @@ export const subCallTypeFormSchemaFields = {
     .max(255, { message: 'Please enter no more than 255 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
 };
 

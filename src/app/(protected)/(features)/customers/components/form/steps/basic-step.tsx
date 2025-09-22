@@ -155,45 +155,6 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
-        
-        {/* Status Field */}
-          <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                  <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                          Status
-                          <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                          <Select
-                              value={
-                                  field.value
-                              }
-                              onValueChange={(value) => {
-                                  field.onChange(value);
-                                  form.trigger('status');
-                              }}
-                          >
-                              <SelectTrigger>
-                                  <SelectValue
-                                      placeholder={'Select status'}
-                                  />
-                              </SelectTrigger>
-                              <SelectContent>
-                                          <SelectItem value="DRAFT">Draft</SelectItem>
-                                          <SelectItem value="ACTIVE">Active</SelectItem>
-                                          <SelectItem value="INACTIVE">Inactive</SelectItem>
-                                          <SelectItem value="ARCHIVED">Archived</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </FormControl>
-                      <FormMessage />
-                  </FormItem>
-              )}
-          />
-        
         {/* Generated Relationship Fields */}
       </div>
     </div>

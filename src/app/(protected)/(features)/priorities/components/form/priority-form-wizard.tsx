@@ -311,10 +311,14 @@ export function PriorityForm({ id }: PriorityFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const {  ...priorityData } = transformedData as any;
+        const priorityDataWithStatus = {
+          ...priorityData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: priorityDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
           const entityData = { ...transformedData, id };
