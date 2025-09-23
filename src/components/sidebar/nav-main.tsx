@@ -104,6 +104,13 @@ function NavItem({
     }
   };
 
+  // Handler to collapse sidebar on navigation if expanded
+  const handleNavigation = () => {
+    if (state === 'expanded') {
+      setOpen(false);
+    }
+  };
+
   return item.children ? (
       // Items with children - collapsible menu
       // Only render if there are visible children or no permission requirement
@@ -129,6 +136,7 @@ function NavItem({
                         <SidebarMenuSubButton
                             asChild
                             data-active={subItem.path && pathname === subItem.path}
+                            onClick={handleNavigation} // Added: Collapse on navigation
                         >
                           <Link href={subItem.path || '#'}>
                             <span>{subItem.label}</span>
@@ -144,7 +152,15 @@ function NavItem({
   ) : (
       // Items without children - direct link
       <SidebarMenuItem key={item.key}>
-        <SidebarMenuButton asChild tooltip={item.label} data-active={active} onClick={handleClick}>
+        <SidebarMenuButton
+            asChild
+            tooltip={item.label}
+            data-active={active}
+            onClick={() => {
+              handleClick();
+              handleNavigation(); // Added: Collapse on navigation
+            }}
+        >
           <Link href={item.path || '#'}>
             {item.icon && <item.icon />}
             <span>{item.label}</span>
