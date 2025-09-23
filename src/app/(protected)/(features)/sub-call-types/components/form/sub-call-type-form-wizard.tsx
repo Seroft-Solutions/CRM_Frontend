@@ -50,7 +50,18 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
+// Handle relationships
+      config.relationships.forEach((relConfig) => {
+        const value = entity[relConfig.name];
 
+        if (relConfig.multiple) {
+          formValues[relConfig.name] = value
+              ? value.map((item: any) => item[relConfig.primaryKey])
+              : [];
+        } else {
+          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+        }
+      });
       // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
@@ -81,18 +92,7 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
         }
       });
 
-      // Handle relationships
-      config.relationships.forEach((relConfig) => {
-        const value = entity[relConfig.name];
 
-        if (relConfig.multiple) {
-          formValues[relConfig.name] = value
-            ? value.map((item: any) => item[relConfig.primaryKey])
-            : [];
-        } else {
-          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
-        }
-      });
 
       form.reset(formValues);
     }

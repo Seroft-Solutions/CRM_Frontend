@@ -20,19 +20,8 @@ export const subCallTypeFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'remark', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [],
-      relationships: ['callType'],
+      relationships: ['callType'], // 'callType' listed first as a relationship
+      fields: ['name', 'description', 'remark', 'status'], // Reordered fields
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -50,7 +39,34 @@ export const subCallTypeFormConfig: FormConfig = {
       },
     },
   ],
-
+  relationships: [
+    {
+      name: 'callType',
+      type: 'many-to-one',
+      targetEntity: 'callType',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: true,
+      multiple: false,
+      category: 'basic',
+      api: {
+        useGetAllHook: 'useGetAllCallTypes',
+        useSearchHook: 'useSearchCallTypes',
+        useCountHook: 'useCountCallTypes',
+        entityName: 'CallTypes',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/call-types/new',
+        createPermission: 'callType:create:inline',
+      },
+      ui: {
+        label: 'Call Type',
+        placeholder: 'Select call type',
+        icon: '🏷️',
+      },
+    },
+  ],
   // Field definitions
   fields: [
     {
@@ -89,36 +105,6 @@ export const subCallTypeFormConfig: FormConfig = {
         maxLength: 1000,
       },
       ui: {},
-    },
-  ],
-
-  // Relationship definitions
-  relationships: [
-    {
-      name: 'callType',
-      type: 'many-to-one',
-      targetEntity: 'callType',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'classification',
-      api: {
-        useGetAllHook: 'useGetAllCallTypes',
-        useSearchHook: 'useSearchCallTypes',
-        useCountHook: 'useCountCallTypes',
-        entityName: 'CallTypes',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/call-types/new',
-        createPermission: 'callType:create:inline',
-      },
-      ui: {
-        label: 'Call Type',
-        placeholder: 'Select call type',
-        icon: '🏷️',
-      },
     },
   ],
 
@@ -185,9 +171,9 @@ export const subCallTypeFormConfig: FormConfig = {
 export const subCallTypeFormHelpers = {
   getStepById: (stepId: string) => subCallTypeFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>
-    subCallTypeFormConfig.fields.find((field) => field.name === fieldName),
+      subCallTypeFormConfig.fields.find((field) => field.name === fieldName),
   getRelationshipConfig: (relationshipName: string) =>
-    subCallTypeFormConfig.relationships.find((rel) => rel.name === relationshipName),
+      subCallTypeFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = subCallTypeFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];
