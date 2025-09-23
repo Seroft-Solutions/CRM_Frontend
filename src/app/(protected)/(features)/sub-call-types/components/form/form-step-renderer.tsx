@@ -448,13 +448,14 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         <div
           className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
         >
+          {/* Render relationships */}
+          {currentStepConfig.relationships.map((relationshipName) =>
+              renderRelationship(relationshipName)
+          )}
           {/* Render regular fields */}
           {currentStepConfig.fields.map((fieldName) => renderField(fieldName))}
 
-          {/* Render relationships */}
-          {currentStepConfig.relationships.map((relationshipName) =>
-            renderRelationship(relationshipName)
-          )}
+
         </div>
       </div>
     );
