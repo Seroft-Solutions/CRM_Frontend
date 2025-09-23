@@ -21,8 +21,7 @@ export const stepComponents = {
   'classification': CallClassificationStep,
   'business': CallBusinessStep,
   'channel': CallChannelStep,
-  'assignment': CallAssignmentStep,
-  'remarks': CallRemarksStep,
+  'assignment and remarks': CallRemarksStep,
   'review': CallReviewStep,
 } as const;
 

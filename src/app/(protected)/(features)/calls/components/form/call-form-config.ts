@@ -49,20 +49,9 @@ export const callFormConfig: FormConfig = {
       },
     },
     {
-      id: 'assignment',
-      title: 'Assignment & Date',
-      description: 'Assign users, set dates and status',
-      fields: [],
-      relationships: ['assignedTo'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'remarks',
-      title: 'Remarks',
-      description: 'Add any additional remarks or notes',
+      id: 'assignment and remarks',
+      title: 'Assignment and Remarks',
+      description: 'Assign users and add any additional remarks or notes',
       fields: [],
       relationships: [],
       validation: {
