@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, Trash2 } from 'lucide-react';
+import {Card} from "@/components/ui/card";
 
 export interface DraftDialogProps {
   open: boolean;
@@ -77,7 +78,7 @@ export function SaveDraftDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
+          <Card className="p-4">
             <Button
               onClick={handleSaveDraft}
               disabled={isSaving}
@@ -99,9 +100,9 @@ export function SaveDraftDialog({
             <p className="text-xs text-muted-foreground text-center">
               You can continue editing this form later
             </p>
-          </div>
+          </Card>
 
-          <div className="space-y-2">
+          <Card className="p-4">
             <Button
               onClick={handleDiscardChanges}
               disabled={isSaving}
@@ -114,8 +115,7 @@ export function SaveDraftDialog({
             <p className="text-xs text-muted-foreground text-center">
               All changes will be lost permanently
             </p>
-          </div>
-
+          </Card>
           <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
             Cancel
           </Button>
