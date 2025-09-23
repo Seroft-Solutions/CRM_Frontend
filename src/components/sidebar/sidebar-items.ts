@@ -30,7 +30,7 @@ export const sidebarItems: SidebarItem[] = [
     icon: LayoutDashboard,
     requiredPermission: 'dashboard',
   },
-  { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
+  { key: 'drafts', label: 'My Drafts', path: '/user-drafts', icon: FileText },
   {
     key: 'calls',
     label: 'Calls Management',
