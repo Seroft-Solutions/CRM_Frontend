@@ -376,7 +376,7 @@ export function SubCallTypeFormProvider({
 
   function transformFormDataForSubmission(data: Record<string, any>) {
     const entityToSave: Record<string, any> = {};
-// Handle relationships - use reference object pattern { entityName: { id: value } }
+    // Handle relationships - use reference object pattern { entityName: { id: value } }
     config.relationships.forEach((relConfig) => {
       const value = data[relConfig.name];
 
@@ -433,8 +433,6 @@ export function SubCallTypeFormProvider({
         }
       }
     });
-
-
 
     // Remove undefined values to avoid sending them to the backend
     Object.keys(entityToSave).forEach((key) => {

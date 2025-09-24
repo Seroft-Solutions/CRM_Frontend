@@ -311,7 +311,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...priorityData } = transformedData as any;
+        const { ...priorityData } = transformedData as any;
         const priorityDataWithStatus = {
           ...priorityData,
           status: 'ACTIVE',

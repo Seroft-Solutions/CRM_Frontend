@@ -28,7 +28,6 @@ export const callFormSchema = z.object(callFormSchemaFields);
 
 export type CallFormValues = z.infer<typeof callFormSchema>;
 
-
 // Individual field schemas for granular validation
 export const callFieldSchemas = {
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional

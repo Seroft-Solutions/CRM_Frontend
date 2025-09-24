@@ -171,9 +171,9 @@ export const subCallTypeFormConfig: FormConfig = {
 export const subCallTypeFormHelpers = {
   getStepById: (stepId: string) => subCallTypeFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>
-      subCallTypeFormConfig.fields.find((field) => field.name === fieldName),
+    subCallTypeFormConfig.fields.find((field) => field.name === fieldName),
   getRelationshipConfig: (relationshipName: string) =>
-      subCallTypeFormConfig.relationships.find((rel) => rel.name === relationshipName),
+    subCallTypeFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = subCallTypeFormConfig.steps.find((s) => s.id === stepId);
     return step ? [...step.fields, ...step.relationships] : [];

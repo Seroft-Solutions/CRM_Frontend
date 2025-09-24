@@ -338,7 +338,6 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

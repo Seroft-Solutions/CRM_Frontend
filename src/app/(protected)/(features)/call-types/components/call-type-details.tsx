@@ -273,7 +273,6 @@ export function CallTypeDetails({ id }: CallTypeDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

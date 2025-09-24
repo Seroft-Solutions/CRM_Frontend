@@ -311,7 +311,7 @@ export function SourceForm({ id }: SourceFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...sourceData } = transformedData as any;
+        const { ...sourceData } = transformedData as any;
         const sourceDataWithStatus = {
           ...sourceData,
           status: 'ACTIVE',

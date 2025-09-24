@@ -30,7 +30,12 @@ declare module 'next-auth/jwt' {
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   // Prevent refresh attempts for tokens that are already marked for signout
-  if (token.shouldSignOut || (token.error === 'RefreshAccessTokenError' && token.refreshAttempts && token.refreshAttempts >= 3)) {
+  if (
+    token.shouldSignOut ||
+    (token.error === 'RefreshAccessTokenError' &&
+      token.refreshAttempts &&
+      token.refreshAttempts >= 3)
+  ) {
     console.warn('Token already marked for signout or max refresh attempts reached');
     return token;
   }
@@ -42,8 +47,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     }
 
     // Track refresh attempts to prevent infinite loops
-    const refreshAttempts = (token.refreshAttempts as number || 0) + 1;
-    
+    const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
+
     const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     const response = await fetch(tokenUrl, {
       method: 'POST',
@@ -66,7 +71,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         attempt: refreshAttempts,
         timestamp: new Date().toISOString(),
       });
-      
+
       // For 400/401 errors, the refresh token is likely expired or invalid
       if (response.status === 400 || response.status === 401) {
         // Try to parse the error response for more specific error details
@@ -76,18 +81,21 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         } catch (e) {
           errorDetails = { error: 'invalid_grant', error_description: errorText };
         }
-        
+
         console.error('Refresh token expired or invalid:', errorDetails);
         return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
       }
-      
+
       // For other errors (5xx, network issues), retry with exponential backoff
       if (refreshAttempts >= 3) {
         console.error('Max refresh attempts reached, marking for signout');
         return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
       }
-      
-      console.warn(`Temporary refresh token error (attempt ${refreshAttempts}/3), will retry:`, response.status);
+
+      console.warn(
+        `Temporary refresh token error (attempt ${refreshAttempts}/3), will retry:`,
+        response.status
+      );
       return { ...token, error: 'RefreshAccessTokenError', refreshAttempts };
     }
 
@@ -111,13 +119,13 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     };
   } catch (error) {
     console.error('Network or other error refreshing access token:', error);
-    const refreshAttempts = (token.refreshAttempts as number || 0) + 1;
-    
+    const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
+
     if (refreshAttempts >= 3) {
       console.error('Max network error attempts reached, marking for signout');
       return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
     }
-    
+
     return { ...token, error: 'RefreshAccessTokenError', refreshAttempts };
   }
 }
@@ -169,7 +177,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // Skip refresh if token is already marked for signout or max attempts reached
-      if (token.shouldSignOut || (token.error === 'RefreshAccessTokenError' && token.refreshAttempts && token.refreshAttempts >= 3)) {
+      if (
+        token.shouldSignOut ||
+        (token.error === 'RefreshAccessTokenError' &&
+          token.refreshAttempts &&
+          token.refreshAttempts >= 3)
+      ) {
         console.warn('Token marked for signout or max attempts reached, returning as-is');
         return token;
       }
@@ -185,20 +198,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       // Check if token needs refresh (10-minute buffer for better reliability)
       const now = Date.now() / 1000;
-      const shouldRefresh = token.expires_at && 
-        typeof token.expires_at === 'number' && 
-        now >= token.expires_at - 600;
+      const shouldRefresh =
+        token.expires_at && typeof token.expires_at === 'number' && now >= token.expires_at - 600;
 
       if (shouldRefresh && !token.shouldSignOut) {
         console.log('Token expires soon, attempting refresh', {
           expiresAt: token.expires_at,
           now: Math.floor(now),
           timeLeft: Math.floor((token.expires_at as number) - now),
-          attempt: (token.refreshAttempts as number || 0) + 1,
+          attempt: ((token.refreshAttempts as number) || 0) + 1,
         });
-        
+
         token = await refreshAccessToken(token);
-        
+
         // If refresh failed permanently, log it
         if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
           console.error('Token refresh failed permanently, user will need to sign in again');

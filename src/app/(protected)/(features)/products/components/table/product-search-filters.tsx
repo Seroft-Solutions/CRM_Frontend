@@ -87,6 +87,12 @@ export function ProductSearchAndFilters({
     // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
+      if (relationName === 'category') {
+        return 'Category';
+      }
+      if (relationName === 'subCategory') {
+        return 'Sub Category';
+      }
       return relationName;
     }
 
@@ -105,9 +111,6 @@ export function ProductSearchAndFilters({
     }
     if (key === 'description') {
       return 'description';
-    }
-    if (key === 'category') {
-      return 'category';
     }
     if (key === 'basePrice') {
       return 'basePrice';
@@ -164,6 +167,38 @@ export function ProductSearchAndFilters({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80 p-4" align="end">
             <div className="space-y-4">
+              <DropdownMenuSeparator />
+
+              {/* People Section */}
+              <div>
+                <DropdownMenuLabel className="px-0 text-sm font-medium">
+                  People & Relationships
+                </DropdownMenuLabel>
+                <div className="space-y-2 mt-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                    <Input
+                      placeholder="Filter by category..."
+                      value={(filters['category.name'] as string) || ''}
+                      onChange={(e) => onFilterChange('category.name', e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Sub Category</label>
+                    <Input
+                      placeholder="Filter by sub category..."
+                      value={(filters['subCategory.name'] as string) || ''}
+                      onChange={(e) =>
+                        onFilterChange('subCategory.name', e.target.value || undefined)
+                      }
+                      className="h-8"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <DropdownMenuSeparator />
 
               {/* Dates Section */}

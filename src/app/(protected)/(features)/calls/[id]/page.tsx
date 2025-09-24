@@ -1,4 +1,4 @@
-'use client'
+'use client';
 // ===============================================================
 // 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
 // - Source: code generation pipeline
@@ -9,8 +9,8 @@
 import { CallDetails } from '../components/call-details';
 import { PermissionGuard } from '@/core/auth';
 import { CallRemarksSection } from '../components/call-remarks-section';
-import {CallMeetingsSection} from "@/app/(protected)/(features)/calls/components/call-meetings-section";
-import {useGetCall} from "@/core/api/generated/spring";
+import { CallMeetingsSection } from '@/app/(protected)/(features)/calls/components/call-meetings-section';
+import { useGetCall } from '@/core/api/generated/spring';
 import { use } from 'react';
 
 interface CallPageProps {
@@ -18,7 +18,6 @@ interface CallPageProps {
     id: string;
   }>;
 }
-
 
 export default function CallPage({ params }: CallPageProps) {
   const { id: idParam } = use(params);
@@ -87,12 +86,11 @@ export default function CallPage({ params }: CallPageProps) {
         {/* Call Meetings Section */}
         <div>
           <CallMeetingsSection
-              callId={id}
-              customerId={callData?.customer?.id}
-              assignedUserId={callData?.assignedTo?.id}
+            callId={id}
+            customerId={callData?.customer?.id}
+            assignedUserId={callData?.assignedTo?.id}
           />
         </div>
-
 
         {/* Call Details Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">

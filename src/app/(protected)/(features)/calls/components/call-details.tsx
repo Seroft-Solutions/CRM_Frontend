@@ -433,7 +433,6 @@ export function CallDetails({ id }: CallDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

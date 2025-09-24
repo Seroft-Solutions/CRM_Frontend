@@ -311,7 +311,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...channelTypeData } = transformedData as any;
+        const { ...channelTypeData } = transformedData as any;
         const channelTypeDataWithStatus = {
           ...channelTypeData,
           status: 'ACTIVE',

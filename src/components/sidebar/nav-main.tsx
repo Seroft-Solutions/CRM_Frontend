@@ -112,60 +112,60 @@ function NavItem({
   };
 
   return item.children ? (
-      // Items with children - collapsible menu
-      // Only render if there are visible children or no permission requirement
-      visibleChildren && visibleChildren.length > 0 ? (
-          <Collapsible
-              key={item.key}
-              asChild
-              defaultOpen={item.expandable ?? true}
-              className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.label} data-active={active} onClick={handleClick}>
-                  {item.icon && <item.icon />}
-                  <span>{item.label}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {visibleChildren.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.key}>
-                        <SidebarMenuSubButton
-                            asChild
-                            data-active={subItem.path && pathname === subItem.path}
-                            onClick={handleNavigation} // Added: Collapse on navigation
-                        >
-                          <Link href={subItem.path || '#'}>
-                            <span>{subItem.label}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-      ) : null
+    // Items with children - collapsible menu
+    // Only render if there are visible children or no permission requirement
+    visibleChildren && visibleChildren.length > 0 ? (
+      <Collapsible
+        key={item.key}
+        asChild
+        defaultOpen={item.expandable ?? true}
+        className="group/collapsible"
+      >
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip={item.label} data-active={active} onClick={handleClick}>
+              {item.icon && <item.icon />}
+              <span>{item.label}</span>
+              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {visibleChildren.map((subItem) => (
+                <SidebarMenuSubItem key={subItem.key}>
+                  <SidebarMenuSubButton
+                    asChild
+                    data-active={subItem.path && pathname === subItem.path}
+                    onClick={handleNavigation} // Added: Collapse on navigation
+                  >
+                    <Link href={subItem.path || '#'}>
+                      <span>{subItem.label}</span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    ) : null
   ) : (
-      // Items without children - direct link
-      <SidebarMenuItem key={item.key}>
-        <SidebarMenuButton
-            asChild
-            tooltip={item.label}
-            data-active={active}
-            onClick={() => {
-              handleClick();
-              handleNavigation(); // Added: Collapse on navigation
-            }}
-        >
-          <Link href={item.path || '#'}>
-            {item.icon && <item.icon />}
-            <span>{item.label}</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+    // Items without children - direct link
+    <SidebarMenuItem key={item.key}>
+      <SidebarMenuButton
+        asChild
+        tooltip={item.label}
+        data-active={active}
+        onClick={() => {
+          handleClick();
+          handleNavigation(); // Added: Collapse on navigation
+        }}
+      >
+        <Link href={item.path || '#'}>
+          {item.icon && <item.icon />}
+          <span>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }

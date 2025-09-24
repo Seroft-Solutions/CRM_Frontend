@@ -189,12 +189,13 @@ function ProductFormContent({ id }: ProductFormProps) {
           'name': '',
           'code': '',
           'description': '',
-          'category': '',
           'basePrice': '',
           'minPrice': '',
           'maxPrice': '',
           'remark': '',
           'status': '',
+          'category': 'Category',
+          'subCategory': 'Sub Category',
         }}
       /> */}
 
@@ -316,14 +317,10 @@ export function ProductForm({ id }: ProductFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...productData } = transformedData as any;
-        const productDataWithStatus = {
-          ...productData,
-          status: 'ACTIVE',
-        };
+
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: productDataWithStatus as any });
+          createEntity({ data: transformedData as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
           const entityData = { ...transformedData, id };

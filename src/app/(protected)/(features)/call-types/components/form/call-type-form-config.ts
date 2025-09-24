@@ -78,7 +78,7 @@ export const callTypeFormConfig: FormConfig = {
         maxLength: 1000,
       },
       ui: {},
-    }
+    },
   ],
 
   // Relationship definitions

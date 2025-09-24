@@ -165,16 +165,16 @@ export function SessionManagerProvider({
           // Session is valid, reset activity and hide modal
           resetIdleTimer();
           hideSessionModal();
-          
+
           // Trigger token refreshed event for API layer
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('token-refreshed'));
           }
-          
+
           return true;
         }
       }
-      
+
       // Session refresh failed
       console.error('Session refresh failed - invalid session');
       showSessionExpiredModal();
@@ -198,7 +198,6 @@ export function SessionManagerProvider({
       window.location.href = '/';
     }
   }, []);
-
 
   const handleActivity = useCallback(() => {
     resetIdleTimer();

@@ -173,7 +173,7 @@ export function MeetingScheduler({
                     isRequired: participant.isRequired,
                     hasAccepted: false,
                     hasDeclined: false,
-                    status:'ACTIVE',
+                    status: 'ACTIVE',
                     meeting: meetingData,
                   },
                 })
@@ -190,7 +190,7 @@ export function MeetingScheduler({
                     reminderType: reminder.type as keyof typeof MeetingReminderDTOReminderType,
                     reminderMinutesBefore: reminder.minutesBefore,
                     meeting: meetingData,
-                    status:'ACTIVE'
+                    status: 'ACTIVE',
                   },
                 })
               )
@@ -460,10 +460,10 @@ export function MeetingScheduler({
       isRecurring: false,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       meetingStatus: MeetingDTOMeetingStatus.SCHEDULED,
-      organizer: {id: assignedUserId} as any,
-      assignedCustomer: customerId ? ({id: customerId} as any) : undefined,
-      call: {id: callId} as any,
-      status: 'ACTIVE'
+      organizer: { id: assignedUserId } as any,
+      assignedCustomer: customerId ? ({ id: customerId } as any) : undefined,
+      call: { id: callId } as any,
+      status: 'ACTIVE',
     };
 
     createMeeting({ data: meetingData });
@@ -476,10 +476,10 @@ export function MeetingScheduler({
 
   const canScheduleMeeting = () => {
     return (
-        selectedDate &&
-        selectedTime &&
-        meetingDetails.title.trim().length > 0 &&
-        participants.every((p) => p.email && p.name)
+      selectedDate &&
+      selectedTime &&
+      meetingDetails.title.trim().length > 0 &&
+      participants.every((p) => p.email && p.name)
     );
   };
 
@@ -496,51 +496,51 @@ export function MeetingScheduler({
   }
 
   return (
-      <div className="space-y-6">
-        <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle>Schedule Meeting</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8 p-8">
-            {/* Date & Time Section */}
-            <div className="space-y-4">
-              <h4 className="font-medium text-lg">Select Date & Time</h4>
-              <div className="flex justify-center">
-                <div className="max-w-2xl w-full">
-                  <Calendar20
-                      onDateTimeSelected={(date: Date, time: string) => {
-                        setSelectedDate(date);
-                        setSelectedTime(time);
-                      }}
-                      bookedDates={bookedDates}
-                      availableTimeSlots={availableTimeSlots}
-                      bookedTimeSlots={bookedTimeSlots}
-                      initialDate={selectedDate}
-                      initialTime={selectedTime}
-                      showContinueButton={false}
-                      disabled={false}
-                  />
-                </div>
+    <div className="space-y-6">
+      <Card className="border shadow-sm">
+        <CardHeader>
+          <CardTitle>Schedule Meeting</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-8 p-8">
+          {/* Date & Time Section */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-lg">Select Date & Time</h4>
+            <div className="flex justify-center">
+              <div className="max-w-2xl w-full">
+                <Calendar20
+                  onDateTimeSelected={(date: Date, time: string) => {
+                    setSelectedDate(date);
+                    setSelectedTime(time);
+                  }}
+                  bookedDates={bookedDates}
+                  availableTimeSlots={availableTimeSlots}
+                  bookedTimeSlots={bookedTimeSlots}
+                  initialDate={selectedDate}
+                  initialTime={selectedTime}
+                  showContinueButton={false}
+                  disabled={false}
+                />
               </div>
             </div>
+          </div>
 
-            <Separator />
+          <Separator />
 
-            {/* Meeting Details Section */}
-            <div className="space-y-6">
-              <h4 className="font-medium text-lg">Meeting Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Meeting Title *</Label>
-                  <Input
-                      id="title"
-                      placeholder="Enter meeting title"
-                      value={meetingDetails.title}
-                      onChange={(e) =>
-                          setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
-                      }
-                  />
-                </div>
+          {/* Meeting Details Section */}
+          <div className="space-y-6">
+            <h4 className="font-medium text-lg">Meeting Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Meeting Title *</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter meeting title"
+                  value={meetingDetails.title}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration</Label>
@@ -626,165 +626,163 @@ export function MeetingScheduler({
               </div>
             )}
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                    id="description"
-                    placeholder="Add meeting agenda or notes..."
-                    value={meetingDetails.description}
-                    onChange={(e) =>
-                        setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
-                    }
-                    rows={3}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="Add meeting agenda or notes..."
+                value={meetingDetails.description}
+                onChange={(e) =>
+                  setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                }
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Participants Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-lg">Meeting Participants</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }])
+                }
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Participant
+              </Button>
             </div>
 
-            <Separator />
-
-            {/* Participants Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-lg">Meeting Participants</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }])
-                  }
+            <div className="space-y-3">
+              {participants.map((participant, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Participant
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {participants.map((participant, index) => (
-                    <div
-                        key={index}
-                        className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg"
+                  <div className="col-span-5">
+                    <Label>Email</Label>
+                    <Input
+                      placeholder="email@example.com"
+                      value={participant.email}
+                      onChange={(e) => {
+                        const newParticipants = [...participants];
+                        newParticipants[index].email = e.target.value;
+                        setParticipants(newParticipants);
+                      }}
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label>Name</Label>
+                    <Input
+                      placeholder="Full Name"
+                      value={participant.name}
+                      onChange={(e) => {
+                        const newParticipants = [...participants];
+                        newParticipants[index].name = e.target.value;
+                        setParticipants(newParticipants);
+                      }}
+                    />
+                  </div>
+                  <div className="col-span-2 flex items-center space-x-2">
+                    <Checkbox
+                      checked={participant.isRequired}
+                      onCheckedChange={(checked) => {
+                        const newParticipants = [...participants];
+                        newParticipants[index].isRequired = checked as boolean;
+                        setParticipants(newParticipants);
+                      }}
+                    />
+                    <Label className="text-xs">Required</Label>
+                  </div>
+                  <div className="col-span-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setParticipants((prev) => prev.filter((_, i) => i !== index))}
+                      disabled={index === 0 && customerData?.email === participant.email}
                     >
-                      <div className="col-span-5">
-                        <Label>Email</Label>
-                        <Input
-                            placeholder="email@example.com"
-                            value={participant.email}
-                            onChange={(e) => {
-                              const newParticipants = [...participants];
-                              newParticipants[index].email = e.target.value;
-                              setParticipants(newParticipants);
-                            }}
-                        />
-                      </div>
-                      <div className="col-span-4">
-                        <Label>Name</Label>
-                        <Input
-                            placeholder="Full Name"
-                            value={participant.name}
-                            onChange={(e) => {
-                              const newParticipants = [...participants];
-                              newParticipants[index].name = e.target.value;
-                              setParticipants(newParticipants);
-                            }}
-                        />
-                      </div>
-                      <div className="col-span-2 flex items-center space-x-2">
-                        <Checkbox
-                            checked={participant.isRequired}
-                            onCheckedChange={(checked) => {
-                              const newParticipants = [...participants];
-                              newParticipants[index].isRequired = checked as boolean;
-                              setParticipants(newParticipants);
-                            }}
-                        />
-                        <Label className="text-xs">Required</Label>
-                      </div>
-                      <div className="col-span-1">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                                setParticipants((prev) => prev.filter((_, i) => i !== index))
-                            }
-                            disabled={index === 0 && customerData?.email === participant.email}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                ))}
-              </div>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Reminders Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-lg flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Email Reminders
+              </h4>
             </div>
 
-            <Separator />
-
-            {/* Reminders Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-lg flex items-center gap-2">
-                  <Bell className="w-4 h-4" />
-                  Email Reminders
-                </h4>
-              </div>
-
-              <div className="space-y-3">
-                {reminders.map((reminder, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={reminder.enabled}
-                        onCheckedChange={(checked) => {
-                          const newReminders = [...reminders];
-                          newReminders[index].enabled = checked as boolean;
-                          setReminders(newReminders);
-                        }}
-                      />
-                      <span className="text-sm">Send email reminder</span>
-                    </div>
-                    <Select
-                      value={reminder.minutesBefore.toString()}
-                      onValueChange={(value) => {
+            <div className="space-y-3">
+              {reminders.map((reminder, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      checked={reminder.enabled}
+                      onCheckedChange={(checked) => {
                         const newReminders = [...reminders];
-                        newReminders[index].minutesBefore = parseInt(value);
+                        newReminders[index].enabled = checked as boolean;
                         setReminders(newReminders);
                       }}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5 minutes before</SelectItem>
-                        <SelectItem value="15">15 minutes before</SelectItem>
-                        <SelectItem value="30">30 minutes before</SelectItem>
-                        <SelectItem value="60">1 hour before</SelectItem>
-                        <SelectItem value="1440">1 day before</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
+                    <span className="text-sm">Send email reminder</span>
                   </div>
-                ))}
-              </div>
+                  <Select
+                    value={reminder.minutesBefore.toString()}
+                    onValueChange={(value) => {
+                      const newReminders = [...reminders];
+                      newReminders[index].minutesBefore = parseInt(value);
+                      setReminders(newReminders);
+                    }}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5 minutes before</SelectItem>
+                      <SelectItem value="15">15 minutes before</SelectItem>
+                      <SelectItem value="30">30 minutes before</SelectItem>
+                      <SelectItem value="60">1 hour before</SelectItem>
+                      <SelectItem value="1440">1 day before</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
-          </CardContent>
-          <CardFooter className="bg-gray-50 px-8 py-6 border-t">
-            <Button
-                onClick={scheduleMeeting}
-                disabled={isCreating || !canScheduleMeeting()}
-                className="ml-auto h-11 px-6 bg-green-600 hover:bg-green-700"
-            >
-              {isCreating ? (
-                  <>Scheduling...</>
-              ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Schedule Meeting
-                  </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+          </div>
+        </CardContent>
+        <CardFooter className="bg-gray-50 px-8 py-6 border-t">
+          <Button
+            onClick={scheduleMeeting}
+            disabled={isCreating || !canScheduleMeeting()}
+            className="ml-auto h-11 px-6 bg-green-600 hover:bg-green-700"
+          >
+            {isCreating ? (
+              <>Scheduling...</>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Schedule Meeting
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      </Card>
 
       {/* Meeting Error Dialog */}
       <MeetingErrorDialog

@@ -273,7 +273,6 @@ export function SourceDetails({ id }: SourceDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

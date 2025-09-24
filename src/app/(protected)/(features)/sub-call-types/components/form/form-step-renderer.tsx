@@ -450,12 +450,10 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         >
           {/* Render relationships */}
           {currentStepConfig.relationships.map((relationshipName) =>
-              renderRelationship(relationshipName)
+            renderRelationship(relationshipName)
           )}
           {/* Render regular fields */}
           {currentStepConfig.fields.map((fieldName) => renderField(fieldName))}
-
-
         </div>
       </div>
     );
