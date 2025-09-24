@@ -290,7 +290,6 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

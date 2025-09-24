@@ -50,14 +50,14 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
-// Handle relationships
+      // Handle relationships
       config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
 
         if (relConfig.multiple) {
           formValues[relConfig.name] = value
-              ? value.map((item: any) => item[relConfig.primaryKey])
-              : [];
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
@@ -91,8 +91,6 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
           formValues[fieldConfig.name] = value || '';
         }
       });
-
-
 
       form.reset(formValues);
     }
@@ -312,7 +310,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...subCallTypeData } = transformedData as any;
+        const { ...subCallTypeData } = transformedData as any;
         const subCallTypeDataWithStatus = {
           ...subCallTypeData,
           status: 'ACTIVE',

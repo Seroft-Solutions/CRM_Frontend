@@ -156,17 +156,6 @@ export function ProductTableHeader({
                     );
                   }
 
-                  if (column.accessor === 'category') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['category'] as string) || ''}
-                        onChange={(e) => onFilterChange('category', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
                   if (column.accessor === 'basePrice') {
                     return (
                       <Input
@@ -273,6 +262,32 @@ export function ProductTableHeader({
                   return null;
                 })()
               : (() => {
+                  if (column.accessor === 'category') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['category.name'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('category.name', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
+                  if (column.accessor === 'subCategory') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['subCategory.name'] as string) || ''}
+                        onChange={(e) =>
+                          onFilterChange('subCategory.name', e.target.value || undefined)
+                        }
+                      />
+                    );
+                  }
+
                   return null;
                 })()}
           </TableHead>

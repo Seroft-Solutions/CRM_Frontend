@@ -7,7 +7,7 @@
 // ===============================================================
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect,useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,7 @@ import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 import {
   useGetAllUserProfiles,
-  useGetUserProfile
+  useGetUserProfile,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
 import { callFormConfig } from './call-form-config';
@@ -65,8 +65,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         steps: baseConfig.steps.filter((step) => step.id !== 'channel' && step.id !== 'assignment'),
       };
     }
-   if (!Partners?.length) {
-      console.log("ART length checked 2");
+    if (!Partners?.length) {
+      console.log('ART length checked 2');
       return {
         ...baseConfig,
         steps: baseConfig.steps.filter((step) => step.id !== 'channel'),
@@ -145,7 +145,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
-// Auto-populate channel and assignment data when account/profile data loads for business partners
+  // Auto-populate channel and assignment data when account/profile data loads for business partners
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
       // Only set if not already set to avoid overriding user changes
@@ -158,9 +158,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
       // Use user profile data for channel type
       if (
-          !currentChannelType &&
-          userProfile?.channelType?.id &&
-          typeof userProfile.channelType.id === 'number'
+        !currentChannelType &&
+        userProfile?.channelType?.id &&
+        typeof userProfile.channelType.id === 'number'
       ) {
         form.setValue('channelType', userProfile.channelType.id);
       }
@@ -169,7 +169,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
-
 
     // Auto-populate channel and assignment data for business partners
     if (isBusinessPartner && accountData) {
@@ -220,15 +219,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   // Show draft dialog when trying to navigate with unsaved changes
   const showDraftDialogForNavigation = useCallback(
-      (navigationCallback: () => void) => {
-        if (hasUnsavedChanges()) {
-          setPendingNavigation(() => navigationCallback);
-          setShowDraftDialog(true);
-          return true; // Navigation blocked
-        }
-        return false; // Navigation allowed
-      },
-      [hasUnsavedChanges]
+    (navigationCallback: () => void) => {
+      if (hasUnsavedChanges()) {
+        setPendingNavigation(() => navigationCallback);
+        setShowDraftDialog(true);
+        return true; // Navigation blocked
+      }
+      return false; // Navigation allowed
+    },
+    [hasUnsavedChanges]
   );
 
   // Form state persistence functions - only for cross-form navigation
@@ -600,7 +599,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     setCurrentStep(0);
     setConfirmSubmission(false);
   }, [form]);
-// Browser navigation protection (back/forward buttons, URL changes)
+  // Browser navigation protection (back/forward buttons, URL changes)
   useEffect(() => {
     if (!isNew || !draftsEnabled) return;
 
@@ -715,11 +714,11 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       if (link && hasUnsavedChanges()) {
         const href = link.getAttribute('href');
         if (
-            href &&
-            !href.startsWith('http') &&
-            !href.startsWith('mailto:') &&
-            !href.startsWith('tel:') &&
-            !href.startsWith('#')
+          href &&
+          !href.startsWith('http') &&
+          !href.startsWith('mailto:') &&
+          !href.startsWith('tel:') &&
+          !href.startsWith('#')
         ) {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -745,11 +744,11 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         if (linkInsideButton) {
           const href = linkInsideButton.getAttribute('href');
           if (
-              href &&
-              !href.startsWith('http') &&
-              !href.startsWith('mailto:') &&
-              !href.startsWith('tel:') &&
-              !href.startsWith('#')
+            href &&
+            !href.startsWith('http') &&
+            !href.startsWith('mailto:') &&
+            !href.startsWith('tel:') &&
+            !href.startsWith('#')
           ) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -770,9 +769,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         // Check if this is a navigation button by text content
         const buttonText = button.textContent?.toLowerCase() || '';
         const isNavigationButton =
-            buttonText.includes('back') ||
-            buttonText.includes('cancel') ||
-            buttonText.includes('close');
+          buttonText.includes('back') ||
+          buttonText.includes('cancel') ||
+          buttonText.includes('close');
 
         if (isNavigationButton && formRef.current && !formRef.current.contains(button)) {
           // For generic navigation buttons, we can't easily determine the target
@@ -912,7 +911,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
       window.removeEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
-
     };
   }, [
     restorationAttempted,
@@ -1203,49 +1201,49 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   return (
     <FormContext.Provider value={contextValue}>
       <div ref={formRef} className="relative">
-      {children}
+        {children}
 
-      {/* Draft Dialogs */}
-      {draftsEnabled && (
-        <>
-          <SaveDraftDialog
-            open={showDraftDialog}
-            onOpenChange={setShowDraftDialog}
-            entityType={config.entity}
-            onSaveDraft={async () => {
-              const success = await handleSaveDraft();
-              if (success && pendingNavigation) {
-                pendingNavigation();
+        {/* Draft Dialogs */}
+        {draftsEnabled && (
+          <>
+            <SaveDraftDialog
+              open={showDraftDialog}
+              onOpenChange={setShowDraftDialog}
+              entityType={config.entity}
+              onSaveDraft={async () => {
+                const success = await handleSaveDraft();
+                if (success && pendingNavigation) {
+                  pendingNavigation();
+                  setPendingNavigation(null);
+                }
+                return success;
+              }}
+              onDiscardChanges={() => {
+                if (pendingNavigation) {
+                  pendingNavigation();
+                  setPendingNavigation(null);
+                }
+              }}
+              onCancel={() => {
                 setPendingNavigation(null);
-              }
-              return success;
-            }}
-            onDiscardChanges={() => {
-              if (pendingNavigation) {
-                pendingNavigation();
-                setPendingNavigation(null);
-              }
-            }}
-            onCancel={() => {
-              setPendingNavigation(null);
-            }}
-            isDirty={form.formState.isDirty}
-          />
+              }}
+              isDirty={form.formState.isDirty}
+            />
 
-          <DraftRestorationDialog
-            open={showRestorationDialog}
-            onOpenChange={setShowRestorationDialog}
-            entityType={config.entity}
-            drafts={drafts}
-            onRestoreDraft={handleLoadDraft}
-            onDeleteDraft={handleDeleteDraft}
-            onStartFresh={() => {
-              setShowRestorationDialog(false);
-            }}
-            isLoading={isLoadingDrafts}
-          />
-        </>
-      )}
+            <DraftRestorationDialog
+              open={showRestorationDialog}
+              onOpenChange={setShowRestorationDialog}
+              entityType={config.entity}
+              drafts={drafts}
+              onRestoreDraft={handleLoadDraft}
+              onDeleteDraft={handleDeleteDraft}
+              onStartFresh={() => {
+                setShowRestorationDialog(false);
+              }}
+              isLoading={isLoadingDrafts}
+            />
+          </>
+        )}
       </div>
     </FormContext.Provider>
   );

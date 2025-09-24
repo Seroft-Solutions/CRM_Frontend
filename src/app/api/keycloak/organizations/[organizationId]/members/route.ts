@@ -44,7 +44,6 @@ function generateInvitationId(): string {
   return `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-
 // Helper function to store invitation metadata in user attributes
 function createInvitationUserAttributes(invitation: PendingInvitation) {
   return {

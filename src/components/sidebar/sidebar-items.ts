@@ -167,5 +167,4 @@ export const sidebarItems: SidebarItem[] = [
       },
     ],
   },
-
 ];

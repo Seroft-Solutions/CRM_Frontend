@@ -89,19 +89,22 @@ function EditPartnerPage() {
   const rawPartnerId = params.id as string;
   const partnerId = rawPartnerId?.split(':')[0]; // Remove any extra characters after :
   // Helper function to get channel type info from attributes - memoized
-  const getChannelTypeInfo = useCallback((partner: BusinessPartner) => {
-    const channelTypeId = partner.attributes?.channel_type_id?.[0];
-    if (!channelTypeId) return null;
+  const getChannelTypeInfo = useCallback(
+    (partner: BusinessPartner) => {
+      const channelTypeId = partner.attributes?.channel_type_id?.[0];
+      if (!channelTypeId) return null;
 
-    if (channelTypes) {
-      const channelType = channelTypes.find((ct) => ct.id === parseInt(channelTypeId));
-      if (channelType) {
-        return channelType.id;
+      if (channelTypes) {
+        const channelType = channelTypes.find((ct) => ct.id === parseInt(channelTypeId));
+        if (channelType) {
+          return channelType.id;
+        }
       }
-    }
 
-    return parseInt(channelTypeId);
-  }, [channelTypes]);
+      return parseInt(channelTypeId);
+    },
+    [channelTypes]
+  );
 
   // Fetch partner details from all partners - memoized to prevent infinite re-renders
   const fetchPartner = useCallback(async () => {

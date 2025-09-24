@@ -32,6 +32,9 @@ import {
   useDeleteProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+
 interface ProductDetailsProps {
   id: number;
 }
@@ -39,6 +42,30 @@ interface ProductDetailsProps {
 // Component to display relationship values by fetching related entity data
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   // Get the appropriate hook for this relationship
+  const { data: categoryData } =
+    relConfig.name === 'category'
+      ? useGetAllProductCategories(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'category',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: subCategoryData } =
+    relConfig.name === 'subCategory'
+      ? useGetAllProductSubCategories(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'subCategory',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
 
   if (!value) {
     return (
@@ -50,6 +77,12 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
 
   // Get the appropriate data for this relationship
   let allData = null;
+  if (relConfig.name === 'category') {
+    allData = categoryData;
+  }
+  if (relConfig.name === 'subCategory') {
+    allData = subCategoryData;
+  }
 
   if (!allData) {
     // Fallback: try to use the existing data structure
@@ -273,7 +306,14 @@ export function ProductDetails({ id }: ProductDetailsProps) {
               Edit
             </Link>
           </Button>
-
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 justify-center"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
         </div>
       </div>
 

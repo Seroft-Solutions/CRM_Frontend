@@ -69,20 +69,20 @@ export function useUserAvailabilityCreation() {
       const availabilityPromises = generated.userAvailabilities.map(
         (availability) =>
           new Promise<void>((resolve, reject) => {
-            availability.status='ACTIVE',
-            createUserAvailability(
-              { data: availability as any },
-              {
-                onSuccess: () => {
-                  console.log('✅ Created UserAvailability for', availability.dayOfWeek);
-                  resolve();
-                },
-                onError: (error) => {
-                  console.error('❌ Failed to create UserAvailability:', error);
-                  reject(error);
-                },
-              }
-            );
+            ((availability.status = 'ACTIVE'),
+              createUserAvailability(
+                { data: availability as any },
+                {
+                  onSuccess: () => {
+                    console.log('✅ Created UserAvailability for', availability.dayOfWeek);
+                    resolve();
+                  },
+                  onError: (error) => {
+                    console.error('❌ Failed to create UserAvailability:', error);
+                    reject(error);
+                  },
+                }
+              ));
           })
       );
 

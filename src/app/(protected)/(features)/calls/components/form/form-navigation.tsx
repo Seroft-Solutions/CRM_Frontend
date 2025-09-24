@@ -103,15 +103,15 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
             {isSubmitting ? 'Submitting...' : `${isNew ? 'Submit' : 'Update'} Call`}
           </Button>
         ) : isSecondLastStep ? (
-            <Button
-                type="button"
-                onClick={handleNext}
-                className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 justify-center"
-            >
-              Review Data
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-        ): (
+          <Button
+            type="button"
+            onClick={handleNext}
+            className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 justify-center"
+          >
+            Review Data
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        ) : (
           <Button
             type="button"
             onClick={handleNext}

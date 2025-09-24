@@ -17,12 +17,12 @@ import { CallReviewStep } from './review-step';
 
 // Step mapping for dynamic imports
 export const stepComponents = {
-  'basic': CallBasicStep,
-  'classification': CallClassificationStep,
-  'business': CallBusinessStep,
-  'channel': CallChannelStep,
+  basic: CallBasicStep,
+  classification: CallClassificationStep,
+  business: CallBusinessStep,
+  channel: CallChannelStep,
   'assignment and remarks': CallRemarksStep,
-  'review': CallReviewStep,
+  review: CallReviewStep,
 } as const;
 
 export type StepId = keyof typeof stepComponents;

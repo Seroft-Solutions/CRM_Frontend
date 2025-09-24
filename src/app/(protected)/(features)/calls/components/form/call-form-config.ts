@@ -43,7 +43,8 @@ export const callFormConfig: FormConfig = {
       title: 'Channel Details',
       description: 'Channel type and parties',
       fields: [],
-      relationships: ['channelParties', 'channelType'],      validation: {
+      relationships: ['channelParties', 'channelType'],
+      validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },

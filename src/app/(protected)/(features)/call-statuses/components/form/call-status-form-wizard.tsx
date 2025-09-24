@@ -311,7 +311,7 @@ export function CallStatusForm({ id }: CallStatusFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...callStatusData } = transformedData as any;
+        const { ...callStatusData } = transformedData as any;
         const callStatusDataWithStatus = {
           ...callStatusData,
           status: 'ACTIVE',

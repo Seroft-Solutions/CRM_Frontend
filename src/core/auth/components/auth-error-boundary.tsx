@@ -39,11 +39,13 @@ export class AuthErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Authentication Error Boundary caught an error:', error, errorInfo);
-    
+
     // Log authentication-specific errors
-    if (error.message?.includes('RefreshAccessTokenError') || 
-        error.message?.includes('session') || 
-        error.message?.includes('token')) {
+    if (
+      error.message?.includes('RefreshAccessTokenError') ||
+      error.message?.includes('session') ||
+      error.message?.includes('token')
+    ) {
       console.error('Authentication-related error detected:', {
         error: error.message,
         stack: error.stack,
@@ -133,10 +135,12 @@ export class AuthErrorBoundary extends Component<Props, State> {
 export function useAuthErrorHandler() {
   const handleAuthError = (error: Error) => {
     console.error('Authentication error handled by hook:', error);
-    
-    if (error.message?.includes('RefreshAccessTokenError') || 
-        error.message?.includes('session') || 
-        error.message?.includes('token')) {
+
+    if (
+      error.message?.includes('RefreshAccessTokenError') ||
+      error.message?.includes('session') ||
+      error.message?.includes('token')
+    ) {
       // Redirect to sign in for auth-related errors
       signIn('keycloak');
     }

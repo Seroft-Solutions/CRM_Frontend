@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, Trash2 } from 'lucide-react';
-import {Card} from "@/components/ui/card";
+import { Card } from '@/components/ui/card';
 
 export interface DraftDialogProps {
   open: boolean;

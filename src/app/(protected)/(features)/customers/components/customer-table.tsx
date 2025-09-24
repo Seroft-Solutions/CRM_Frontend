@@ -129,7 +129,7 @@ import { CustomerTableHeader } from './table/customer-table-header';
 import { CustomerTableRow } from './table/customer-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
-import {useAccount, useUserAuthorities} from "@/core/auth";
+import { useAccount, useUserAuthorities } from '@/core/auth';
 
 // Define sort ordering constants
 const ASC = 'asc';
@@ -713,7 +713,7 @@ export function CustomerTable() {
       params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
     }
 
-// Add business partner filter - only show customers created by the business partner
+    // Add business partner filter - only show customers created by the business partner
     if (isBusinessPartner && accountData?.login) {
       params['createdBy.equals'] = accountData.login;
     }
