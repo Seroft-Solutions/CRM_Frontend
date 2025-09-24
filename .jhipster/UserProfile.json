@@ -2,10 +2,16 @@
   "annotations": {
     "changelogDate": "20250828083508"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Extended user profile linked to Keycloak.",
   "dto": "mapstruct",
   "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "String",
+      "fieldValidateRules": ["pattern"],
+      "fieldValidateRulesPattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
     {
       "fieldName": "keycloakId",
       "fieldType": "String",
@@ -76,18 +82,6 @@
   "name": "UserProfile",
   "pagination": "pagination",
   "relationships": [
-    {
-      "options": {
-        "id": true,
-        "onDelete": "CASCADE"
-      },
-      "otherEntityField": "login",
-      "otherEntityName": "user",
-      "relationshipName": "internalUser",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-one",
-      "relationshipWithBuiltInEntity": true
-    },
     {
       "otherEntityName": "userAvailability",
       "otherEntityRelationshipName": "user",

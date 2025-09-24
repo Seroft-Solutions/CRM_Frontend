@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250828083509"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Organization is a tenant and maps to a DB schema.",
   "dto": "mapstruct",
   "fields": [

@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250828083518"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
     {
@@ -25,12 +25,6 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "500"
-    },
-    {
-      "fieldName": "category",
-      "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
-      "fieldValidateRulesMaxlength": "50"
     },
     {
       "fieldName": "basePrice",
@@ -89,7 +83,24 @@
   "jpaMetamodelFiltering": true,
   "name": "Product",
   "pagination": "pagination",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "productCategory",
+      "otherEntityRelationshipName": "products",
+      "relationshipName": "category",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "productSubCategory",
+      "otherEntityRelationshipName": "products",
+      "relationshipName": "subCategory",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
   "searchEngine": "elasticsearch",
   "service": "serviceImpl"
 }

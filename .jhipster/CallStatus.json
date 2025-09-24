@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250828083517"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
     {
