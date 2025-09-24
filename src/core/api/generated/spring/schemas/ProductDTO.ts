@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { ProductDTOStatus } from './ProductDTOStatus';
+import type { ProductCategoryDTO } from './ProductCategoryDTO';
+import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
 
 export interface ProductDTO {
   id?: number;
@@ -25,11 +27,6 @@ export interface ProductDTO {
    * @maxLength 500
    */
   description?: string;
-  /**
-   * @minLength 0
-   * @maxLength 50
-   */
-  category?: string;
   /**
    * @minimum 0
    * @maximum 999999
@@ -63,4 +60,6 @@ export interface ProductDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
+  category?: ProductCategoryDTO;
+  subCategory?: ProductSubCategoryDTO;
 }

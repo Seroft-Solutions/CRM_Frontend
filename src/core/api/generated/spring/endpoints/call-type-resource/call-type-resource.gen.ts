@@ -31,7 +31,7 @@ import type {
   SearchCallTypesParams
 } from '../../schemas';
 
-import { springServiceMutator } from "@/core/api/services/spring-service/service-mutator";
+import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
 import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
