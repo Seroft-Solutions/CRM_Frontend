@@ -31,23 +31,23 @@ export const sidebarItems: SidebarItem[] = [
     requiredPermission: 'dashboard',
   },
   {
-    key: 'business-partner-dashboard',
-    label: 'Business Partner Dashboard',
+    key: 'partnerDashboard',
+    label: 'Partner Dashboard',
     path: '/business-partner-dashboard',
     icon: LayoutDashboard,
-    requiredPermission: 'dashboard',
+    requiredPermission: 'partner:dashboard',
   },
   { key: 'drafts', label: 'My Drafts', path: '/user-drafts', icon: FileText },
   {
     key: 'calls',
-    label: 'Calls Management',
+    label: 'Leads Management',
     icon: PhoneCall,
     expandable: true,
     requiredPermission: 'call:sidebar',
     children: [
       {
         key: 'callTracking',
-        label: 'Leads Management',
+        label: 'Track Lead',
         path: '/calls',
         requiredPermission: 'call:sidebar',
       },
