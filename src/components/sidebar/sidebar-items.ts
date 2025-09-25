@@ -184,7 +184,7 @@ export const sidebarItems: SidebarItem[] = [
         key: 'productSubCategory',
         label: 'Product Sub Category',
         path: '/product-sub-categories',
-        // requiredPermission: 'subCallType:sidebar',
+        requiredPermission: 'productSubCategory:sidebar',
       },
       {
         key: 'product',

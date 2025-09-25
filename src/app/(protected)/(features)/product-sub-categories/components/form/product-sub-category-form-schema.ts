@@ -27,7 +27,7 @@ export const productSubCategoryFormSchemaFields = {
     .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
   category: z.number({ message: 'Please select category from the dropdown' }),
 };
 
