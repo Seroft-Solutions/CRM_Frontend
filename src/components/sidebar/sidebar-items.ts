@@ -5,7 +5,7 @@ import {
   Settings,
   PhoneCall,
   Map,
-  FileText,
+  FileText, Box,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -165,6 +165,26 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Customer Master',
         path: '/customers',
         requiredPermission: 'customer:sidebar',
+      },
+    ],
+  },
+  {
+    key: 'productManagement',
+    label: 'Product Management',
+    icon: Box,
+    expandable: false,
+    children: [
+      {
+        key: 'productCategory',
+        label: 'Product Category',
+        path: '/product-categories',
+         requiredPermission: 'productCategory:sidebar',
+      },
+      {
+        key: 'productSubCategory',
+        label: 'Product Sub Category',
+        path: '/product-sub-categories',
+        // requiredPermission: 'subCallType:sidebar',
       },
       {
         key: 'product',
