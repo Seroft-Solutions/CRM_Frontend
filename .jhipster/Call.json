@@ -6,6 +6,11 @@
   "dto": "mapstruct",
   "fields": [
     {
+      "fieldName": "leadNo",
+      "fieldType": "String",
+      "fieldValidateRules": ["unique"]
+    },
+    {
       "fieldName": "status",
       "fieldType": "Status",
       "fieldValidateRules": ["required"],

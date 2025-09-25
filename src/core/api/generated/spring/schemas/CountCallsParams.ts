@@ -20,6 +20,13 @@ export type CountCallsParams = {
 'id.specified'?: boolean;
 'id.in'?: number[];
 'id.notIn'?: number[];
+'leadNo.contains'?: string;
+'leadNo.doesNotContain'?: string;
+'leadNo.equals'?: string;
+'leadNo.notEquals'?: string;
+'leadNo.specified'?: boolean;
+'leadNo.in'?: string[];
+'leadNo.notIn'?: string[];
 'status.equals'?: CountCallsStatusEquals;
 'status.notEquals'?: CountCallsStatusNotEquals;
 'status.specified'?: boolean;
