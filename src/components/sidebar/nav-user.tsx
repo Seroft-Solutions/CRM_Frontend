@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { logoutAction } from '@/core/auth';
@@ -78,7 +79,7 @@ export function NavUser() {
     image: '',
     initials: 'U',
     role: null,
-    authorities: [],
+    authorities: [] as string[],
     activated: undefined,
     login: undefined,
   };
@@ -128,15 +129,17 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <User className="h-4 w-4 mr-2" />
-                Profile
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="flex items-center cursor-pointer">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell className="h-4 w-4 mr-2" />
                 Notifications
               </DropdownMenuItem>
-              {displayUser.authorities.includes('ROLE_ADMIN') && (
+              {displayUser.authorities && displayUser.authorities.includes('ROLE_ADMIN') && (
                 <DropdownMenuItem>
                   <Shield className="h-4 w-4 mr-2" />
                   Admin Panel

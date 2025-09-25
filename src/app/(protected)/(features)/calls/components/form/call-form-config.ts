@@ -20,7 +20,7 @@ export const callFormConfig: FormConfig = {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
-      fields: [],
+      fields: ['leadNo'],
       relationships: ['priority', 'callType', 'subCallType', 'callStatus'],
       validation: {
         mode: 'onBlur',
@@ -75,6 +75,21 @@ export const callFormConfig: FormConfig = {
 
   // Field definitions
   fields: [
+    {
+      name: 'leadNo',
+      type: 'text',
+      label: 'Lead Number',
+      placeholder: 'Auto-generated lead number',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {
+        readonly: true,
+        description: 'Unique lead identifier automatically generated based on organization and timestamp',
+        icon: '🏷️',
+      },
+    },
     {
       name: 'status',
       type: 'hidden',
@@ -425,7 +440,6 @@ export const callFormConfig: FormConfig = {
       confirmDialog: true,
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
-      showRestorationDialog: true,
     },
   },
 };

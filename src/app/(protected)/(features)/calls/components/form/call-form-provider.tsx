@@ -22,9 +22,10 @@ import type { FormConfig, FormState, FormActions, FormContextValue } from './for
 import { callFormConfig } from './call-form-config';
 import { callFormSchema } from './call-form-schema';
 import { callToast, handleCallError } from '../call-toast';
+import { generateLeadNo } from '../../utils/leadNo-generator';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
-import { SaveDraftDialog, DraftRestorationDialog } from '@/components/form-drafts';
+import { SaveDraftDialog } from '@/components/form-drafts';
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -42,6 +43,12 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
+
+  // Get organization name from localStorage (same as sidebar)
+  const getOrganizationName = () => {
+    if (typeof window === 'undefined') return 'DEFAULT';
+    return localStorage.getItem('selectedOrganizationName') || 'DEFAULT';
+  };
 
   // Fetch user profile data to get channel type information for business partners
   const { data: userProfile } = useGetUserProfile(accountData?.id || '', {
@@ -97,7 +104,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   // Draft-related state
   const [showDraftDialog, setShowDraftDialog] = useState(false);
-  const [showRestorationDialog, setShowRestorationDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
@@ -145,6 +151,16 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
+
+  // Ensure leadNo is generated on mount for new forms
+  React.useEffect(() => {
+    if (isNew && !form.getValues('leadNo')) {
+      const orgName = getOrganizationName();
+      const generatedLeadNo = generateLeadNo(orgName);
+      form.setValue('leadNo', generatedLeadNo);
+      console.log('Generated leadNo:', generatedLeadNo);
+    }
+  }, [isNew, form, getOrganizationName]);
   // Auto-populate channel and assignment data when account/profile data loads for business partners
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
@@ -169,6 +185,11 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
+
+    // Generate leadNo for new calls (will be set in useEffect for client-side)
+    if (isNew) {
+      defaults.leadNo = ''; // Will be populated on client-side
+    }
 
     // Auto-populate channel and assignment data for business partners
     if (isBusinessPartner && accountData) {
@@ -650,7 +671,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     const handleClickOutside = (event: MouseEvent) => {
       if (formRef.current && !formRef.current.contains(event.target as Node)) {
         // User clicked outside the form
-        if (hasUnsavedChanges() && isInsideForm && !showDraftDialog && !showRestorationDialog) {
+        if (hasUnsavedChanges() && isInsideForm && !showDraftDialog) {
           // Only show dialog if user was previously inside the form and no dialogs are already open
           setPendingNavigation(() => () => {
             // Focus is lost, but no actual navigation needed
@@ -675,7 +696,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
       document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled, showDraftDialog, showRestorationDialog]);
+  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled, showDraftDialog]);
 
   // Router event handling for programmatic navigation
   useEffect(() => {
@@ -1015,7 +1036,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         }
 
         setCurrentDraftId(undefined); // Clear since draft restoration is complete
-        setShowRestorationDialog(false);
 
         // CRITICAL FIX: Reset form state to clean after draft restoration
         // This ensures hasUnsavedChanges() returns false after restoration
@@ -1062,18 +1082,19 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   );
 
   const handleCheckForDrafts = useCallback(() => {
-    if (!draftsEnabled || !isNew || !config.behavior?.drafts?.showRestorationDialog) return;
+    if (!draftsEnabled || !isNew) return;
 
     if (drafts.length > 0 && !restorationAttempted) {
-      setShowRestorationDialog(true);
+      // Instead of showing dialog, navigate to user-drafts page
+      router.push('/user-drafts?entityType=Call');
       setRestorationAttempted(true);
     }
   }, [
     draftsEnabled,
     isNew,
-    config.behavior?.drafts?.showRestorationDialog,
     drafts.length,
     restorationAttempted,
+    router,
   ]);
 
   // Check for drafts on mount and handle restoration from drafts page
@@ -1176,7 +1197,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       isSavingDraft,
       isDeletingDraft,
       showDraftDialog,
-      showRestorationDialog,
       currentDraftId,
       draftRestorationInProgress,
     },
@@ -1242,20 +1262,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
                 setPendingNavigation(null);
               }}
               isDirty={form.formState.isDirty}
+              formData={form.getValues()}
             />
 
-            <DraftRestorationDialog
-              open={showRestorationDialog}
-              onOpenChange={setShowRestorationDialog}
-              entityType={config.entity}
-              drafts={drafts}
-              onRestoreDraft={handleLoadDraft}
-              onDeleteDraft={handleDeleteDraft}
-              onStartFresh={() => {
-                setShowRestorationDialog(false);
-              }}
-              isLoading={isLoadingDrafts}
-            />
           </>
         )}
       </div>
