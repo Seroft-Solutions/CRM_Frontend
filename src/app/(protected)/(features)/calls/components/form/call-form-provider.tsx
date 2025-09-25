@@ -1113,16 +1113,31 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         try {
           const restorationData = JSON.parse(draftToRestore);
           if (restorationData.entityType === config.entity) {
-            // Restore the specific draft (suppress toast since this is from management page)
-            handleLoadDraft(restorationData.draftId, true).then((success) => {
-              if (success) {
-                sessionStorage.removeItem('draftToRestore');
-                setRestorationAttempted(true);
-                // Show single comprehensive message for management page restoration
-                toast.success('Draft restored successfully');
-              }
-              setDraftRestorationInProgress(false);
+            // Restore form data directly from the stored restoration data
+            Object.keys(restorationData.formData).forEach((key) => {
+              form.setValue(key, restorationData.formData[key]);
             });
+
+            // Update comprehensive form data state
+            setAllFormData(restorationData.formData);
+
+            // Restore current step
+            if (restorationData.currentStep !== undefined) {
+              setCurrentStep(restorationData.currentStep);
+            }
+
+            // Archive the original draft in background
+            if (restorationData.draftId) {
+              handleLoadDraft(restorationData.draftId, true).catch((error) => {
+                console.warn('Failed to archive draft after restoration:', error);
+              });
+            }
+
+            // Clean up and show success
+            sessionStorage.removeItem('draftToRestore');
+            setRestorationAttempted(true);
+            setDraftRestorationInProgress(false);
+            toast.success('Draft restored successfully');
             return;
           }
         } catch (error) {
