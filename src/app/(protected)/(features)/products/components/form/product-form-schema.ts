@@ -53,24 +53,22 @@ export const productFormSchemaFields = {
   subCategory: z.number().optional(),
 };
 
-export const productFormSchema = z
-    .object(productFormSchemaFields)
-    .refine(
-        (data) => {
-          const minPrice = data.minPrice ? Number(data.minPrice) : null;
-          const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+export const productFormSchema = z.object(productFormSchemaFields).refine(
+  (data) => {
+    const minPrice = data.minPrice ? Number(data.minPrice) : null;
+    const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
 
-          // Only validate if both minPrice and maxPrice are provided
-          if (minPrice !== null && maxPrice !== null) {
-            return maxPrice > minPrice;
-          }
-          return true; // No validation if either is missing
-        },
-        {
-          message: 'Max price must be greater than min price',
-          path: ['maxPrice'], // This will highlight the maxPrice field in the form
-        }
-    );
+    // Only validate if both minPrice and maxPrice are provided
+    if (minPrice !== null && maxPrice !== null) {
+      return maxPrice > minPrice;
+    }
+    return true; // No validation if either is missing
+  },
+  {
+    message: 'Max price must be greater than min price',
+    path: ['maxPrice'], // This will highlight the maxPrice field in the form
+  }
+);
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -120,20 +118,22 @@ export const productFieldSchemas = {
 
 // Step-specific validation schemas
 export const productStepSchemas = {
-  basic: z.object({
-    name: productFieldSchemas.name,
-    code: productFieldSchemas.code,
-    description: productFieldSchemas.description,
-    basePrice: productFieldSchemas.basePrice,
-    minPrice: productFieldSchemas.minPrice,
-    maxPrice: productFieldSchemas.maxPrice,
-    remark: productFieldSchemas.remark,
-    status: productFieldSchemas.status,
-    createdBy: productFieldSchemas.createdBy,
-    createdDate: productFieldSchemas.createdDate,
-    lastModifiedBy: productFieldSchemas.lastModifiedBy,
-    lastModifiedDate: productFieldSchemas.lastModifiedDate,
-  }).refine(
+  basic: z
+    .object({
+      name: productFieldSchemas.name,
+      code: productFieldSchemas.code,
+      description: productFieldSchemas.description,
+      basePrice: productFieldSchemas.basePrice,
+      minPrice: productFieldSchemas.minPrice,
+      maxPrice: productFieldSchemas.maxPrice,
+      remark: productFieldSchemas.remark,
+      status: productFieldSchemas.status,
+      createdBy: productFieldSchemas.createdBy,
+      createdDate: productFieldSchemas.createdDate,
+      lastModifiedBy: productFieldSchemas.lastModifiedBy,
+      lastModifiedDate: productFieldSchemas.lastModifiedDate,
+    })
+    .refine(
       (data) => {
         const minPrice = data.minPrice ? Number(data.minPrice) : null;
         const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
@@ -147,7 +147,7 @@ export const productStepSchemas = {
         message: 'Max price must be greater than min price',
         path: ['maxPrice'],
       }
-  ),
+    ),
 
   review: productFormSchema,
 };

@@ -5,7 +5,8 @@ import {
   Settings,
   PhoneCall,
   Map,
-  FileText, Box,
+  FileText,
+  Box,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -178,7 +179,7 @@ export const sidebarItems: SidebarItem[] = [
         key: 'productCategory',
         label: 'Product Category',
         path: '/product-categories',
-         requiredPermission: 'productCategory:sidebar',
+        requiredPermission: 'productCategory:sidebar',
       },
       {
         key: 'productSubCategory',

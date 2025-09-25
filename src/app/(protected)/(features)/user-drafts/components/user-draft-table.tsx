@@ -132,7 +132,6 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
-
   {
     id: 'leadNo',
     label: 'Lead No',
@@ -252,7 +251,7 @@ export function UserDraftTable() {
     const tab = searchParams.get('tab');
 
     if (entityType) {
-      setFilters(prev => ({ ...prev, type: entityType }));
+      setFilters((prev) => ({ ...prev, type: entityType }));
     }
 
     if (tab) {

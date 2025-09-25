@@ -1089,13 +1089,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       router.push('/user-drafts?entityType=Call');
       setRestorationAttempted(true);
     }
-  }, [
-    draftsEnabled,
-    isNew,
-    drafts.length,
-    restorationAttempted,
-    router,
-  ]);
+  }, [draftsEnabled, isNew, drafts.length, restorationAttempted, router]);
 
   // Check for drafts on mount and handle restoration from drafts page
   useEffect(() => {
@@ -1279,7 +1273,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
               isDirty={form.formState.isDirty}
               formData={form.getValues()}
             />
-
           </>
         )}
       </div>

@@ -18,14 +18,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {
-  Phone,
-  Users,
-  TrendingUp,
-  UserCheck,
-  Activity,
-  Target,
-} from 'lucide-react';
+import { Phone, Users, TrendingUp, UserCheck, Activity, Target } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { QuickActionTiles } from './QuickActionTiles';
 
@@ -38,15 +31,16 @@ export function BusinessPartnerDashboard() {
   const [tabValue, setTabValue] = useState('overview');
 
   // Filter calls created by or assigned to current business partner
-  const myCalls = allCalls.filter((call) =>
-    call.createdBy === session?.user?.email ||
-    call.assignedTo?.id === currentUserId ||
-    call.assignedTo?.email === session?.user?.email
+  const myCalls = allCalls.filter(
+    (call) =>
+      call.createdBy === session?.user?.email ||
+      call.assignedTo?.id === currentUserId ||
+      call.assignedTo?.email === session?.user?.email
   );
 
   // Filter customers created by current business partner
-  const myCustomers = allCustomers.filter((customer) =>
-    customer.createdBy === session?.user?.email
+  const myCustomers = allCustomers.filter(
+    (customer) => customer.createdBy === session?.user?.email
   );
 
   // Call status distribution for my calls
@@ -148,9 +142,7 @@ export function BusinessPartnerDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Business Partner Dashboard</h1>
-          <p className="text-muted-foreground">
-            Your leads, customers, and performance overview
-          </p>
+          <p className="text-muted-foreground">Your leads, customers, and performance overview</p>
         </div>
       </div>
 
@@ -176,7 +168,9 @@ export function BusinessPartnerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{myCalls.length}</div>
-                <p className="text-xs text-muted-foreground">{myLast30Days.length} in last 30 days</p>
+                <p className="text-xs text-muted-foreground">
+                  {myLast30Days.length} in last 30 days
+                </p>
               </CardContent>
             </Card>
 
@@ -345,9 +339,7 @@ export function BusinessPartnerDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>My Lead Types Analysis</CardTitle>
-              <CardDescription>
-                Breakdown of lead types you've been working with
-              </CardDescription>
+              <CardDescription>Breakdown of lead types you've been working with</CardDescription>
             </CardHeader>
             <CardContent>
               {myCallTypeData.length > 0 ? (

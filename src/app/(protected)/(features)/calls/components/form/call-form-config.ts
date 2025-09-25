@@ -86,7 +86,8 @@ export const callFormConfig: FormConfig = {
       },
       ui: {
         readonly: true,
-        description: 'Unique lead identifier automatically generated based on organization and timestamp',
+        description:
+          'Unique lead identifier automatically generated based on organization and timestamp',
         icon: '🏷️',
       },
     },
