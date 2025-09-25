@@ -312,10 +312,14 @@ export function ProductCategoryForm({ id }: ProductCategoryFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...productCategoryData } = transformedData as any;
+        const productCategoryDataWithStatus = {
+          ...productCategoryData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: productCategoryDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
           const entityData = { ...transformedData, id };
