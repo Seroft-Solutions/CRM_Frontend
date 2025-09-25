@@ -10,7 +10,7 @@ import { PermissionGuard } from '@/core/auth';
 import { CallsPageWithMeetingDialog } from '@/app/(protected)/(features)/calls/components/calls-page-with-meeting-dialog';
 
 export const metadata = {
-  title: 'Calls',
+  title: 'Leads',
 };
 
 export default function CallPage() {
