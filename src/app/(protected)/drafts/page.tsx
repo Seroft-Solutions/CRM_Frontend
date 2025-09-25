@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +16,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
-import { Search, Trash2, FileText, Calendar, User, RefreshCw, Loader2 } from 'lucide-react';
+import {
+  Search,
+  Trash2,
+  FileText,
+  Calendar,
+  RefreshCw,
+  Loader2,
+  Archive,
+  RotateCcw,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Download,
+  X,
+  Settings2,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { useEntityDrafts, type DraftItem, type DraftData } from '@/core/hooks/use-entity-drafts';
 import {
   useGetAllUserDrafts,
   useDeleteUserDraft,
+  useCountUserDrafts,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
+import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -42,13 +78,96 @@ const ENTITY_ROUTES: Record<string, string> = {
   // Add more entity types as needed
 };
 
+// Column configuration for the drafts table
+interface ColumnConfig {
+  id: string;
+  label: string;
+  accessor: string;
+  visible: boolean;
+  sortable: boolean;
+}
+
+const ALL_COLUMNS: ColumnConfig[] = [
+  { id: 'id', label: 'ID', accessor: 'id', visible: true, sortable: true },
+  { id: 'entityType', label: 'Entity Type', accessor: 'entityType', visible: true, sortable: true },
+  { id: 'leadNo', label: 'Lead No', accessor: 'leadNo', visible: true, sortable: false },
+  { id: 'step', label: 'Step', accessor: 'currentStep', visible: true, sortable: true },
+  { id: 'lastModified', label: 'Last Modified', accessor: 'lastModifiedDate', visible: true, sortable: true },
+  { id: 'created', label: 'Created', accessor: 'createdDate', visible: false, sortable: true },
+];
+
+// Local storage key for column visibility
+const COLUMN_VISIBILITY_KEY = 'drafts-table-columns';
+
+// Define sort ordering constants
+const ASC = 'asc';
+const DESC = 'desc';
+
+// Helper function to get leadNo from draft data
+const getLeadNoFromDraft = (draft: DraftItem & { entityType: string }): string | null => {
+  if (draft.entityType.toLowerCase() === 'call' && draft.data.formData?.leadNo) {
+    return draft.data.formData.leadNo;
+  }
+  return null;
+};
+
+// Helper function to format leadNo for display
+const formatLeadNoDisplay = (leadNo: string): string => {
+  if (leadNo && leadNo.length === 8 && /^[A-Z]{3}\d{5}$/.test(leadNo)) {
+    return `${leadNo.substring(0, 3)}-${leadNo.substring(3)}`;
+  }
+  return leadNo;
+};
+
 export default function DraftsManagementPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [draftToDelete, setDraftToDelete] = useState<DraftItem | null>(null);
+  const [draftToDelete, setDraftToDelete] = useState<(DraftItem & { entityType: string }) | null>(null);
+  const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
+  const [sort, setSort] = useState('lastModifiedDate');
+  const [order, setOrder] = useState(DESC);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  // Column visibility state
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
+        return saved ? JSON.parse(saved) : ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
+      } catch {
+        return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
+      }
+    }
+    return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
+  });
+
+  // Save column visibility to localStorage
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
+      } catch (error) {
+        console.warn('Failed to save column visibility to localStorage:', error);
+      }
+    }
+  }, [columnVisibility]);
+
+  // Get visible columns
+  const visibleColumns = useMemo(() => {
+    return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
+  }, [columnVisibility]);
+
+  // Toggle column visibility
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumnVisibility((prev) => ({
+      ...prev,
+      [columnId]: !prev[columnId],
+    }));
+  };
 
   // Get all drafts without entity type filter first to see what types exist
   const {

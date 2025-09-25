@@ -20,6 +20,7 @@ export interface DraftDialogProps {
   onDiscardChanges: () => void;
   onCancel: () => void;
   isDirty: boolean;
+  formData?: Record<string, any>; // Add form data to show preview
 }
 
 /**
@@ -34,6 +35,7 @@ export function SaveDraftDialog({
   onDiscardChanges,
   onCancel,
   isDirty,
+  formData,
 }: DraftDialogProps) {
   const [isSaving, setIsSaving] = useState(false);
 
@@ -59,6 +61,19 @@ export function SaveDraftDialog({
     onOpenChange(false);
   };
 
+  const getDraftPreview = () => {
+    if (entityType.toLowerCase() === 'call' && formData?.leadNo) {
+      return `Lead ${formData.leadNo}`;
+    }
+    if (formData?.name) {
+      return formData.name;
+    }
+    if (formData?.title) {
+      return formData.title;
+    }
+    return null;
+  };
+
   if (!isDirty) {
     return null;
   }
@@ -72,7 +87,7 @@ export function SaveDraftDialog({
             Save as Draft?
           </DialogTitle>
           <DialogDescription>
-            You have unsaved changes in your {entityType.toLowerCase()} form. What would you like to
+            You have unsaved changes in your {entityType.toLowerCase()} form{getDraftPreview() ? ` (${getDraftPreview()})` : ''}. What would you like to
             do?
           </DialogDescription>
         </DialogHeader>

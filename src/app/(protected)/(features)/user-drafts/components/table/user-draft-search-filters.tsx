@@ -115,6 +115,9 @@ export function UserDraftSearchAndFilters({
     if (key === 'lastModifiedBy') {
       return 'lastModifiedBy';
     }
+    if (key === 'leadNo') {
+      return 'LeadNo';
+    }
     return key;
   };
 
@@ -242,6 +245,16 @@ export function UserDraftSearchAndFilters({
                       placeholder="Filter by jsonPayload..."
                       value={(filters['jsonPayload'] as string) || ''}
                       onChange={(e) => onFilterChange('jsonPayload', e.target.value || undefined)}
+                      className="h-8"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">LeadNo</label>
+                    <Input
+                      placeholder="Filter by LeadNo..."
+                      value={(filters['leadNo'] as string) || ''}
+                      onChange={(e) => onFilterChange('leadNo', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

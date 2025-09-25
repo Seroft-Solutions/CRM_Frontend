@@ -8,10 +8,11 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RelationshipRenderer } from '../relationship-renderer';
+import { formatLeadNoForDisplay } from '../../../utils/leadNo-generator';
 
 interface CallClassificationStepProps {
   form: any;
@@ -26,9 +27,39 @@ export function CallClassificationStep({
   actions,
   entity,
 }: CallClassificationStepProps) {
+  const leadNoValue = form.watch('leadNo');
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        {/* Lead Number Field - Always first */}
+        <div className="md:col-span-2 xl:col-span-3">
+          <FormField
+            control={form.control}
+            name="leadNo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  🏷️ Lead Number
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      value={field.value || ''}
+                      readOnly
+                      className="font-mono text-sm bg-gray-50 border-dashed"
+                      placeholder="Auto-generated lead number"
+                    />
+
+                  </div>
+                </FormControl>
+
+              </FormItem>
+            )}
+          />
+        </div>
+
         {/* Generated Form Fields */}
 
         {/* Generated Relationship Fields */}

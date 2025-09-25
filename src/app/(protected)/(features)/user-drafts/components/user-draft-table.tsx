@@ -9,6 +9,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { userDraftToast, handleUserDraftError } from './user-draft-toast';
 import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
@@ -131,28 +132,20 @@ interface ColumnConfig {
 
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
+
   {
-    id: 'id',
-    label: 'ID',
-    accessor: 'id',
+    id: 'leadNo',
+    label: 'Lead No',
+    accessor: 'leadNo',
     type: 'field',
     visible: true,
-    sortable: true,
+    sortable: false,
   },
 
   {
-    id: 'keycloakUserId',
-    label: 'Keycloak User Id',
-    accessor: 'keycloakUserId',
-    type: 'field',
-    visible: true,
-    sortable: true,
-  },
-
-  {
-    id: 'type',
-    label: 'Type',
-    accessor: 'type',
+    id: 'currentStep',
+    label: 'Step',
+    accessor: 'currentStep',
     type: 'field',
     visible: true,
     sortable: true,
@@ -163,7 +156,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Json Payload',
     accessor: 'jsonPayload',
     type: 'field',
-    visible: true,
+    visible: false, // Hidden by default since it's technical data
     sortable: true,
   },
 
@@ -173,6 +166,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
+    sortable: true,
+  },
+
+  {
+    id: 'keycloakUserId',
+    label: 'User ID',
+    accessor: 'keycloakUserId',
+    type: 'field',
+    visible: false, // Hidden by default
     sortable: true,
   },
 
@@ -227,13 +229,14 @@ interface DateRange {
 
 export function UserDraftTable() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10); // Default to 25 items per page
 
-  const [sort, setSort] = useState('id');
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState('lastModifiedDate');
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -242,6 +245,20 @@ export function UserDraftTable() {
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [filters, setFilters] = useState<FilterState>({});
+
+  // Handle URL parameters for initial filtering
+  useEffect(() => {
+    const entityType = searchParams.get('entityType');
+    const tab = searchParams.get('tab');
+
+    if (entityType) {
+      setFilters(prev => ({ ...prev, type: entityType }));
+    }
+
+    if (tab) {
+      setActiveStatusTab(tab);
+    }
+  }, [searchParams]);
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkArchiveDialog, setShowBulkArchiveDialog] = useState(false);
@@ -519,6 +536,13 @@ export function UserDraftTable() {
         else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
+          }
+        }
+
+        // Handle leadNo text filter - search within jsonPayload for leadNo
+        else if (key === 'leadNo') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['jsonPayload.contains'] = `"leadNo":"${value.trim()}"`;
           }
         }
 
