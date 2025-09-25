@@ -650,8 +650,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     const handleClickOutside = (event: MouseEvent) => {
       if (formRef.current && !formRef.current.contains(event.target as Node)) {
         // User clicked outside the form
-        if (hasUnsavedChanges() && isInsideForm) {
-          // Only show dialog if user was previously inside the form
+        if (hasUnsavedChanges() && isInsideForm && !showDraftDialog && !showRestorationDialog) {
+          // Only show dialog if user was previously inside the form and no dialogs are already open
           setPendingNavigation(() => () => {
             // Focus is lost, but no actual navigation needed
             setIsInsideForm(false);
@@ -675,7 +675,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
       document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled]);
+  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled, showDraftDialog, showRestorationDialog]);
 
   // Router event handling for programmatic navigation
   useEffect(() => {
@@ -1017,6 +1017,13 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         setCurrentDraftId(undefined); // Clear since draft restoration is complete
         setShowRestorationDialog(false);
 
+        // CRITICAL FIX: Reset form state to clean after draft restoration
+        // This ensures hasUnsavedChanges() returns false after restoration
+        setTimeout(() => {
+          form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
+          setIsInsideForm(false); // Reset the mouse tracking state
+        }, 100);
+
         // Show single success message only if not suppressed
         if (!suppressToast) {
           toast.success('Draft restored successfully');
@@ -1212,9 +1219,16 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
               entityType={config.entity}
               onSaveDraft={async () => {
                 const success = await handleSaveDraft();
-                if (success && pendingNavigation) {
-                  pendingNavigation();
-                  setPendingNavigation(null);
+                if (success) {
+                  // Reset form state to clean after successful draft save
+                  setTimeout(() => {
+                    form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
+                  }, 50);
+
+                  if (pendingNavigation) {
+                    pendingNavigation();
+                    setPendingNavigation(null);
+                  }
                 }
                 return success;
               }}
