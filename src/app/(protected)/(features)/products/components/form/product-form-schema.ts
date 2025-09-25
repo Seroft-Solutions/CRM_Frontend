@@ -48,12 +48,29 @@ export const productFormSchemaFields = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
 };
 
-export const productFormSchema = z.object(productFormSchemaFields);
+export const productFormSchema = z
+    .object(productFormSchemaFields)
+    .refine(
+        (data) => {
+          const minPrice = data.minPrice ? Number(data.minPrice) : null;
+          const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+
+          // Only validate if both minPrice and maxPrice are provided
+          if (minPrice !== null && maxPrice !== null) {
+            return maxPrice > minPrice;
+          }
+          return true; // No validation if either is missing
+        },
+        {
+          message: 'Max price must be greater than min price',
+          path: ['maxPrice'], // This will highlight the maxPrice field in the form
+        }
+    );
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -96,7 +113,7 @@ export const productFieldSchemas = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
 };
@@ -116,7 +133,21 @@ export const productStepSchemas = {
     createdDate: productFieldSchemas.createdDate,
     lastModifiedBy: productFieldSchemas.lastModifiedBy,
     lastModifiedDate: productFieldSchemas.lastModifiedDate,
-  }),
+  }).refine(
+      (data) => {
+        const minPrice = data.minPrice ? Number(data.minPrice) : null;
+        const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+
+        if (minPrice !== null && maxPrice !== null) {
+          return maxPrice > minPrice;
+        }
+        return true;
+      },
+      {
+        message: 'Max price must be greater than min price',
+        path: ['maxPrice'],
+      }
+  ),
 
   review: productFormSchema,
 };

@@ -91,12 +91,16 @@ const tableScrollStyles = `
     background: #94a3b8;
   }
   .table-container {
-    max-width: calc(100vw - 2rem);
+    max-width: 100%;
   }
   @media (min-width: 1024px) {
     .table-container {
-      max-width: calc(100vw - 20rem);
+      max-width: 100%;
     }
+  }
+  .table-scroll td {
+    white-space: normal;
+    word-break: break-word;
   }
 `;
 
@@ -1705,7 +1709,7 @@ export function ProductTable() {
         {/* Data Table */}
         <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
           <div className="table-scroll overflow-x-auto">
-            <Table className="w-full min-w-[600px]">
+            <Table className="w-full">
               <ProductTableHeader
                 onSort={handleSort}
                 getSortIcon={getSortIcon}
