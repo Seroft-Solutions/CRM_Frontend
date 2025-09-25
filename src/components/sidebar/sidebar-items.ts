@@ -33,14 +33,14 @@ export const sidebarItems: SidebarItem[] = [
   { key: 'drafts', label: 'My Drafts', path: '/user-drafts', icon: FileText },
   {
     key: 'calls',
-    label: 'Calls Management',
+    label: 'Leads Management',
     icon: PhoneCall,
     expandable: true,
     requiredPermission: 'call:sidebar',
     children: [
       {
         key: 'callTracking',
-        label: 'Leads Management',
+        label: 'Track Lead',
         path: '/calls',
         requiredPermission: 'call:sidebar',
       },
