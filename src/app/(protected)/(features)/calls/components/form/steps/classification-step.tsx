@@ -8,7 +8,14 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RelationshipRenderer } from '../relationship-renderer';
@@ -39,9 +46,7 @@ export function CallClassificationStep({
             name="leadNo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  🏷️ Lead Number
-                </FormLabel>
+                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -51,10 +56,8 @@ export function CallClassificationStep({
                       className="font-mono text-sm bg-gray-50 border-dashed"
                       placeholder="Auto-generated lead number"
                     />
-
                   </div>
                 </FormControl>
-
               </FormItem>
             )}
           />

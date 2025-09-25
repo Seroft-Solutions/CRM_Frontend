@@ -8,7 +8,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle, RefreshCw } from 'lucide-react';
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  Archive,
+  MoreVertical,
+  RotateCcw,
+  AlertTriangle,
+  RefreshCw,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -272,7 +281,6 @@ export function UserDraftTableRow({
               <span className="sr-only">Restore Draft</span>
             </Button>
           )}
-
 
           {/* Status Management Dropdown */}
           <InlinePermissionGuard requiredPermission="userDraft:update">

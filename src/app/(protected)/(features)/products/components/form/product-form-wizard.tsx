@@ -317,7 +317,7 @@ export function ProductForm({ id }: ProductFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-        const {  ...productData } = transformedData as any;
+        const { ...productData } = transformedData as any;
         const productDataWithStatus = {
           ...productData,
           status: 'ACTIVE',

@@ -87,8 +87,8 @@ export function SaveDraftDialog({
             Save as Draft?
           </DialogTitle>
           <DialogDescription>
-            You have unsaved changes in your {entityType.toLowerCase()} form{getDraftPreview() ? ` (${getDraftPreview()})` : ''}. What would you like to
-            do?
+            You have unsaved changes in your {entityType.toLowerCase()} form
+            {getDraftPreview() ? ` (${getDraftPreview()})` : ''}. What would you like to do?
           </DialogDescription>
         </DialogHeader>
 

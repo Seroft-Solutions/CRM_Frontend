@@ -9,28 +9,38 @@ import type { Session } from 'next-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Loader2, Shield, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useUserProfileUpdate } from '../hooks/useUserProfileUpdate';
 
 // Password validation schema
-const passwordSchema = z.object({
-  currentPassword: z
-    .string({ message: 'Please enter your current password' })
-    .min(1, { message: 'Current password is required' }),
-  newPassword: z
-    .string({ message: 'Please enter a new password' })
-    .min(8, { message: 'Password must be at least 8 characters long' })
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-    }),
-  confirmPassword: z
-    .string({ message: 'Please confirm your new password' })
-    .min(1, { message: 'Password confirmation is required' }),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z
+      .string({ message: 'Please enter your current password' })
+      .min(1, { message: 'Current password is required' }),
+    newPassword: z
+      .string({ message: 'Please enter a new password' })
+      .min(8, { message: 'Password must be at least 8 characters long' })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
+        message:
+          'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      }),
+    confirmPassword: z
+      .string({ message: 'Please confirm your new password' })
+      .min(1, { message: 'Password confirmation is required' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
@@ -81,7 +91,7 @@ export function PasswordUpdateForm({ session }: PasswordUpdateFormProps) {
 
   const newPassword = form.watch('newPassword');
   const strength = passwordStrength(newPassword || '');
-  
+
   const getStrengthColor = (strength: number) => {
     if (strength < 3) return 'bg-red-500';
     if (strength < 4) return 'bg-yellow-500';
@@ -186,23 +196,33 @@ export function PasswordUpdateForm({ session }: PasswordUpdateFormProps) {
                       </div>
                       <div className="text-xs text-muted-foreground space-y-1">
                         <div className="flex items-center gap-1">
-                          <CheckCircle className={`h-3 w-3 ${newPassword.length >= 8 ? 'text-green-500' : 'text-gray-300'}`} />
+                          <CheckCircle
+                            className={`h-3 w-3 ${newPassword.length >= 8 ? 'text-green-500' : 'text-gray-300'}`}
+                          />
                           <span>At least 8 characters</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <CheckCircle className={`h-3 w-3 ${/[a-z]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
+                          <CheckCircle
+                            className={`h-3 w-3 ${/[a-z]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`}
+                          />
                           <span>One lowercase letter</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <CheckCircle className={`h-3 w-3 ${/[A-Z]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
+                          <CheckCircle
+                            className={`h-3 w-3 ${/[A-Z]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`}
+                          />
                           <span>One uppercase letter</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <CheckCircle className={`h-3 w-3 ${/\d/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
+                          <CheckCircle
+                            className={`h-3 w-3 ${/\d/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`}
+                          />
                           <span>One number</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <CheckCircle className={`h-3 w-3 ${/[@$!%*?&]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
+                          <CheckCircle
+                            className={`h-3 w-3 ${/[@$!%*?&]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`}
+                          />
                           <span>One special character</span>
                         </div>
                       </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Coffee } from 'lucide-react';
 import { persistentLog } from '@/lib/debug-logger';
-import {useUserAuthorities} from "@/core/auth";
+import { useUserAuthorities } from '@/core/auth';
 
 export default function OrganizationPage() {
   const { data: organizations, isLoading, isError } = useUserOrganizations();
@@ -45,15 +45,11 @@ export default function OrganizationPage() {
         // Also set cookies for SSR access
         document.cookie = `selectedOrganizationId=${organizations[0].id}; path=/; max-age=31536000; SameSite=Lax`;
         document.cookie = `selectedOrganizationName=${encodeURIComponent(organizations[0].name)}; path=/; max-age=31536000; SameSite=Lax`;
-if(isBusinessPartner)
-{
-  router.replace('/business-partner-dashboard');
-}
-else
-{
-    router.replace('/dashboard');
-}
-
+        if (isBusinessPartner) {
+          router.replace('/business-partner-dashboard');
+        } else {
+          router.replace('/dashboard');
+        }
       } else {
         persistentLog('OrganizationPage: Multiple orgs → /organization/organization-select');
         router.replace('/organization/organization-select');

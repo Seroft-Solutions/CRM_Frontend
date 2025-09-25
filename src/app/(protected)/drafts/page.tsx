@@ -5,7 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +48,7 @@ import {
   X,
   Settings2,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -92,7 +99,13 @@ const ALL_COLUMNS: ColumnConfig[] = [
   { id: 'entityType', label: 'Entity Type', accessor: 'entityType', visible: true, sortable: true },
   { id: 'leadNo', label: 'Lead No', accessor: 'leadNo', visible: true, sortable: false },
   { id: 'step', label: 'Step', accessor: 'currentStep', visible: true, sortable: true },
-  { id: 'lastModified', label: 'Last Modified', accessor: 'lastModifiedDate', visible: true, sortable: true },
+  {
+    id: 'lastModified',
+    label: 'Last Modified',
+    accessor: 'lastModifiedDate',
+    visible: true,
+    sortable: true,
+  },
   { id: 'created', label: 'Created', accessor: 'createdDate', visible: false, sortable: true },
 ];
 
@@ -125,7 +138,9 @@ export default function DraftsManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [draftToDelete, setDraftToDelete] = useState<(DraftItem & { entityType: string }) | null>(null);
+  const [draftToDelete, setDraftToDelete] = useState<(DraftItem & { entityType: string }) | null>(
+    null
+  );
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [sort, setSort] = useState('lastModifiedDate');
   const [order, setOrder] = useState(DESC);
@@ -137,7 +152,9 @@ export default function DraftsManagementPage() {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-        return saved ? JSON.parse(saved) : ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
+        return saved
+          ? JSON.parse(saved)
+          : ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
       } catch {
         return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
       }

@@ -16,7 +16,8 @@ export function QuickActionTiles() {
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: 'radial-gradient(circle at 20% 20%, white 0.5px, transparent 0.5px)',
+                backgroundImage:
+                  'radial-gradient(circle at 20% 20%, white 0.5px, transparent 0.5px)',
                 backgroundSize: '20px 20px',
               }}
             />
@@ -32,9 +33,7 @@ export function QuickActionTiles() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold mb-1">New Lead</h3>
-                <p className="text-blue-100 text-xs">
-                  Capture prospect details
-                </p>
+                <p className="text-blue-100 text-xs">Capture prospect details</p>
               </div>
 
               {/* Action Button - Now just visual indicator */}
@@ -57,7 +56,8 @@ export function QuickActionTiles() {
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: 'radial-gradient(circle at 80% 80%, white 0.5px, transparent 0.5px)',
+                backgroundImage:
+                  'radial-gradient(circle at 80% 80%, white 0.5px, transparent 0.5px)',
                 backgroundSize: '20px 20px',
               }}
             />
@@ -73,9 +73,7 @@ export function QuickActionTiles() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold mb-1">Manage Leads</h3>
-                <p className="text-emerald-100 text-xs">
-                  View and manage leads
-                </p>
+                <p className="text-emerald-100 text-xs">View and manage leads</p>
               </div>
 
               {/* Action Button - Now just visual indicator */}

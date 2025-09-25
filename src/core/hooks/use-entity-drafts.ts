@@ -201,8 +201,8 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
           id: draftId,
           data: {
             ...draftToArchive,
-            status: 'ARCHIVED'
-          }
+            status: 'ARCHIVED',
+          },
         });
       } catch (error: any) {
         // Handle 409 conflicts gracefully - draft was already modified elsewhere
