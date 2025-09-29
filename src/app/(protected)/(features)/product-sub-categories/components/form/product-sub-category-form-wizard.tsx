@@ -329,7 +329,7 @@ export function ProductSubCategoryForm({ id }: ProductSubCategoryFormProps) {
           createEntity({ data: productSubCategoryDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...productSubCategoryDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}
