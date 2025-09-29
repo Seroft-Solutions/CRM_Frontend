@@ -321,7 +321,7 @@ export function PriorityForm({ id }: PriorityFormProps) {
           createEntity({ data: priorityDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...priorityDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}
