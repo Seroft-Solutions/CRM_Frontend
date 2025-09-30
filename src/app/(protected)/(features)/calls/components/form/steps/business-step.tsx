@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { RelationshipRenderer } from '../relationship-renderer';
+import { EnhancedCustomerRelationshipField } from '@/app/(protected)/(features)/customers/components/enhanced-customer-relationship-field';
+import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
 import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 
@@ -80,74 +82,60 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
           )}
         />
 
-        {/* Customer Relationship - with business partner filtering */}
+        {/* Customer Relationship - Enhanced with inline sheet creation */}
         <FormField
           control={form.control}
           name="customer"
           render={({ field }) => (
-            <RelationshipRenderer
-              relConfig={{
-                name: 'customer',
-                type: 'many-to-one',
-                targetEntity: 'customer',
-                displayField: 'customerBusinessName',
-                primaryKey: 'id',
-                required: true,
-                multiple: false,
-                customFilters: customerCustomFilters,
-                api: {
-                  useGetAllHook: 'useGetAllCustomers',
-                  useSearchHook: 'useSearchCustomers',
-                  useCountHook: 'useCountCustomers',
-                  entityName: 'Customers',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/customers/new',
-                  createPermission: 'customer:create:inline',
-                },
-                ui: { label: 'Customer', placeholder: 'Select customer', icon: '🏢' },
-              }}
-              field={field}
-              form={form}
-              actions={actions}
-              config={config}
-            />
+            <FormItem>
+              <FormLabel className="text-sm font-medium">
+                Customer
+                <span className="text-red-500 ml-1">*</span>
+              </FormLabel>
+              <FormControl>
+                <EnhancedCustomerRelationshipField
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Select customer"
+                  canCreate={true}
+                  createPermission="customer:create:inline"
+                  customFilters={customerCustomFilters}
+                  onCustomerCreated={(customerId) => {
+                    // Optionally trigger any additional actions when customer is created
+                    console.log('New customer created:', customerId);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
 
-        {/* Product Relationship */}
+        {/* Product Relationship - Enhanced with inline sheet creation */}
         <FormField
           control={form.control}
           name="product"
           render={({ field }) => (
-            <RelationshipRenderer
-              relConfig={{
-                name: 'product',
-                type: 'many-to-one',
-                targetEntity: 'product',
-                displayField: 'name',
-                primaryKey: 'id',
-                required: true,
-                multiple: false,
-                api: {
-                  useGetAllHook: 'useGetAllProducts',
-                  useSearchHook: 'useSearchProducts',
-                  useCountHook: 'useCountProducts',
-                  entityName: 'Products',
-                },
-                creation: {
-                  canCreate: true,
-                  createPath: '/products/new',
-                  createPermission: 'product:create:inline',
-                },
-                ui: { label: 'Product', placeholder: 'Select product', icon: '🏢' },
-              }}
-              field={field}
-              form={form}
-              actions={actions}
-              config={config}
-            />
+            <FormItem>
+              <FormLabel className="text-sm font-medium">
+                Product
+                <span className="text-red-500 ml-1">*</span>
+              </FormLabel>
+              <FormControl>
+                <EnhancedProductRelationshipField
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Select product"
+                  canCreate={true}
+                  createPermission="product:create:inline"
+                  onProductCreated={(productId) => {
+                    // Optionally trigger any additional actions when product is created
+                    console.log('New product created:', productId);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
       </div>
