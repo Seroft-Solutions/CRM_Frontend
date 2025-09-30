@@ -321,7 +321,7 @@ export function SourceForm({ id }: SourceFormProps) {
           createEntity({ data: sourceDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...sourceDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

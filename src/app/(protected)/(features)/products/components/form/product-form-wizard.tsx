@@ -327,7 +327,7 @@ export function ProductForm({ id }: ProductFormProps) {
           createEntity({ data: productDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...productDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

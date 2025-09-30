@@ -321,7 +321,7 @@ export function CallTypeForm({ id }: CallTypeFormProps) {
           createEntity({ data: callTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...callTypeDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

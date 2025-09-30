@@ -321,7 +321,7 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
           createEntity({ data: channelTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...channelTypeDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}
