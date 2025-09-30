@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, MapPin, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -163,7 +163,7 @@ export function IntelligentLocationField({
 
   // Build selected path based on current values
   useEffect(() => {
-    const buildPath = async () => {
+    const buildPath = () => {
       const path: LocationOption[] = [];
 
       if (value.state && states) {
@@ -224,10 +224,10 @@ export function IntelligentLocationField({
     };
 
     buildPath();
-  }, [value, states, districts, cities, areas]);
+  }, [value.state, value.district, value.city, value.area, states, districts, cities, areas]);
 
   // Get all search results with proper hierarchy
-  const getSearchResults = (): LocationOption[] => {
+  const searchResults = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) {
       return [];
     }
@@ -291,7 +291,7 @@ export function IntelligentLocationField({
       }
       return a.name.localeCompare(b.name);
     });
-  };
+  }, [searchQuery, stateResults, districtResults, cityResults, areaResults]);
 
   const handleSelectOption = (option: LocationOption) => {
     const newValue: LocationValue = { ...value };
@@ -355,9 +355,12 @@ export function IntelligentLocationField({
   const isLoading = loadingStates || loadingDistricts || loadingCities || loadingAreas;
   const isSearching = searchingStates || searchingDistricts || searchingCities || searchingAreas;
 
-  const displayText = selectedPath.length > 0 
-    ? selectedPath[selectedPath.length - 1].fullPath 
-    : '';
+  const displayText = useMemo(() => 
+    selectedPath.length > 0 
+      ? selectedPath[selectedPath.length - 1].fullPath 
+      : '',
+    [selectedPath]
+  );
 
   return (
     <div className="space-y-2">
@@ -434,7 +437,7 @@ export function IntelligentLocationField({
 
             {!isLoading && !isSearching && searchQuery.length > 1 && (
               <div className="max-h-[300px]">
-                {getSearchResults().map((option) => (
+                {searchResults.map((option) => (
                   <Button
                     key={`${option.type}-${option.id}`}
                     variant="ghost"
@@ -455,7 +458,7 @@ export function IntelligentLocationField({
                   </Button>
                 ))}
                 
-                {getSearchResults().length === 0 && (
+                {searchResults.length === 0 && (
                   <div className="p-3 text-sm text-muted-foreground text-center">
                     No locations found matching "{searchQuery}"
                   </div>

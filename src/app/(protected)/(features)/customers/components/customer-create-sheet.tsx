@@ -164,24 +164,6 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
     }
   };
 
-  // Auto-populate WhatsApp when mobile changes and validate location
-  React.useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'mobile' && value.mobile && !value.whatsApp) {
-        form.setValue('whatsApp', value.mobile);
-      }
-      // Check location completeness for validation
-      if (name?.startsWith('location.')) {
-        const location = value.location;
-        if (location && location.state && location.district && location.city && location.area) {
-          // Clear any location errors if all fields are now filled
-          form.clearErrors('location');
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
@@ -194,20 +176,23 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Create New Customer</SheetTitle>
-          <SheetDescription>
-            Add a new customer to your database. Fill in the required information below.
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
+        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
+          <SheetHeader>
+            <SheetTitle>Create New Customer</SheetTitle>
+            <SheetDescription>
+              Add a new customer to your database. Fill in the required information below.
+            </SheetDescription>
+          </SheetHeader>
+        </div>
 
-        <Form {...form}>
-          <form 
-            id="customer-creation-form"
-            onSubmit={form.handleSubmit(onSubmit)} 
-            className="space-y-6 mt-6"
-          >
+        <div className="px-6 py-6">
+          <Form {...form}>
+            <form 
+              id="customer-creation-form"
+              onSubmit={form.handleSubmit(onSubmit)} 
+              className="space-y-6"
+            >
             {/* Basic Information Section */}
             <div className="space-y-4">
               <div className="border-b pb-2">
@@ -360,31 +345,34 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
 
           </form>
         </Form>
+        </div>
 
-        <SheetFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="customer-creation-form"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Customer...
-              </>
-            ) : (
-              'Create Customer'
-            )}
-          </Button>
-        </SheetFooter>
+        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+          <SheetFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="customer-creation-form"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Customer...
+                </>
+              ) : (
+                'Create Customer'
+              )}
+            </Button>
+          </SheetFooter>
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -154,22 +154,6 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
     }
   };
 
-  // Auto-generate product code from name
-  React.useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'name' && value.name && !value.code) {
-        // Generate code from name: remove spaces, special chars, convert to uppercase
-        const generatedCode = value.name
-          .replace(/[^a-zA-Z0-9\s]/g, '')
-          .replace(/\s+/g, '_')
-          .toUpperCase()
-          .substring(0, 20);
-        form.setValue('code', generatedCode);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
@@ -185,23 +169,26 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-blue-600" />
-            Create New Product
-          </SheetTitle>
-          <SheetDescription>
-            Add a new product to your catalog. Fill in the required information below.
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-blue-600" />
+              Create New Product
+            </SheetTitle>
+            <SheetDescription>
+              Add a new product to your catalog. Fill in the required information below.
+            </SheetDescription>
+          </SheetHeader>
+        </div>
 
-        <Form {...form}>
-          <form 
-            id="product-creation-form"
-            onSubmit={form.handleSubmit(onSubmit)} 
-            className="space-y-6 mt-6"
-          >
+        <div className="px-6 py-6">
+          <Form {...form}>
+            <form 
+              id="product-creation-form"
+              onSubmit={form.handleSubmit(onSubmit)} 
+              className="space-y-6"
+            >
             {/* Basic Information Section */}
             <div className="space-y-4">
               <div className="border-b pb-2">
@@ -222,6 +209,19 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                       <Input
                         placeholder="Enter product name"
                         {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          // Auto-generate code from name if code is empty
+                          const currentCode = form.getValues('code');
+                          if (!currentCode && e.target.value) {
+                            const generatedCode = e.target.value
+                              .replace(/[^a-zA-Z0-9\s]/g, '')
+                              .replace(/\s+/g, '_')
+                              .toUpperCase()
+                              .substring(0, 20);
+                            form.setValue('code', generatedCode);
+                          }
+                        }}
                         className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                       />
                     </FormControl>
@@ -401,31 +401,34 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
             </div>
           </form>
         </Form>
+        </div>
 
-        <SheetFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="product-creation-form"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Product...
-              </>
-            ) : (
-              'Create Product'
-            )}
-          </Button>
-        </SheetFooter>
+        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+          <SheetFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="product-creation-form"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Product...
+                </>
+              ) : (
+                'Create Product'
+              )}
+            </Button>
+          </SheetFooter>
+        </div>
       </SheetContent>
     </Sheet>
   );
