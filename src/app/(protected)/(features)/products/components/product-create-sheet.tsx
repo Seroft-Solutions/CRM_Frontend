@@ -26,17 +26,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { IntelligentCategoryField } from './intelligent-category-field';
 import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { productFormSchema } from './form/product-form-schema';
+import { productFormSchemaBase } from './form/product-form-schema';
 import { productToast, handleProductError } from './product-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { ProductDTO, ProductDTOStatus } from '@/core/api/generated/spring/schemas';
+import { z } from 'zod';
 
 // Create simplified form schema for product creation
-const productCreationSchema = productFormSchema.omit({
+const productCreationSchema = productFormSchemaBase.omit({
   status: true,
 }).extend({
-  categoryHierarchy: productFormSchema.pick({
+  categoryHierarchy: productFormSchemaBase.pick({
     category: true,
     subCategory: true,
   }).partial(),

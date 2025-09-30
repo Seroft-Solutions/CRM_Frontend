@@ -53,7 +53,11 @@ export const productFormSchemaFields = {
   subCategory: z.number().optional(),
 };
 
-export const productFormSchema = z.object(productFormSchemaFields).refine(
+// Base schema without refine (for use with .omit(), .pick(), etc.)
+export const productFormSchemaBase = z.object(productFormSchemaFields);
+
+// Full schema with validation
+export const productFormSchema = productFormSchemaBase.refine(
   (data) => {
     const minPrice = data.minPrice ? Number(data.minPrice) : null;
     const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
@@ -128,10 +132,8 @@ export const productStepSchemas = {
       maxPrice: productFieldSchemas.maxPrice,
       remark: productFieldSchemas.remark,
       status: productFieldSchemas.status,
-      createdBy: productFieldSchemas.createdBy,
-      createdDate: productFieldSchemas.createdDate,
-      lastModifiedBy: productFieldSchemas.lastModifiedBy,
-      lastModifiedDate: productFieldSchemas.lastModifiedDate,
+      category: productFieldSchemas.category,
+      subCategory: productFieldSchemas.subCategory,
     })
     .refine(
       (data) => {
