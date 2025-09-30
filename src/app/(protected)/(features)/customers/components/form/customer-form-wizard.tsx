@@ -325,7 +325,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
           createEntity({ data: customerDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...customerDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

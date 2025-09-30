@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, Trash2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 
 export interface DraftDialogProps {
   open: boolean;
@@ -92,50 +91,50 @@ export function SaveDraftDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <Card className="p-4">
-            <Button
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-              className="w-full"
-              variant="default"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving Draft...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save as Draft
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              You can continue editing this form later
-            </p>
-          </Card>
+          <div className="space-y-4 py-4">
+            <div className="border rounded-lg p-3">
+              <Button
+                  onClick={handleSaveDraft}
+                  disabled={isSaving}
+                  className="w-full mb-1"
+                  variant="default"
+              >
+                {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving Draft...
+                    </>
+                ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save as Draft
+                    </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                You can continue editing this form later
+              </p>
+            </div>
 
-          <Card className="p-4">
-            <Button
-              onClick={handleDiscardChanges}
-              disabled={isSaving}
-              className="w-full"
-              variant="destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Discard Changes
+            <div className="border rounded-lg p-3">
+              <Button
+                  onClick={handleDiscardChanges}
+                  disabled={isSaving}
+                  className="w-full mb-1"
+                  variant="destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Discard Changes
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                All changes will be lost permanently
+              </p>
+            </div>
+            <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
+              Cancel
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              All changes will be lost permanently
-            </p>
-          </Card>
-          <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
-            Cancel
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
   );
 }

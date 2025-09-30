@@ -320,7 +320,7 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
           createEntity({ data: subCallTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...subCallTypeDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}
