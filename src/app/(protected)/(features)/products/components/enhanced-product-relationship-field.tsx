@@ -76,8 +76,9 @@ export function EnhancedProductRelationshipField({
     isLoading: isSearching,
   } = useSearchProducts(
     { 
-      name: deferredSearchQuery,
-      ...customFilters, // Apply custom filters to search as well
+      query: deferredSearchQuery,
+      page: 0,
+      size: 50,
     },
     {
       query: {

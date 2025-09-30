@@ -65,7 +65,7 @@ export function IntelligentCategoryField({
   const { data: subCategoriesResponse, isLoading: loadingSubCategories } = useGetAllProductSubCategories({
     page: 0,
     size: 100,
-    'category.id.equals': value.category,
+    'category.id.equals': value.category || undefined,
   }, {
     query: { 
       queryKey: ['subcategories-for-product', value.category],
@@ -79,7 +79,9 @@ export function IntelligentCategoryField({
 
   // Search hooks for intelligent search with proper parameters
   const { data: categorySearchResponse, isLoading: searchingCategories } = useSearchProductCategories({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -88,7 +90,9 @@ export function IntelligentCategoryField({
   });
 
   const { data: subCategorySearchResponse, isLoading: searchingSubCategories } = useSearchProductSubCategories({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,

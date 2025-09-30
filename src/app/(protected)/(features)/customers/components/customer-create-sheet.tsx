@@ -26,32 +26,37 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import { customerFormSchema, type CustomerFormValues } from './form/customer-form-schema';
+import { customerFormSchema } from './form/customer-form-schema';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
+import type { CustomerDTO, CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
 
-// Extract location fields into separate schema for better validation
-const locationSchema = customerFormSchema.pick({
-  state: true,
-  district: true,
-  city: true,
-  area: true,
-});
-
-// Create form schema that includes location as nested object for UI convenience
+// Create simplified form schema for customer creation
 const customerCreationSchema = customerFormSchema.omit({
-  state: true,
-  district: true,
-  city: true,
-  area: true,
   status: true,
 }).extend({
-  location: locationSchema,
+  location: customerFormSchema.pick({
+    state: true,
+    district: true,
+    city: true,
+    area: true,
+  }),
 });
 
-type CustomerCreationFormData = typeof customerCreationSchema._type;
+type CustomerCreationFormData = {
+  customerBusinessName: string;
+  email?: string;
+  mobile: string;
+  whatsApp?: string;
+  contactPerson?: string;
+  location: {
+    state: number;
+    district: number;
+    city: number;
+    area: number;
+  };
+};
 
 interface CustomerCreateSheetProps {
   onSuccess?: (customer: CustomerDTO) => void;
@@ -71,10 +76,10 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
       whatsApp: '',
       contactPerson: '',
       location: {
-        state: undefined as any,
-        district: undefined as any,
-        city: undefined as any,
-        area: undefined as any,
+        state: 0,
+        district: 0,
+        city: 0,
+        area: 0,
       },
     },
   });
@@ -114,18 +119,39 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
   });
 
   const onSubmit = (data: CustomerCreationFormData) => {
-    // Transform the data to match the API format (CustomerDTO)
+    // Transform the data to match the exact API format (CustomerDTO)
     const customerData: Partial<CustomerDTO> = {
       customerBusinessName: data.customerBusinessName,
       email: data.email || undefined,
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile, // Default to mobile if whatsApp is empty
       contactPerson: data.contactPerson || undefined,
-      state: { id: data.location.state } as any,
-      district: { id: data.location.district } as any,
-      city: { id: data.location.city } as any,
-      area: { id: data.location.area } as any,
-      status: 'ACTIVE' as any,
+      // Create proper nested objects for location entities as required by generated schema
+      state: { 
+        id: data.location.state,
+        name: '', // Will be populated by backend
+        country: '', // Will be populated by backend  
+        status: CustomerDTOStatus.ACTIVE
+      },
+      district: { 
+        id: data.location.district,
+        name: '', // Will be populated by backend
+        status: CustomerDTOStatus.ACTIVE,
+        state: { id: data.location.state } as any
+      },
+      city: { 
+        id: data.location.city,
+        name: '', // Will be populated by backend
+        status: CustomerDTOStatus.ACTIVE,
+        district: { id: data.location.district } as any
+      },
+      area: { 
+        id: data.location.area,
+        name: '', // Will be populated by backend
+        status: CustomerDTOStatus.ACTIVE,
+        city: { id: data.location.city } as any
+      },
+      status: CustomerDTOStatus.ACTIVE,
     };
 
     createCustomer({ data: customerData });
@@ -147,7 +173,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
       // Check location completeness for validation
       if (name?.startsWith('location.')) {
         const location = value.location;
-        if (location && (location.state && location.district && location.city && location.area)) {
+        if (location && location.state && location.district && location.city && location.area) {
           // Clear any location errors if all fields are now filled
           form.clearErrors('location');
         }

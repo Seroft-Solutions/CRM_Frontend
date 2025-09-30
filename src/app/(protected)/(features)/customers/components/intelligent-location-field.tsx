@@ -31,10 +31,10 @@ import {
 import type { StateDTO, DistrictDTO, CityDTO, AreaDTO } from '@/core/api/generated/spring/schemas';
 
 interface LocationValue {
-  state?: number;
-  district?: number;
-  city?: number;
-  area?: number;
+  state: number;
+  district: number;
+  city: number;
+  area: number;
 }
 
 interface LocationOption {
@@ -74,7 +74,7 @@ export function IntelligentLocationField({
   const { data: districtsResponse, isLoading: loadingDistricts } = useGetAllDistricts({
     page: 0,
     size: 100,
-    'state.id.equals': value.state,
+    'state.id.equals': value.state || undefined,
   }, {
     query: { 
       queryKey: ['districts-for-location', value.state],
@@ -85,7 +85,7 @@ export function IntelligentLocationField({
   const { data: citiesResponse, isLoading: loadingCities } = useGetAllCities({
     page: 0,
     size: 100,
-    'district.id.equals': value.district,
+    'district.id.equals': value.district || undefined,
   }, {
     query: { 
       queryKey: ['cities-for-location', value.district],
@@ -96,7 +96,7 @@ export function IntelligentLocationField({
   const { data: areasResponse, isLoading: loadingAreas } = useGetAllAreas({
     page: 0,
     size: 100,
-    'city.id.equals': value.city,
+    'city.id.equals': value.city || undefined,
   }, {
     query: { 
       queryKey: ['areas-for-location', value.city],
@@ -112,7 +112,9 @@ export function IntelligentLocationField({
 
   // Search hooks for intelligent search with proper parameters
   const { data: stateSearchResponse, isLoading: searchingStates } = useSearchStates({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -121,7 +123,9 @@ export function IntelligentLocationField({
   });
 
   const { data: districtSearchResponse, isLoading: searchingDistricts } = useSearchDistricts({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -130,7 +134,9 @@ export function IntelligentLocationField({
   });
 
   const { data: citySearchResponse, isLoading: searchingCities } = useSearchCities({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -139,7 +145,9 @@ export function IntelligentLocationField({
   });
 
   const { data: areaSearchResponse, isLoading: searchingAreas } = useSearchAreas({
-    name: searchQuery,
+    query: searchQuery,
+    page: 0,
+    size: 50,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -291,20 +299,20 @@ export function IntelligentLocationField({
     switch (option.type) {
       case 'state':
         newValue.state = option.id;
-        newValue.district = undefined;
-        newValue.city = undefined;
-        newValue.area = undefined;
+        newValue.district = 0;
+        newValue.city = 0;
+        newValue.area = 0;
         break;
       case 'district':
         newValue.district = option.id;
         if (option.parentId) newValue.state = option.parentId;
-        newValue.city = undefined;
-        newValue.area = undefined;
+        newValue.city = 0;
+        newValue.area = 0;
         break;
       case 'city':
         newValue.city = option.id;
         if (option.parentId) newValue.district = option.parentId;
-        newValue.area = undefined;
+        newValue.area = 0;
         break;
       case 'area':
         newValue.area = option.id;
@@ -322,22 +330,22 @@ export function IntelligentLocationField({
 
     switch (type) {
       case 'state':
-        newValue.state = undefined;
-        newValue.district = undefined;
-        newValue.city = undefined;
-        newValue.area = undefined;
+        newValue.state = 0;
+        newValue.district = 0;
+        newValue.city = 0;
+        newValue.area = 0;
         break;
       case 'district':
-        newValue.district = undefined;
-        newValue.city = undefined;
-        newValue.area = undefined;
+        newValue.district = 0;
+        newValue.city = 0;
+        newValue.area = 0;
         break;
       case 'city':
-        newValue.city = undefined;
-        newValue.area = undefined;
+        newValue.city = 0;
+        newValue.area = 0;
         break;
       case 'area':
-        newValue.area = undefined;
+        newValue.area = 0;
         break;
     }
 

@@ -26,30 +26,35 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { IntelligentCategoryField } from './intelligent-category-field';
 import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { productFormSchema, type ProductFormValues } from './form/product-form-schema';
+import { productFormSchema } from './form/product-form-schema';
 import { productToast, handleProductError } from './product-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductDTO, ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 
-// Create form schema for product creation with proper validation
+// Create simplified form schema for product creation
 const productCreationSchema = productFormSchema.omit({
   status: true,
 }).extend({
-  name: productFormSchema.shape.name,
-  code: productFormSchema.shape.code,
-  description: productFormSchema.shape.description,
-  basePrice: productFormSchema.shape.basePrice,
-  minPrice: productFormSchema.shape.minPrice,
-  maxPrice: productFormSchema.shape.maxPrice,
-  remark: productFormSchema.shape.remark,
   categoryHierarchy: productFormSchema.pick({
     category: true,
     subCategory: true,
   }).partial(),
 });
 
-type ProductCreationFormData = typeof productCreationSchema._type;
+type ProductCreationFormData = {
+  name: string;
+  code: string;
+  description?: string;
+  basePrice?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  remark?: string;
+  categoryHierarchy?: {
+    category?: number;
+    subCategory?: number;
+  };
+};
 
 interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
@@ -71,8 +76,8 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
       maxPrice: '',
       remark: '',
       categoryHierarchy: {
-        category: undefined as any,
-        subCategory: undefined as any,
+        category: undefined,
+        subCategory: undefined,
       },
     },
   });
@@ -112,7 +117,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
   });
 
   const onSubmit = (data: ProductCreationFormData) => {
-    // Transform the data to match the API format (ProductDTO)
+    // Transform the data to match the exact API format (ProductDTO)
     const productData: Partial<ProductDTO> = {
       name: data.name,
       code: data.code,
@@ -121,9 +126,21 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
       minPrice: data.minPrice ? Number(data.minPrice) : undefined,
       maxPrice: data.maxPrice ? Number(data.maxPrice) : undefined,
       remark: data.remark || undefined,
-      category: data.categoryHierarchy?.category ? { id: data.categoryHierarchy.category } as any : undefined,
-      subCategory: data.categoryHierarchy?.subCategory ? { id: data.categoryHierarchy.subCategory } as any : undefined,
-      status: 'ACTIVE' as any,
+      // Create proper nested objects for category entities as required by generated schema
+      category: data.categoryHierarchy?.category ? { 
+        id: data.categoryHierarchy.category,
+        name: '', // Will be populated by backend
+        code: '', // Will be populated by backend
+        status: ProductDTOStatus.ACTIVE
+      } : undefined,
+      subCategory: data.categoryHierarchy?.subCategory ? { 
+        id: data.categoryHierarchy.subCategory,
+        name: '', // Will be populated by backend
+        code: '', // Will be populated by backend
+        status: ProductDTOStatus.ACTIVE,
+        category: { id: data.categoryHierarchy.category } as any
+      } : undefined,
+      status: ProductDTOStatus.ACTIVE,
     };
 
     createProduct({ data: productData });
