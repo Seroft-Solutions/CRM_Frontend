@@ -7,19 +7,17 @@
 // ===============================================================
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { RelationshipRenderer } from '../relationship-renderer';
 import { formatLeadNoForDisplay } from '../../../utils/leadNo-generator';
+import { getAllCallStatuses } from "@/core/api/generated/spring";
 
 interface CallClassificationStepProps {
   form: any;
@@ -36,32 +34,48 @@ export function CallClassificationStep({
 }: CallClassificationStepProps) {
   const leadNoValue = form.watch('leadNo');
 
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {/* Lead Number Field - Always first */}
-        <div className="md:col-span-2 xl:col-span-3">
-          <FormField
-            control={form.control}
-            name="leadNo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      value={field.value || ''}
-                      readOnly
-                      className="font-mono text-sm bg-gray-50 border-dashed"
-                      placeholder="Auto-generated lead number"
+    // Fetch call statuses and set default value for callStatus field
+    useEffect(() => {
+        const setDefaultCallStatus = async () => {
+            try {
+                const callStatuses = await getAllCallStatuses();
+                const newStatus = callStatuses.find((status: any) => status.name === 'New');
+                if (newStatus && !form.getValues('callStatus')) {
+                    form.setValue('callStatus', newStatus.id);
+                }
+            } catch (error) {
+                console.error('Failed to fetch call statuses:', error);
+            }
+        };
+        setDefaultCallStatus();
+    }, [form]);
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {/* Lead Number Field - Always first */}
+                <div className="md:col-span-2 xl:col-span-3">
+                    <FormField
+                        control={form.control}
+                        name="leadNo"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            value={field.value || ''}
+                                            readOnly
+                                            className="font-mono text-sm bg-gray-50 border-dashed"
+                                            placeholder="Auto-generated lead number"
+                                        />
+                                    </div>
+                                </FormControl>
+                            </FormItem>
+                        )}
                     />
-                  </div>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+                </div>
 
         {/* Generated Form Fields */}
 
