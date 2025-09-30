@@ -76,8 +76,9 @@ export function EnhancedCustomerRelationshipField({
     isLoading: isSearching,
   } = useSearchCustomers(
     { 
-      customerBusinessName: deferredSearchQuery,
-      ...customFilters, // Apply custom filters to search as well
+      query: deferredSearchQuery,
+      page: 0,
+      size: 50,
     },
     {
       query: {
