@@ -47,6 +47,12 @@ export const sidebarItems: SidebarItem[] = [
     requiredPermission: 'call:sidebar',
     children: [
       {
+        key: 'addCallTracking',
+        label: 'Add Lead',
+        path: '/calls/new',
+        requiredPermission: 'call:create',
+      },
+      {
         key: 'callTracking',
         label: 'Track Lead',
         path: '/calls',
