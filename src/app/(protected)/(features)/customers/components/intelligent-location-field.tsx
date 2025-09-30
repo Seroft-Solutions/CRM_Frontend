@@ -5,7 +5,6 @@ import { ChevronDown, MapPin, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Popover,
@@ -420,7 +419,7 @@ export function IntelligentLocationField({
             />
           </div>
           
-          <ScrollArea className="h-[300px]">
+          <div className="max-h-[300px] overflow-y-auto">
             {isLoading && (
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -436,7 +435,7 @@ export function IntelligentLocationField({
             )}
 
             {!isLoading && !isSearching && searchQuery.length > 1 && (
-              <div className="max-h-[300px]">
+              <div>
                 {searchResults.map((option) => (
                   <Button
                     key={`${option.type}-${option.id}`}
@@ -471,7 +470,7 @@ export function IntelligentLocationField({
                 Type at least 2 characters to search
               </div>
             )}
-          </ScrollArea>
+          </div>
         </PopoverContent>
       </Popover>
 

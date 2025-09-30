@@ -294,7 +294,7 @@ export function IntelligentCategoryField({
             />
           </div>
           
-          <ScrollArea className="h-[300px]">
+          <div className="max-h-[300px] overflow-y-auto">
             {isLoading && (
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -310,7 +310,7 @@ export function IntelligentCategoryField({
             )}
 
             {!isLoading && !isSearching && searchQuery.length > 1 && (
-              <div className="max-h-[300px]">
+              <div>
                 {getSearchResults().map((option) => (
                   <Button
                     key={`${option.type}-${option.id}`}
@@ -332,7 +332,7 @@ export function IntelligentCategoryField({
                     </div>
                   </Button>
                 ))}
-                
+
                 {getSearchResults().length === 0 && (
                   <div className="p-3 text-sm text-muted-foreground text-center">
                     No categories found matching "{searchQuery}"
@@ -346,7 +346,7 @@ export function IntelligentCategoryField({
                 Type at least 2 characters to search categories
               </div>
             )}
-          </ScrollArea>
+          </div>
         </PopoverContent>
       </Popover>
 
