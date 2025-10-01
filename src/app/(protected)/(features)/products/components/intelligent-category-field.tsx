@@ -52,20 +52,22 @@ export function IntelligentCategoryField({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPath, setSelectedPath] = useState<CategoryOption[]>([]);
+  const [displayLimit, setDisplayLimit] = useState(10);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // API hooks for fetching category data with proper typing
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetAllProductCategories({
     page: 0,
-    size: 100,
+    size: 100, // Load more data for infinite scroll
   }, {
     query: { queryKey: ['categories-for-product'] }
   });
 
   const { data: subCategoriesResponse, isLoading: loadingSubCategories } = useGetAllProductSubCategories({
     page: 0,
-    size: 100,
-    'category.id.equals': value.category || undefined,
+    size: 100, // Load more data for infinite scroll
+    'categoryId.equals': value.category || undefined,
   }, {
     query: { 
       queryKey: ['subcategories-for-product', value.category],
@@ -74,8 +76,8 @@ export function IntelligentCategoryField({
   });
 
   // Extract content arrays from paginated responses with stable references
-  const categories = useMemo(() => categoriesResponse?.content || [], [categoriesResponse?.content]);
-  const subCategories = useMemo(() => subCategoriesResponse?.content || [], [subCategoriesResponse?.content]);
+  const categories = useMemo(() => categoriesResponse || [], [categoriesResponse]);
+  const subCategories = useMemo(() => subCategoriesResponse || [], [subCategoriesResponse]);
 
   // Search hooks for intelligent search with proper parameters
   const { data: categorySearchResponse, isLoading: searchingCategories } = useSearchProductCategories({
@@ -101,8 +103,8 @@ export function IntelligentCategoryField({
   });
 
   // Extract search results from responses with stable references
-  const categoryResults = useMemo(() => categorySearchResponse?.content || [], [categorySearchResponse?.content]);
-  const subCategoryResults = useMemo(() => subCategorySearchResponse?.content || [], [subCategorySearchResponse?.content]);
+  const categoryResults = useMemo(() => categorySearchResponse || [], [categorySearchResponse]);
+  const subCategoryResults = useMemo(() => subCategorySearchResponse || [], [subCategorySearchResponse]);
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -226,7 +228,36 @@ export function IntelligentCategoryField({
     }
 
     onChange(newValue);
+    setDisplayLimit(10); // Reset display limit when selection changes
   };
+
+  // Handle scroll for infinite loading
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 5;
+    
+    if (isNearBottom && searchQuery.length <= 1) {
+      // Load more items when near bottom and not searching
+      const currentDataLength = !value.category ? categories.length : subCategories.length;
+      
+      if (displayLimit < currentDataLength) {
+        setDisplayLimit(prev => Math.min(prev + 10, currentDataLength));
+      }
+    }
+  };
+
+  // Reset display limit when opening dropdown or changing search
+  useEffect(() => {
+    if (isOpen) {
+      setDisplayLimit(10);
+    }
+  }, [isOpen, value.category]);
+  
+  useEffect(() => {
+    if (searchQuery.length <= 1) {
+      setDisplayLimit(10);
+    }
+  }, [searchQuery]);
 
   const isLoading = loadingCategories || loadingSubCategories;
   const isSearching = searchingCategories || searchingSubCategories;
@@ -294,7 +325,25 @@ export function IntelligentCategoryField({
             />
           </div>
           
-          <div className="max-h-[300px] overflow-y-auto">
+          <div 
+            ref={scrollContainerRef}
+            className="max-h-[300px] overflow-y-auto overscroll-contain focus:outline-none"
+            onScroll={handleScroll}
+            tabIndex={0}
+            style={{
+              scrollBehavior: 'smooth',
+              overflowY: 'auto',
+              maxHeight: '300px',
+              minHeight: '50px'
+            }}
+            onWheel={(e) => {
+              // Ensure wheel events work properly and don't propagate to parent
+              e.stopPropagation();
+              const container = e.currentTarget;
+              const delta = e.deltaY;
+              container.scrollTop += delta;
+            }}
+          >
             {isLoading && (
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -342,8 +391,102 @@ export function IntelligentCategoryField({
             )}
 
             {!isLoading && searchQuery.length <= 1 && (
-              <div className="p-3 text-sm text-muted-foreground text-center">
-                Type at least 2 characters to search categories
+              <div>
+                {/* Show available categories if no category selected */}
+                {!value.category && categories.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select a Category
+                    </div>
+                    {categories.slice(0, displayLimit).map((category) => (
+                      <Button
+                        key={`category-${category.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: category.id!,
+                          name: category.name,
+                          code: category.code,
+                          type: 'category',
+                          fullPath: `${category.name} (${category.code})`
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              category
+                            </Badge>
+                            <span className="font-medium">{category.name}</span>
+                            <span className="text-xs text-muted-foreground">({category.code})</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < categories.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {categories.length} categories. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show available subcategories if category selected but no subcategory */}
+                {value.category && !value.subCategory && subCategories.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select a Subcategory
+                    </div>
+                    {subCategories.slice(0, displayLimit).map((subCategory) => (
+                      <Button
+                        key={`subcategory-${subCategory.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: subCategory.id!,
+                          name: subCategory.name,
+                          code: subCategory.code,
+                          type: 'subcategory',
+                          parentId: value.category,
+                          fullPath: `${categories.find(c => c.id === value.category)?.name} > ${subCategory.name} (${subCategory.code})`
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              subcategory
+                            </Badge>
+                            <span className="font-medium">{subCategory.name}</span>
+                            <span className="text-xs text-muted-foreground">({subCategory.code})</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < subCategories.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {subCategories.length} subcategories. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Default message when no data available */}
+                {!value.category && categories.length === 0 && (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    No categories available
+                  </div>
+                )}
+                
+                {value.category && !value.subCategory && subCategories.length === 0 && (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    No subcategories available for this category
+                  </div>
+                )}
+                
+                {value.category && value.subCategory && (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    Category selection is complete. Type to search for other options.
+                  </div>
+                )}
               </div>
             )}
           </div>
