@@ -103,11 +103,11 @@ export function IntelligentLocationField({
     }
   });
 
-  // Extract content arrays from paginated responses
-  const states = statesResponse?.content || [];
-  const districts = districtsResponse?.content || [];
-  const cities = citiesResponse?.content || [];
-  const areas = areasResponse?.content || [];
+  // Extract content arrays from paginated responses with stable references
+  const states = useMemo(() => statesResponse?.content || [], [statesResponse?.content]);
+  const districts = useMemo(() => districtsResponse?.content || [], [districtsResponse?.content]);
+  const cities = useMemo(() => citiesResponse?.content || [], [citiesResponse?.content]);
+  const areas = useMemo(() => areasResponse?.content || [], [areasResponse?.content]);
 
   // Search hooks for intelligent search with proper parameters
   const { data: stateSearchResponse, isLoading: searchingStates } = useSearchStates({
@@ -154,11 +154,11 @@ export function IntelligentLocationField({
     }
   });
 
-  // Extract search results from responses
-  const stateResults = stateSearchResponse?.content || [];
-  const districtResults = districtSearchResponse?.content || [];
-  const cityResults = citySearchResponse?.content || [];
-  const areaResults = areaSearchResponse?.content || [];
+  // Extract search results from responses with stable references
+  const stateResults = useMemo(() => stateSearchResponse?.content || [], [stateSearchResponse?.content]);
+  const districtResults = useMemo(() => districtSearchResponse?.content || [], [districtSearchResponse?.content]);
+  const cityResults = useMemo(() => citySearchResponse?.content || [], [citySearchResponse?.content]);
+  const areaResults = useMemo(() => areaSearchResponse?.content || [], [areaSearchResponse?.content]);
 
   // Build selected path based on current values
   useEffect(() => {
