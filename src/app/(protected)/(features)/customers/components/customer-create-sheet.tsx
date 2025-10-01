@@ -145,11 +145,12 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
         status: CustomerDTOStatus.ACTIVE,
         district: { id: data.location.district } as any
       },
-      area: { 
+      area: {
         id: data.location.area,
         name: '', // Will be populated by backend
         status: CustomerDTOStatus.ACTIVE,
-        city: { id: data.location.city } as any
+        city: {id: data.location.city} as any,
+        pincode: ''
       },
       status: CustomerDTOStatus.ACTIVE,
     };

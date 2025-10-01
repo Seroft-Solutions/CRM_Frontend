@@ -60,20 +60,22 @@ export function IntelligentLocationField({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPath, setSelectedPath] = useState<LocationOption[]>([]);
+  const [displayLimit, setDisplayLimit] = useState(10);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // API hooks for fetching location data with proper typing
   const { data: statesResponse, isLoading: loadingStates } = useGetAllStates({
     page: 0,
-    size: 100,
+    size: 100, // Load more data for infinite scroll
   }, {
     query: { queryKey: ['states-for-location'] }
   });
 
   const { data: districtsResponse, isLoading: loadingDistricts } = useGetAllDistricts({
     page: 0,
-    size: 100,
-    'state.id.equals': value.state || undefined,
+    size: 100, // Load more data for infinite scroll
+    'stateId.equals': value.state || undefined,
   }, {
     query: { 
       queryKey: ['districts-for-location', value.state],
@@ -83,8 +85,8 @@ export function IntelligentLocationField({
 
   const { data: citiesResponse, isLoading: loadingCities } = useGetAllCities({
     page: 0,
-    size: 100,
-    'district.id.equals': value.district || undefined,
+    size: 100, // Load more data for infinite scroll
+    'districtId.equals': value.district || undefined,
   }, {
     query: { 
       queryKey: ['cities-for-location', value.district],
@@ -94,8 +96,8 @@ export function IntelligentLocationField({
 
   const { data: areasResponse, isLoading: loadingAreas } = useGetAllAreas({
     page: 0,
-    size: 100,
-    'city.id.equals': value.city || undefined,
+    size: 100, // Load more data for infinite scroll
+    'cityId.equals': value.city || undefined,
   }, {
     query: { 
       queryKey: ['areas-for-location', value.city],
@@ -104,10 +106,10 @@ export function IntelligentLocationField({
   });
 
   // Extract content arrays from paginated responses with stable references
-  const states = useMemo(() => statesResponse?.content || [], [statesResponse?.content]);
-  const districts = useMemo(() => districtsResponse?.content || [], [districtsResponse?.content]);
-  const cities = useMemo(() => citiesResponse?.content || [], [citiesResponse?.content]);
-  const areas = useMemo(() => areasResponse?.content || [], [areasResponse?.content]);
+  const states = useMemo(() => statesResponse || [], [statesResponse]);
+  const districts = useMemo(() => districtsResponse || [], [districtsResponse]);
+  const cities = useMemo(() => citiesResponse || [], [citiesResponse]);
+  const areas = useMemo(() => areasResponse || [], [areasResponse]);
 
   // Search hooks for intelligent search with proper parameters
   const { data: stateSearchResponse, isLoading: searchingStates } = useSearchStates({
@@ -155,10 +157,10 @@ export function IntelligentLocationField({
   });
 
   // Extract search results from responses with stable references
-  const stateResults = useMemo(() => stateSearchResponse?.content || [], [stateSearchResponse?.content]);
-  const districtResults = useMemo(() => districtSearchResponse?.content || [], [districtSearchResponse?.content]);
-  const cityResults = useMemo(() => citySearchResponse?.content || [], [citySearchResponse?.content]);
-  const areaResults = useMemo(() => areaSearchResponse?.content || [], [areaSearchResponse?.content]);
+  const stateResults = useMemo(() => stateSearchResponse || [], [stateSearchResponse]);
+  const districtResults = useMemo(() => districtSearchResponse || [], [districtSearchResponse]);
+  const cityResults = useMemo(() => citySearchResponse|| [], [citySearchResponse]);
+  const areaResults = useMemo(() => areaSearchResponse || [], [areaSearchResponse]);
 
   // Build selected path based on current values
   useEffect(() => {
@@ -349,7 +351,39 @@ export function IntelligentLocationField({
     }
 
     onChange(newValue);
+    setDisplayLimit(10); // Reset display limit when selection changes
   };
+
+  // Handle scroll for infinite loading
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 5;
+    
+    if (isNearBottom && searchQuery.length <= 1) {
+      // Load more items when near bottom and not searching
+      const currentDataLength = !value.state ? states.length 
+        : !value.district ? districts.length 
+        : !value.city ? cities.length 
+        : areas.length;
+      
+      if (displayLimit < currentDataLength) {
+        setDisplayLimit(prev => Math.min(prev + 10, currentDataLength));
+      }
+    }
+  };
+
+  // Reset display limit when opening dropdown or changing search
+  useEffect(() => {
+    if (isOpen) {
+      setDisplayLimit(10);
+    }
+  }, [isOpen, value.state, value.district, value.city]);
+  
+  useEffect(() => {
+    if (searchQuery.length <= 1) {
+      setDisplayLimit(10);
+    }
+  }, [searchQuery]);
 
   const isLoading = loadingStates || loadingDistricts || loadingCities || loadingAreas;
   const isSearching = searchingStates || searchingDistricts || searchingCities || searchingAreas;
@@ -419,7 +453,25 @@ export function IntelligentLocationField({
             />
           </div>
           
-          <div className="max-h-[300px] overflow-y-auto">
+          <div 
+            ref={scrollContainerRef}
+            className="max-h-[300px] overflow-y-auto overscroll-contain focus:outline-none"
+            onScroll={handleScroll}
+            tabIndex={0}
+            style={{
+              scrollBehavior: 'smooth',
+              overflowY: 'auto',
+              maxHeight: '300px',
+              minHeight: '50px'
+            }}
+            onWheel={(e) => {
+              // Ensure wheel events work properly and don't propagate to parent
+              e.stopPropagation();
+              const container = e.currentTarget;
+              const delta = e.deltaY;
+              container.scrollTop += delta;
+            }}
+          >
             {isLoading && (
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -466,8 +518,160 @@ export function IntelligentLocationField({
             )}
 
             {!isLoading && searchQuery.length <= 1 && (
-              <div className="p-3 text-sm text-muted-foreground text-center">
-                Type at least 2 characters to search
+              <div>
+                {/* Show available states if no state selected */}
+                {!value.state && states.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select a State
+                    </div>
+                    {states.slice(0, displayLimit).map((state) => (
+                      <Button
+                        key={`state-${state.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: state.id,
+                          name: state.name,
+                          type: 'state',
+                          fullPath: state.name
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              state
+                            </Badge>
+                            <span className="font-medium">{state.name}</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < states.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {states.length} states. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show available districts if state selected but no district */}
+                {value.state && !value.district && districts.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select a District
+                    </div>
+                    {districts.slice(0, displayLimit).map((district) => (
+                      <Button
+                        key={`district-${district.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: district.id,
+                          name: district.name,
+                          type: 'district',
+                          parentId: value.state,
+                          fullPath: `${states.find(s => s.id === value.state)?.name} > ${district.name}`
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              district
+                            </Badge>
+                            <span className="font-medium">{district.name}</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < districts.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {districts.length} districts. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show available cities if district selected but no city */}
+                {value.district && !value.city && cities.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select a City
+                    </div>
+                    {cities.slice(0, displayLimit).map((city) => (
+                      <Button
+                        key={`city-${city.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: city.id,
+                          name: city.name,
+                          type: 'city',
+                          parentId: value.district,
+                          fullPath: `${selectedPath.find(p => p.type === 'district')?.fullPath} > ${city.name}`
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              city
+                            </Badge>
+                            <span className="font-medium">{city.name}</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < cities.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {cities.length} cities. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show available areas if city selected but no area */}
+                {value.city && !value.area && areas.length > 0 && (
+                  <div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground border-b">
+                      Select an Area
+                    </div>
+                    {areas.slice(0, displayLimit).map((area) => (
+                      <Button
+                        key={`area-${area.id}`}
+                        variant="ghost"
+                        className="w-full justify-start text-left h-auto p-3 rounded-none hover:bg-muted"
+                        onClick={() => handleSelectOption({
+                          id: area.id,
+                          name: area.name,
+                          type: 'area',
+                          parentId: value.city,
+                          fullPath: `${selectedPath.find(p => p.type === 'city')?.fullPath} > ${area.name}`
+                        })}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs capitalize">
+                              area
+                            </Badge>
+                            <span className="font-medium">{area.name}</span>
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    {displayLimit < areas.length && (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        Showing {displayLimit} of {areas.length} areas. Scroll down for more.
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Default message when no data or all selections complete */}
+                {(!value.state && states.length === 0) || (value.area && areas.length === 0) ? (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    {!value.state && states.length === 0 ? 'No states available' : 'Type at least 2 characters to search'}
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
