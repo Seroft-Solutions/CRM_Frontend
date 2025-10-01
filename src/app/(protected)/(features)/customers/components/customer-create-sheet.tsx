@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,21 +27,26 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import { customerFormSchema } from './form/customer-form-schema';
+import { customerFormSchemaFields } from './form/customer-form-schema';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { CustomerDTO, CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
+import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
+import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
+
 
 // Create simplified form schema for customer creation
-const customerCreationSchema = customerFormSchema.omit({
-  status: true,
-}).extend({
-  location: customerFormSchema.pick({
-    state: true,
-    district: true,
-    city: true,
-    area: true,
+const customerCreationSchema = z.object({
+  customerBusinessName: customerFormSchemaFields.customerBusinessName,
+  email: customerFormSchemaFields.email,
+  mobile: customerFormSchemaFields.mobile,
+  whatsApp: z.string().optional().or(z.literal('')),
+  contactPerson: customerFormSchemaFields.contactPerson,
+  location: z.object({
+    state: customerFormSchemaFields.state,
+    district: customerFormSchemaFields.district,
+    city: customerFormSchemaFields.city,
+    area: customerFormSchemaFields.area,
   }),
 });
 
@@ -362,6 +368,10 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
               type="submit"
               form="customer-creation-form"
               disabled={isPending}
+              onClick={() => {
+                // Manually trigger form submission as fallback
+                form.handleSubmit(onSubmit)();
+              }}
             >
               {isPending ? (
                 <>
