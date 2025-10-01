@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Tag, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,9 +73,9 @@ export function IntelligentCategoryField({
     }
   });
 
-  // Extract content arrays from paginated responses
-  const categories = categoriesResponse?.content || [];
-  const subCategories = subCategoriesResponse?.content || [];
+  // Extract content arrays from paginated responses with stable references
+  const categories = useMemo(() => categoriesResponse?.content || [], [categoriesResponse?.content]);
+  const subCategories = useMemo(() => subCategoriesResponse?.content || [], [subCategoriesResponse?.content]);
 
   // Search hooks for intelligent search with proper parameters
   const { data: categorySearchResponse, isLoading: searchingCategories } = useSearchProductCategories({
@@ -100,9 +100,9 @@ export function IntelligentCategoryField({
     }
   });
 
-  // Extract search results from responses
-  const categoryResults = categorySearchResponse?.content || [];
-  const subCategoryResults = subCategorySearchResponse?.content || [];
+  // Extract search results from responses with stable references
+  const categoryResults = useMemo(() => categorySearchResponse?.content || [], [categorySearchResponse?.content]);
+  const subCategoryResults = useMemo(() => subCategorySearchResponse?.content || [], [subCategorySearchResponse?.content]);
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
