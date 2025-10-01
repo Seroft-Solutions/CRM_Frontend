@@ -5,7 +5,6 @@ import { ChevronDown, Tag, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Popover,
@@ -20,7 +19,6 @@ import {
   useGetAllProductSubCategories,
   useSearchProductSubCategories,
 } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
-import type { ProductCategoryDTO, ProductSubCategoryDTO } from '@/core/api/generated/spring/schemas';
 
 interface CategoryValue {
   category?: number;
