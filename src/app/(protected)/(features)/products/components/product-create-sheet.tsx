@@ -30,7 +30,8 @@ import { productFormSchemaBase } from './form/product-form-schema';
 import { productToast, handleProductError } from './product-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { ProductDTO, ProductDTOStatus } from '@/core/api/generated/spring/schemas';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 import { z } from 'zod';
 
 // Create simplified form schema for product creation
