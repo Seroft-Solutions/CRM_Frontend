@@ -13,19 +13,15 @@ import {
 } from '@/components/ui/popover';
 import {
   useGetAllStates,
-  useSearchStates,
 } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 import {
   useGetAllDistricts,
-  useSearchDistricts,
 } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
 import {
   useGetAllCities,
-  useSearchCities,
 } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import {
   useGetAllAreas,
-  useSearchAreas,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import type { StateDTO, DistrictDTO, CityDTO, AreaDTO } from '@/core/api/generated/spring/schemas';
 
@@ -111,11 +107,11 @@ export function IntelligentLocationField({
   const cities = useMemo(() => citiesResponse || [], [citiesResponse]);
   const areas = useMemo(() => areasResponse || [], [areasResponse]);
 
-  // Search hooks for intelligent search with proper parameters
-  const { data: stateSearchResponse, isLoading: searchingStates } = useSearchStates({
-    query: searchQuery,
+  // Search using getAll hooks with query filtering for location search
+  const { data: stateSearchResponse, isLoading: searchingStates } = useGetAllStates({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -123,10 +119,10 @@ export function IntelligentLocationField({
     }
   });
 
-  const { data: districtSearchResponse, isLoading: searchingDistricts } = useSearchDistricts({
-    query: searchQuery,
+  const { data: districtSearchResponse, isLoading: searchingDistricts } = useGetAllDistricts({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -134,10 +130,10 @@ export function IntelligentLocationField({
     }
   });
 
-  const { data: citySearchResponse, isLoading: searchingCities } = useSearchCities({
-    query: searchQuery,
+  const { data: citySearchResponse, isLoading: searchingCities } = useGetAllCities({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -145,10 +141,10 @@ export function IntelligentLocationField({
     }
   });
 
-  const { data: areaSearchResponse, isLoading: searchingAreas } = useSearchAreas({
-    query: searchQuery,
+  const { data: areaSearchResponse, isLoading: searchingAreas } = useGetAllAreas({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,

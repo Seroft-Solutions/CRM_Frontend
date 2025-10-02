@@ -13,11 +13,9 @@ import {
 } from '@/components/ui/popover';
 import {
   useGetAllProductCategories,
-  useSearchProductCategories,
 } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import {
   useGetAllProductSubCategories,
-  useSearchProductSubCategories,
 } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
 interface CategoryValue {
@@ -77,11 +75,11 @@ export function IntelligentCategoryField({
   const categories = useMemo(() => categoriesResponse || [], [categoriesResponse]);
   const subCategories = useMemo(() => subCategoriesResponse || [], [subCategoriesResponse]);
 
-  // Search hooks for intelligent search with proper parameters
-  const { data: categorySearchResponse, isLoading: searchingCategories } = useSearchProductCategories({
-    query: searchQuery,
+  // Search using getAllCategory hooks with query filtering
+  const { data: categorySearchResponse, isLoading: searchingCategories } = useGetAllProductCategories({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
@@ -89,10 +87,10 @@ export function IntelligentCategoryField({
     }
   });
 
-  const { data: subCategorySearchResponse, isLoading: searchingSubCategories } = useSearchProductSubCategories({
-    query: searchQuery,
+  const { data: subCategorySearchResponse, isLoading: searchingSubCategories } = useGetAllProductSubCategories({
     page: 0,
     size: 50,
+    'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
   }, {
     query: { 
       enabled: searchQuery.length > 1,
