@@ -333,20 +333,6 @@ export function EnhancedProductRelationshipField({
           </InlinePermissionGuard>
         )}
       </div>
-
-      {/* Single selection clear button */}
-      {!multiple && value && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-auto p-1 text-muted-foreground hover:text-foreground"
-          onClick={() => handleRemove(value as number)}
-        >
-          <X className="h-3 w-3 mr-1" />
-          Clear selection
-        </Button>
-      )}
     </div>
   );
 }
