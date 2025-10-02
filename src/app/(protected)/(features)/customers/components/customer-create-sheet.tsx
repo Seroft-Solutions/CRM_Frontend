@@ -71,6 +71,7 @@ interface CustomerCreateSheetProps {
 
 export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<CustomerCreationFormData>({
@@ -113,6 +114,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
         // Close sheet and reset form
         setIsOpen(false);
         form.reset();
+        setWhatsAppManuallyEdited(false);
         
         // Call the success callback with the created customer
         // This will trigger auto-selection in the parent field
@@ -168,6 +170,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
     setIsOpen(open);
     if (!open) {
       form.reset();
+      setWhatsAppManuallyEdited(false);
     }
   };
 
@@ -288,9 +291,16 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                         value={field.value}
                         onChange={(value) => {
                           field.onChange(value);
-                          // Auto-populate WhatsApp if it's empty
-                          if (!form.getValues('whatsApp')) {
-                            form.setValue('whatsApp', value);
+                          // Auto-populate WhatsApp if it hasn't been manually edited
+                          if (!whatsAppManuallyEdited && value) {
+                            // Use a slight delay to avoid interference with PhoneInput formatting
+                            setTimeout(() => {
+                              const currentWhatsApp = form.getValues('whatsApp');
+                              // Only update if WhatsApp hasn't been manually changed
+                              if (!whatsAppManuallyEdited) {
+                                form.setValue('whatsApp', value, { shouldValidate: false });
+                              }
+                            }, 50);
                           }
                         }}
                       />
@@ -310,7 +320,11 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                       <PhoneInput
                         placeholder="Enter WhatsApp number"
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={(value) => {
+                          field.onChange(value);
+                          // Mark as manually edited when user types in WhatsApp field
+                          setWhatsAppManuallyEdited(true);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
