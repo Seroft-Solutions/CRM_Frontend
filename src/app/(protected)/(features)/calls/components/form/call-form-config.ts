@@ -17,6 +17,17 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
+      id: 'channel',
+      title: 'Channel Details',
+      description: 'Channel type and parties',
+      fields: [],
+      relationships: ['channelParties', 'channelType'],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
@@ -39,20 +50,9 @@ export const callFormConfig: FormConfig = {
       },
     },
     {
-      id: 'channel',
-      title: 'Channel Details',
-      description: 'Channel type and parties',
-      fields: [],
-      relationships: ['channelParties', 'channelType'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
       id: 'assignment and remarks',
       title: 'Assignment and Remarks',
-      description: 'Assign users and add any additional remarks or notes',
+      description: 'Assign user and add any additional remarks or notes',
       fields: [],
       relationships: [],
       validation: {
