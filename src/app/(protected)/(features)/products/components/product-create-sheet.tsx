@@ -34,7 +34,7 @@ import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 import { z } from 'zod';
 
-// Create simplified form schema for product creation
+// Create simplified form schema for product creation with price validation
 const productCreationSchema = productFormSchemaBase.omit({
   status: true,
 }).extend({
@@ -42,7 +42,24 @@ const productCreationSchema = productFormSchemaBase.omit({
     category: true,
     subCategory: true,
   }).partial(),
-});
+}).refine(
+  (data) => {
+    // Skip validation if either minPrice or maxPrice is empty
+    if (!data.minPrice || !data.maxPrice) {
+      return true;
+    }
+    
+    const minPrice = Number(data.minPrice);
+    const maxPrice = Number(data.maxPrice);
+    
+    // Ensure maxPrice is greater than minPrice
+    return maxPrice > minPrice;
+  },
+  {
+    message: "Maximum price must be greater than minimum price",
+    path: ["maxPrice"], // This will show the error on the maxPrice field
+  }
+);
 
 type ProductCreationFormData = {
   name: string;
@@ -315,6 +332,14 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                           max="999999"
                           step="0.01"
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            // Trigger validation when minPrice changes
+                            const maxPrice = form.getValues('maxPrice');
+                            if (maxPrice) {
+                              form.trigger('maxPrice');
+                            }
+                          }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </FormControl>
@@ -337,6 +362,14 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                           max="999999"
                           step="0.01"
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            // Trigger validation when maxPrice changes
+                            const minPrice = form.getValues('minPrice');
+                            if (minPrice) {
+                              form.trigger('maxPrice');
+                            }
+                          }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </FormControl>
