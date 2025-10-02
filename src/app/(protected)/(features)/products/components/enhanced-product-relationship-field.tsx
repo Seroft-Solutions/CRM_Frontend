@@ -90,10 +90,10 @@ export function EnhancedProductRelationshipField({
 
   // Get available options (either all products or search results) from paginated responses
   const availableOptions: ProductDTO[] = React.useMemo(() => {
-    if (deferredSearchQuery.length > 1 && searchResponse?.content) {
-      return searchResponse.content;
+    if (deferredSearchQuery.length > 1 && searchResponse) {
+      return searchResponse;
     }
-    return productsResponse?.content || [];
+    return productsResponse || [];
   }, [productsResponse, searchResponse, deferredSearchQuery]);
 
   // Get selected options for display with proper typing - handle newly created items
@@ -301,26 +301,7 @@ export function EnhancedProductRelationshipField({
                         className="flex items-center justify-between"
                       >
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{option.name}</span>
-                            {option.code && (
-                              <Badge variant="outline" className="text-xs">
-                                {option.code}
-                              </Badge>
-                            )}
-                          </div>
-                          {option.description && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {option.description}
-                            </div>
-                          )}
-                          {(option.basePrice || option.minPrice || option.maxPrice) && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {option.basePrice && `Base: $${option.basePrice}`}
-                              {option.minPrice && option.maxPrice && 
-                                ` | Range: $${option.minPrice} - $${option.maxPrice}`}
-                            </div>
-                          )}
+                          <div className="font-medium">{option.name}</div>
                         </div>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </CommandItem>

@@ -90,10 +90,10 @@ export function EnhancedCustomerRelationshipField({
 
   // Get available options (either all customers or search results) from paginated responses
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
-    if (deferredSearchQuery.length > 1 && searchResponse?.content) {
-      return searchResponse.content;
+    if (deferredSearchQuery.length > 1 && searchResponse) {
+      return searchResponse;
     }
-    return customersResponse?.content || [];
+    return customersResponse || [];
   }, [customersResponse, searchResponse, deferredSearchQuery]);
 
   // Get selected options for display with proper typing - handle newly created items
@@ -307,16 +307,6 @@ export function EnhancedCustomerRelationshipField({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{option.customerBusinessName}</div>
-                          {option.contactPerson && (
-                            <div className="text-xs text-muted-foreground">
-                              Contact: {option.contactPerson}
-                            </div>
-                          )}
-                          {option.mobile && (
-                            <div className="text-xs text-muted-foreground">
-                              Phone: {option.mobile}
-                            </div>
-                          )}
                         </div>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </CommandItem>
