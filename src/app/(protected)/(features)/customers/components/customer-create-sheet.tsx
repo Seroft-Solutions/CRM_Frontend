@@ -368,10 +368,6 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
               type="submit"
               form="customer-creation-form"
               disabled={isPending}
-              onClick={() => {
-                // Manually trigger form submission as fallback
-                form.handleSubmit(onSubmit)();
-              }}
             >
               {isPending ? (
                 <>
