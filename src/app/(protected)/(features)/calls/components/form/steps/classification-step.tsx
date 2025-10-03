@@ -17,7 +17,7 @@ import {
 import {Input} from '@/components/ui/input';
 import {RelationshipRenderer} from '../relationship-renderer';
 import {formatLeadNoForDisplay} from '../../../utils/leadNo-generator';
-import {getAllCallStatuses} from "@/core/api/generated/spring";
+import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
 import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {MessageSquare, Plus, X} from "lucide-react";
@@ -88,6 +88,22 @@ export function CallClassificationStep({
             }
         };
         setDefaultCallStatus();
+    }, [form]);
+
+    // Fetch priorities and set default value for priority field
+    useEffect(() => {
+        const setDefaultPriority = async () => {
+            try {
+                const priorities = await getAllPriorities();
+                const mediumPriority = priorities.find((priority: any) => priority.name === 'Medium');
+                if (mediumPriority && !form.getValues('priority')) {
+                    form.setValue('priority', mediumPriority.id);
+                }
+            } catch (error) {
+                console.error('Failed to fetch priorities:', error);
+            }
+        };
+        setDefaultPriority();
     }, [form]);
 
     return (
