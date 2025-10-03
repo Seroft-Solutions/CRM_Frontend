@@ -21,12 +21,8 @@ import { Separator } from '@/components/ui/separator';
 import {
   CalendarDays,
   Video,
-  Phone,
-  MapPin,
-  Users,
   Bell,
   Clock,
-  CheckCircle2,
   Plus,
   X,
   Sparkles,
@@ -454,7 +450,7 @@ export function MeetingScheduler({
       duration: meetingDetails.duration,
       title: meetingDetails.title,
       description: meetingDetails.description,
-      meetingType: meetingDetails.meetingType as keyof typeof MeetingDTOMeetingType,
+      meetingType: MeetingDTOMeetingType.VIRTUAL,
       meetingUrl: meetingDetails.meetingUrl,
       notes: '',
       isRecurring: false,
@@ -498,151 +494,8 @@ export function MeetingScheduler({
   return (
     <div className="space-y-6">
       <Card className="border shadow-sm">
-        <CardHeader>
-          <CardTitle>Schedule Meeting</CardTitle>
-        </CardHeader>
         <CardContent className="space-y-8 p-8">
-          {/* Date & Time Section */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-lg">Select Date & Time</h4>
-            <div className="flex justify-center">
-              <div className="max-w-2xl w-full">
-                <Calendar20
-                  onDateTimeSelected={(date: Date, time: string) => {
-                    setSelectedDate(date);
-                    setSelectedTime(time);
-                  }}
-                  bookedDates={bookedDates}
-                  availableTimeSlots={availableTimeSlots}
-                  bookedTimeSlots={bookedTimeSlots}
-                  initialDate={selectedDate}
-                  initialTime={selectedTime}
-                  showContinueButton={false}
-                  disabled={false}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Meeting Details Section */}
-          <div className="space-y-6">
-            <h4 className="font-medium text-lg">Meeting Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Meeting Title *</Label>
-                <Input
-                  id="title"
-                  placeholder="Enter meeting title"
-                  value={meetingDetails.title}
-                  onChange={(e) =>
-                    setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration</Label>
-                <Select
-                  value={meetingDetails.duration.toString()}
-                  onValueChange={(value) =>
-                    setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Meeting Type</Label>
-              <Select
-                value={meetingDetails.meetingType}
-                onValueChange={(value: 'VIRTUAL' | 'IN_PERSON' | 'PHONE_CALL') =>
-                  setMeetingDetails((prev) => ({ ...prev, meetingType: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VIRTUAL">
-                    <div className="flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      Virtual Meeting
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="PHONE_CALL">
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Phone Call
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="IN_PERSON">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      In Person
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {meetingDetails.meetingType === 'VIRTUAL' && (
-              <div className="space-y-2">
-                <Label htmlFor="meetingUrl">Meeting URL</Label>
-                <Input
-                  id="meetingUrl"
-                  placeholder="https://meet.google.com/..."
-                  value={meetingDetails.meetingUrl}
-                  onChange={(e) =>
-                    setMeetingDetails((prev) => ({ ...prev, meetingUrl: e.target.value }))
-                  }
-                />
-              </div>
-            )}
-
-            {meetingDetails.meetingType === 'IN_PERSON' && (
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="Enter meeting location"
-                  value={meetingDetails.location}
-                  onChange={(e) =>
-                    setMeetingDetails((prev) => ({ ...prev, location: e.target.value }))
-                  }
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                placeholder="Add meeting agenda or notes..."
-                value={meetingDetails.description}
-                onChange={(e) =>
-                  setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
-                }
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Participants Section */}
+          {/* Participants Section - Moved to First */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-lg">Meeting Participants</h4>
@@ -716,53 +569,81 @@ export function MeetingScheduler({
 
           <Separator />
 
-          {/* Reminders Section */}
+          {/* Date & Time Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-lg flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Email Reminders
-              </h4>
+            <h4 className="font-medium text-lg">Select Date & Time</h4>
+            <div className="flex justify-center">
+              <div className="max-w-xl w-full">
+                <Calendar20
+                  compact
+                  onDateTimeSelected={(date: Date, time: string) => {
+                    setSelectedDate(date);
+                    setSelectedTime(time);
+                  }}
+                  bookedDates={bookedDates}
+                  availableTimeSlots={availableTimeSlots}
+                  bookedTimeSlots={bookedTimeSlots}
+                  initialDate={selectedDate}
+                  initialTime={selectedTime}
+                  showContinueButton={false}
+                  disabled={false}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Meeting Details Section */}
+          <div className="space-y-6">
+            <h4 className="font-medium text-lg">Meeting Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Meeting Title *</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter meeting title"
+                  value={meetingDetails.title}
+                  onChange={(e) =>
+                    setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration</Label>
+                <Select
+                  value={meetingDetails.duration.toString()}
+                  onValueChange={(value) =>
+                    setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 minutes</SelectItem>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {reminders.map((reminder, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      checked={reminder.enabled}
-                      onCheckedChange={(checked) => {
-                        const newReminders = [...reminders];
-                        newReminders[index].enabled = checked as boolean;
-                        setReminders(newReminders);
-                      }}
-                    />
-                    <span className="text-sm">Send email reminder</span>
-                  </div>
-                  <Select
-                    value={reminder.minutesBefore.toString()}
-                    onValueChange={(value) => {
-                      const newReminders = [...reminders];
-                      newReminders[index].minutesBefore = parseInt(value);
-                      setReminders(newReminders);
-                    }}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 minutes before</SelectItem>
-                      <SelectItem value="15">15 minutes before</SelectItem>
-                      <SelectItem value="30">30 minutes before</SelectItem>
-                      <SelectItem value="60">1 hour before</SelectItem>
-                      <SelectItem value="1440">1 day before</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="Add meeting agenda or notes..."
+                value={meetingDetails.description}
+                onChange={(e) =>
+                  setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                }
+                rows={3}
+              />
             </div>
           </div>
         </CardContent>
