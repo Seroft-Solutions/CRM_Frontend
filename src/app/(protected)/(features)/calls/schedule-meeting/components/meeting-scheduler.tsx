@@ -497,153 +497,154 @@ export function MeetingScheduler({
         <CardContent className="space-y-8 p-8">
           {/* Participants Section - Moved to First */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-lg">Meeting Participants</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }])
-                }
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Participant
-              </Button>
-            </div>
+            <div className="rounded-lg border">
+              <div className="flex items-center justify-between p-3">
+                <h4 className="font-medium text-lg">Meeting Details</h4>
+              </div>
+              <div className="p-3 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Meeting Title *</Label>
+                    <Input
+                        id="title"
+                        placeholder="Enter meeting title"
+                        value={meetingDetails.title}
+                        onChange={(e) =>
+                            setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                        }
+                    />
+                  </div>
 
-            <div className="space-y-3">
-              {participants.map((participant, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg"
-                >
-                  <div className="col-span-5">
-                    <Label>Email</Label>
-                    <Input
-                      placeholder="email@example.com"
-                      value={participant.email}
-                      onChange={(e) => {
-                        const newParticipants = [...participants];
-                        newParticipants[index].email = e.target.value;
-                        setParticipants(newParticipants);
-                      }}
-                    />
-                  </div>
-                  <div className="col-span-4">
-                    <Label>Name</Label>
-                    <Input
-                      placeholder="Full Name"
-                      value={participant.name}
-                      onChange={(e) => {
-                        const newParticipants = [...participants];
-                        newParticipants[index].name = e.target.value;
-                        setParticipants(newParticipants);
-                      }}
-                    />
-                  </div>
-                  <div className="col-span-2 flex items-center space-x-2">
-                    <Checkbox
-                      checked={participant.isRequired}
-                      onCheckedChange={(checked) => {
-                        const newParticipants = [...participants];
-                        newParticipants[index].isRequired = checked as boolean;
-                        setParticipants(newParticipants);
-                      }}
-                    />
-                    <Label className="text-xs">Required</Label>
-                  </div>
-                  <div className="col-span-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setParticipants((prev) => prev.filter((_, i) => i !== index))}
-                      disabled={index === 0 && customerData?.email === participant.email}
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Duration</Label>
+                    <Select
+                        value={meetingDetails.duration.toString()}
+                        onValueChange={(value) =>
+                            setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+                        }
                     >
-                      <X className="w-4 h-4" />
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">1 hour</SelectItem>
+                        <SelectItem value="90">1.5 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <Separator />
-
-          {/* Date & Time Section */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-lg">Select Date & Time</h4>
-            <div className="flex justify-center">
-              <div className="max-w-xl w-full">
-                <Calendar20
-                  compact
-                  onDateTimeSelected={(date: Date, time: string) => {
-                    setSelectedDate(date);
-                    setSelectedTime(time);
-                  }}
-                  bookedDates={bookedDates}
-                  availableTimeSlots={availableTimeSlots}
-                  bookedTimeSlots={bookedTimeSlots}
-                  initialDate={selectedDate}
-                  initialTime={selectedTime}
-                  showContinueButton={false}
-                  disabled={false}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Textarea
+                      id="description"
+                      placeholder="Add meeting agenda or notes..."
+                      value={meetingDetails.description}
+                      onChange={(e) =>
+                          setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                      }
+                      rows={3}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Meeting Details Section */}
-          <div className="space-y-6">
-            <h4 className="font-medium text-lg">Meeting Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Meeting Title *</Label>
-                <Input
-                  id="title"
-                  placeholder="Enter meeting title"
-                  value={meetingDetails.title}
-                  onChange={(e) =>
-                    setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration</Label>
-                <Select
-                  value={meetingDetails.duration.toString()}
-                  onValueChange={(value) =>
-                    setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+              <div className="flex items-center justify-between p-3">
+                <h4 className="font-medium text-lg">Meeting Participants</h4>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() =>
+                    setParticipants((prev) => [...prev, { email: '', name: '', isRequired: false }])
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Participant
+                </Button>
+              </div>
+
+              <div className="divide-y">
+                {participants.map((participant, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-12 gap-3 items-end p-3"
+                  >
+                    <div className="col-span-5">
+                      <Label>Email</Label>
+                      <Input
+                        placeholder="email@example.com"
+                        value={participant.email}
+                        onChange={(e) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].email = e.target.value;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <Label>Name</Label>
+                      <Input
+                        placeholder="Full Name"
+                        value={participant.name}
+                        onChange={(e) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].name = e.target.value;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-2 flex items-center space-x-2">
+                      <Checkbox
+                        checked={participant.isRequired}
+                        onCheckedChange={(checked) => {
+                          const newParticipants = [...participants];
+                          newParticipants[index].isRequired = checked as boolean;
+                          setParticipants(newParticipants);
+                        }}
+                      />
+                      <Label className="text-xs">Required</Label>
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setParticipants((prev) => prev.filter((_, i) => i !== index))}
+                        disabled={index === 0 && customerData?.email === participant.email}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          </div>
 
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                placeholder="Add meeting agenda or notes..."
-                value={meetingDetails.description}
-                onChange={(e) =>
-                  setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
-                }
-                rows={3}
-              />
+          {/* Date & Time Section */}
+          <div className="rounded-lg border">
+            <div className="flex items-center justify-between p-3">
+              <h4 className="font-medium text-lg">Select Date & Time</h4>
+            </div>
+            <div className="p-3">
+              <div className="flex justify-center">
+                <div className="max-w-xl w-full">
+                  <Calendar20
+                    compact
+                    onDateTimeSelected={(date: Date, time: string) => {
+                      setSelectedDate(date);
+                      setSelectedTime(time);
+                    }}
+                    bookedDates={bookedDates}
+                    availableTimeSlots={availableTimeSlots}
+                    bookedTimeSlots={bookedTimeSlots}
+                    initialDate={selectedDate}
+                    initialTime={selectedTime}
+                    showContinueButton={false}
+                    disabled={false}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
