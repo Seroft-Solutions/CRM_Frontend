@@ -110,34 +110,6 @@ export function CallClassificationStep({
         <>
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    {/* Lead Number Field - Always first */}
-                    <div className="md:col-span-2 xl:col-span-3">
-                        <FormField
-                            control={form.control}
-                            name="leadNo"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Input
-                                                {...field}
-                                                value={field.value || ''}
-                                                readOnly
-                                                className="font-mono text-sm bg-gray-50 border-dashed"
-                                                placeholder="Auto-generated lead number"
-                                            />
-                                        </div>
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    {/* Generated Form Fields */}
-
-                    {/* Generated Relationship Fields */}
-
                     {/* Priority Relationship */}
                     <FormField
                         control={form.control}
@@ -312,6 +284,26 @@ export function CallClassificationStep({
                                 actions={actions}
                                 config={config}
                             />
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="leadNo"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            value={field.value || ''}
+                                            readOnly
+                                            className="font-mono text-sm bg-gray-50 border-dashed"
+                                            placeholder="Auto-generated lead number"
+                                        />
+                                    </div>
+                                </FormControl>
+                            </FormItem>
                         )}
                     />
 
