@@ -17,49 +17,50 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
-      id: 'channel',
-      title: 'Channel Details',
-      description: 'Channel type and parties',
+      id: 'business',
+      title: 'Business Relations',
+      description: 'Connect with customers and sources',
       fields: [],
-      relationships: ['channelParties', 'channelType'],
+      relationships: ['source', 'customer', 'product','channelParties', 'channelType'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
+    // {
+    //   id: 'channel',
+    //   title: 'Channel Details',
+    //   description: 'Channel type and parties',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
     {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
       fields: ['leadNo'],
-      relationships: ['priority', 'callType', 'subCallType', 'callStatus'],
+      relationships: ['priority', 'callType', 'subCallType', 'callStatus','assignedTo'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
-    {
-      id: 'business',
-      title: 'Business Relations',
-      description: 'Connect with customers and sources',
-      fields: [],
-      relationships: ['source', 'customer', 'product'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'assignment and remarks',
-      title: 'Assignment and Remarks',
-      description: 'Assign user and add any additional remarks or notes',
-      fields: [],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
+
+    // {
+    //   id: 'assignment and remarks',
+    //   title: 'Assignment and Remarks',
+    //   description: 'Assign user and add any additional remarks or notes',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
     {
       id: 'review',
       title: 'Review',
