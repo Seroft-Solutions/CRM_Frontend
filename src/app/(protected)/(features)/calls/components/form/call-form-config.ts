@@ -168,7 +168,7 @@ export const callFormConfig: FormConfig = {
       targetEntity: 'subCallType',
       displayField: 'name',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'classification',
       cascadingFilter: {

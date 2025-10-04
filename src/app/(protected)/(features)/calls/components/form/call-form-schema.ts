@@ -18,7 +18,7 @@ export const callFormSchemaFields = {
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
-  subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
+  subCallType: z.number().optional(),
   source: z.number({ message: 'Please select source from the dropdown' }),
   customer: z.number({ message: 'Please select customer from the dropdown' }),
   product: z.number({ message: 'Please select product from the dropdown' }),
