@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,18 +16,12 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import Calendar20 from '@/components/calendar-20';
-import { Separator } from '@/components/ui/separator';
 import {
-  CalendarDays,
-  Video,
-  Bell,
-  Clock,
   Plus,
   X,
   Sparkles,
 } from 'lucide-react';
-import { format, addMinutes } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import './meeting-scheduler.css';
 import { MeetingErrorDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog';
 import { useUserAvailabilityCreation } from '@/app/(protected)/(features)/shared/services/customer-availability-service';
@@ -53,8 +46,6 @@ import {
 } from '@/core/api/generated/spring/schemas';
 import type {
   MeetingDTO,
-  MeetingParticipantDTO,
-  MeetingReminderDTO,
 } from '@/core/api/generated/spring/schemas';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
