@@ -192,7 +192,7 @@ export function CallClassificationStep({
                                     targetEntity: 'subCallType',
                                     displayField: 'name',
                                     primaryKey: 'id',
-                                    required: true,
+                                    required: false,
                                     multiple: false,
                                     cascadingFilter: {parentField: 'callType', filterField: 'callType'},
                                     api: {
