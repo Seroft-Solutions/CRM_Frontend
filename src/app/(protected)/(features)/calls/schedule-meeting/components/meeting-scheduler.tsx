@@ -460,6 +460,12 @@ export function MeetingScheduler({
       assignedCustomer: customerId ? ({ id: customerId } as any) : undefined,
       call: { id: callId } as any,
       status: 'ACTIVE',
+      participants: participants.map(p => ({
+        email: p.email,
+        name: p.name,
+        isRequired: p.isRequired,
+        status: 'ACTIVE',
+      })),
     };
 
     createMeeting({ data: meetingData });
