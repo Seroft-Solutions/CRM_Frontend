@@ -476,7 +476,7 @@ export function MeetingScheduler({
     );
   };
 
-  if (disabled || !assignedUserId) {
+  if (!!disabled) {
     return (
       <Card className="opacity-50">
         <CardContent className="py-8 text-center">
