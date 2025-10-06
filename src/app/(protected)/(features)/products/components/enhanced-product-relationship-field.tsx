@@ -320,13 +320,13 @@ export function EnhancedProductRelationshipField({
               onSuccess={handleProductCreated}
               trigger={
                 <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="shrink-0"
-                  title="Create new product"
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0 bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
+                    title="Create new product"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-4 w-4 text-white" />
                 </Button>
               }
             />
