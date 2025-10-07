@@ -39,39 +39,7 @@ export function CallClassificationStep({
                                            entity,
                                        }: CallClassificationStepProps) {
     const leadNoValue = form.watch('leadNo');
-    const [remarkText, setRemarkText] = useState('');
 
-    // Initialize remark from form state on mount
-    useEffect(() => {
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        if (existingRemarks.length > 0) {
-            setRemarkText(existingRemarks[0].remark);
-        }
-    }, [form]);
-
-    const saveRemark = () => {
-        const trimmedRemark = remarkText.trim();
-        if (!trimmedRemark) {
-            form.setValue('tempRemarks', [], {shouldDirty: true});
-            return;
-        }
-
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        const newRemarkObj: CallRemark = {
-            id: existingRemarks.length > 0 ? existingRemarks[0].id : Date.now().toString(),
-            remark: trimmedRemark,
-            dateTime: new Date(),
-        };
-
-        form.setValue('tempRemarks', [newRemarkObj], {shouldDirty: true});
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault(); // prevent new line
-            saveRemark();
-        }
-    };
     // Fetch call statuses and set default value for callStatus field
     useEffect(() => {
         const setDefaultCallStatus = async () => {
@@ -305,21 +273,6 @@ export function CallClassificationStep({
                             </FormItem>
                         )}
                     />
-                    <div className="col-span-2">
-                        <FormLabel htmlFor="remark">Remark</FormLabel>
-                        <div className="flex gap-2">
-                            <Textarea
-                                id="remark"
-                                placeholder="Enter remark here..."
-                                value={remarkText}
-                                onChange={(e) => setRemarkText(e.target.value)}
-                                onKeyDown={handleKeyPress}
-                                onBlur={saveRemark}
-                                rows={3}
-                                className="flex-1 resize-none"
-                            />
-                        </div>
-                    </div>
                 </div>
             </div>
         </>

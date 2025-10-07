@@ -17,6 +17,8 @@ import {useEntityForm} from "@/app/(protected)/(features)/calls/components/form/
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Label} from "@/components/ui/label";
 import {Building2, UserCheck} from "lucide-react";
+import {Textarea} from "@/components/ui/textarea";
+import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
 
 interface CallBusinessStepProps {
   form: any;
@@ -31,7 +33,39 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
   const isBusinessPartner = hasGroup('Business Partners');
     const [callType, setCallType] = useState('');
     const { state, actions: formActions } = useEntityForm();
+    const [remarkText, setRemarkText] = useState('');
 
+    // Initialize remark from form state on mount
+    useEffect(() => {
+        const existingRemarks = form.getValues('tempRemarks') || [];
+        if (existingRemarks.length > 0) {
+            setRemarkText(existingRemarks[0].remark);
+        }
+    }, [form]);
+
+    const saveRemark = () => {
+        const trimmedRemark = remarkText.trim();
+        if (!trimmedRemark) {
+            form.setValue('tempRemarks', [], {shouldDirty: true});
+            return;
+        }
+
+        const existingRemarks = form.getValues('tempRemarks') || [];
+        const newRemarkObj: CallRemark = {
+            id: existingRemarks.length > 0 ? existingRemarks[0].id : Date.now().toString(),
+            remark: trimmedRemark,
+            dateTime: new Date(),
+        };
+
+        form.setValue('tempRemarks', [newRemarkObj], {shouldDirty: true});
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault(); // prevent new line
+            saveRemark();
+        }
+    };
     // Clear channel fields and errors when switching to organization
     useEffect(() => {
         if (callType === 'organization') {
@@ -208,6 +242,21 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
             </FormItem>
           )}
         />
+          <div>
+              <FormLabel htmlFor="remark">Remark</FormLabel>
+              <div className="flex gap-2">
+                  <Textarea
+                      id="remark"
+                      placeholder="Enter remark here..."
+                      value={remarkText}
+                      onChange={(e) => setRemarkText(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      onBlur={saveRemark}
+                      rows={3}
+                      className="flex-1 resize-none"
+                  />
+              </div>
+          </div>
       </div>
 
       {/* Second Row: Business Relationship Radio Group */}
