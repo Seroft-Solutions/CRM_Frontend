@@ -10,6 +10,7 @@ import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 export interface OrganizationSetupRequest {
   organizationName: string;
   domain?: string;
+  organizationCode?: string; // Optional code for custom org codes
 }
 
 export interface OrganizationSetupResult {
@@ -113,6 +114,7 @@ export class OrganizationSetupService {
       organizationName: request.organizationName,
       displayName: request.organizationName, // Use organization name as display name
       description: `CRM organization for ${request.organizationName}`,
+      organizationCode: request.organizationCode,
       domain: request.domain,
     };
 

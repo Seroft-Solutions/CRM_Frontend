@@ -6,8 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
-  getAdminRealmsRealmOrganizations,
-  postAdminRealmsRealmOrganizations,
+    getAdminRealmsRealmOrganizations, OrganizationRepresentationAttributes,
+    postAdminRealmsRealmOrganizations,
 } from '@/core/api/generated/keycloak';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 
@@ -72,10 +72,14 @@ export async function POST(request: NextRequest) {
     if (!requestData.organizationName && !requestData.name) {
       return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
     }
-
+      const attributes: OrganizationRepresentationAttributes = {};
+      if (requestData.organizationCode) {
+          attributes.organizationCode = [requestData.organizationCode.toString()];
+      }
     // Create minimal valid organization data structure for Keycloak
     const organizationData: OrganizationRepresentation = {
       name: requestData.organizationName || requestData.name,
+      attributes,
       enabled: true,
     };
 
