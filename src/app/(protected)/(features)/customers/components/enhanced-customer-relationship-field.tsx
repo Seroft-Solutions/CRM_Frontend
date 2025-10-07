@@ -50,6 +50,7 @@ export function EnhancedCustomerRelationshipField({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [deferredSearchQuery, setDeferredSearchQuery] = useState('');
+  const [createdCustomers, setCreatedCustomers] = useState<CustomerDTO[]>([]);
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -90,11 +91,19 @@ export function EnhancedCustomerRelationshipField({
 
   // Get available options (either all customers or search results) from paginated responses
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
-    if (deferredSearchQuery.length > 1 && searchResponse) {
-      return searchResponse;
-    }
-    return customersResponse || [];
-  }, [customersResponse, searchResponse, deferredSearchQuery]);
+    const baseOptions =
+      deferredSearchQuery.length > 1 && searchResponse ? searchResponse : customersResponse || [];
+
+    const merged = [...createdCustomers];
+
+    baseOptions.forEach((option) => {
+      if (!merged.some((customer) => customer.id === option.id)) {
+        merged.push(option);
+      }
+    });
+
+    return merged;
+  }, [customersResponse, searchResponse, deferredSearchQuery, createdCustomers]);
 
   // Get selected options for display with proper typing - handle newly created items
   const getSelectedOptions = (): CustomerDTO[] => {
@@ -178,23 +187,31 @@ export function EnhancedCustomerRelationshipField({
   const handleCustomerCreated = useCallback(
     (customer: CustomerDTO) => {
       const customerId = customer.id!;
-      
-      // Immediately update the available options with the new customer
-      // This ensures the new customer appears in the list before refetch completes
-      
+
+      setCreatedCustomers((prev) => {
+        if (prev.some((existing) => existing.id === customerId)) {
+          return prev.map((existing) => (existing.id === customerId ? customer : existing));
+        }
+        return [customer, ...prev];
+      });
+
       // Auto-select the newly created customer
       if (multiple) {
         const currentValues = Array.isArray(value) ? value : [];
         onValueChange([...currentValues, customerId]);
       } else {
         onValueChange(customerId);
+        setOpen(false);
       }
-      
+
       // Refetch customers to include the new one (this will update the full list)
       setTimeout(() => {
         refetchCustomers();
       }, 100);
-      
+
+      setSearchQuery('');
+      setDeferredSearchQuery('');
+
       // Call the optional callback
       onCustomerCreated?.(customerId);
     },

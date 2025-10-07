@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Popover,
   PopoverContent,
@@ -36,7 +35,10 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { useCreateArea } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import {
+  useCreateArea,
+  getAreaWithFullHierarchy,
+} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { useSearchCitiesWithHierarchy } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -88,6 +90,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
   const [citySearchTerm, setCitySearchTerm] = useState('');
   const [cityPage, setCityPage] = useState(0);
   const [allCities, setAllCities] = useState<CityDTO[]>([]);
+  const [selectedCity, setSelectedCity] = useState<CityDTO | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
   const prevSearchTermRef = useRef<string>('');
 
@@ -166,7 +169,17 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
 
   const { mutate: createArea, isPending } = useCreateArea({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        let areaWithHierarchy = data;
+
+        if (data?.id) {
+          try {
+            areaWithHierarchy = await getAreaWithFullHierarchy(data.id);
+          } catch (error) {
+            console.warn('Failed to fetch full hierarchy for new area:', error);
+          }
+        }
+
         toast.success('Location created successfully!');
 
         // Invalidate geography search cache
@@ -177,7 +190,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
         onOpenChange(false);
 
         if (onSuccess) {
-          onSuccess(data);
+          onSuccess(areaWithHierarchy);
         }
       },
       onError: (error: any) => {
@@ -208,14 +221,27 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
       setCitySearchTerm('');
       setCityPage(0);
       setAllCities([]);
+      setSelectedCity(null);
     }
   };
 
-  // Get selected city for display
-  const selectedCity = useMemo(() => {
-    const cityId = form.watch('cityId');
-    return allCities.find((city) => city.id === cityId);
-  }, [allCities, form.watch('cityId')]);
+  const cityId = form.watch('cityId');
+
+  useEffect(() => {
+    if (!cityId) {
+      setSelectedCity(null);
+      return;
+    }
+
+    if (selectedCity?.id === cityId) {
+      return;
+    }
+
+    const matchedCity = allCities.find((city) => city.id === cityId);
+    if (matchedCity) {
+      setSelectedCity(matchedCity);
+    }
+  }, [cityId, allCities, selectedCity?.id]);
 
   const handleCitySearchChange = (value: string) => {
     setCitySearchTerm(value);
@@ -223,28 +249,35 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
-          <SheetHeader>
-            <SheetTitle>Create New Location</SheetTitle>
-            <SheetDescription>
-              Add a new area to the system. Fill in the required information below.
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50"
+      >
+        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white shadow-sm">
+          <SheetHeader className="px-6 py-5 space-y-1">
+            <SheetTitle className="text-lg font-semibold leading-tight text-white">
+              Create New Location
+            </SheetTitle>
+            <SheetDescription className="text-sm text-blue-100">
+              Capture area details and link them to the relevant city before saving.
             </SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-6 py-5">
           <Form {...form}>
             <form
               id="area-creation-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6"
+              className="space-y-5"
             >
               {/* Location Details Section */}
-              <div className="space-y-4">
-                <div className="border-b pb-2">
-                  <h3 className="text-sm font-medium text-gray-900">Location Details</h3>
-                  <p className="text-xs text-gray-500 mt-1">Basic area information</p>
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">Location Details</h3>
+                  <p className="text-xs text-slate-500">
+                    Provide the identifying information for the new area.
+                  </p>
                 </div>
 
                 <FormField
@@ -252,7 +285,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
+                      <FormLabel className="text-sm font-semibold text-slate-700">
                         Area Name
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
@@ -274,7 +307,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                   name="pincode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
+                      <FormLabel className="text-sm font-semibold text-slate-700">
                         Pincode
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
@@ -294,10 +327,12 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
               </div>
 
               {/* City Selection Section */}
-              <div className="space-y-4">
-                <div className="border-b pb-2">
-                  <h3 className="text-sm font-medium text-gray-900">City Selection</h3>
-                  <p className="text-xs text-gray-500 mt-1">Select the city for this area</p>
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">City Connection</h3>
+                  <p className="text-xs text-slate-500">
+                    Link the area to the correct city to preserve the full hierarchy.
+                  </p>
                 </div>
 
                 <FormField
@@ -305,7 +340,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                   name="cityId"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel className="text-sm font-medium">
+                      <FormLabel className="text-sm font-semibold text-slate-700">
                         City
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
@@ -343,66 +378,68 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                               value={citySearchTerm}
                               onValueChange={handleCitySearchChange}
                             />
-                            <ScrollArea className="h-[300px]">
-                              <CommandList>
-                                {isLoadingCities && cityPage === 0 ? (
-                                  <div className="p-4 text-center">
-                                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                                    <p className="text-sm text-muted-foreground mt-2">Searching...</p>
+                            <CommandList
+                              className="max-h-72 overflow-y-auto overscroll-contain pr-1"
+                              onWheel={(event) => event.stopPropagation()}
+                            >
+                              {isLoadingCities && cityPage === 0 ? (
+                                <div className="p-4 text-center">
+                                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                                  <p className="text-sm text-muted-foreground mt-2">Searching...</p>
+                                </div>
+                              ) : allCities.length === 0 ? (
+                                <CommandEmpty>
+                                  <div className="p-4 text-center text-sm text-muted-foreground">
+                                    {citySearchTerm ? `No cities found matching "${citySearchTerm}"` : 'No cities available'}
                                   </div>
-                                ) : allCities.length === 0 ? (
-                                  <CommandEmpty>
-                                    <div className="p-4 text-center text-sm text-muted-foreground">
-                                      {citySearchTerm ? `No cities found matching "${citySearchTerm}"` : 'No cities available'}
-                                    </div>
-                                  </CommandEmpty>
-                                ) : (
-                                  <>
-                                    <CommandGroup>
-                                      {allCities.map((city) => (
-                                        <CommandItem
-                                          key={city.id}
-                                          value={String(city.id)}
-                                          onSelect={() => {
-                                            form.setValue('cityId', city.id!);
-                                            setCitySearchOpen(false);
-                                            setCitySearchTerm('');
-                                            setCityPage(0);
-                                            setAllCities([]);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4 flex-shrink-0",
-                                              city.id === field.value
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          <div className="flex flex-col flex-1 min-w-0">
-                                            <span className="font-medium truncate">{city.name}</span>
-                                            {city.district?.name && (
-                                              <span className="text-xs text-muted-foreground truncate">
-                                                {city.district.name}
-                                                {city.district.state?.name && `, ${city.district.state.name}`}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                    {/* Infinite scroll trigger */}
-                                    <div ref={observerTarget} className="h-4 w-full">
-                                      {isFetching && cityPage > 0 && (
-                                        <div className="p-2 text-center">
-                                          <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
+                                </CommandEmpty>
+                              ) : (
+                                <>
+                                  <CommandGroup>
+                                    {allCities.map((city) => (
+                                      <CommandItem
+                                        key={city.id}
+                                        value={String(city.id)}
+                                        onSelect={() => {
+                                          form.setValue('cityId', city.id!);
+                                          setSelectedCity(city);
+                                          setCitySearchOpen(false);
+                                          setCitySearchTerm('');
+                                          setCityPage(0);
+                                          setAllCities([]);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4 flex-shrink-0",
+                                            city.id === field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                          <span className="font-medium truncate">{city.name}</span>
+                                          {city.district?.name && (
+                                            <span className="text-xs text-muted-foreground truncate">
+                                              {city.district.name}
+                                              {city.district.state?.name && `, ${city.district.state.name}`}
+                                            </span>
+                                          )}
                                         </div>
-                                      )}
-                                    </div>
-                                  </>
-                                )}
-                              </CommandList>
-                            </ScrollArea>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                  {/* Infinite scroll trigger */}
+                                  <div ref={observerTarget} className="h-4 w-full">
+                                    {isFetching && cityPage > 0 && (
+                                      <div className="p-2 text-center">
+                                        <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
+                                      </div>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </CommandList>
                           </Command>
                         </PopoverContent>
                       </Popover>
@@ -416,8 +453,8 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
         </div>
 
         {/* Sticky Footer */}
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
-          <div className="flex gap-3 justify-end">
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -430,6 +467,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
               type="submit"
               form="area-creation-form"
               disabled={isPending}
+              className="min-w-[140px]"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Location

@@ -10,7 +10,6 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -166,28 +165,33 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
-          <SheetHeader>
-            <SheetTitle>Create New Customer</SheetTitle>
-            <SheetDescription>
-              Add a new customer to your database. Fill in the required information below.
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50"
+      >
+        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white shadow-sm">
+          <SheetHeader className="px-6 py-5 space-y-1">
+            <SheetTitle className="text-lg font-semibold leading-tight text-white">
+              Create New Customer
+            </SheetTitle>
+            <SheetDescription className="text-sm text-blue-100">
+              Capture core customer details and select their location hierarchy.
             </SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-6 py-5">
           <Form {...form}>
             <form 
               id="customer-creation-form"
               onSubmit={form.handleSubmit(onSubmit)} 
-              className="space-y-6"
+              className="space-y-5"
             >
             {/* Basic Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Essential customer details</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
+                <p className="text-xs text-slate-500">Provide the key identifiers used across customer journeys.</p>
               </div>
 
               <FormField
@@ -195,7 +199,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="customerBusinessName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Business Name
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -216,7 +220,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Contact Person</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Contact Person</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter contact person name"
@@ -234,7 +238,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Email Address</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Email Address</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -250,10 +254,10 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
             </div>
 
             {/* Contact Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Contact Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Phone numbers for communication</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Contact Information</h3>
+                <p className="text-xs text-slate-500">Phone numbers the team will use for day-to-day communication.</p>
               </div>
 
               <FormField
@@ -261,7 +265,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Mobile Number
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -295,7 +299,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="whatsApp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">WhatsApp Number</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">WhatsApp Number</FormLabel>
                     <FormControl>
                       <PhoneInput
                         placeholder="Enter WhatsApp number"
@@ -314,10 +318,10 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
             </div>
 
             {/* Location Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Location</h3>
-                <p className="text-xs text-gray-500 mt-1">Search and select customer location</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Location</h3>
+                <p className="text-xs text-slate-500">Search for the area to automatically attach its full hierarchy.</p>
               </div>
 
               <FormField
@@ -325,7 +329,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="area"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Address
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -348,8 +352,8 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
         </Form>
         </div>
 
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
-          <SheetFooter>
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -362,6 +366,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
               type="submit"
               form="customer-creation-form"
               disabled={isPending}
+              className="min-w-[160px]"
             >
               {isPending ? (
                 <>
@@ -372,7 +377,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 'Create Customer'
               )}
             </Button>
-          </SheetFooter>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
