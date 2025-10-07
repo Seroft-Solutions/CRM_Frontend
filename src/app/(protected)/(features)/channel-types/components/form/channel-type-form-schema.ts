@@ -25,7 +25,7 @@ export const channelTypeFormSchemaFields = {
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 100, { message: 'Please enter a number 100 or lower' })
     .optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
 };
 
 export const channelTypeFormSchema = z.object(channelTypeFormSchemaFields);

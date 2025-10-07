@@ -204,7 +204,6 @@ export interface DraftsConfig {
   confirmDialog: boolean;
   autoSave: boolean;
   maxDrafts: number;
-  showRestorationDialog: boolean;
 }
 
 export type ValidationFunction = (value: any, allValues: Record<string, any>) => string | undefined;
@@ -225,7 +224,6 @@ export interface FormState {
   isSavingDraft: boolean;
   isDeletingDraft: boolean;
   showDraftDialog: boolean;
-  showRestorationDialog: boolean;
   currentDraftId?: number;
   draftRestorationInProgress: boolean;
 }

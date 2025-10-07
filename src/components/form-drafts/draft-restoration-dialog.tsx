@@ -15,6 +15,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { FileText, Plus, Loader2, Trash2 } from 'lucide-react';
 import type { DraftItem } from '@/core/hooks/use-entity-drafts';
 
+// Import leadNo formatter for calls (with try-catch to handle if not available)
+let formatLeadNoForDisplay: ((leadNo: string) => string) | null = null;
+try {
+  const leadNoUtils = require('@/app/(protected)/(features)/calls/utils/leadNo-generator');
+  formatLeadNoForDisplay = leadNoUtils.formatLeadNoForDisplay;
+} catch {
+  // Module not available, will use raw leadNo
+}
+
 export interface DraftRestorationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -83,6 +92,30 @@ export function DraftRestorationDialog({
     return `Step ${currentStep + 1} of ${totalSteps}`;
   };
 
+  const getDraftDisplayName = (draft: DraftItem) => {
+    // Try to get leadNo from form data for calls
+    if (entityType.toLowerCase() === 'call' && draft.data.formData?.leadNo) {
+      const leadNo = draft.data.formData.leadNo;
+      const formattedLeadNo = formatLeadNoForDisplay ? formatLeadNoForDisplay(leadNo) : leadNo;
+      return `Lead ${formattedLeadNo}`;
+    }
+
+    // Try to get other identifying fields for different entity types
+    const formData = draft.data.formData;
+    if (formData?.name) {
+      return formData.name;
+    }
+    if (formData?.title) {
+      return formData.title;
+    }
+    if (formData?.customerBusinessName) {
+      return formData.customerBusinessName;
+    }
+
+    // Fallback to draft ID
+    return `Draft #${draft.id}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -95,6 +128,7 @@ export function DraftRestorationDialog({
             You have {drafts.length} saved draft{drafts.length !== 1 ? 's' : ''} for{' '}
             {entityType.toLowerCase()} forms. Would you like to continue from a draft or start
             fresh?
+            {entityType.toLowerCase() === 'call' && ' Each draft is identified by its Lead Number.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -124,11 +158,16 @@ export function DraftRestorationDialog({
                           </span>
                         </div>
                         <p className="text-sm font-medium">
-                          Draft #{draft.id}
+                          {getDraftDisplayName(draft)}
                           {restoringDraftId === draft.id && (
                             <span className="ml-2 text-blue-600 text-xs">(Restoring...)</span>
                           )}
                         </p>
+                        {entityType.toLowerCase() === 'call' && draft.data.formData?.leadNo && (
+                          <p className="text-xs text-muted-foreground font-mono">
+                            ID: {draft.data.formData.leadNo}
+                          </p>
+                        )}
                       </div>
 
                       <Button

@@ -290,7 +290,6 @@ export function DistrictDetails({ id }: DistrictDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

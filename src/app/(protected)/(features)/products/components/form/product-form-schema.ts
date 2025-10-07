@@ -26,7 +26,6 @@ export const productFormSchemaFields = {
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
-  category: z.string().max(50, { message: 'Please enter no more than 50 characters' }).optional(),
   basePrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
@@ -49,10 +48,31 @@ export const productFormSchemaFields = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
+  category: z.number().optional(),
+  subCategory: z.number().optional(),
 };
 
-export const productFormSchema = z.object(productFormSchemaFields);
+// Base schema without refine (for use with .omit(), .pick(), etc.)
+export const productFormSchemaBase = z.object(productFormSchemaFields);
+
+// Full schema with validation
+export const productFormSchema = productFormSchemaBase.refine(
+  (data) => {
+    const minPrice = data.minPrice ? Number(data.minPrice) : null;
+    const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+
+    // Only validate if both minPrice and maxPrice are provided
+    if (minPrice !== null && maxPrice !== null) {
+      return maxPrice > minPrice;
+    }
+    return true; // No validation if either is missing
+  },
+  {
+    message: 'Max price must be greater than min price',
+    path: ['maxPrice'], // This will highlight the maxPrice field in the form
+  }
+);
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -73,7 +93,6 @@ export const productFieldSchemas = {
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
-  category: z.string().max(50, { message: 'Please enter no more than 50 characters' }).optional(),
   basePrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
@@ -96,26 +115,41 @@ export const productFieldSchemas = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
+  category: z.number().optional(),
+  subCategory: z.number().optional(),
 };
 
 // Step-specific validation schemas
 export const productStepSchemas = {
-  basic: z.object({
-    name: productFieldSchemas.name,
-    code: productFieldSchemas.code,
-    description: productFieldSchemas.description,
-    category: productFieldSchemas.category,
-    basePrice: productFieldSchemas.basePrice,
-    minPrice: productFieldSchemas.minPrice,
-    maxPrice: productFieldSchemas.maxPrice,
-    remark: productFieldSchemas.remark,
-    status: productFieldSchemas.status,
-    createdBy: productFieldSchemas.createdBy,
-    createdDate: productFieldSchemas.createdDate,
-    lastModifiedBy: productFieldSchemas.lastModifiedBy,
-    lastModifiedDate: productFieldSchemas.lastModifiedDate,
-  }),
+  basic: z
+    .object({
+      name: productFieldSchemas.name,
+      code: productFieldSchemas.code,
+      description: productFieldSchemas.description,
+      basePrice: productFieldSchemas.basePrice,
+      minPrice: productFieldSchemas.minPrice,
+      maxPrice: productFieldSchemas.maxPrice,
+      remark: productFieldSchemas.remark,
+      status: productFieldSchemas.status,
+      category: productFieldSchemas.category,
+      subCategory: productFieldSchemas.subCategory,
+    })
+    .refine(
+      (data) => {
+        const minPrice = data.minPrice ? Number(data.minPrice) : null;
+        const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+
+        if (minPrice !== null && maxPrice !== null) {
+          return maxPrice > minPrice;
+        }
+        return true;
+      },
+      {
+        message: 'Max price must be greater than min price',
+        path: ['maxPrice'],
+      }
+    ),
 
   review: productFormSchema,
 };

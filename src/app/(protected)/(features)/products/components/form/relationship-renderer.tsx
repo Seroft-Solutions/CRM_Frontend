@@ -13,6 +13,17 @@ import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox
 
 // Import all hooks statically for the specific entity
 
+import {
+  useGetAllProductCategories,
+  useSearchProductCategories,
+  useCountProductCategories,
+} from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import {
+  useGetAllProductSubCategories,
+  useSearchProductSubCategories,
+  useCountProductSubCategories,
+} from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+
 import type { RelationshipConfig } from './form-types';
 
 interface RelationshipRendererProps {
@@ -75,6 +86,94 @@ export function RelationshipRenderer({
   // Use hooks based on relationship name - this ensures hooks are called consistently
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
+      case 'category':
+        return (
+          <PaginatedRelationshipCombobox
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (relConfig.cascadingFilter) {
+                const dependentRelationships = config.relationships.filter(
+                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                );
+                dependentRelationships.forEach((depRel: any) => {
+                  form.setValue(depRel.name, undefined);
+                });
+              }
+            }}
+            displayField={relConfig.displayField}
+            placeholder={relConfig.ui.placeholder}
+            multiple={relConfig.multiple}
+            useGetAllHook={useGetAllProductCategories}
+            useSearchHook={useSearchProductCategories}
+            useCountHook={useCountProductCategories}
+            entityName={relConfig.api.entityName}
+            searchField={relConfig.displayField}
+            canCreate={relConfig.creation?.canCreate}
+            createEntityPath={relConfig.creation?.createPath || ''}
+            createPermission={relConfig.creation?.createPermission || ''}
+            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+            parentFilter={
+              relConfig.cascadingFilter
+                ? form.watch(relConfig.cascadingFilter.parentField)
+                : undefined
+            }
+            parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
+            onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
+            disabled={
+              relConfig.cascadingFilter
+                ? !form.watch(relConfig.cascadingFilter.parentField)
+                : relConfig.ui.disabled
+            }
+            {...actions.getNavigationProps(relConfig.name)}
+          />
+        );
+
+      case 'subCategory':
+        return (
+          <PaginatedRelationshipCombobox
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (relConfig.cascadingFilter) {
+                const dependentRelationships = config.relationships.filter(
+                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                );
+                dependentRelationships.forEach((depRel: any) => {
+                  form.setValue(depRel.name, undefined);
+                });
+              }
+            }}
+            displayField={relConfig.displayField}
+            placeholder={relConfig.ui.placeholder}
+            multiple={relConfig.multiple}
+            useGetAllHook={useGetAllProductSubCategories}
+            useSearchHook={useSearchProductSubCategories}
+            useCountHook={useCountProductSubCategories}
+            entityName={relConfig.api.entityName}
+            searchField={relConfig.displayField}
+            canCreate={relConfig.creation?.canCreate}
+            createEntityPath={relConfig.creation?.createPath || ''}
+            createPermission={relConfig.creation?.createPermission || ''}
+            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+            parentFilter={
+              relConfig.cascadingFilter
+                ? form.watch(relConfig.cascadingFilter.parentField)
+                : undefined
+            }
+            parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
+            onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
+            disabled={
+              relConfig.cascadingFilter
+                ? !form.watch(relConfig.cascadingFilter.parentField)
+                : relConfig.ui.disabled
+            }
+            {...actions.getNavigationProps(relConfig.name)}
+          />
+        );
+
       default:
         // For relationships without proper API configuration, show a fallback message
         return (

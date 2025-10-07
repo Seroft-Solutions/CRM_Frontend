@@ -79,17 +79,6 @@ export const callStatusFormConfig: FormConfig = {
       },
       ui: {},
     },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
   ],
 
   // Relationship definitions

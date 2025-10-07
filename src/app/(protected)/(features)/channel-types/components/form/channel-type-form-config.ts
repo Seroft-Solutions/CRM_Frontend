@@ -82,17 +82,6 @@ export const channelTypeFormConfig: FormConfig = {
         inputType: 'number',
       },
     },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
   ],
 
   // Relationship definitions

@@ -273,7 +273,6 @@ export function StateDetails({ id }: StateDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

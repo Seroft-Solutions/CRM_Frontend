@@ -413,7 +413,7 @@ export function PaginatedRelationshipCombobox({
                     <CommandEmpty>
                       {deferredSearchQuery
                         ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".`
-                        : `No ${entityName.toLowerCase()} found.`}
+                        : `N/A`}
                     </CommandEmpty>
                   )}
 

@@ -2,9 +2,14 @@
   "annotations": {
     "changelogDate": "20250828083525"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
+    {
+      "fieldName": "leadNo",
+      "fieldType": "String",
+      "fieldValidateRules": ["unique"]
+    },
     {
       "fieldName": "status",
       "fieldType": "Status",

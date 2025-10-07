@@ -28,6 +28,7 @@ export interface UseDraftsOptions {
 export interface DraftItem {
   id: number;
   data: DraftData;
+  rawData: any; // Original draft object from API
   createdDate?: string;
   lastModifiedDate?: string;
 }
@@ -62,6 +63,7 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     ? draftsResponse.map((draft) => ({
         id: draft.id!,
         data: JSON.parse(draft.jsonPayload) as DraftData,
+        rawData: draft, // Store original draft object
         createdDate: draft.createdDate,
         lastModifiedDate: draft.lastModifiedDate,
       }))
@@ -136,10 +138,9 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
         version: '1.0',
       };
 
-
       const userDraftDTO: UserDraftDTO = {
         type: entityType,
-        status:'ACTIVE',
+        status: 'ACTIVE',
         jsonPayload: JSON.stringify(draftData),
       };
 
@@ -182,8 +183,8 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
   };
 
   /**
-   * Restore a draft (load and then attempt to delete it)
-   * Returns the draft data immediately, then attempts deletion in background
+   * Restore a draft (load and then attempt to archive it)
+   * Returns the draft data immediately, then attempts archiving in background
    */
   const restoreDraft = async (draftId: number): Promise<DraftData | null> => {
     const draft = drafts.find((d) => d.id === draftId);
@@ -192,20 +193,27 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     // Return the data immediately - restoration should always succeed if we have local data
     const draftData = draft.data;
 
-    // Attempt to delete the draft in background - don't let failure affect restoration
+    // Attempt to archive the draft in background - don't let failure affect restoration
     setTimeout(async () => {
       try {
-        await deleteDraftMutation.mutateAsync({ id: draftId });
+        const draftToArchive = draft.rawData;
+        await updateDraftMutation.mutateAsync({
+          id: draftId,
+          data: {
+            ...draftToArchive,
+            status: 'ARCHIVED',
+          },
+        });
       } catch (error: any) {
-        // Handle 409 conflicts gracefully - draft was already deleted elsewhere
+        // Handle 409 conflicts gracefully - draft was already modified elsewhere
         if (error?.response?.status === 409 || error?.status === 409) {
-          console.log(`Draft ${draftId} was already deleted, updating local state`);
+          console.log(`Draft ${draftId} was already modified, updating local state`);
           // Refresh the drafts list to sync with server state
           queryClient.invalidateQueries({
             queryKey: ['/api/user-drafts'],
           });
         } else {
-          console.warn(`Failed to delete draft ${draftId} after restoration:`, error);
+          console.warn(`Failed to archive draft ${draftId} after restoration:`, error);
         }
       }
     }, 100);

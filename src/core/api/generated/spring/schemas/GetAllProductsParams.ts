@@ -41,13 +41,6 @@ export type GetAllProductsParams = {
 'description.specified'?: boolean;
 'description.in'?: string[];
 'description.notIn'?: string[];
-'category.contains'?: string;
-'category.doesNotContain'?: string;
-'category.equals'?: string;
-'category.notEquals'?: string;
-'category.specified'?: boolean;
-'category.in'?: string[];
-'category.notIn'?: string[];
 'basePrice.greaterThan'?: number;
 'basePrice.lessThan'?: number;
 'basePrice.greaterThanOrEqual'?: number;
@@ -119,6 +112,24 @@ export type GetAllProductsParams = {
 'lastModifiedDate.specified'?: boolean;
 'lastModifiedDate.in'?: string[];
 'lastModifiedDate.notIn'?: string[];
+'categoryId.greaterThan'?: number;
+'categoryId.lessThan'?: number;
+'categoryId.greaterThanOrEqual'?: number;
+'categoryId.lessThanOrEqual'?: number;
+'categoryId.equals'?: number;
+'categoryId.notEquals'?: number;
+'categoryId.specified'?: boolean;
+'categoryId.in'?: number[];
+'categoryId.notIn'?: number[];
+'subCategoryId.greaterThan'?: number;
+'subCategoryId.lessThan'?: number;
+'subCategoryId.greaterThanOrEqual'?: number;
+'subCategoryId.lessThanOrEqual'?: number;
+'subCategoryId.equals'?: number;
+'subCategoryId.notEquals'?: number;
+'subCategoryId.specified'?: boolean;
+'subCategoryId.in'?: number[];
+'subCategoryId.notIn'?: number[];
 distinct?: boolean;
 /**
  * Zero-based page index (0..N)

@@ -151,7 +151,7 @@ export const springServiceMutator = async <T>(
               if (session?.access_token && !session.error) {
                 // Update token cache with new token
                 tokenCache.invalidate();
-                
+
                 error.config._retry = true;
                 error.config.headers = error.config.headers || {};
                 error.config.headers.Authorization = `Bearer ${session.access_token}`;

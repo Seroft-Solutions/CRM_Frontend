@@ -22,7 +22,6 @@ interface FormNavigationProps {
 export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
   const isLastStep = state.currentStep === config.steps.length - 1;
-
   const handleNext = async () => {
     const success = await actions.nextStep();
     if (success && config.behavior.autoSave.enabled) {
@@ -99,7 +98,7 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
           >
             <Save className="h-4 w-4" />
-            {isSubmitting ? 'Submitting...' : `${isNew ? 'Create' : 'Update'} Call`}
+            {isSubmitting ? 'Submitting...' : `${isNew ? 'Submit' : 'Update'} Call`}
           </Button>
         ) : (
           <Button

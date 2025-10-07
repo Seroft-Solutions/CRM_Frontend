@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar, // Added import for useSidebar
 } from '@/components/ui/sidebar';
 import { type SidebarItem } from '@/components/sidebar/sidebar-items';
 
@@ -79,6 +80,8 @@ function NavItem({
   isActive: (item: SidebarItem) => boolean;
   hasPermission: (requiredPermission?: string) => boolean;
 }) {
+  const { state, setOpen } = useSidebar(); // Added: Access sidebar state and setter
+
   const itemHasPermission = hasPermission(item.requiredPermission);
 
   // If permission is required and user doesn't have it, don't render
@@ -94,6 +97,20 @@ function NavItem({
     return !child.requiredPermission || childHasPermission;
   });
 
+  // Added: Handler to expand sidebar if collapsed
+  const handleClick = () => {
+    if (state === 'collapsed') {
+      setOpen(true);
+    }
+  };
+
+  // Handler to collapse sidebar on navigation if expanded
+  const handleNavigation = () => {
+    if (state === 'expanded') {
+      setOpen(false);
+    }
+  };
+
   return item.children ? (
     // Items with children - collapsible menu
     // Only render if there are visible children or no permission requirement
@@ -106,7 +123,7 @@ function NavItem({
       >
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton tooltip={item.label} data-active={active}>
+            <SidebarMenuButton tooltip={item.label} data-active={active} onClick={handleClick}>
               {item.icon && <item.icon />}
               <span>{item.label}</span>
               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -119,6 +136,7 @@ function NavItem({
                   <SidebarMenuSubButton
                     asChild
                     data-active={subItem.path && pathname === subItem.path}
+                    onClick={handleNavigation} // Added: Collapse on navigation
                   >
                     <Link href={subItem.path || '#'}>
                       <span>{subItem.label}</span>
@@ -134,7 +152,15 @@ function NavItem({
   ) : (
     // Items without children - direct link
     <SidebarMenuItem key={item.key}>
-      <SidebarMenuButton asChild tooltip={item.label} data-active={active}>
+      <SidebarMenuButton
+        asChild
+        tooltip={item.label}
+        data-active={active}
+        onClick={() => {
+          handleClick();
+          handleNavigation(); // Added: Collapse on navigation
+        }}
+      >
         <Link href={item.path || '#'}>
           {item.icon && <item.icon />}
           <span>{item.label}</span>

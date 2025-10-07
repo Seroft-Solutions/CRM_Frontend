@@ -18,9 +18,9 @@ export class TestHelpers {
    */
   async takeTimestampedScreenshot(name: string) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    await this.page.screenshot({ 
+    await this.page.screenshot({
       path: `test-results/screenshots/${name}-${timestamp}.png`,
-      fullPage: true 
+      fullPage: true,
     });
   }
 
@@ -48,16 +48,16 @@ export const Selectors = {
   // Navigation
   navbar: '[role="navigation"]',
   sidebar: '[data-testid="sidebar"]',
-  
+
   // Common buttons
   submitButton: 'button[type="submit"]',
   cancelButton: 'button:has-text("Cancel")',
   saveButton: 'button:has-text("Save")',
-  
+
   // Forms
   formContainer: 'form',
   loadingSpinner: '[data-testid="loading"]',
-  
+
   // Toast notifications
   toast: '[data-testid="toast"]',
   successToast: '[data-testid="toast"]:has-text("success")',

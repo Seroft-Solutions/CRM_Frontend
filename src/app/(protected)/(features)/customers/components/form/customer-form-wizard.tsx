@@ -315,13 +315,17 @@ export function CustomerForm({ id }: CustomerFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...customerData } = transformedData as any;
+        const customerDataWithStatus = {
+          ...customerData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: customerDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...customerDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

@@ -50,7 +50,18 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
+      // Handle relationships
+      config.relationships.forEach((relConfig) => {
+        const value = entity[relConfig.name];
 
+        if (relConfig.multiple) {
+          formValues[relConfig.name] = value
+            ? value.map((item: any) => item[relConfig.primaryKey])
+            : [];
+        } else {
+          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+        }
+      });
       // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
@@ -78,19 +89,6 @@ function SubCallTypeFormContent({ id }: SubCallTypeFormProps) {
           formValues[fieldConfig.name] = value != null ? String(value) : '';
         } else {
           formValues[fieldConfig.name] = value || '';
-        }
-      });
-
-      // Handle relationships
-      config.relationships.forEach((relConfig) => {
-        const value = entity[relConfig.name];
-
-        if (relConfig.multiple) {
-          formValues[relConfig.name] = value
-            ? value.map((item: any) => item[relConfig.primaryKey])
-            : [];
-        } else {
-          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
       });
 
@@ -312,13 +310,17 @@ export function SubCallTypeForm({ id }: SubCallTypeFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...subCallTypeData } = transformedData as any;
+        const subCallTypeDataWithStatus = {
+          ...subCallTypeData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: subCallTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...subCallTypeDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

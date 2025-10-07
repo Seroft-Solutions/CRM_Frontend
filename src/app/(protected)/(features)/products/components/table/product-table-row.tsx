@@ -140,10 +140,6 @@ export function ProductTableRow({
                   return field?.toString() || '';
                 }
 
-                if (column.id === 'category') {
-                  return field?.toString() || '';
-                }
-
                 if (column.id === 'basePrice') {
                   return field?.toString() || '';
                 }
@@ -184,6 +180,64 @@ export function ProductTableRow({
               })()
             : // Render relationship column
               (() => {
+                if (column.id === 'category') {
+                  const cellKey = `${product.id}-category`;
+                  return (
+                    <RelationshipCell
+                      entityId={product.id || 0}
+                      relationshipName="category"
+                      currentValue={product.category}
+                      options={
+                        relationshipConfigs.find((config) => config.name === 'category')?.options ||
+                        []
+                      }
+                      displayField="name"
+                      onUpdate={(entityId, relationshipName, newValue) =>
+                        onRelationshipUpdate
+                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                          : Promise.resolve()
+                      }
+                      isEditable={
+                        relationshipConfigs.find((config) => config.name === 'category')
+                          ?.isEditable || false
+                      }
+                      isLoading={updatingCells.has(cellKey)}
+                      className="min-w-[150px]"
+                      relatedEntityRoute="product-categories"
+                      showNavigationIcon={true}
+                    />
+                  );
+                }
+
+                if (column.id === 'subCategory') {
+                  const cellKey = `${product.id}-subCategory`;
+                  return (
+                    <RelationshipCell
+                      entityId={product.id || 0}
+                      relationshipName="subCategory"
+                      currentValue={product.subCategory}
+                      options={
+                        relationshipConfigs.find((config) => config.name === 'subCategory')
+                          ?.options || []
+                      }
+                      displayField="name"
+                      onUpdate={(entityId, relationshipName, newValue) =>
+                        onRelationshipUpdate
+                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                          : Promise.resolve()
+                      }
+                      isEditable={
+                        relationshipConfigs.find((config) => config.name === 'subCategory')
+                          ?.isEditable || false
+                      }
+                      isLoading={updatingCells.has(cellKey)}
+                      className="min-w-[150px]"
+                      relatedEntityRoute="product-sub-categories"
+                      showNavigationIcon={true}
+                    />
+                  );
+                }
+
                 return null;
               })()}
         </TableCell>

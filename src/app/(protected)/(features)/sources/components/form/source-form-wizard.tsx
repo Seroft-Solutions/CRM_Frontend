@@ -311,13 +311,17 @@ export function SourceForm({ id }: SourceFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...sourceData } = transformedData as any;
+        const sourceDataWithStatus = {
+          ...sourceData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: sourceDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...sourceDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

@@ -273,7 +273,6 @@ export function CallStatusDetails({ id }: CallStatusDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

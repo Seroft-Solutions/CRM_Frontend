@@ -2,7 +2,7 @@
   "annotations": {
     "changelogDate": "20250828083510"
   },
-  "applications": ["crmBackend"],
+  "applications": "*",
   "documentation": "Group is scoped per organization.",
   "dto": "mapstruct",
   "entityTableName": "jhi_group",

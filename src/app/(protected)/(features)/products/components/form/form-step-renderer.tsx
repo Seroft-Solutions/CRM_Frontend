@@ -34,6 +34,17 @@ function transformEnumValue(enumValue: string): string {
     .join(' ');
 }
 
+import {
+  useGetAllProductCategories,
+  useSearchProductCategories,
+  useCountProductCategories,
+} from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import {
+  useGetAllProductSubCategories,
+  useSearchProductSubCategories,
+  useCountProductSubCategories,
+} from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+
 interface FormStepRendererProps {
   entity?: any;
 }
@@ -43,6 +54,30 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
+      case 'category':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllProductCategories}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="ProductCategories"
+          />
+        );
+
+      case 'subCategory':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllProductSubCategories}
+            displayField="name"
+            primaryKey="id"
+            multiple={false}
+            label="ProductSubCategories"
+          />
+        );
+
       default:
         return <span>{value ? 'Selected' : 'Not selected'}</span>;
     }

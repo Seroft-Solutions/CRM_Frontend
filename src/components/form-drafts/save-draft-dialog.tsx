@@ -19,6 +19,7 @@ export interface DraftDialogProps {
   onDiscardChanges: () => void;
   onCancel: () => void;
   isDirty: boolean;
+  formData?: Record<string, any>; // Add form data to show preview
 }
 
 /**
@@ -33,6 +34,7 @@ export function SaveDraftDialog({
   onDiscardChanges,
   onCancel,
   isDirty,
+  formData,
 }: DraftDialogProps) {
   const [isSaving, setIsSaving] = useState(false);
 
@@ -58,6 +60,19 @@ export function SaveDraftDialog({
     onOpenChange(false);
   };
 
+  const getDraftPreview = () => {
+    if (entityType.toLowerCase() === 'call' && formData?.leadNo) {
+      return `Lead ${formData.leadNo}`;
+    }
+    if (formData?.name) {
+      return formData.name;
+    }
+    if (formData?.title) {
+      return formData.title;
+    }
+    return null;
+  };
+
   if (!isDirty) {
     return null;
   }
@@ -71,56 +86,55 @@ export function SaveDraftDialog({
             Save as Draft?
           </DialogTitle>
           <DialogDescription>
-            You have unsaved changes in your {entityType.toLowerCase()} form. What would you like to
-            do?
+            You have unsaved changes in your {entityType.toLowerCase()} form
+            {getDraftPreview() ? ` (${getDraftPreview()})` : ''}. What would you like to do?
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Button
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-              className="w-full"
-              variant="default"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving Draft...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save as Draft
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              You can continue editing this form later
-            </p>
-          </div>
+          <div className="space-y-4 py-4">
+            <div className="border rounded-lg p-3">
+              <Button
+                  onClick={handleSaveDraft}
+                  disabled={isSaving}
+                  className="w-full mb-1"
+                  variant="default"
+              >
+                {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving Draft...
+                    </>
+                ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save as Draft
+                    </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                You can continue editing this form later
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Button
-              onClick={handleDiscardChanges}
-              disabled={isSaving}
-              className="w-full"
-              variant="destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Discard Changes
+            <div className="border rounded-lg p-3">
+              <Button
+                  onClick={handleDiscardChanges}
+                  disabled={isSaving}
+                  className="w-full mb-1"
+                  variant="destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Discard Changes
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                All changes will be lost permanently
+              </p>
+            </div>
+            <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
+              Cancel
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              All changes will be lost permanently
-            </p>
           </div>
-
-          <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
-            Cancel
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
   );
 }
