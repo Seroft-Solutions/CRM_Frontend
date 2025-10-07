@@ -158,7 +158,7 @@ export async function PATCH(
     // Get current user data by partnerId (user ID) directly
     console.log('Fetching current user data for partnerId:', partnerId);
     let currentUser: UserRepresentation;
-    
+
     try {
       // Get user directly by ID using the proper Keycloak endpoint
       currentUser = await getAdminRealmsRealmUsersUserId(realm, partnerId);
@@ -226,7 +226,7 @@ export async function PATCH(
     console.log('Updating user in Keycloak for partnerId:', partnerId);
     await putAdminRealmsRealmUsersUserId(realm, partnerId, updatedUser);
     console.log(`Successfully updated partner ${partnerId} in Keycloak`);
-    
+
     // Update user profile in Spring backend
     console.log('Updating user profile in Spring backend');
     try {

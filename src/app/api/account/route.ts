@@ -7,21 +7,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { 
-  getAdminRealmsRealmUsersUserId, 
-  type UserRepresentation 
+import {
+  getAdminRealmsRealmUsersUserId,
+  type UserRepresentation,
 } from '@/core/api/generated/keycloak';
 
 export async function GET(request: NextRequest) {
   try {
     // Get the current session
     const session = await auth();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const userId = session.user.id;
@@ -39,7 +36,7 @@ export async function GET(request: NextRequest) {
     } catch (keycloakError: any) {
       console.warn('Keycloak service unavailable, using session fallback:', keycloakError.message);
       useSessionFallback = true;
-      
+
       // If Keycloak is completely unavailable, use session data
       userData = {
         id: userId,
@@ -50,30 +47,30 @@ export async function GET(request: NextRequest) {
         enabled: true,
         attributes: {
           user_type: ['admin'], // Default to admin for development
-        }
+        },
       } as UserRepresentation;
     }
 
     // Extract user attributes and roles
     const authorities: string[] = [];
-    
+
     // Add roles from user attributes
     if (userData.attributes?.roles) {
-      userData.attributes.roles.forEach(role => {
+      userData.attributes.roles.forEach((role) => {
         authorities.push(`ROLE_${role.toUpperCase()}`);
       });
     }
-    
+
     // Add user type as a role
     if (userData.attributes?.user_type) {
-      userData.attributes.user_type.forEach(userType => {
+      userData.attributes.user_type.forEach((userType) => {
         authorities.push(`ROLE_${userType.toUpperCase()}`);
       });
     }
-    
+
     // Add organization-based permissions
     if (userData.attributes?.organization) {
-      userData.attributes.organization.forEach(orgId => {
+      userData.attributes.organization.forEach((orgId) => {
         authorities.push(`GROUP_ORG_${orgId}`);
       });
     }
@@ -139,7 +136,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(accountData);
   } catch (error: any) {
     console.error('Account API error:', error);
-    
+
     return NextResponse.json(
       {
         error: 'Internal server error',

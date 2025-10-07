@@ -290,7 +290,6 @@ export function CityDetails({ id }: CityDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

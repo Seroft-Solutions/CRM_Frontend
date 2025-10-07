@@ -8,7 +8,18 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  Archive,
+  MoreVertical,
+  RotateCcw,
+  AlertTriangle,
+  RefreshCw,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -25,6 +36,22 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
 import type { UserDraftDTO } from '@/core/api/generated/spring/schemas/UserDraftDTO';
 import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
+
+// Entity route mapping for draft restoration
+const ENTITY_ROUTES: Record<string, string> = {
+  Call: '/calls/new',
+  Customer: '/customers/new',
+  Meeting: '/meetings/new',
+  Source: '/sources/new',
+  Priority: '/priorities/new',
+  CallType: '/call-types/new',
+  SubCallType: '/sub-call-types/new',
+  CallCategory: '/call-categories/new',
+  CallStatus: '/call-statuses/new',
+  ChannelType: '/channel-types/new',
+  UserProfile: '/user-profiles/new',
+  // Add more entity types as needed
+};
 
 // Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
@@ -90,11 +117,49 @@ export function UserDraftTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: UserDraftTableRowProps) {
+  const router = useRouter();
+
   // Get current status display info
   const currentStatus = userDraft.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
+
+  // Handle restore draft functionality
+  const handleRestoreDraft = () => {
+    if (!userDraft.type) {
+      toast.error('Cannot restore draft: Entity type not found');
+      return;
+    }
+
+    const route = ENTITY_ROUTES[userDraft.type];
+    if (!route) {
+      toast.error(`No route found for entity type: ${userDraft.type}`);
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(userDraft.jsonPayload || '{}');
+
+      // Store draft restoration info for the target form
+      const restorationData = {
+        draftId: userDraft.id,
+        entityType: userDraft.type,
+        formData: payload.formData || {},
+        currentStep: payload.currentStep || 0,
+        timestamp: Date.now(),
+      };
+
+      sessionStorage.setItem('draftToRestore', JSON.stringify(restorationData));
+
+      // Navigate to the form
+      router.push(route);
+      toast.success(`Navigating to restore ${userDraft.type} draft...`);
+    } catch (error) {
+      console.error('Error parsing draft data:', error);
+      toast.error('Error parsing draft data. Cannot restore this draft.');
+    }
+  };
 
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {
@@ -163,6 +228,36 @@ export function UserDraftTableRow({
                   return field ? format(new Date(field as string), 'PPP') : '';
                 }
 
+                if (column.id === 'leadNo') {
+                  try {
+                    const payload = JSON.parse(userDraft.jsonPayload || '{}');
+                    const leadNo = payload.formData?.leadNo;
+                    if (leadNo && typeof leadNo === 'string') {
+                      // Format leadNo for better display (ABC12345 -> ABC-12345)
+                      if (leadNo.length === 8 && /^[A-Z]{3}\d{5}$/.test(leadNo)) {
+                        return `${leadNo.substring(0, 3)}-${leadNo.substring(3)}`;
+                      }
+                      return leadNo;
+                    }
+                    return userDraft.type === 'Call' ? '-' : 'N/A';
+                  } catch {
+                    return userDraft.type === 'Call' ? '-' : 'N/A';
+                  }
+                }
+
+                if (column.id === 'currentStep') {
+                  try {
+                    const payload = JSON.parse(userDraft.jsonPayload || '{}');
+                    const currentStep = payload.currentStep;
+                    if (typeof currentStep === 'number') {
+                      return `Step ${currentStep + 1}`;
+                    }
+                    return 'Step 1';
+                  } catch {
+                    return 'Step 1';
+                  }
+                }
+
                 return field?.toString() || '';
               })()
             : // Render relationship column
@@ -173,22 +268,19 @@ export function UserDraftTableRow({
       ))}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-          <InlinePermissionGuard requiredPermission="userDraft:read">
-            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
-              <Link href={`/user-drafts/${userDraft.id}`}>
-                <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                <span className="sr-only">View</span>
-              </Link>
+          {/* Restore Draft Button - Only show for active drafts */}
+          {currentStatus === UserDraftDTOStatus.ACTIVE && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRestoreDraft}
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-blue-600 hover:text-blue-700"
+              title="Restore Draft"
+            >
+              <RefreshCw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="sr-only">Restore Draft</span>
             </Button>
-          </InlinePermissionGuard>
-          <InlinePermissionGuard requiredPermission="userDraft:update">
-            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
-              <Link href={`/user-drafts/${userDraft.id}/edit`}>
-                <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                <span className="sr-only">Edit</span>
-              </Link>
-            </Button>
-          </InlinePermissionGuard>
+          )}
 
           {/* Status Management Dropdown */}
           <InlinePermissionGuard requiredPermission="userDraft:update">

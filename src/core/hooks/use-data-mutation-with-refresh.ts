@@ -27,7 +27,7 @@ export function useDataMutationWithRefresh() {
     async (queryKeys: string[]) => {
       // Invalidate specific query keys with throttling to prevent excessive calls
       const uniqueKeys = [...new Set(queryKeys)]; // Remove duplicates
-      
+
       // Step 1: Invalidate queries (marks them as stale)
       await Promise.all(
         uniqueKeys.map((key) =>

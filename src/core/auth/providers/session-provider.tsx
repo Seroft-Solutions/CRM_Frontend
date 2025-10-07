@@ -11,15 +11,13 @@ import type { SessionProviderProps } from '../types';
 
 export function AppSessionProvider({ children, session }: SessionProviderProps) {
   return (
-    <SessionProvider 
+    <SessionProvider
       session={session}
       // Prevent automatic session refresh during token issues
       refetchInterval={0}
       refetchOnWindowFocus={false}
     >
-      <div suppressHydrationWarning>
-        {children}
-      </div>
+      <div suppressHydrationWarning>{children}</div>
     </SessionProvider>
   );
 }

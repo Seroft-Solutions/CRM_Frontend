@@ -24,7 +24,6 @@ export const productFormConfig: FormConfig = {
         'name',
         'code',
         'description',
-        'category',
         'remark',
         'status',
         'basePrice',
@@ -32,6 +31,17 @@ export const productFormConfig: FormConfig = {
         'maxPrice',
       ],
       relationships: [],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
+      id: 'classification',
+      title: 'Classification',
+      description: 'Set priority, status, and categories',
+      fields: [],
+      relationships: ['category', 'subCategory'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -92,18 +102,6 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'category',
-      type: 'text',
-      label: 'Category',
-      placeholder: 'Enter category',
-      required: false,
-      validation: {
-        required: false,
-        maxLength: 50,
-      },
-      ui: {},
-    },
-    {
       name: 'basePrice',
       type: 'number',
       label: 'Base Price',
@@ -160,21 +158,63 @@ export const productFormConfig: FormConfig = {
       },
       ui: {},
     },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
   ],
 
   // Relationship definitions
-  relationships: [],
+  relationships: [
+    {
+      name: 'category',
+      type: 'many-to-one',
+      targetEntity: 'productCategory',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'classification',
+      api: {
+        useGetAllHook: 'useGetAllProductCategories',
+        useSearchHook: 'useSearchProductCategories',
+        useCountHook: 'useCountProductCategories',
+        entityName: 'ProductCategories',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/product-categories/new',
+        createPermission: 'productCategory:create:inline',
+      },
+      ui: {
+        label: 'Category',
+        placeholder: 'Select category',
+        icon: '🏷️',
+      },
+    },
+    {
+      name: 'subCategory',
+      type: 'many-to-one',
+      targetEntity: 'productSubCategory',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'classification',
+      api: {
+        useGetAllHook: 'useGetAllProductSubCategories',
+        useSearchHook: 'useSearchProductSubCategories',
+        useCountHook: 'useCountProductSubCategories',
+        entityName: 'ProductSubCategories',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/product-sub-categories/new',
+        createPermission: 'productSubCategory:create:inline',
+      },
+      ui: {
+        label: 'Sub Category',
+        placeholder: 'Select sub category',
+        icon: '🏷️',
+      },
+    },
+  ],
 
   // Global form configuration
   validation: {

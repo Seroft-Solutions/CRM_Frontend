@@ -11,6 +11,7 @@ import type { MeetingDTOStatus } from './MeetingDTOStatus';
 import type { UserProfileDTO } from './UserProfileDTO';
 import type { CustomerDTO } from './CustomerDTO';
 import type { CallDTO } from './CallDTO';
+import type { MeetingParticipantDTO } from './MeetingParticipantDTO';
 
 export interface MeetingDTO {
   id?: number;
@@ -71,4 +72,5 @@ export interface MeetingDTO {
   organizer?: UserProfileDTO;
   assignedCustomer?: CustomerDTO;
   call?: CallDTO;
+  participants?: MeetingParticipantDTO[];
 }

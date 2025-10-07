@@ -376,7 +376,26 @@ export function SubCallTypeFormProvider({
 
   function transformFormDataForSubmission(data: Record<string, any>) {
     const entityToSave: Record<string, any> = {};
+    // Handle relationships - use reference object pattern { entityName: { id: value } }
+    config.relationships.forEach((relConfig) => {
+      const value = data[relConfig.name];
 
+      if (relConfig.multiple) {
+        // For many-to-many or one-to-many relationships
+        if (value && Array.isArray(value) && value.length > 0) {
+          entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
+        } else {
+          entityToSave[relConfig.name] = value || [];
+        }
+      } else {
+        // For many-to-one relationships - use reference object pattern
+        if (value) {
+          entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
+        } else {
+          entityToSave[relConfig.name] = null;
+        }
+      }
+    });
     // Handle regular fields
     config.fields.forEach((fieldConfig) => {
       const value = data[fieldConfig.name];
@@ -411,27 +430,6 @@ export function SubCallTypeFormProvider({
           entityToSave[fieldConfig.name] = String(value);
         } else if (fieldConfig.required) {
           entityToSave[fieldConfig.name] = null;
-        }
-      }
-    });
-
-    // Handle relationships - use reference object pattern { entityName: { id: value } }
-    config.relationships.forEach((relConfig) => {
-      const value = data[relConfig.name];
-
-      if (relConfig.multiple) {
-        // For many-to-many or one-to-many relationships
-        if (value && Array.isArray(value) && value.length > 0) {
-          entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
-        } else {
-          entityToSave[relConfig.name] = value || [];
-        }
-      } else {
-        // For many-to-one relationships - use reference object pattern
-        if (value) {
-          entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
-        } else {
-          entityToSave[relConfig.name] = null;
         }
       }
     });

@@ -37,7 +37,7 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
-  status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  status: z.string().optional(),
   state: z.number({ message: 'Please select state from the dropdown' }),
   district: z.number({ message: 'Please select district from the dropdown' }),
   city: z.number({ message: 'Please select city from the dropdown' }),

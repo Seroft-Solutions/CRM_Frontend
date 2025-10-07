@@ -311,13 +311,17 @@ export function ChannelTypeForm({ id }: ChannelTypeFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...channelTypeData } = transformedData as any;
+        const channelTypeDataWithStatus = {
+          ...channelTypeData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: channelTypeDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...channelTypeDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

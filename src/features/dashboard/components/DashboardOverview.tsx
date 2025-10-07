@@ -37,6 +37,7 @@ import {
   PhoneCall,
 } from 'lucide-react';
 import { useGetAllCustomers } from '@/core/api/generated/spring';
+import { QuickActionTiles } from './QuickActionTiles';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
@@ -215,6 +216,12 @@ export function DashboardOverview() {
             Complete overview of your customer relationship management
           </p>
         </div>
+      </div>
+
+      {/* Quick Action Tiles */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <QuickActionTiles />
       </div>
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">

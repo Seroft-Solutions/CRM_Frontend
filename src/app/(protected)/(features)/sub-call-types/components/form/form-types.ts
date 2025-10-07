@@ -51,6 +51,7 @@ export interface RelationshipConfig {
   required: boolean;
   multiple: boolean;
   category:
+    | 'basic'
     | 'geographic'
     | 'user'
     | 'classification'

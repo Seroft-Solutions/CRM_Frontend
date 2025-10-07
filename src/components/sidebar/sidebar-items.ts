@@ -7,6 +7,7 @@ import {
   Map,
   FileText,
   ArrowDownToLine,
+  Box,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -31,17 +32,30 @@ export const sidebarItems: SidebarItem[] = [
     icon: LayoutDashboard,
     requiredPermission: 'dashboard',
   },
-  { key: 'drafts', label: 'My Drafts', path: '/drafts', icon: FileText },
+  {
+    key: 'partnerDashboard',
+    label: 'Partner Dashboard',
+    path: '/business-partner-dashboard',
+    icon: LayoutDashboard,
+    requiredPermission: 'partner:dashboard',
+  },
+  { key: 'drafts', label: 'My Drafts', path: '/user-drafts', icon: FileText },
   {
     key: 'calls',
-    label: 'Calls Management',
+    label: 'Leads Management',
     icon: PhoneCall,
     expandable: true,
     requiredPermission: 'call:sidebar',
     children: [
       {
+        key: 'addCallTracking',
+        label: 'Add Lead',
+        path: '/calls/new',
+        requiredPermission: 'call:create',
+      },
+      {
         key: 'callTracking',
-        label: 'Leads Management',
+        label: 'Track Lead',
         path: '/calls',
         requiredPermission: 'call:sidebar',
       },
@@ -159,6 +173,26 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Customer Master',
         path: '/customers',
         requiredPermission: 'customer:sidebar',
+      },
+    ],
+  },
+  {
+    key: 'productManagement',
+    label: 'Product Management',
+    icon: Box,
+    expandable: false,
+    children: [
+      {
+        key: 'productCategory',
+        label: 'Product Category',
+        path: '/product-categories',
+        requiredPermission: 'productCategory:sidebar',
+      },
+      {
+        key: 'productSubCategory',
+        label: 'Product Sub Category',
+        path: '/product-sub-categories',
+        requiredPermission: 'productSubCategory:sidebar',
       },
       {
         key: 'product',

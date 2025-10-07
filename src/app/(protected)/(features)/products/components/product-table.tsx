@@ -91,12 +91,16 @@ const tableScrollStyles = `
     background: #94a3b8;
   }
   .table-container {
-    max-width: calc(100vw - 2rem);
+    max-width: 100%;
   }
   @media (min-width: 1024px) {
     .table-container {
-      max-width: calc(100vw - 20rem);
+      max-width: 100%;
     }
+  }
+  .table-scroll td {
+    white-space: normal;
+    word-break: break-word;
   }
 `;
 
@@ -108,6 +112,12 @@ import {
   usePartialUpdateProduct,
   useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+
+// Relationship data imports
+
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
 import { ProductSearchAndFilters } from './table/product-search-filters';
 import { ProductTableHeader } from './table/product-table-header';
@@ -168,15 +178,6 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'category',
-    label: 'Category',
-    accessor: 'category',
-    type: 'field',
-    visible: true,
-    sortable: true,
-  },
-
-  {
     id: 'basePrice',
     label: 'Base Price',
     accessor: 'basePrice',
@@ -219,6 +220,24 @@ const ALL_COLUMNS: ColumnConfig[] = [
     type: 'field',
     visible: true,
     sortable: true,
+  },
+
+  {
+    id: 'category',
+    label: 'Category',
+    accessor: 'category',
+    type: 'relationship',
+    visible: true,
+    sortable: false,
+  },
+
+  {
+    id: 'subCategory',
+    label: 'Sub Category',
+    accessor: 'subCategory',
+    type: 'relationship',
+    visible: true,
+    sortable: false,
   },
 
   {
@@ -418,6 +437,14 @@ export function ProductTable() {
               value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
             } else if (col.type === 'relationship') {
               const relationship = item[col.accessor as keyof typeof item] as any;
+
+              if (col.id === 'category' && relationship) {
+                value = relationship.name || '';
+              }
+
+              if (col.id === 'subCategory' && relationship) {
+                value = relationship.name || '';
+              }
             }
             // Escape CSV values
             if (
@@ -447,6 +474,18 @@ export function ProductTable() {
 
   // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
+
+  // Fetch relationship data for dropdowns
+
+  const { data: productcategoryOptions = [] } = useGetAllProductCategories(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
+
+  const { data: productsubcategoryOptions = [] } = useGetAllProductSubCategories(
+    { page: 0, size: 1000 },
+    { query: { enabled: true } }
+  );
 
   // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
@@ -504,11 +543,39 @@ export function ProductTable() {
       ...getStatusFilter(), // Add status filtering based on active tab
     };
 
+    // Map relationship filters from name-based to ID-based
+    const relationshipMappings = {
+      'category.name': {
+        apiParam: 'categoryId.equals',
+        options: productcategoryOptions,
+        displayField: 'name',
+      },
+
+      'subCategory.name': {
+        apiParam: 'subCategoryId.equals',
+        options: productsubcategoryOptions,
+        displayField: 'name',
+      },
+    };
+
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
+        // Handle relationship filters
+        if (relationshipMappings[key]) {
+          const mapping = relationshipMappings[key];
+          const entityId = findEntityIdByName(
+            mapping.options,
+            value as string,
+            mapping.displayField
+          );
+          if (entityId) {
+            params[mapping.apiParam] = entityId;
+          }
+        }
+
         // Handle createdDate date filter
-        if (key === 'createdDate') {
+        else if (key === 'createdDate') {
           if (value instanceof Date) {
             params['createdDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
@@ -517,7 +584,7 @@ export function ProductTable() {
         }
 
         // Handle lastModifiedDate date filter
-        if (key === 'lastModifiedDate') {
+        else if (key === 'lastModifiedDate') {
           if (value instanceof Date) {
             params['lastModifiedDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
@@ -543,13 +610,6 @@ export function ProductTable() {
         else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['description.contains'] = value;
-          }
-        }
-
-        // Handle category text filter with contains
-        else if (key === 'category') {
-          if (typeof value === 'string' && value.trim() !== '') {
-            params['category.contains'] = value;
           }
         }
 
@@ -1422,7 +1482,23 @@ export function ProductTable() {
   };
 
   // Prepare relationship configurations for components
-  const relationshipConfigs = [];
+  const relationshipConfigs = [
+    {
+      name: 'category',
+      displayName: 'Category',
+      options: productcategoryOptions || [],
+      displayField: 'name',
+      isEditable: false, // Disabled by default
+    },
+
+    {
+      name: 'subCategory',
+      displayName: 'SubCategory',
+      options: productsubcategoryOptions || [],
+      displayField: 'name',
+      isEditable: false, // Disabled by default
+    },
+  ];
 
   // Check if any filters are active
   const hasActiveFilters =
@@ -1633,7 +1709,7 @@ export function ProductTable() {
         {/* Data Table */}
         <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
           <div className="table-scroll overflow-x-auto">
-            <Table className="w-full min-w-[600px]">
+            <Table className="w-full">
               <ProductTableHeader
                 onSort={handleSort}
                 getSortIcon={getSortIcon}

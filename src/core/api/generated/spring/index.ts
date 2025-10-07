@@ -44,3 +44,5 @@ export * from './endpoints/channel-type-bulk-import-controller/channel-type-bulk
 export * from './endpoints/call-bulk-import-controller/call-bulk-import-controller.gen';
 export * from './endpoints/call-type-bulk-import-controller/call-type-bulk-import-controller.gen';
 export * from './endpoints/call-status-bulk-import-controller/call-status-bulk-import-controller.gen';
+export * from './endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+export * from './endpoints/product-category-resource/product-category-resource.gen';

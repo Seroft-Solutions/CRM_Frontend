@@ -273,7 +273,6 @@ export function ChannelTypeDetails({ id }: ChannelTypeDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

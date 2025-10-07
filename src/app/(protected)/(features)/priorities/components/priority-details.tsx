@@ -273,7 +273,6 @@ export function PriorityDetails({ id }: PriorityDetailsProps) {
               Edit
             </Link>
           </Button>
-
         </div>
       </div>
 

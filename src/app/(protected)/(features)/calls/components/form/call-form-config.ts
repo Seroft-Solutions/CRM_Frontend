@@ -17,74 +17,81 @@ export const callFormConfig: FormConfig = {
   // Form steps configuration
   steps: [
     {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [],
-      relationships: ['priority', 'callType', 'subCallType', 'callStatus'],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
       id: 'business',
       title: 'Business Relations',
       description: 'Connect with customers and sources',
       fields: [],
-      relationships: ['source', 'customer', 'product'],
+      relationships: ['source', 'customer', 'product','channelParties', 'channelType'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
+    // {
+    //   id: 'channel',
+    //   title: 'Channel Details',
+    //   description: 'Channel type and parties',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
     {
-      id: 'channel',
-      title: 'Channel Details',
-      description: 'Channel type and parties',
-      fields: [],
-      relationships: ['channelParties', 'channelType'],      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'assignment',
-      title: 'Assignment & Date',
-      description: 'Assign users, set dates and status',
-      fields: [],
-      relationships: ['assignedTo'],
+      id: 'classification',
+      title: 'Classification',
+      description: 'Set priority, status, and categories',
+      fields: ['leadNo'],
+      relationships: ['priority', 'callType', 'subCallType', 'callStatus','assignedTo'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
-    {
-      id: 'remarks',
-      title: 'Remarks',
-      description: 'Add any additional remarks or notes',
-      fields: [],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'review',
-      title: 'Review',
-      description: 'Confirm your details',
-      fields: [],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
+
+    // {
+    //   id: 'assignment and remarks',
+    //   title: 'Assignment and Remarks',
+    //   description: 'Assign user and add any additional remarks or notes',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
+    // {
+    //   id: 'review',
+    //   title: 'Review',
+    //   description: 'Confirm your details',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
   ],
 
   // Field definitions
   fields: [
+    {
+      name: 'leadNo',
+      type: 'text',
+      label: 'Lead Number',
+      placeholder: 'Auto-generated lead number',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {
+        readonly: true,
+        description:
+          'Unique lead identifier automatically generated based on organization and timestamp',
+        icon: '🏷️',
+      },
+    },
     {
       name: 'status',
       type: 'hidden',
@@ -161,7 +168,7 @@ export const callFormConfig: FormConfig = {
       targetEntity: 'subCallType',
       displayField: 'name',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'classification',
       cascadingFilter: {
@@ -435,7 +442,6 @@ export const callFormConfig: FormConfig = {
       confirmDialog: true,
       autoSave: false,
       maxDrafts: 5, // limit number of drafts per entity type per user
-      showRestorationDialog: true,
     },
   },
 };

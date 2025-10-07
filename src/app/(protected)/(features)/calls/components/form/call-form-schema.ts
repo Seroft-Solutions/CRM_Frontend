@@ -11,10 +11,14 @@
 import { z } from 'zod';
 
 export const callFormSchemaFields = {
+  leadNo: z
+    .string()
+    .min(1, 'Lead number is required')
+    .regex(/^[A-Z]{3}\d{5}$/, 'Lead number must follow format: ABC12345 (3 letters + 5 digits)'),
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
-  subCallType: z.number({ message: 'Please select sub call type from the dropdown' }),
+  subCallType: z.number().optional(),
   source: z.number({ message: 'Please select source from the dropdown' }),
   customer: z.number({ message: 'Please select customer from the dropdown' }),
   product: z.number({ message: 'Please select product from the dropdown' }),
@@ -28,9 +32,12 @@ export const callFormSchema = z.object(callFormSchemaFields);
 
 export type CallFormValues = z.infer<typeof callFormSchema>;
 
-
 // Individual field schemas for granular validation
 export const callFieldSchemas = {
+  leadNo: z
+    .string()
+    .min(1, 'Lead number is required')
+    .regex(/^[A-Z]{3}\d{5}$/, 'Lead number must follow format: ABC12345 (3 letters + 5 digits)'),
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),

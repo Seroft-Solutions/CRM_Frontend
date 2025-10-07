@@ -20,19 +20,8 @@ export const subCallTypeFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['name', 'description', 'remark', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [],
-      relationships: ['callType'],
+      relationships: ['callType'], // 'callType' listed first as a relationship
+      fields: ['name', 'description', 'remark', 'status'], // Reordered fields
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -50,7 +39,34 @@ export const subCallTypeFormConfig: FormConfig = {
       },
     },
   ],
-
+  relationships: [
+    {
+      name: 'callType',
+      type: 'many-to-one',
+      targetEntity: 'callType',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: true,
+      multiple: false,
+      category: 'basic',
+      api: {
+        useGetAllHook: 'useGetAllCallTypes',
+        useSearchHook: 'useSearchCallTypes',
+        useCountHook: 'useCountCallTypes',
+        entityName: 'CallTypes',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/call-types/new',
+        createPermission: 'callType:create:inline',
+      },
+      ui: {
+        label: 'Call Type',
+        placeholder: 'Select call type',
+        icon: '🏷️',
+      },
+    },
+  ],
   // Field definitions
   fields: [
     {
@@ -89,47 +105,6 @@ export const subCallTypeFormConfig: FormConfig = {
         maxLength: 1000,
       },
       ui: {},
-    },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
-  ],
-
-  // Relationship definitions
-  relationships: [
-    {
-      name: 'callType',
-      type: 'many-to-one',
-      targetEntity: 'callType',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'classification',
-      api: {
-        useGetAllHook: 'useGetAllCallTypes',
-        useSearchHook: 'useSearchCallTypes',
-        useCountHook: 'useCountCallTypes',
-        entityName: 'CallTypes',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/call-types/new',
-        createPermission: 'callType:create:inline',
-      },
-      ui: {
-        label: 'Call Type',
-        placeholder: 'Select call type',
-        icon: '🏷️',
-      },
     },
   ],
 
