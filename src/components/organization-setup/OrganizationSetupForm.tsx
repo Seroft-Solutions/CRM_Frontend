@@ -25,6 +25,7 @@ export function OrganizationSetupForm({
   const [formData, setFormData] = useState<OrganizationSetupRequest>({
     organizationName: '',
     domain: '',
+    organizationCode: '',
   });
   const [validationError, setValidationError] = useState<string>('');
 
@@ -32,11 +33,26 @@ export function OrganizationSetupForm({
     e.preventDefault();
     setValidationError('');
 
-    if (!formData.organizationName.trim()) return;
+    if (!formData.organizationName.trim() || !formData.organizationCode.trim()) {
+      return;
+    }
 
     // Validate organization name - no spaces allowed
     if (formData.organizationName.includes(' ')) {
       setValidationError('Organization name cannot contain spaces');
+      return;
+    }
+
+    // Validate organization code
+    const orgCodeFormatRegex = /^[A-Z][A-Z0-9]{5}$/;
+    const orgCodeHasDigitRegex = /\d/;
+    if (
+      !orgCodeFormatRegex.test(formData.organizationCode) ||
+      !orgCodeHasDigitRegex.test(formData.organizationCode)
+    ) {
+      setValidationError(
+        'Organization code must be 6 uppercase characters, start with a letter, and contain at least one number.',
+      );
       return;
     }
 
@@ -49,15 +65,20 @@ export function OrganizationSetupForm({
 
     await onSubmit({
       organizationName: formData.organizationName.trim(),
-      domain: domain,
+      domain,
+      organizationCode: formData.organizationCode,
     });
   };
 
   const handleChange =
     (field: keyof OrganizationSetupRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      let value = e.target.value;
+      if (field === 'organizationCode') {
+        value = value.toUpperCase();
+      }
+      setFormData((prev) => ({ ...prev, [field]: value }));
       // Clear validation error when user starts typing
-      if (validationError && field === 'organizationName') {
+      if (validationError && (field === 'organizationName' || field === 'organizationCode')) {
         setValidationError('');
       }
     };
@@ -140,11 +161,31 @@ export function OrganizationSetupForm({
               <p className="text-xs text-muted-foreground">
                 Organization name cannot contain spaces
               </p>
+
+              <Label htmlFor="orgCode" className="text-sm font-medium">
+                Organization Code *
+              </Label>
+              <Input
+                id="orgCode"
+                type="text"
+                value={formData.organizationCode}
+                onChange={handleChange('organizationCode')}
+                placeholder="Enter organization code"
+                required
+                disabled={isLoading}
+                maxLength={6}
+              />
+              <p className="text-xs text-muted-foreground">
+                Must be 6 uppercase characters, start with a letter, and contain at least one
+                number.
+              </p>
             </div>
 
             <Button
               type="submit"
-              disabled={isLoading || !formData.organizationName.trim()}
+              disabled={
+                isLoading || !formData.organizationName.trim() || !formData.organizationCode.trim()
+              }
               className="w-full"
               size="lg"
             >
