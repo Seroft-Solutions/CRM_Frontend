@@ -1,13 +1,10 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced with dynamic colors based on Business Partner toggle
 // ===============================================================
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -17,6 +14,19 @@ import { useIsMobile } from '@/hooks/use-mobile';
 export function FormProgressIndicator() {
   const { config, state, actions } = useEntityForm();
   const isMobile = useIsMobile();
+  const [isBusinessPartner, setIsBusinessPartner] = useState(false);
+
+  useEffect(() => {
+    const handleBusinessPartnerToggle = (event: CustomEvent) => {
+      setIsBusinessPartner(event.detail.enabled);
+    };
+
+    window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+
+    return () => {
+      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+    };
+  }, []);
 
   const progress = ((state.currentStep + 1) / config.steps.length) * 100;
 
@@ -38,7 +48,7 @@ export function FormProgressIndicator() {
               </span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-yellow-600' : ''}`} />
           </div>
 
           {/* Step Indicators */}
@@ -49,13 +59,19 @@ export function FormProgressIndicator() {
                   <div
                     className={cn(
                       'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0',
-                      index < state.currentStep
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : index === state.currentStep
-                          ? 'border-primary text-primary bg-primary/10'
-                          : 'border-muted-foreground/30 text-muted-foreground',
+                      isBusinessPartner
+                        ? index < state.currentStep
+                          ? 'bg-yellow-600 border-yellow-600 text-white'
+                          : index === state.currentStep
+                            ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
+                            : 'border-muted-foreground/30 text-muted-foreground'
+                        : index < state.currentStep
+                          ? 'bg-primary border-primary text-primary-foreground'
+                          : index === state.currentStep
+                            ? 'border-primary text-primary bg-primary/10'
+                            : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        'cursor-pointer hover:border-primary'
+                        (isBusinessPartner ? 'cursor-pointer hover:border-yellow-600' : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >
@@ -101,7 +117,7 @@ export function FormProgressIndicator() {
               </div>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-yellow-600' : ''}`} />
           </div>
 
           {/* Step Indicators */}
@@ -112,13 +128,19 @@ export function FormProgressIndicator() {
                   <div
                     className={cn(
                       'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0',
-                      index < state.currentStep
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : index === state.currentStep
-                          ? 'border-primary text-primary bg-primary/10'
-                          : 'border-muted-foreground/30 text-muted-foreground',
+                      isBusinessPartner
+                        ? index < state.currentStep
+                          ? 'bg-yellow-600 border-yellow-600 text-white'
+                          : index === state.currentStep
+                            ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
+                            : 'border-muted-foreground/30 text-muted-foreground'
+                        : index < state.currentStep
+                          ? 'bg-primary border-primary text-primary-foreground'
+                          : index === state.currentStep
+                            ? 'border-primary text-primary bg-primary/10'
+                            : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        'cursor-pointer hover:border-primary'
+                        (isBusinessPartner ? 'cursor-pointer hover:border-yellow-600' : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >

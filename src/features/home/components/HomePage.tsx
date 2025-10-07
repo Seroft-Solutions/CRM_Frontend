@@ -3,15 +3,33 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coffee } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import HeroSection from '@/features/home/components/HeroSection';
 import FeatureSection from '@/features/home/components/FeatureSection';
 import CtaSection from '@/features/home/components/CtaSection';
 import Footer from '@/features/home/components/Footer';
+import { clearAuthStorage, hasStaleAuthData } from '@/lib/auth-cleanup';
 
 export default function HomePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
+
+  // Cleanup stale auth data when landing on homepage without valid session
+  // Only run this after initial loading is complete
+  useEffect(() => {
+    // Wait for authentication status to be determined
+    if (status === 'loading') return;
+
+    // Only cleanup if user is definitely unauthenticated (not just loading)
+    if (status === 'unauthenticated') {
+      // Check if there's stale data and clean it up
+      if (hasStaleAuthData()) {
+        console.log('Cleaning up stale auth data on homepage - user is unauthenticated');
+        clearAuthStorage();
+      }
+    }
+  }, [status]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

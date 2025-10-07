@@ -33,6 +33,7 @@ interface EnhancedProductRelationshipFieldProps {
   createPermission?: string;
   onProductCreated?: (productId: number) => void;
   customFilters?: Record<string, any>; // Add support for custom filters
+  buttonClassName?: string; // Custom class for the + button
 }
 
 export function EnhancedProductRelationshipField({
@@ -46,6 +47,7 @@ export function EnhancedProductRelationshipField({
   createPermission,
   onProductCreated,
   customFilters = {},
+  buttonClassName = '',
 }: EnhancedProductRelationshipFieldProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -323,7 +325,10 @@ export function EnhancedProductRelationshipField({
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="shrink-0 bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
+                    className={cn(
+                      "shrink-0",
+                      buttonClassName || "bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
+                    )}
                     title="Create new product"
                 >
                   <Plus className="h-4 w-4 text-white" />

@@ -17,6 +17,7 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { SessionExpiredModal } from '@/core/auth/components/session-expired-modal';
 import { useSessionEvents } from '@/core/auth/session/events';
+import { clearAuthStorage } from '@/lib/auth-cleanup';
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -188,13 +189,17 @@ export function SessionManagerProvider({
 
   const handleManualLogout = useCallback(async () => {
     try {
+      // Clear all auth storage before signing out
+      clearAuthStorage();
+
       await signOut({
         callbackUrl: '/',
         redirect: true,
       });
     } catch (error) {
       console.error('Logout failed:', error);
-      // Fallback: force redirect
+      // Clear storage even on error and force redirect
+      clearAuthStorage();
       window.location.href = '/';
     }
   }, []);
