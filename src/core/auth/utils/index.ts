@@ -59,16 +59,17 @@ export async function logout() {
 }
 
 /**
- * Enhanced logout function that cleans up local storage before logging out
- * Use this function when you need to ensure proper cleanup of tenant context
+ * Enhanced logout function that cleans up all auth storage before logging out
+ * Use this function when you need to ensure proper cleanup of tenant context,
+ * cookies, localStorage, and sessionStorage
  */
 export async function logoutWithCleanup() {
   try {
     // Import cleanup utility dynamically to avoid SSR issues
-    const { localStorageCleanup } = await import('./local-storage-cleanup');
+    const { clearAuthStorage } = await import('@/lib/auth-cleanup');
 
-    // Clean up all local storage data
-    localStorageCleanup.logout();
+    // Clean up all auth-related storage (cookies, localStorage, sessionStorage)
+    clearAuthStorage();
 
     // Proceed with normal logout
     await signOut({
@@ -77,6 +78,13 @@ export async function logoutWithCleanup() {
     });
   } catch (error) {
     console.error('Logout with cleanup error:', error);
+    // Try to clear storage even on error
+    try {
+      const { clearAuthStorage } = await import('@/lib/auth-cleanup');
+      clearAuthStorage();
+    } catch (cleanupError) {
+      console.error('Failed to cleanup storage on error:', cleanupError);
+    }
     // Fallback: redirect to home page
     window.location.href = '/';
   }

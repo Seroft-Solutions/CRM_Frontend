@@ -28,7 +28,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
                   orientation="vertical"
                   className="mr-2 data-[orientation=vertical]:h-4"
                 />
-                <DynamicBreadcrumbs />
+                  <DynamicBreadcrumbs />
               </div>
               <div className="flex-1 flex justify-center px-4">
                 <TenantHeader />
@@ -36,7 +36,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
               <div className="w-48"></div>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden">
+          <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden bg-slate-50">
             <div className="container mx-auto">{children}</div>
           </div>
         </SidebarInset>

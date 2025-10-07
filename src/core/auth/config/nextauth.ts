@@ -251,6 +251,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
+      const hasValidSession = isLoggedIn && !auth?.error;
       const isProtected =
         nextUrl.pathname.startsWith('/dashboard') ||
         nextUrl.pathname.startsWith('/areas') ||
@@ -274,13 +275,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const isOrganizationFlow = nextUrl.pathname.startsWith('/organization');
 
       if (isProtected) {
-        if (isLoggedIn) return true;
+        if (hasValidSession) return true;
         return false;
       } else if (isOrganizationFlow) {
-        // Allow access to organization flow if logged in
-        if (isLoggedIn) return true;
+        // Allow access to organization flow only if session is valid
+        if (hasValidSession) return true;
         return false;
-      } else if (isLoggedIn && nextUrl.pathname === '/') {
+      } else if (hasValidSession && nextUrl.pathname === '/') {
+        // Only redirect to organization if session is valid
         return Response.redirect(new URL('/organization', nextUrl));
       }
 
@@ -292,7 +294,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Handle both token and session based signout
       const token = 'token' in params ? params.token : null;
 
-      // Roles are managed by backend API, no client-side cleanup needed
+      // Note: Client-side storage cleanup happens in the signOut component/hook
+      // This server-side event focuses on Keycloak logout
 
       if (token?.id_token && typeof token.id_token === 'string') {
         try {

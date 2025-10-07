@@ -1,18 +1,28 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced with dynamic header color based on Business Partner toggle
 // ===============================================================
+'use client';
+
 import { CallForm } from '../components/call-form';
 import { PermissionGuard } from '@/core/auth';
-
-export const metadata = {
-  title: 'Create Call',
-};
+import { useState, useEffect } from 'react';
 
 export default function CreateCallPage() {
+  const [isBusinessPartner, setIsBusinessPartner] = useState(false);
+
+  useEffect(() => {
+    const handleBusinessPartnerToggle = (event: CustomEvent) => {
+      setIsBusinessPartner(event.detail.enabled);
+    };
+
+    window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+
+    return () => {
+      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+    };
+  }, []);
+
   return (
     <PermissionGuard
       requiredPermission="call:create"
@@ -20,8 +30,12 @@ export default function CreateCallPage() {
       unauthorizedDescription="You don't have permission to create new call records."
     >
       <div className="space-y-6">
-        {/* Professional Header with Dotted Background */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg relative overflow-hidden">
+        {/* Professional Header with Dotted Background - Dynamic Color */}
+        <div className={`rounded-lg p-6 shadow-lg relative overflow-hidden transition-colors duration-300 ${
+          isBusinessPartner
+            ? 'bg-gradient-to-r from-yellow-600 to-yellow-700'
+            : 'bg-gradient-to-r from-blue-600 to-blue-700'
+        }`}>
           {/* Dotted background pattern */}
           <div
             className="absolute inset-0 opacity-20"
@@ -47,7 +61,9 @@ export default function CreateCallPage() {
 
             <div className="text-white">
               <h1 className="text-2xl font-bold">Create Call</h1>
-              <p className="text-blue-100">Enter the details below to create a new call</p>
+              <p className={isBusinessPartner ? 'text-yellow-100' : 'text-blue-100'}>
+                Enter the details below to create a new call
+              </p>
             </div>
           </div>
         </div>

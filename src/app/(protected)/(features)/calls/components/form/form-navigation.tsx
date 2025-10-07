@@ -1,13 +1,10 @@
 // ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
+// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
+// - Enhanced with dynamic button color based on Business Partner toggle
 // ===============================================================
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEntityForm } from './call-form-provider';
@@ -22,6 +19,19 @@ interface FormNavigationProps {
 export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: FormNavigationProps) {
   const { config, state, actions, form } = useEntityForm();
   const isLastStep = state.currentStep === config.steps.length - 1;
+  const [isBusinessPartner, setIsBusinessPartner] = useState(false);
+
+  useEffect(() => {
+    const handleBusinessPartnerToggle = (event: CustomEvent) => {
+      setIsBusinessPartner(event.detail.enabled);
+    };
+
+    window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+
+    return () => {
+      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+    };
+  }, []);
   const handleNext = async () => {
     const success = await actions.nextStep();
     if (success && config.behavior.autoSave.enabled) {
@@ -104,7 +114,11 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
           <Button
             type="button"
             onClick={handleNext}
-            className="flex items-center gap-2 justify-center"
+            className={`flex items-center gap-2 justify-center transition-colors ${
+              isBusinessPartner
+                ? 'bg-yellow-600 hover:bg-yellow-700'
+                : ''
+            }`}
             disabled={isSubmitting}
           >
             Next Step

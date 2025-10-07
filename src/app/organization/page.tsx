@@ -2,20 +2,39 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Coffee } from 'lucide-react';
 import { persistentLog } from '@/lib/debug-logger';
 import { useUserAuthorities } from '@/core/auth';
+import { clearAuthStorage } from '@/lib/auth-cleanup';
 
 export default function OrganizationPage() {
   const { data: organizations, isLoading, isError } = useUserOrganizations();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const { hasGroup } = useUserAuthorities();
   const isBusinessPartner = hasGroup('Business Partners');
+
+  // Clear organization storage on mount (but keep session data)
   useEffect(() => {
     localStorage.removeItem('selectedOrganizationId');
-    persistentLog('OrganizationPage: Cleared localStorage');
+    localStorage.removeItem('selectedOrganizationName');
+    persistentLog('OrganizationPage: Cleared organization from localStorage');
   }, []);
+
+  // Handle unauthenticated state - only redirect if truly unauthenticated (not during loading)
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      persistentLog('OrganizationPage: No session, cleaning up and redirecting to home');
+      clearAuthStorage();
+      router.replace('/');
+      return;
+    }
+  }, [status, router]);
+
+  // Session error is handled by SessionManager modal - no need to redirect here
+  // The SessionExpiredModal will show and handle cleanup/re-authentication
 
   useEffect(() => {
     // Handle error state
