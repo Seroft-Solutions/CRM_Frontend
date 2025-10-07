@@ -109,19 +109,6 @@ export const sidebarItems: SidebarItem[] = [
     expandable: false,
     requiredPermission: 'geography:sidebar',
     children: [
-      {
-        key: 'states',
-        label: 'States Master',
-        path: '/states',
-        requiredPermission: 'state:sidebar',
-      },
-      {
-        key: 'districts',
-        label: 'Districts Master',
-        path: '/districts',
-        requiredPermission: 'district:sidebar',
-      },
-      { key: 'city', label: 'City Master', path: '/cities', requiredPermission: 'city:sidebar' },
       { key: 'areas', label: 'Areas Master', path: '/areas', requiredPermission: 'area:sidebar' },
     ],
   },

@@ -1,14 +1,8 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Customer form validation schema with user-friendly messages
  */
 import { z } from 'zod';
+import type { AreaDTO } from '@/core/api/generated/spring/schemas';
 
 export const customerFormSchemaFields = {
   customerBusinessName: z
@@ -38,10 +32,11 @@ export const customerFormSchemaFields = {
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
   status: z.string().optional(),
-  state: z.number({ message: 'Please select state from the dropdown' }),
-  district: z.number({ message: 'Please select district from the dropdown' }),
-  city: z.number({ message: 'Please select city from the dropdown' }),
-  area: z.number({ message: 'Please select area from the dropdown' }),
+  area: z.custom<AreaDTO>((val) => {
+    return val && typeof val === 'object' && 'id' in val && 'name' in val;
+  }, {
+    message: 'Please select a location',
+  }),
 };
 
 export const customerFormSchema = z.object(customerFormSchemaFields);
@@ -77,10 +72,11 @@ export const customerFieldSchemas = {
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
-  state: z.number({ message: 'Please select state from the dropdown' }),
-  district: z.number({ message: 'Please select district from the dropdown' }),
-  city: z.number({ message: 'Please select city from the dropdown' }),
-  area: z.number({ message: 'Please select area from the dropdown' }),
+  area: z.custom<AreaDTO>((val) => {
+    return val && typeof val === 'object' && 'id' in val && 'name' in val;
+  }, {
+    message: 'Please select a location',
+  }),
 };
 
 // Step-specific validation schemas
@@ -91,13 +87,11 @@ export const customerStepSchemas = {
     mobile: customerFieldSchemas.mobile,
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
-    status: customerFieldSchemas.status,
-    createdBy: customerFieldSchemas.createdBy,
-    createdDate: customerFieldSchemas.createdDate,
-    lastModifiedBy: customerFieldSchemas.lastModifiedBy,
-    lastModifiedDate: customerFieldSchemas.lastModifiedDate,
+    status: customerFieldSchemas.status.optional(),
   }),
-
+  geographic: z.object({
+    area: customerFieldSchemas.area,
+  }),
   review: customerFormSchema,
 };
 

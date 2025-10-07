@@ -116,12 +116,6 @@ import {
 
 // Relationship data imports
 
-import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-
-import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-
-import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-
 import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 import { CustomerSearchAndFilters } from './table/customer-search-filters';
@@ -211,35 +205,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'state',
-    label: 'State',
-    accessor: 'state',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
-    id: 'district',
-    label: 'District',
-    accessor: 'district',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
-    id: 'city',
-    label: 'City',
-    accessor: 'city',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
     id: 'area',
-    label: 'Area',
+    label: 'Location',
     accessor: 'area',
     type: 'relationship',
     visible: true,
