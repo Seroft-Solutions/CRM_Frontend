@@ -28,7 +28,8 @@ import type {
   AreaDTO,
   CountAreasParams,
   GetAllAreasParams,
-  SearchAreasParams
+  SearchAreasParams,
+  SearchGeographyParams
 } from '../../schemas';
 
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
@@ -431,7 +432,170 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const countAreas = (
+    export const getAreaWithFullHierarchy = (
+    id: number,
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<AreaDTO>(
+      {url: `/api/areas/${id}/with-hierarchy`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+export const getGetAreaWithFullHierarchyQueryKey = (id: number,) => {
+    return [`/api/areas/${id}/with-hierarchy`] as const;
+    }
+
+    
+export const getGetAreaWithFullHierarchyQueryOptions = <TData = Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAreaWithFullHierarchyQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>> = ({ signal }) => getAreaWithFullHierarchy(id, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAreaWithFullHierarchyQueryResult = NonNullable<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>>
+export type GetAreaWithFullHierarchyQueryError = ErrorType<unknown>
+
+
+export function useGetAreaWithFullHierarchy<TData = Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAreaWithFullHierarchy>>,
+          TError,
+          Awaited<ReturnType<typeof getAreaWithFullHierarchy>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAreaWithFullHierarchy<TData = Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAreaWithFullHierarchy>>,
+          TError,
+          Awaited<ReturnType<typeof getAreaWithFullHierarchy>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAreaWithFullHierarchy<TData = Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAreaWithFullHierarchy<TData = Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAreaWithFullHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAreaWithFullHierarchyQueryOptions(id,options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const searchGeography = (
+    params: SearchGeographyParams,
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<AreaDTO[]>(
+      {url: `/api/areas/search-geography`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+export const getSearchGeographyQueryKey = (params: SearchGeographyParams,) => {
+    return [`/api/areas/search-geography`, ...(params ? [params]: [])] as const;
+    }
+
+    
+export const getSearchGeographyQueryOptions = <TData = Awaited<ReturnType<typeof searchGeography>>, TError = ErrorType<unknown>>(params: SearchGeographyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchGeographyQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchGeography>>> = ({ signal }) => searchGeography(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type SearchGeographyQueryResult = NonNullable<Awaited<ReturnType<typeof searchGeography>>>
+export type SearchGeographyQueryError = ErrorType<unknown>
+
+
+export function useSearchGeography<TData = Awaited<ReturnType<typeof searchGeography>>, TError = ErrorType<unknown>>(
+ params: SearchGeographyParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchGeography>>,
+          TError,
+          Awaited<ReturnType<typeof searchGeography>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchGeography<TData = Awaited<ReturnType<typeof searchGeography>>, TError = ErrorType<unknown>>(
+ params: SearchGeographyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchGeography>>,
+          TError,
+          Awaited<ReturnType<typeof searchGeography>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchGeography<TData = Awaited<ReturnType<typeof searchGeography>>, TError = ErrorType<unknown>>(
+ params: SearchGeographyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useSearchGeography<TData = Awaited<ReturnType<typeof searchGeography>>, TError = ErrorType<unknown>>(
+ params: SearchGeographyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchGeography>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSearchGeographyQueryOptions(params,options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const countAreas = (
     params?: CountAreasParams,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {

@@ -244,41 +244,6 @@ export function CustomerTableHeader({
                   return null;
                 })()
               : (() => {
-                  if (column.accessor === 'state') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['state.name'] as string) || ''}
-                        onChange={(e) => onFilterChange('state.name', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
-                  if (column.accessor === 'district') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['district.name'] as string) || ''}
-                        onChange={(e) =>
-                          onFilterChange('district.name', e.target.value || undefined)
-                        }
-                      />
-                    );
-                  }
-
-                  if (column.accessor === 'city') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['city.name'] as string) || ''}
-                        onChange={(e) => onFilterChange('city.name', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
                   if (column.accessor === 'area') {
                     return (
                       <Input

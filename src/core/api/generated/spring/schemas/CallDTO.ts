@@ -34,7 +34,7 @@ export interface CallDTO {
   lastModifiedDate?: string;
   priority: PriorityDTO;
   callType: CallTypeDTO;
-  subCallType: SubCallTypeDTO;
+  subCallType?: SubCallTypeDTO;
   source: SourceDTO;
   customer: CustomerDTO;
   product: ProductDTO;
