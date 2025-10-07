@@ -5,8 +5,6 @@ import { Check, ChevronDown, MapPin, Search, X, Plus, Loader2 } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Popover,
   PopoverContent,
@@ -217,86 +215,87 @@ export function IntelligentLocationField({
               onValueChange={setSearchQuery}
               className="border-0"
             />
-            <ScrollArea className="h-[300px]">
-              <CommandList>
-                {searchQuery.length < 2 ? (
-                  <CommandEmpty>
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      Type at least 2 characters to search
-                    </div>
-                  </CommandEmpty>
-                ) : isSearching && page === 0 ? (
-                  <div className="p-4 text-center">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                    <p className="text-sm text-muted-foreground mt-2">Searching locations...</p>
+            <CommandList
+              className="max-h-72 overflow-y-auto overscroll-contain pr-1"
+              onWheel={(event) => event.stopPropagation()}
+            >
+              {searchQuery.length < 2 ? (
+                <CommandEmpty>
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    Type at least 2 characters to search
                   </div>
-                ) : allAreas.length === 0 ? (
-                  <CommandEmpty>
-                    <div className="p-4 text-center space-y-3">
-                      <div className="text-sm text-muted-foreground">
-                        No locations found matching "{searchQuery}"
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => {
-                          setIsOpen(false);
-                          setIsCreateSheetOpen(true);
-                        }}
+                </CommandEmpty>
+              ) : isSearching && page === 0 ? (
+                <div className="p-4 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                  <p className="text-sm text-muted-foreground mt-2">Searching locations...</p>
+                </div>
+              ) : allAreas.length === 0 ? (
+                <CommandEmpty>
+                  <div className="p-4 text-center space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      No locations found matching "{searchQuery}"
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsCreateSheetOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Create New Location
+                    </Button>
+                  </div>
+                </CommandEmpty>
+              ) : (
+                <>
+                  <CommandGroup heading={`${allAreas.length} location${allAreas.length !== 1 ? 's' : ''} found`}>
+                    {allAreas.map((area) => (
+                      <CommandItem
+                        key={area.id}
+                        value={String(area.id)}
+                        onSelect={() => handleSelect(area)}
+                        className="flex items-start gap-3 p-3 cursor-pointer"
                       >
-                        <Plus className="h-4 w-4" />
-                        Create New Location
-                      </Button>
-                    </div>
-                  </CommandEmpty>
-                ) : (
-                  <>
-                    <CommandGroup heading={`${allAreas.length} location${allAreas.length !== 1 ? 's' : ''} found`}>
-                      {allAreas.map((area) => (
-                        <CommandItem
-                          key={area.id}
-                          value={String(area.id)}
-                          onSelect={() => handleSelect(area)}
-                          className="flex items-start gap-3 p-3 cursor-pointer"
-                        >
-                          <Check
-                            className={cn(
-                              "mt-1 h-4 w-4 flex-shrink-0",
-                              value?.id === area.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          <div className="flex-1 space-y-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="outline" className="text-xs font-medium">
-                                {area.name}
+                        <Check
+                          className={cn(
+                            "mt-1 h-4 w-4 flex-shrink-0",
+                            value?.id === area.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <div className="flex-1 space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className="text-xs font-medium">
+                              {area.name}
+                            </Badge>
+                            {area.pincode && (
+                              <Badge variant="secondary" className="text-xs">
+                                {area.pincode}
                               </Badge>
-                              {area.pincode && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {area.pincode}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {getDisplayText(area)}
-                            </div>
+                            )}
                           </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                    {/* Infinite scroll trigger */}
-                    <div ref={observerTarget} className="h-4 w-full">
-                      {isFetching && page > 0 && (
-                        <div className="p-2 text-center">
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
+                          <div className="text-xs text-muted-foreground truncate">
+                            {getDisplayText(area)}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </CommandList>
-            </ScrollArea>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  {/* Infinite scroll trigger */}
+                  <div ref={observerTarget} className="h-4 w-full">
+                    {isFetching && page > 0 && (
+                      <div className="p-2 text-center">
+                        <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
