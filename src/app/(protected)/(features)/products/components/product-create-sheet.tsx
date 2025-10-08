@@ -77,9 +77,10 @@ type ProductCreationFormData = {
 interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
   trigger?: React.ReactNode;
+  isBusinessPartner?: boolean;
 }
 
-export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetProps) {
+export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = false }: ProductCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -190,13 +191,19 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
         side="right"
         className="w-full sm:max-w-xl overflow-y-auto p-0 bg-slate-50"
       >
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white shadow-sm">
+        <div className={`sticky top-0 z-10 text-white shadow-sm ${
+          isBusinessPartner
+            ? 'bg-bp-primary'
+            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+        }`}>
           <SheetHeader className="px-6 py-5 space-y-1">
             <SheetTitle className="flex items-center gap-2 text-lg font-semibold leading-tight text-white">
               <Package className="h-5 w-5" />
               Create New Product
             </SheetTitle>
-            <SheetDescription className="text-sm text-blue-100">
+            <SheetDescription className={`text-sm ${
+              isBusinessPartner ? 'text-white/90' : 'text-blue-100'
+            }`}>
               Capture catalog information and map the product to the correct category.
             </SheetDescription>
           </SheetHeader>
@@ -453,7 +460,9 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
               type="submit"
               form="product-creation-form"
               disabled={isPending}
-              className="min-w-[160px]"
+              className={`min-w-[160px] ${
+                isBusinessPartner ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+              }`}
             >
               {isPending ? (
                 <>
