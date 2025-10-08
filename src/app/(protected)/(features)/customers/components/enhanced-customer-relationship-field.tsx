@@ -54,6 +54,9 @@ export function EnhancedCustomerRelationshipField({
   const [deferredSearchQuery, setDeferredSearchQuery] = useState('');
   const [createdCustomers, setCreatedCustomers] = useState<CustomerDTO[]>([]);
 
+  // Detect if Business Partner mode is active based on button className
+  const isBusinessPartner = buttonClassName.includes('bp-primary');
+
   // Debounced search query (300ms delay)
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -342,6 +345,7 @@ export function EnhancedCustomerRelationshipField({
           <InlinePermissionGuard requiredPermission={createPermission}>
             <CustomerCreateSheet
               onSuccess={handleCustomerCreated}
+              isBusinessPartner={isBusinessPartner}
               trigger={
                 <Button
                     type="button"
