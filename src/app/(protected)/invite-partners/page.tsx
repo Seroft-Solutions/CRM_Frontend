@@ -175,9 +175,9 @@ export default function InvitePartnersPage() {
       unauthorizedTitle="Access Denied to Invite Partners"
       unauthorizedDescription="You don't have permission to invite business partners."
     >
-      <div className="container mx-auto py-8 space-y-6">
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -187,34 +187,126 @@ export default function InvitePartnersPage() {
           </div>
         </div>
 
-        {/* How it works info */}
-        <Alert className="border-green-200 bg-green-50">
-          <Building2 className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-800">How Partner Invitations Work</AlertTitle>
-          <AlertDescription className="text-green-700">
-            <div className="space-y-1 mt-2">
-              <p>• Invited partner receives an email with account setup instructions</p>
-              <p>• They'll set their password and be assigned to the Business Partners group</p>
-              <p>• Channel type information is stored for commission and relationship management</p>
-              <p>• You can view all partners in the Business Partners page</p>
-            </div>
-          </AlertDescription>
-        </Alert>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Info */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* How it works info */}
+            <Alert className="border-green-200 bg-green-50">
+              <Building2 className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-800 text-sm font-semibold">How Partner Invitations Work</AlertTitle>
+              <AlertDescription className="text-green-700 text-xs">
+                <div className="space-y-1.5 mt-2">
+                  <p>• Invited partner receives an email with account setup instructions</p>
+                  <p>• They'll set their password and be assigned to the Business Partners group</p>
+                  <p>• Channel type information is stored for commission and relationship management</p>
+                  <p>• You can view all partners in the Business Partners page</p>
+                </div>
+              </AlertDescription>
+            </Alert>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Invite Business Partner
-            </CardTitle>
-            <CardDescription>
-              Send an invitation to a business partner to join your organization. They'll receive an
-              email with setup instructions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {/* Invitation Results - Only show when there are results */}
+            {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
+              <Card className="shadow-md">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Recent Invitations</CardTitle>
+                      <CardDescription className="text-xs">Status of your invitations</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  {invitationStatus.sent.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold text-green-800 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Successfully Invited ({invitationStatus.sent.length})
+                      </div>
+                      {invitationStatus.sent.map((invitation, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start justify-between p-2 bg-green-50 rounded-md border border-green-200"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-green-900 truncate">
+                              {invitation.firstName} {invitation.lastName}
+                            </p>
+                            <p className="text-xs text-green-700 truncate">
+                              {invitation.email}
+                            </p>
+                          </div>
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs ml-2 shrink-0">
+                            Sent
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {invitationStatus.failed.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold text-red-800 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Failed ({invitationStatus.failed.length})
+                      </div>
+                      {invitationStatus.failed.map((failure, index) => (
+                        <div key={index} className="p-2 bg-red-50 rounded-md border border-red-200">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-red-900 truncate">
+                              {failure.invitation.firstName} {failure.invitation.lastName}
+                            </span>
+                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">Failed</Badge>
+                          </div>
+                          <p className="text-xs text-red-700 truncate">{failure.invitation.email}</p>
+                          <p className="text-xs text-red-600 mt-1">{failure.error}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Clear results and view partners buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInvitationStatus({ sent: [], failed: [] })}
+                      className="flex-1 text-xs h-8"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear
+                    </Button>
+                    {invitationStatus.sent.length > 0 && (
+                      <Button
+                        size="sm"
+                        onClick={() => router.push('/business-partners')}
+                        className="flex-1 text-xs h-8"
+                      >
+                        <Users className="h-3 w-3 mr-1" />
+                        View Partners
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Form */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Invite Business Partner
+                </CardTitle>
+                <CardDescription>
+                  Send an invitation to a business partner to join your organization. They'll receive an
+                  email with setup instructions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-w-2xl">
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -253,44 +345,46 @@ export default function InvitePartnersPage() {
                   />
                 </div>
 
-                {/* Email */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="john.doe@example.com"
-                          disabled={isInviting || isCreatingProfile}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Email and Channel Type in one row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="john.doe@example.com"
+                            disabled={isInviting || isCreatingProfile}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Channel Type */}
-                <FormField
-                  control={form.control}
-                  name="channelTypeId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Channel Type *</FormLabel>
-                      <FormControl>
-                        <ChannelTypeSelector
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isInviting || isCreatingProfile}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="channelTypeId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Channel Type *</FormLabel>
+                        <FormControl>
+                          <ChannelTypeSelector
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            disabled={isInviting || isCreatingProfile}
+                            hideAddButton={true}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
@@ -322,8 +416,8 @@ export default function InvitePartnersPage() {
                 </div>
 
                 {/* Helper text */}
-                <div className="text-sm text-muted-foreground">
-                  <p>
+                <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <p className="text-blue-800">
                     💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
                     required fields (* fields) are properly filled.
                   </p>
@@ -332,104 +426,8 @@ export default function InvitePartnersPage() {
             </Form>
           </CardContent>
         </Card>
-
-        {/* Invitation Results - Only show when there are results */}
-        {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Invitation Results</CardTitle>
-                  <CardDescription>Status of your recent partner invitations</CardDescription>
-                </div>
-                {invitationStatus.sent.length > 0 && (
-                  <Button onClick={() => router.push('/business-partners')} className="gap-2">
-                    <Building2 className="h-4 w-4" />
-                    View Business Partners
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {invitationStatus.sent.length > 0 && (
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertTitle className="text-green-800">
-                    Successfully Invited ({invitationStatus.sent.length})
-                  </AlertTitle>
-                  <AlertDescription className="text-green-700">
-                    <div className="space-y-2 mt-2">
-                      {invitationStatus.sent.map((invitation, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-green-100 rounded-md"
-                        >
-                          <div>
-                            <span className="text-sm font-medium text-green-900">
-                              {invitation.firstName} {invitation.lastName}
-                            </span>
-                            <span className="text-sm text-green-700 ml-2">
-                              ({invitation.email})
-                            </span>
-                          </div>
-                          <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                            Partner Invited
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 p-3 bg-green-100 rounded-md">
-                      <p className="text-sm text-green-800">
-                        💡 <strong>Next step:</strong> Invited partners will receive an email with
-                        setup instructions. They'll appear in your Business Partners list once they
-                        accept.
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {invitationStatus.failed.length > 0 && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertTitle className="text-red-800">
-                    Failed to Send ({invitationStatus.failed.length})
-                  </AlertTitle>
-                  <AlertDescription className="text-red-700">
-                    <div className="space-y-2 mt-2">
-                      {invitationStatus.failed.map((failure, index) => (
-                        <div key={index} className="p-3 bg-red-100 rounded-md">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-red-900">
-                              {failure.invitation.firstName} {failure.invitation.lastName} (
-                              {failure.invitation.email})
-                            </span>
-                            <Badge variant="destructive">Failed</Badge>
-                          </div>
-                          <p className="text-xs text-red-700 bg-red-50 p-2 rounded">
-                            <strong>Error:</strong> {failure.error}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Clear results button */}
-              <div className="flex justify-center pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setInvitationStatus({ sent: [], failed: [] })}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Clear Results
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          </div>
+        </div>
       </div>
     </PermissionGuard>
   );
