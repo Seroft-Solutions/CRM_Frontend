@@ -48,7 +48,7 @@ export function FormProgressIndicator() {
               </span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-yellow-600' : ''}`} />
+            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`} />
           </div>
 
           {/* Step Indicators */}
@@ -61,9 +61,9 @@ export function FormProgressIndicator() {
                       'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0',
                       isBusinessPartner
                         ? index < state.currentStep
-                          ? 'bg-yellow-600 border-yellow-600 text-white'
+                          ? 'bg-bp-primary border-bp-primary text-white'
                           : index === state.currentStep
-                            ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
+                            ? 'border-bp-primary text-bp-600 bg-bp-50'
                             : 'border-muted-foreground/30 text-muted-foreground'
                         : index < state.currentStep
                           ? 'bg-primary border-primary text-primary-foreground'
@@ -71,7 +71,7 @@ export function FormProgressIndicator() {
                             ? 'border-primary text-primary bg-primary/10'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        (isBusinessPartner ? 'cursor-pointer hover:border-yellow-600' : 'cursor-pointer hover:border-primary')
+                        (isBusinessPartner ? 'cursor-pointer hover:border-bp-primary' : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >
@@ -117,7 +117,7 @@ export function FormProgressIndicator() {
               </div>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-yellow-600' : ''}`} />
+            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`} />
           </div>
 
           {/* Step Indicators */}
@@ -130,9 +130,9 @@ export function FormProgressIndicator() {
                       'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex-shrink-0',
                       isBusinessPartner
                         ? index < state.currentStep
-                          ? 'bg-yellow-600 border-yellow-600 text-white'
+                          ? 'bg-bp-primary border-bp-primary text-white'
                           : index === state.currentStep
-                            ? 'border-yellow-600 text-yellow-600 bg-yellow-50'
+                            ? 'border-bp-primary text-bp-600 bg-bp-50'
                             : 'border-muted-foreground/30 text-muted-foreground'
                         : index < state.currentStep
                           ? 'bg-primary border-primary text-primary-foreground'
@@ -140,7 +140,7 @@ export function FormProgressIndicator() {
                             ? 'border-primary text-primary bg-primary/10'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        (isBusinessPartner ? 'cursor-pointer hover:border-yellow-600' : 'cursor-pointer hover:border-primary')
+                        (isBusinessPartner ? 'cursor-pointer hover:border-bp-primary' : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >

@@ -33,7 +33,7 @@ export default function CreateCallPage() {
         {/* Professional Header with Dotted Background - Dynamic Color */}
         <div className={`rounded-lg p-6 shadow-lg relative overflow-hidden transition-colors duration-300 ${
           isBusinessPartner
-            ? 'bg-gradient-to-r from-yellow-600 to-yellow-700'
+            ? 'bg-bp-primary'
             : 'bg-gradient-to-r from-blue-600 to-blue-700'
         }`}>
           {/* Dotted background pattern */}
@@ -61,7 +61,7 @@ export default function CreateCallPage() {
 
             <div className="text-white">
               <h1 className="text-2xl font-bold">Create Call</h1>
-              <p className={isBusinessPartner ? 'text-yellow-100' : 'text-blue-100'}>
+              <p className="text-white/90">
                 Enter the details below to create a new call
               </p>
             </div>
