@@ -116,7 +116,7 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
             onClick={handleNext}
             className={`flex items-center gap-2 justify-center transition-colors ${
               isBusinessPartner
-                ? 'bg-yellow-600 hover:bg-yellow-700'
+                ? 'bg-bp-primary hover:bg-bp-primary-hover'
                 : ''
             }`}
             disabled={isSubmitting}

@@ -202,7 +202,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   canCreate={true}
                   createPermission="customer:create:inline"
                   customFilters={customerCustomFilters}
-                  buttonClassName={callType === 'business-partner' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                  buttonClassName={callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''}
                   onCustomerCreated={(customerId) => {
                     // Optionally trigger any additional actions when customer is created
                     console.log('New customer created:', customerId);
@@ -231,7 +231,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   placeholder="Select product"
                   canCreate={true}
                   createPermission="product:create:inline"
-                  buttonClassName={callType === 'business-partner' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                  buttonClassName={callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''}
                   onProductCreated={(productId) => {
                     // Optionally trigger any additional actions when product is created
                     console.log('New product created:', productId);
@@ -249,14 +249,14 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
           <div
             className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-all ${
               callType === 'business-partner'
-                ? 'bg-yellow-50 border-yellow-600 hover:bg-yellow-100'
+                ? 'bg-bp-50 border-bp-primary hover:bg-bp-50'
                 : 'hover:bg-gray-50 border-gray-200'
             }`}
             onClick={() => setCallType(callType === 'business-partner' ? '' : 'business-partner')}
           >
             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
               callType === 'business-partner'
-                ? 'bg-yellow-600 border-yellow-600'
+                ? 'bg-bp-primary border-bp-primary'
                 : 'border-gray-300 bg-white'
             }`}>
               {callType === 'business-partner' && (
@@ -267,14 +267,14 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
             </div>
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <UserCheck className={`h-4 w-4 flex-shrink-0 ${
-                callType === 'business-partner' ? 'text-yellow-600' : 'text-gray-500'
+                callType === 'business-partner' ? 'text-bp-600' : 'text-gray-500'
               }`} />
               <div className="min-w-0">
                 <div className={`font-medium text-sm ${
-                  callType === 'business-partner' ? 'text-yellow-900' : 'text-gray-900'
+                  callType === 'business-partner' ? 'text-bp-900' : 'text-gray-900'
                 }`}>Business Partner</div>
                 <div className={`text-xs ${
-                  callType === 'business-partner' ? 'text-yellow-700' : 'text-gray-500'
+                  callType === 'business-partner' ? 'text-bp-700' : 'text-gray-500'
                 }`}>Enable for external calls</div>
               </div>
             </div>
@@ -316,7 +316,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                       label: 'Channel Parties',
                       placeholder: 'Select channel parties',
                       icon: '👥',
-                      buttonClassName: 'bg-yellow-600 hover:bg-yellow-700',
+                      buttonClassName: 'bg-bp-primary hover:bg-bp-primary-hover',
                     },
                   }}
                   field={field}
@@ -362,7 +362,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                       label: 'Channel Type',
                       placeholder: 'Select channel type',
                       icon: '📞',
-                      buttonClassName: 'bg-yellow-600 hover:bg-yellow-700',
+                      buttonClassName: 'bg-bp-primary hover:bg-bp-primary-hover',
                     },
                   }}
                   field={field}
