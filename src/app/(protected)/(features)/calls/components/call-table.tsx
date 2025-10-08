@@ -159,9 +159,9 @@ interface ColumnConfig {
 // Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
   {
-    id: 'id',
-    label: 'ID',
-    accessor: 'id',
+    id: 'leadNo',
+    label: 'Lead No',
+    accessor: 'leadNo',
     type: 'field',
     visible: true,
     sortable: true,
