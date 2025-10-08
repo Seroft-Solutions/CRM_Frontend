@@ -44,14 +44,10 @@ export function OrganizationSetupForm({
     }
 
     // Validate organization code
-    const orgCodeFormatRegex = /^[A-Z][A-Z0-9]{5}$/;
-    const orgCodeHasDigitRegex = /\d/;
-    if (
-      !orgCodeFormatRegex.test(formData.organizationCode) ||
-      !orgCodeHasDigitRegex.test(formData.organizationCode)
-    ) {
+    const orgCodeRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{4}$/;
+    if (!orgCodeRegex.test(formData.organizationCode as string)) {
       setValidationError(
-        'Organization code must be 6 uppercase characters, start with a letter, and contain at least one number.',
+        'Organization code must be 4 characters long, contain at least one uppercase letter and one number, and no special characters.'
       );
       return;
     }
@@ -173,11 +169,11 @@ export function OrganizationSetupForm({
                 placeholder="Enter organization code"
                 required
                 disabled={isLoading}
-                maxLength={6}
+                maxLength={4}
               />
               <p className="text-xs text-muted-foreground">
-                Must be 6 uppercase characters, start with a letter, and contain at least one
-                number.
+                Must be 4 characters, at least one uppercase letter and one number, no special
+                characters.
               </p>
             </div>
 
