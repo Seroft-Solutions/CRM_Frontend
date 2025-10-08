@@ -30,9 +30,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
                 />
                   <DynamicBreadcrumbs />
               </div>
-              <div className="flex-1 flex justify-center px-4">
-                <TenantHeader />
-              </div>
+              {/*<div className="flex-1 flex justify-center px-4">*/}
+              {/*  <TenantHeader />*/}
+              {/*</div>*/}
               <div className="w-48"></div>
             </div>
           </header>
