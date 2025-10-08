@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { localStorageCleanup } from '@/core/auth';
 
@@ -47,6 +48,7 @@ export function OrganizationSwitcher() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: organizations, isLoading } = useUserOrganizations();
+  const { data: session } = useSession();
 
   // Get the selected organization from localStorage with validation and auto-sync
   const getSelectedOrganization = React.useCallback(() => {
@@ -131,21 +133,26 @@ export function OrganizationSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-50 data-[state=open]:to-indigo-50 data-[state=open]:text-blue-900 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-200 border border-transparent data-[state=open]:border-blue-200 hover:border-blue-100"
+              className="data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-50 data-[state=open]:to-indigo-50 data-[state=open]:text-blue-900 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-200 border border-transparent data-[state=open]:border-blue-200 hover:border-blue-100 h-auto py-3"
             >
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white flex aspect-square size-10 items-center justify-center rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white flex aspect-square size-10 items-center justify-center rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 shrink-0">
                 <CupIcon className="size-5" />
               </div>
-              <div className="grid flex-1 text-left leading-tight">
+              <div className="grid flex-1 text-left leading-tight gap-0.5 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-base tracking-tight">CRM Cup</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <span className="truncate text-sm text-gray-600 font-medium">
+                <span className="truncate text-sm text-gray-900 font-semibold">
                   {displayOrg.name}
                 </span>
+                {session?.user?.email && (
+                  <span className="truncate text-xs text-gray-500">
+                    {session.user.email}
+                  </span>
+                )}
               </div>
-              <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
