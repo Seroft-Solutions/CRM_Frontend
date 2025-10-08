@@ -135,9 +135,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
 
   return (
     <PermissionGuard requiredPermission="manage:users">
-      <div className={`space-y-6 ${className}`}>
+      <div className={`max-w-7xl mx-auto px-4 ${className}`}>
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -147,36 +147,128 @@ export function InviteUsers({ className }: InviteUsersProps) {
           </div>
         </div>
 
-        {/* How it works info */}
-        <Alert className="border-blue-200 bg-blue-50">
-          <Mail className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-blue-800">How User Invitations Work</AlertTitle>
-          <AlertDescription className="text-blue-700">
-            <div className="space-y-1 mt-2">
-              <p>• Invited user receives an email with account setup instructions</p>
-              <p>• They'll set their password and can immediately access the organization</p>
-              <p>
-                • You can view all users (including pending invitations) in the Organization Users
-                page
-              </p>
-            </div>
-          </AlertDescription>
-        </Alert>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Info */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* How it works info */}
+            <Alert className="border-blue-200 bg-blue-50">
+              <Mail className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-800 text-sm font-semibold">How User Invitations Work</AlertTitle>
+              <AlertDescription className="text-blue-700 text-xs">
+                <div className="space-y-1.5 mt-2">
+                  <p>• Invited user receives an email with account setup instructions</p>
+                  <p>• They'll set their password and can immediately access the organization</p>
+                  <p>
+                    • You can view all users (including pending invitations) in the Organization Users
+                    page
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Invite User to Organization
-            </CardTitle>
-            <CardDescription>
-              Send an invitation to a user to join your organization. They'll receive an email with
-              setup instructions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4">
+            {/* Invitation Status - Only show when there are results */}
+            {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
+              <Card className="shadow-md">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Recent Invitations</CardTitle>
+                      <CardDescription className="text-xs">Status of your invitations</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  {invitationStatus.sent.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold text-green-800 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Successfully Sent ({invitationStatus.sent.length})
+                      </div>
+                      {invitationStatus.sent.map((invitation, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start justify-between p-2 bg-green-50 rounded-md border border-green-200"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-green-900 truncate">
+                              {invitation.firstName} {invitation.lastName}
+                            </p>
+                            <p className="text-xs text-green-700 truncate">
+                              {invitation.email}
+                            </p>
+                          </div>
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs ml-2 shrink-0">
+                            Sent
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {invitationStatus.failed.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold text-red-800 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Failed ({invitationStatus.failed.length})
+                      </div>
+                      {invitationStatus.failed.map((failure, index) => (
+                        <div key={index} className="p-2 bg-red-50 rounded-md border border-red-200">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-red-900 truncate">
+                              {failure.invitation.firstName} {failure.invitation.lastName}
+                            </span>
+                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">Failed</Badge>
+                          </div>
+                          <p className="text-xs text-red-700 truncate">{failure.invitation.email}</p>
+                          <p className="text-xs text-red-600 mt-1">{failure.error}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Clear results and view users buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInvitationStatus({ sent: [], failed: [] })}
+                      className="flex-1 text-xs h-8"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear
+                    </Button>
+                    {invitationStatus.sent.length > 0 && (
+                      <Button
+                        size="sm"
+                        onClick={() => router.push('/user-management/organization-users')}
+                        className="flex-1 text-xs h-8"
+                      >
+                        <Users className="h-3 w-3 mr-1" />
+                        View Users
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Form */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Invite User to Organization
+                </CardTitle>
+                <CardDescription>
+                  Send an invitation to a user to join your organization. They'll receive an email with
+                  setup instructions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4 max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -225,20 +317,20 @@ export function InviteUsers({ className }: InviteUsersProps) {
                   )}
                 />
 
-                <div className="flex gap-2">
+                <div className="flex gap-3 pt-4">
                   <Button
                     type="submit"
                     disabled={!isFormValid || isInvitingWithGroups}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 gap-2"
                   >
                     {isInvitingWithGroups ? (
                       <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         Sending Invitation...
                       </>
                     ) : (
                       <>
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-4 w-4" />
                         Send Invitation
                       </>
                     )}
@@ -257,8 +349,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
                 </div>
 
                 {/* Helper text */}
-                <div className="text-sm text-muted-foreground">
-                  <p>
+                <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <p className="text-blue-800">
                     💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
                     required fields (* fields) are properly filled.
                   </p>
@@ -267,113 +359,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
             </Form>
           </CardContent>
         </Card>
-
-        {/* Invitation Status - Only show when there are results */}
-        {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Invitation Results</CardTitle>
-                  <CardDescription>Status of your recent invitations</CardDescription>
-                </div>
-                {invitationStatus.sent.length > 0 && (
-                  <Button
-                    onClick={() => router.push('/user-management/organization-users')}
-                    className="gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    View Organization Users
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {invitationStatus.sent.length > 0 && (
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertTitle className="text-green-800">
-                    Successfully Sent ({invitationStatus.sent.length})
-                  </AlertTitle>
-                  <AlertDescription className="text-green-700">
-                    <div className="space-y-2 mt-2">
-                      {invitationStatus.sent.map((invitation, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-green-100 rounded-md"
-                        >
-                          <div>
-                            <span className="text-sm font-medium text-green-900">
-                              {invitation.firstName} {invitation.lastName}
-                            </span>
-                            <span className="text-sm text-green-700 ml-2">
-                              ({invitation.email})
-                            </span>
-                          </div>
-                          <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                            Invitation Sent
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 p-3 bg-green-100 rounded-md">
-                      <p className="text-sm text-green-800">
-                        💡 <strong>Next step:</strong> Invited users will receive an email with
-                        setup instructions. They'll appear in your Organization Users list once they
-                        accept.
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {invitationStatus.failed.length > 0 && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertTitle className="text-red-800">
-                    Failed to Send ({invitationStatus.failed.length})
-                  </AlertTitle>
-                  <AlertDescription className="text-red-700">
-                    <div className="space-y-2 mt-2">
-                      {invitationStatus.failed.map((failure, index) => (
-                        <div key={index} className="p-3 bg-red-100 rounded-md">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-red-900">
-                              {failure.invitation.firstName} {failure.invitation.lastName} (
-                              {failure.invitation.email})
-                            </span>
-                            <Badge variant="destructive">Failed</Badge>
-                          </div>
-                          <p className="text-xs text-red-700 bg-red-50 p-2 rounded">
-                            <strong>Error:</strong> {failure.error}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 p-3 bg-red-100 rounded-md">
-                      <p className="text-sm text-red-800">
-                        💡 <strong>Tip:</strong> Check email addresses and try again. Users might
-                        already exist in the system.
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Clear results button */}
-              <div className="flex justify-center pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setInvitationStatus({ sent: [], failed: [] })}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Clear Results
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          </div>
+        </div>
       </div>
     </PermissionGuard>
   );
