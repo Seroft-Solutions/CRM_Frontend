@@ -66,6 +66,7 @@ export function OrganizationSetupForm({
     });
   };
 
+
   const handleChange =
     (field: keyof OrganizationSetupRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
       let value = e.target.value;
