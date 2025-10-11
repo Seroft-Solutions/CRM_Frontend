@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, {useEffect, useState} from 'react';
@@ -16,7 +9,6 @@ import {
 } from '@/components/ui/form';
 import {Input} from '@/components/ui/input';
 import {RelationshipRenderer} from '../relationship-renderer';
-import {formatLeadNoForDisplay} from '../../../utils/leadNo-generator';
 import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
 import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -24,6 +16,7 @@ import {MessageSquare, Plus, X} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Textarea} from "@/components/ui/textarea";
 import {Button} from "@/components/ui/button";
+import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
 
 interface CallClassificationStepProps {
     form: any;

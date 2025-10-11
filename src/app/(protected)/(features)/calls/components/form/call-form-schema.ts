@@ -13,8 +13,7 @@ import { z } from 'zod';
 export const callFormSchemaFields = {
   leadNo: z
     .string()
-    .min(1, 'Lead number is required')
-    .regex(/^[A-Z]{3}\d{5}$/, 'Lead number must follow format: ABC12345 (3 letters + 5 digits)'),
+    .min(1, 'Lead number is required'),
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),
@@ -36,8 +35,7 @@ export type CallFormValues = z.infer<typeof callFormSchema>;
 export const callFieldSchemas = {
   leadNo: z
     .string()
-    .min(1, 'Lead number is required')
-    .regex(/^[A-Z]{3}\d{5}$/, 'Lead number must follow format: ABC12345 (3 letters + 5 digits)'),
+    .min(1, 'Lead number is required'),
   status: z.string().optional(), // Status is now auto-set to 'ACTIVE', so make it optional
   priority: z.number({ message: 'Please select priority from the dropdown' }),
   callType: z.number({ message: 'Please select call type from the dropdown' }),

@@ -18,6 +18,7 @@ import {
   useGetAllUserProfiles,
   useGetUserProfile,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { useCreateCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
 import { callFormConfig } from './call-form-config';
 import { callFormSchema } from './call-form-schema';
@@ -26,6 +27,7 @@ import { generateLeadNo } from '../../utils/leadNo-generator';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog } from '@/components/form-drafts';
+import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -109,17 +111,17 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   const [isInsideForm, setIsInsideForm] = useState(false);
 
+  const { mutate: createEntity, isPending: isCreating } = useCreateCall();
+
   // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
   const {
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
-    saveDraft,
     loadDraft,
     restoreDraft,
     deleteDraft,
     getLatestDraft,
-    isSaving: isSavingDraft,
     isDeleting: isDeletingDraft,
   } = useEntityDrafts({
     entityType: config.entity,
@@ -152,15 +154,21 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     defaultValues: getDefaultValues(),
   });
 
-  // Ensure leadNo is generated on mount for new forms
+  const {data: organizations, isLoading:OrganizationLoading} = useUserOrganizations();
+
+  // Extract organization ID and store in a variable
+  const orgId = organizations?.[0]?.id || '';
+
+  const {data: organizationData} = useOrganizationDetails(orgId);
+
+  // Ensure leadNo is organization code on mount for new forms
   React.useEffect(() => {
     if (isNew && !form.getValues('leadNo')) {
-      const orgName = getOrganizationName();
-      const generatedLeadNo = generateLeadNo(orgName);
-      form.setValue('leadNo', generatedLeadNo);
-      console.log('Generated leadNo:', generatedLeadNo);
+      const orgCode = organizationData?.attributes?.organizationCode?.[0] || '';
+      form.setValue('leadNo', orgCode);
+      console.log('orgCode is leadNo:', orgCode);
     }
-  }, [isNew, form, getOrganizationName]);
+  }, [isNew, form, organizationData]);
   // Auto-populate channel and assignment data when account/profile data loads for business partners
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
@@ -982,16 +990,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       // Use comprehensive form data instead of just current form values
       const currentFormValues = form.getValues();
       const completeFormData = { ...allFormData, ...currentFormValues };
+      const entityToSave = transformFormDataForSubmission(completeFormData);
 
-      const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
+      entityToSave.status = 'DRAFT';
 
-      if (success) {
-        toast.success('Draft saved successfully');
-      } else {
-        toast.error('Failed to save draft');
-      }
+      await createEntity({ data: entityToSave });
 
-      return success;
+      toast.success('Draft saved successfully');
+
+      return true;
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
@@ -1002,10 +1009,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     isNew,
     form,
     allFormData,
-    currentStep,
-    formSessionId,
-    currentDraftId,
-    saveDraft,
+    createEntity,
   ]);
 
   const handleLoadDraft = useCallback(
@@ -1203,7 +1207,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       // Draft-related state
       drafts,
       isLoadingDrafts,
-      isSavingDraft,
+      isSavingDraft: isCreating, // Use isCreating from useCreateCall
       isDeletingDraft,
       showDraftDialog,
       currentDraftId,
