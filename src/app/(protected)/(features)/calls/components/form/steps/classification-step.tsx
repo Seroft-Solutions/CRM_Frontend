@@ -10,13 +10,6 @@ import {
 import {Input} from '@/components/ui/input';
 import {RelationshipRenderer} from '../relationship-renderer';
 import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
-import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {MessageSquare, Plus, X} from "lucide-react";
-import {Badge} from "@/components/ui/badge";
-import {Textarea} from "@/components/ui/textarea";
-import {Button} from "@/components/ui/button";
-import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
 
 interface CallClassificationStepProps {
     form: any;
@@ -31,7 +24,6 @@ export function CallClassificationStep({
                                            actions,
                                            entity,
                                        }: CallClassificationStepProps) {
-    const leadNoValue = form.watch('leadNo');
 
     // Fetch call statuses and set default value for callStatus field
     useEffect(() => {
