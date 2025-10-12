@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { Search, Mail, Users, Calendar, UserCheck, Filter } from 'lucide-react';
 import { RefreshButton } from '@/features/user-management/components/LoadingButton';
-import { usePendingInvitations, useOrganizationContext } from '@/features/user-management/hooks';
+import { usePendingInvitations, useOrganizationContext } from '@/features/user-management/hooks/client';
 import type { InvitationFilters, PendingInvitation } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 

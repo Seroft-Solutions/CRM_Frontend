@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * User Management Hooks
  * Custom hooks for user management functionality with state management
