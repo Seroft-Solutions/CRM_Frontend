@@ -52,7 +52,7 @@ import {
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { useOrganizationContext } from '@/features/user-management/hooks';
+import { useOrganizationContext } from '@/features/user-management/hooks/client';
 import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-with-refresh';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { deleteUserProfile, getUserProfile } from '@/core/api/generated/spring';
