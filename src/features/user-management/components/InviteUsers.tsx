@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { UserPlus, Mail, ArrowLeft, Send, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
 import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
+import {useUserProfilePersistence} from "@/features/user-profile-management";
 
 // Form validation schema
 const inviteUserSchema = z.object({
@@ -63,6 +64,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
   } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
   const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
+  const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
 
   // Local state
   const [invitationStatus, setInvitationStatus] = useState<{
@@ -96,13 +98,22 @@ export function InviteUsers({ className }: InviteUsersProps) {
     const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
 
     try {
-      await inviteUserWithGroupsAsync({
+     const result= await inviteUserWithGroupsAsync({
         ...data,
         organizationId,
         selectedGroups,
       });
 
       // Clear form and update status
+      console.log("Invitation result In page haha:", result);
+      if (result.userId) {
+        await createProfileForPartner(
+            result.userId,
+            result.email as string,
+            result.firstName,
+            result.lastName,
+        );
+      }
       form.reset();
       setInvitationStatus((prev) => ({
         ...prev,
