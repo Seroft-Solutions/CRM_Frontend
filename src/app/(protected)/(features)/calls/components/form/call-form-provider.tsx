@@ -16,7 +16,7 @@ import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 import {
   useGetAllUserProfiles,
-  useGetUserProfile,
+  useGetUserProfile, useSearchUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import { useCreateCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
@@ -28,6 +28,7 @@ import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-fo
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog } from '@/components/form-drafts';
 import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
+import {useGetAllAvailableTimeSlots} from "@/core/api/generated/spring";
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -59,12 +60,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     },
   });
-  const { data: allUsers } = useGetAllUserProfiles();
 
-  const Partners = React.useMemo(() => {
-    if (!allUsers) return [];
-    return allUsers.filter((user) => user.channelType !== null);
-  }, [allUsers]);
+
+
 
   // Create filtered config for business partners (exclude channel and assignment steps)
   const config = React.useMemo(() => {
@@ -74,16 +72,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         steps: baseConfig.steps.filter((step) => step.id !== 'channel' && step.id !== 'assignment'),
       };
     }
-    if (!Partners?.length) {
-      console.log('ART length checked 2');
-      return {
-        ...baseConfig,
-        steps: baseConfig.steps.filter((step) => step.id !== 'channel'),
-      };
-    }
-
     return baseConfig;
-  }, [isBusinessPartner, baseConfig, Partners]);
+  }, [isBusinessPartner, baseConfig]);
   const formRef = useRef<HTMLDivElement>(null);
 
   // Cross-form navigation hooks
@@ -160,15 +150,26 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const orgId = organizations?.[0]?.id || '';
 
   const {data: organizationData} = useOrganizationDetails(orgId);
-
+  const { data: tenantData } = useGetAllUserProfiles({'email.equals': organizationData?.attributes?.organizationEmail?.[0] || ''}, {
+  query:{
+    enabled: !!organizationData,
+  }
+  })
+  console.log("ART User All Data:", tenantData);
   // Ensure leadNo is organization code on mount for new forms
   React.useEffect(() => {
     if (isNew && !form.getValues('leadNo')) {
       const orgCode = organizationData?.attributes?.organizationCode?.[0] || '';
       form.setValue('leadNo', orgCode);
-      console.log('orgCode is leadNo:', orgCode);
     }
   }, [isNew, form, organizationData]);
+
+  React.useEffect(() => {
+    if (isNew && !form.getValues('assignedTo')) {
+      const id = tenantData?.[0].id || '';
+      form.setValue('assignedTo', id);
+    }
+  }, [isNew, form, tenantData]);
   // Auto-populate channel and assignment data when account/profile data loads for business partners
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
