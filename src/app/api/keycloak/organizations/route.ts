@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
       if (requestData.organizationCode) {
           attributes.organizationCode = [requestData.organizationCode.toString()];
       }
+    if (requestData.organizationEmail) {
+      attributes.organizationEmail = [requestData.organizationEmail.toString()];
+    }
     // Create minimal valid organization data structure for Keycloak
     const organizationData: OrganizationRepresentation = {
       name: requestData.organizationName || requestData.name,

@@ -11,6 +11,7 @@ export interface OrganizationSetupRequest {
   organizationName: string;
   domain?: string;
   organizationCode?: string; // Optional code for custom org codes
+  organizationEmail?: string; // Optional email for org contact
 }
 
 export interface OrganizationSetupResult {
@@ -115,6 +116,7 @@ export class OrganizationSetupService {
       displayName: request.organizationName, // Use organization name as display name
       description: `CRM organization for ${request.organizationName}`,
       organizationCode: request.organizationCode,
+      organizationEmail: request.organizationEmail,
       domain: request.domain,
     };
 
