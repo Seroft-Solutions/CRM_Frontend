@@ -26,6 +26,7 @@ export function OrganizationSetupForm({
     organizationName: '',
     domain: '',
     organizationCode: '',
+    organizationEmail:session?.user?.email,
   });
   const [validationError, setValidationError] = useState<string>('');
 
@@ -63,6 +64,7 @@ export function OrganizationSetupForm({
       organizationName: formData.organizationName.trim(),
       domain,
       organizationCode: formData.organizationCode,
+      organizationEmail: session?.user?.email || '',
     });
   };
 
