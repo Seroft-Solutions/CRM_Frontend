@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Hook for fetching user role and group counts
  * This hook provides a way to fetch detailed role/group information for users

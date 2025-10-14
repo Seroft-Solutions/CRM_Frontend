@@ -25,7 +25,6 @@ including:
 src/features/user-management/
 ├── components/
 │   ├── OrganizationUsers.tsx      # Main users list and management
-│   ├── InviteUsers.tsx            # User invitation workflows
 │   ├── UserDetails.tsx            # Individual user management
 │   ├── UserAvatar.tsx             # User avatar with fallback
 │   ├── UserStatusBadge.tsx        # User status indicator
@@ -140,11 +139,7 @@ export default function UsersPage() {
 ### User Invitation Page
 
 ```typescript
-import { InviteUsers } from '@/features/user-management';
-
-export default function InvitePage() {
-  return <InviteUsers />;
-}
+// Invitations handled by AccessInviteForm component
 ```
 
 ### User Details Management
