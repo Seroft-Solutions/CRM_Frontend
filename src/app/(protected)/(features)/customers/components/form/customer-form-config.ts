@@ -30,17 +30,17 @@ export const customerFormConfig: FormConfig = {
         validateOnNext: true,
       },
     },
-    {
-      id: 'review',
-      title: 'Review',
-      description: 'Confirm your details',
-      fields: [],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
+    // {
+    //   id: 'review',
+    //   title: 'Review',
+    //   description: 'Confirm your details',
+    //   fields: [],
+    //   relationships: [],
+    //   validation: {
+    //     mode: 'onBlur',
+    //     validateOnNext: true,
+    //   },
+    // },
   ],
 
   // Field definitions
