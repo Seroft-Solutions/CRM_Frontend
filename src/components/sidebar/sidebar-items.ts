@@ -38,7 +38,6 @@ export const sidebarItems: SidebarItem[] = [
     icon: LayoutDashboard,
     requiredPermission: 'partner:dashboard',
   },
-  { key: 'drafts', label: 'My Drafts', path: '/user-drafts', icon: FileText },
   {
     key: 'calls',
     label: 'Leads Management',

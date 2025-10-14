@@ -68,18 +68,7 @@ export const areaFormConfig: FormConfig = {
         pattern: /^[0-9]{6}$/,
       },
       ui: {},
-    },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
+    }
   ],
 
   // Relationship definitions

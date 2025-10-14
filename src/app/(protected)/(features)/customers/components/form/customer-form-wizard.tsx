@@ -87,8 +87,8 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
         if (relConfig.multiple) {
           formValues[relConfig.name] = value
-            ? value.map((item: any) => item[relConfig.primaryKey])
-            : [];
+              ? value.map((item: any) => item[relConfig.primaryKey])
+              : [];
         } else {
           // For area relationship, store the full object so IntelligentLocationField can display it
           if (relConfig.name === 'area') {
@@ -127,16 +127,16 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
     // Fallback message - replace with generated steps
     return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground">
-          Generated step components for "{currentStepConfig.id}" step would render here.
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          1. Run: <code>node src/core/step-generator.js Customer</code>
-          <br />
-          2. Uncomment the import and usage above
-        </p>
-      </div>
+        <div className="text-center p-8">
+          <p className="text-muted-foreground">
+            Generated step components for "{currentStepConfig.id}" step would render here.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            1. Run: <code>node src/core/step-generator.js Customer</code>
+            <br />
+            2. Uncomment the import and usage above
+          </p>
+        </div>
     );
   };
 
@@ -164,29 +164,29 @@ function CustomerFormContent({ id }: CustomerFormProps) {
   // Loading state for edit mode
   if (id && isLoadingEntity) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading...</div>
+        </div>
     );
   }
 
   return (
-    <div className="w-full space-y-6 relative">
-      {/* Auto-population loading overlay */}
-      {state.isAutoPopulating && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-card p-6 rounded-lg shadow-lg text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-sm text-muted-foreground">Setting up your form...</p>
-          </div>
-        </div>
-      )}
+      <div className="w-full space-y-6 relative">
+        {/* Auto-population loading overlay */}
+        {state.isAutoPopulating && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-card p-6 rounded-lg shadow-lg text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-sm text-muted-foreground">Setting up your form...</p>
+              </div>
+            </div>
+        )}
 
-      {/* Progress Bar and Step Indicators */}
-      <FormProgressIndicator />
+        {/* Progress Bar and Step Indicators */}
+        <FormProgressIndicator />
 
-      {/* Form Validation Errors Summary - Disabled */}
-      {/* <FormErrorsDisplay 
+        {/* Form Validation Errors Summary - Disabled */}
+        {/* <FormErrorsDisplay
         errors={state.errors}
         fieldLabels={{
           'customerBusinessName': '',
@@ -202,32 +202,32 @@ function CustomerFormContent({ id }: CustomerFormProps) {
         }}
       /> */}
 
-      {/* Form Content */}
-      {config?.behavior?.rendering?.useGeneratedSteps ? (
-        // Use generated step components
-        <Form {...form}>
-          <form className="space-y-6">
-            <Card>
-              <CardContent className="p-4 sm:p-6">{renderGeneratedStep()}</CardContent>
-            </Card>
-          </form>
-        </Form>
-      ) : (
-        // Use dynamic step renderer (original approach)
-        <FormStepRenderer entity={entity} />
-      )}
+        {/* Form Content */}
+        {config?.behavior?.rendering?.useGeneratedSteps ? (
+            // Use generated step components
+            <Form {...form}>
+              <form className="space-y-6">
+                <Card>
+                  <CardContent className="p-4 sm:p-6">{renderGeneratedStep()}</CardContent>
+                </Card>
+              </form>
+            </Form>
+        ) : (
+            // Use dynamic step renderer (original approach)
+            <FormStepRenderer entity={entity} />
+        )}
 
-      {/* Navigation */}
-      <FormNavigation
-        onCancel={handleCancel}
-        onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
-        isNew={isNew}
-      />
+        {/* Navigation */}
+        <FormNavigation
+            onCancel={handleCancel}
+            onSubmit={async () => {}} // Empty function since submission is handled by form provider
+            isSubmitting={false} // Will be handled by form provider state
+            isNew={isNew}
+        />
 
-      {/* State Management */}
-      <FormStateManager entity={entity} />
-    </div>
+        {/* State Management */}
+        <FormStateManager entity={entity} />
+      </div>
   );
 }
 
@@ -306,39 +306,39 @@ export function CustomerForm({ id }: CustomerFormProps) {
   // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="bg-card p-6 rounded-lg shadow-lg text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Redirecting...</p>
+        <div className="flex items-center justify-center h-64">
+          <div className="bg-card p-6 rounded-lg shadow-lg text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-sm text-muted-foreground">Redirecting...</p>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <CustomerFormProvider
-      id={id}
-      onSuccess={async (transformedData) => {
-        // This callback receives the properly transformed data from the form provider
-        const { ...customerData } = transformedData as any;
-        const customerDataWithStatus = {
-          ...customerData,
-          status: 'ACTIVE',
-        };
-        // Make the actual API call with the transformed data
-        if (isNew) {
-          createEntity({ data: customerDataWithStatus as any });
-        } else if (id) {
-          // Ensure the entity data includes the ID for updates
-          const entityData = { ...customerDataWithStatus, id };
-          updateEntity({ id, data: entityData as any });
-        }
-      }}
-      onError={(error) => {
-        handleCustomerError(error);
-      }}
-    >
-      <CustomerFormContent id={id} />
-    </CustomerFormProvider>
+      <CustomerFormProvider
+          id={id}
+          onSuccess={async (transformedData) => {
+            // This callback receives the properly transformed data from the form provider
+            const { ...customerData } = transformedData as any;
+            const customerDataWithStatus = {
+              ...customerData,
+              status: 'ACTIVE',
+            };
+            // Make the actual API call with the transformed data
+            if (isNew) {
+              createEntity({ data: customerDataWithStatus as any });
+            } else if (id) {
+              // Ensure the entity data includes the ID for updates
+              const entityData = { ...customerDataWithStatus, id };
+              updateEntity({ id, data: entityData as any });
+            }
+          }}
+          onError={(error) => {
+            handleCustomerError(error);
+          }}
+      >
+        <CustomerFormContent id={id} />
+      </CustomerFormProvider>
   );
 }
