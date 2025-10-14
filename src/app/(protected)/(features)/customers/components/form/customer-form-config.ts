@@ -13,17 +13,6 @@ export const customerFormConfig: FormConfig = {
       title: 'Basic Information',
       description: 'Enter essential details',
       fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'geographic',
-      title: 'Location Details',
-      description: 'Select geographic information',
-      fields: [],
       relationships: ['area'],
       validation: {
         mode: 'onBlur',

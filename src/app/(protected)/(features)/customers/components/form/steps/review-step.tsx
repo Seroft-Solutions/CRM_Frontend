@@ -158,16 +158,44 @@ function RelationshipDisplayValue({
     }
 
     const displayValues = selectedItems.map((item: any) => item[displayField]);
-    return displayValues.join(', ');
+    return <span>{displayValues.join(', ')}</span>;
   } else {
-    // Single value
-    const selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
+    // Single value - handle both object and ID
+    let selectedItem;
+    
+    // If value is an object, use it directly
+    if (typeof value === 'object' && value !== null) {
+      selectedItem = value;
+    } else {
+      // If value is an ID, find the item in the data array
+      selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
+    }
 
-    return selectedItem ? (
-      selectedItem[displayField]
-    ) : (
-      <span className="text-muted-foreground italic">Selected (ID: {value})</span>
-    );
+    if (!selectedItem) {
+      return (
+        <span className="text-muted-foreground italic">Selected (ID: {typeof value === 'object' ? JSON.stringify(value) : value})</span>
+      );
+    }
+
+    // For area relationship, display full hierarchy
+    if (label === 'Areas') {
+      const parts = [];
+      
+      if (selectedItem.city?.district?.state?.name) parts.push(selectedItem.city.district.state.name);
+      if (selectedItem.city?.district?.name) parts.push(selectedItem.city.district.name);
+      if (selectedItem.city?.name) parts.push(selectedItem.city.name);
+      if (selectedItem.name) parts.push(selectedItem.name);
+      if (selectedItem.pincode) parts.push(selectedItem.pincode);
+      
+      return parts.length > 0 ? (
+        <span>{parts.join(', ')}</span>
+      ) : (
+        <span className="text-muted-foreground italic">Location data incomplete</span>
+      );
+    }
+
+    // For other relationships, just display the display field
+    return <span>{selectedItem[displayField]}</span>;
   }
 }
 
