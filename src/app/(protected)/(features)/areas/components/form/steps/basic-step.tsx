@@ -13,6 +13,14 @@ interface AreaBasicStepProps {
 }
 
 export function AreaBasicStep({ form, config, actions, entity }: AreaBasicStepProps) {
+  // Set default status to ACTIVE if not already set
+  React.useEffect(() => {
+    const currentStatus = form.getValues('status');
+    if (!currentStatus) {
+      form.setValue('status', 'ACTIVE');
+    }
+  }, [form]);
+
   return (
     <div className="space-y-6">
       {/* All fields in a single row */}
@@ -95,6 +103,9 @@ export function AreaBasicStep({ form, config, actions, entity }: AreaBasicStepPr
           )}
         />
       </div>
+
+      {/* Hidden status field - defaults to ACTIVE */}
+      <input type="hidden" {...form.register('status')} />
     </div>
   );
 }

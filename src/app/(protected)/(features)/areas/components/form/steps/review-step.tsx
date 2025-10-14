@@ -14,16 +14,20 @@ export function AreaReviewStep({ form, config, actions, entity }: AreaReviewStep
   const nameValue = form.getValues('name');
   const pincodeValue = form.getValues('pincode');
 
-  // Get city details with hierarchy if available
+  // Get city details with hierarchy - handle both object and ID
   let cityDisplay = 'Not selected';
-  if (entity?.city && typeof entity.city === 'object') {
-    const parts = [];
-    if (entity.city.district?.state?.name) parts.push(entity.city.district.state.name);
-    if (entity.city.district?.name) parts.push(entity.city.district.name);
-    if (entity.city.name) parts.push(entity.city.name);
-    cityDisplay = parts.join(', ');
-  } else if (cityValue) {
-    cityDisplay = `City ID: ${cityValue}`;
+  if (cityValue) {
+    if (typeof cityValue === 'object' && cityValue !== null) {
+      // It's a CityDTO object
+      const parts = [];
+      if (cityValue.district?.state?.name) parts.push(cityValue.district.state.name);
+      if (cityValue.district?.name) parts.push(cityValue.district.name);
+      if (cityValue.name) parts.push(cityValue.name);
+      cityDisplay = parts.length > 0 ? parts.join(', ') : 'City selected';
+    } else if (typeof cityValue === 'number') {
+      // It's just an ID
+      cityDisplay = `City ID: ${cityValue}`;
+    }
   }
 
   return (
@@ -31,12 +35,12 @@ export function AreaReviewStep({ form, config, actions, entity }: AreaReviewStep
       <div className="border rounded-lg p-4">
         <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-            1
+            ✓
           </div>
           <div>
             <h4 className="font-semibold text-sm text-foreground">Area Information</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Area details and city connection
+              Review area details before submitting
             </p>
           </div>
         </div>
