@@ -70,6 +70,18 @@ export function RelationshipCell({
 
     if (!valueToUse) return '';
 
+    // Special handling for area relationship - show full location hierarchy
+    if (relationshipName === 'area' && typeof valueToUse === 'object') {
+      const parts = [];
+      if (valueToUse.city?.district?.state?.name) parts.push(valueToUse.city.district.state.name);
+      if (valueToUse.city?.district?.name) parts.push(valueToUse.city.district.name);
+      if (valueToUse.city?.name) parts.push(valueToUse.city.name);
+      if (valueToUse.name) parts.push(valueToUse.name);
+      if (valueToUse.pincode) parts.push(valueToUse.pincode);
+      
+      return parts.length > 0 ? parts.join(', ') : '';
+    }
+
     if (typeof valueToUse === 'object' && valueToUse[displayField]) {
       return valueToUse[displayField];
     }
