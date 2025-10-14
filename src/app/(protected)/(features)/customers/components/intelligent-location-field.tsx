@@ -254,7 +254,7 @@ export function IntelligentLocationField({
               ) : (
                 <>
                   <CommandGroup heading={`${allAreas.length} location${allAreas.length !== 1 ? 's' : ''} found`}>
-                    {allAreas.map((area) => (
+                    {allAreas.filter(area => area && area.id).map((area) => (
                       <CommandItem
                         key={area.id}
                         value={String(area.id)}
