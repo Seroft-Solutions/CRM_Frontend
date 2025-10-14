@@ -314,13 +314,17 @@ export function AreaForm({ id }: AreaFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...areaData } = transformedData as any;
+        const priorityDataWithStatus = {
+          ...areaData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: priorityDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...priorityDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}
