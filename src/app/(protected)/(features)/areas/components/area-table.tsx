@@ -604,6 +604,11 @@ export function AreaTable() {
     }
   );
 
+  // Force refetch on mount to ensure correct initial sort
+  useEffect(() => {
+    refetch();
+  }, [refetch]); // Run on mount and when refetch changes
+
   // Get total count for pagination
   const { data: countData } = useCountAreas(filterParams, {
     query: {
