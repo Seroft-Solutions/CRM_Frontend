@@ -38,7 +38,7 @@ function renderMetadata(
     const staffMetadata = metadata as StaffAccessMetadata;
     return (
       <div className="flex flex-wrap gap-1">
-        {staffMetadata.roles?.map((role) => (
+        {staffMetadata.roles.map((role) => (
           <Badge variant="outline" key={role.id}>
             Role • {role.name ?? role.id}
           </Badge>
@@ -63,7 +63,7 @@ function renderMetadata(
           Commission • {partnerMetadata.commissionPercent}%
         </Badge>
       ) : null}
-      {partnerMetadata.groups?.map((group) => (
+      {partnerMetadata.groups.map((group) => (
         <Badge variant="secondary" key={group.id}>
           Group • {group.name ?? group.id}
         </Badge>
