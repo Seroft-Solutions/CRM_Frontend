@@ -155,6 +155,7 @@ export interface PendingInvitation {
 // ENHANCED: Invitation with Group Selection
 export interface UserInvitationWithGroups {
   email: string;
+  userId?: string; // Optional existing user ID
   firstName?: string;
   lastName?: string;
   organizationId: string;
@@ -209,6 +210,10 @@ export interface InvitationActionResult {
   success: boolean;
   message: string;
   invitationId?: string;
+  email?: string;
+  userId?: string; // Optional existing user ID
+  firstName?: string;
+  lastName?: string;
   errors?: string[];
 }
 
