@@ -142,9 +142,48 @@ class EnhancedEmailService {
     emailData: InvitationEmailData,
     organizationId?: string
   ): Promise<EmailDeliveryStatus> {
-    throw new Error(
-      'Direct Keycloak email delivery is deprecated. Use the access invitation service instead.'
-    );
+    try {
+      const endpoint =
+        emailData.invitationType === 'business_partner'
+          ? `/api/keycloak/organizations/${organizationId}/partners`
+          : `/api/keycloak/organizations/${organizationId}/members`;
+
+      const payload = {
+        email: emailData.recipientEmail,
+        firstName: emailData.recipientName.split(' ')[0],
+        lastName: emailData.recipientName.split(' ').slice(1).join(' '),
+        sendWelcomeEmail: true,
+        sendPasswordReset: true,
+        invitationNote: emailData.customMessage,
+        redirectUri: emailData.resetPasswordUrl,
+      };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Keycloak invitation failed: ${errorData.error || response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      return {
+        sent: true,
+        messageId: result.invitationId || 'keycloak-invitation',
+        deliveredAt: new Date(),
+        retryCount: 0,
+        method: 'keycloak',
+      };
+    } catch (error: any) {
+      console.error('Keycloak email delivery failed:', error);
+      throw new Error(`Keycloak delivery failed: ${error.message}`);
+    }
   }
 
   /**

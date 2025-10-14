@@ -1,6 +1,6 @@
 /**
- * Invite Partners Page
- * Partner invitation with "Business Partners" group assignment and enhanced UX
+ * Invite Users Component
+ * Simplified workflow for inviting a single user to the organization
  */
 
 'use client';
@@ -10,11 +10,16 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import {
+  useInviteUserWithGroups,
+  useOrganizationContext,
+  useAvailableGroups,
+  useUserManagementRefresh,
+} from '@/features/user-management/hooks';
+import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Form,
   FormControl,
@@ -23,15 +28,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Building2, Mail, ArrowLeft, Send, CheckCircle, AlertCircle, X, Users } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { UserPlus, Mail, ArrowLeft, Send, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
+import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
-import { useOrganizationContext } from '@/features/user-management/hooks';
-import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
-import { useUserProfilePersistence } from '@/features/user-profile-management/hooks/useUserProfilePersistence';
-import { PermissionGuard } from '@/core/auth';
 
 // Form validation schema
-const invitePartnerSchema = z.object({
+const inviteUserSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   firstName: z
     .string()
@@ -41,44 +45,40 @@ const invitePartnerSchema = z.object({
     .string()
     .min(1, 'Last name is required')
     .min(2, 'Last name must be at least 2 characters'),
-  channelTypeId: z.number().min(1, 'Channel Type is required'),
+  selectedGroups: z.array(z.string()).default([]),
+  invitationNote: z.string().optional(),
 });
 
-type InvitePartnerFormData = z.infer<typeof invitePartnerSchema>;
-
-interface PartnerInvitation {
-  email: string;
-  firstName: string;
-  lastName: string;
-  organizationId: string;
-  channelTypeId: number;
-  redirectUri?: string;
+interface InviteUsersProps {
+  className?: string;
 }
 
-interface InvitationResult {
-  sent: InvitePartnerFormData[];
-  failed: { invitation: InvitePartnerFormData; error: string }[];
-}
-
-export default function InvitePartnersPage() {
+export function InviteUsers({ className }: InviteUsersProps) {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
-  const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
+  const {
+    inviteUserWithGroups,
+    inviteUserWithGroupsAsync,
+    isInviting: isInvitingWithGroups,
+  } = useInviteUserWithGroups();
+  const { groups } = useAvailableGroups();
+  const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
 
-  const [isInviting, setIsInviting] = useState(false);
-  const [invitationStatus, setInvitationStatus] = useState<InvitationResult>({
-    sent: [],
-    failed: [],
-  });
+  // Local state
+  const [invitationStatus, setInvitationStatus] = useState<{
+    sent: InviteUserFormDataWithGroups[];
+    failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
+  }>({ sent: [], failed: [] });
 
-  // Form setup with validation
-  const form = useForm<InvitePartnerFormData>({
-    resolver: zodResolver(invitePartnerSchema),
+  // Single invitation form
+  const form = useForm<InviteUserFormDataWithGroups>({
+    resolver: zodResolver(inviteUserSchema),
     defaultValues: {
       email: '',
       firstName: '',
       lastName: '',
-      channelTypeId: undefined,
+      selectedGroups: [],
+      invitationNote: '',
     },
     mode: 'onChange', // Enable real-time validation
   });
@@ -89,60 +89,18 @@ export default function InvitePartnersPage() {
     form.formState.isValid &&
     watchedValues.email?.trim() !== '' &&
     watchedValues.firstName?.trim() !== '' &&
-    watchedValues.lastName?.trim() !== '' &&
-    watchedValues.channelTypeId !== undefined;
+    watchedValues.lastName?.trim() !== '';
 
-  const handleSubmit = async (data: InvitePartnerFormData) => {
-    if (!organizationId) {
-      toast.error('No organization selected');
-      return;
-    }
-
-    setIsInviting(true);
+  // Handle user invitation
+  const handleInvite = async (data: InviteUserFormDataWithGroups) => {
+    const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
 
     try {
-      const invitation: PartnerInvitation = {
+      await inviteUserWithGroupsAsync({
         ...data,
         organizationId,
-      };
-
-      const response = await fetch(`/api/keycloak/organizations/${organizationId}/partners`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invitation),
+        selectedGroups,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to invite partner');
-      }
-
-      const result = await response.json();
-
-      // Create user profile with channel type if invitation was successful
-      if (result.userId) {
-        await createProfileForPartner(
-          result.userId,
-          data.email,
-          data.firstName,
-          data.lastName,
-          data.channelTypeId
-        );
-      }
-
-      // Show appropriate success message based on email type
-      const emailMessage =
-        result.emailType === 'password_reset'
-          ? 'Partner invited successfully. Password setup email sent.'
-          : 'Partner invited successfully';
-
-      const groupMessage = result.groupManagement?.message
-        ? ` ${result.groupManagement.message}`
-        : '';
-
-      toast.success(`${emailMessage}${groupMessage}`);
 
       // Clear form and update status
       form.reset();
@@ -150,40 +108,42 @@ export default function InvitePartnersPage() {
         ...prev,
         sent: [...prev.sent, data],
       }));
-    } catch (error) {
-      console.error('Failed to invite partner:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to invite partner';
-      toast.error(errorMessage);
 
+      // Show clear success message
+      toast.success(`Invitation sent to ${data.firstName} ${data.lastName} (${data.email})`);
+
+      // Refresh data in background (no UI blocking)
+      refreshAllUserData(organizationId);
+    } catch (error) {
       setInvitationStatus((prev) => ({
         ...prev,
-        failed: [...prev.failed, { invitation: data, error: errorMessage }],
+        failed: [
+          ...prev.failed,
+          {
+            invitation: data,
+            error: error instanceof Error ? error.message : 'Failed to send invitation',
+          },
+        ],
       }));
-    } finally {
-      setIsInviting(false);
     }
   };
 
-  const handleClear = () => {
-    form.reset();
-    setInvitationStatus({ sent: [], failed: [] });
+  // Navigate back to organization users
+  const handleBack = () => {
+    router.push('/user-management/organization-users');
   };
 
   return (
-    <PermissionGuard
-      requiredPermission="partner:create"
-      unauthorizedTitle="Access Denied to Invite Partners"
-      unauthorizedDescription="You don't have permission to invite business partners."
-    >
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <PermissionGuard requiredPermission="manage:users">
+      <div className={`max-w-7xl mx-auto px-4 ${className}`}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Invite Business Partner</h1>
-            <p className="text-muted-foreground">Add a business partner to {organizationName}</p>
+            <h1 className="text-3xl font-bold tracking-tight">Invite User</h1>
+            <p className="text-muted-foreground">Add a new user to {organizationName}</p>
           </div>
         </div>
 
@@ -191,20 +151,22 @@ export default function InvitePartnersPage() {
           {/* Left Column - Info */}
           <div className="lg:col-span-1 space-y-4">
             {/* How it works info */}
-            <Alert className="border-green-200 bg-green-50">
-              <Building2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800 text-sm font-semibold">How Partner Invitations Work</AlertTitle>
-              <AlertDescription className="text-green-700 text-xs">
+            <Alert className="border-blue-200 bg-blue-50">
+              <Mail className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-800 text-sm font-semibold">How User Invitations Work</AlertTitle>
+              <AlertDescription className="text-blue-700 text-xs">
                 <div className="space-y-1.5 mt-2">
-                  <p>• Invited partner receives an email with account setup instructions</p>
-                  <p>• They'll set their password and be assigned to the Business Partners group</p>
-                  <p>• Channel type information is stored for commission and relationship management</p>
-                  <p>• You can view all partners in the Business Partners page</p>
+                  <p>• Invited user receives an email with account setup instructions</p>
+                  <p>• They'll set their password and can immediately access the organization</p>
+                  <p>
+                    • You can view all users (including pending invitations) in the Organization Users
+                    page
+                  </p>
                 </div>
               </AlertDescription>
             </Alert>
 
-            {/* Invitation Results - Only show when there are results */}
+            {/* Invitation Status - Only show when there are results */}
             {(invitationStatus.sent.length > 0 || invitationStatus.failed.length > 0) && (
               <Card className="shadow-md">
                 <CardHeader className="pb-3">
@@ -220,7 +182,7 @@ export default function InvitePartnersPage() {
                     <div className="space-y-2">
                       <div className="text-xs font-semibold text-green-800 flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" />
-                        Successfully Invited ({invitationStatus.sent.length})
+                        Successfully Sent ({invitationStatus.sent.length})
                       </div>
                       {invitationStatus.sent.map((invitation, index) => (
                         <div
@@ -264,7 +226,7 @@ export default function InvitePartnersPage() {
                     </div>
                   )}
 
-                  {/* Clear results and view partners buttons */}
+                  {/* Clear results and view users buttons */}
                   <div className="flex gap-2 pt-2">
                     <Button
                       variant="outline"
@@ -278,11 +240,11 @@ export default function InvitePartnersPage() {
                     {invitationStatus.sent.length > 0 && (
                       <Button
                         size="sm"
-                        onClick={() => router.push('/business-partners')}
+                        onClick={() => router.push('/user-management/organization-users')}
                         className="flex-1 text-xs h-8"
                       >
                         <Users className="h-3 w-3 mr-1" />
-                        View Partners
+                        View Users
                       </Button>
                     )}
                   </div>
@@ -296,18 +258,17 @@ export default function InvitePartnersPage() {
             <Card className="shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Invite Business Partner
+                  <UserPlus className="h-5 w-5" />
+                  Invite User to Organization
                 </CardTitle>
                 <CardDescription>
-                  Send an invitation to a business partner to join your organization. They'll receive an
-                  email with setup instructions.
+                  Send an invitation to a user to join your organization. They'll receive an email with
+                  setup instructions.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-w-2xl">
-                {/* Name Fields */}
+                  <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4 max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -316,11 +277,7 @@ export default function InvitePartnersPage() {
                       <FormItem>
                         <FormLabel>First Name *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="John"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
+                          <Input placeholder="John" disabled={isInvitingWithGroups} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -333,11 +290,7 @@ export default function InvitePartnersPage() {
                       <FormItem>
                         <FormLabel>Last Name *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Doe"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
+                          <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -345,58 +298,35 @@ export default function InvitePartnersPage() {
                   />
                 </div>
 
-                {/* Email and Channel Type in one row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address *</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          disabled={isInvitingWithGroups}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
-                    name="channelTypeId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Channel Type *</FormLabel>
-                        <FormControl>
-                          <ChannelTypeSelector
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={isInviting || isCreatingProfile}
-                            hideAddButton={true}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="submit"
-                    disabled={!isFormValid || isInviting || isCreatingProfile}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 gap-2"
+                    disabled={!isFormValid || isInvitingWithGroups}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 gap-2"
                   >
-                    {isInviting || isCreatingProfile ? (
+                    {isInvitingWithGroups ? (
                       <>
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Processing...
+                        Sending Invitation...
                       </>
                     ) : (
                       <>
@@ -408,8 +338,11 @@ export default function InvitePartnersPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleClear}
-                    disabled={isInviting || isCreatingProfile}
+                    onClick={() => {
+                      form.reset();
+                      setInvitationStatus({ sent: [], failed: [] }); // Clear status when clearing form
+                    }}
+                    disabled={isInvitingWithGroups}
                   >
                     Clear
                   </Button>

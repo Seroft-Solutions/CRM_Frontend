@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * User Management Refresh Utilities
  * Utilities to handle data refresh across user management components
@@ -7,7 +5,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { USER_MANAGEMENT_QUERY_KEYS } from '@/features/user-management/hooks/client';
+import { USER_MANAGEMENT_QUERY_KEYS } from '@/features/user-management/hooks/index';
 
 export function useUserManagementRefresh() {
   const queryClient = useQueryClient();
