@@ -23,7 +23,12 @@ export const areaFormSchemaFields = {
     .max(6, { message: 'Please enter no more than 6 characters' })
     .regex(/^[0-9]{6}$/, { message: 'Please enter valid pincode' }),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
-  city: z.number({ message: 'Please select city from the dropdown' }),
+  city: z.any().refine((val) => {
+    // Accept number (ID) or object with id property (CityDTO)
+    if (typeof val === 'number') return val > 0;
+    if (typeof val === 'object' && val !== null && val.id) return true;
+    return false;
+  }, { message: 'Please select city from the dropdown' }),
 };
 
 export const areaFormSchema = z.object(areaFormSchemaFields);
@@ -44,7 +49,12 @@ export const areaFieldSchemas = {
     .max(6, { message: 'Please enter no more than 6 characters' })
     .regex(/^[0-9]{6}$/, { message: 'Please enter valid pincode' }),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
-  city: z.number({ message: 'Please select city from the dropdown' }),
+  city: z.any().refine((val) => {
+    // Accept number (ID) or object with id property (CityDTO)
+    if (typeof val === 'number') return val > 0;
+    if (typeof val === 'object' && val !== null && val.id) return true;
+    return false;
+  }, { message: 'Please select city from the dropdown' }),
 };
 
 // Step-specific validation schemas
@@ -53,10 +63,7 @@ export const areaStepSchemas = {
     name: areaFieldSchemas.name,
     pincode: areaFieldSchemas.pincode,
     status: areaFieldSchemas.status,
-    createdBy: areaFieldSchemas.createdBy,
-    createdDate: areaFieldSchemas.createdDate,
-    lastModifiedBy: areaFieldSchemas.lastModifiedBy,
-    lastModifiedDate: areaFieldSchemas.lastModifiedDate,
+    city: areaFieldSchemas.city,
   }),
 
   review: areaFormSchema,

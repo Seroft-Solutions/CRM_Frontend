@@ -424,7 +424,9 @@ export function AreaFormProvider({ children, id, onSuccess, onError }: AreaFormP
       } else {
         // For many-to-one relationships - use reference object pattern
         if (value) {
-          entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
+          // If value is an object (like city with full hierarchy), extract just the ID
+          const idValue = typeof value === 'object' && value !== null ? value[relConfig.primaryKey] : value;
+          entityToSave[relConfig.name] = { [relConfig.primaryKey]: idValue };
         } else {
           entityToSave[relConfig.name] = null;
         }
