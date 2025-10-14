@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/form';
 import {RelationshipRenderer} from '../relationship-renderer';
 import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
+import {useUserAuthorities} from "@/core/auth";
 
 interface CallClassificationStepProps {
     form: any;
@@ -14,12 +15,11 @@ interface CallClassificationStepProps {
     entity?: any;
 }
 
-export function CallClassificationStep({
-                                           form,
-                                           config,
-                                           actions,
-                                           entity,
-                                       }: CallClassificationStepProps) {
+export function CallClassificationStep({form, config, actions, entity,}: CallClassificationStepProps) {
+
+    const { hasGroup } = useUserAuthorities();
+
+    const isBusinessPartner = hasGroup('Business Partners');
 
     // Fetch call statuses and set default value for callStatus field
     useEffect(() => {
@@ -200,7 +200,9 @@ export function CallClassificationStep({
                     />
 
                     {/* Assigned To Relationship */}
-                    <FormField
+
+                    {!isBusinessPartner && <FormField
+
                         control={form.control}
                         name="assignedTo"
                         render={({field}) => (
@@ -233,7 +235,9 @@ export function CallClassificationStep({
                                 config={config}
                             />
                         )}
-                    />
+
+                    />}
+
                 </div>
             </div>
         </>
