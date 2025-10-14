@@ -160,6 +160,7 @@ export interface UserInvitationWithGroups {
   lastName?: string;
   organizationId: string;
   sendWelcomeEmail?: boolean;
+  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email (defaults to invitation email)
 
   // Group and role assignment
   selectedGroups?: GroupRepresentation[];
@@ -176,6 +177,7 @@ export interface InviteUserFormDataWithGroups {
   firstName: string;
   lastName: string;
   sendWelcomeEmail: boolean;
+  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email (defaults to invitation email)
   selectedGroups: string[]; // Group IDs
   selectedRoles?: string[]; // Role IDs
   invitationNote?: string;
