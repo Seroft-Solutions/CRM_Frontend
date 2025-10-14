@@ -19,6 +19,7 @@ import type {
   AccessInviteMetadata,
   AccessInviteRecord,
   PartnerAccessMetadata,
+  StaffAccessMetadata,
 } from './types';
 
 interface CreateInviteOptions {
@@ -216,7 +217,7 @@ export class AccessInviteFactory {
 
   /**
    * Build email template attributes for Keycloakify templates
-   * These attributes are used by executeActions.ftl to personalize invitation emails
+   * These attributes are used by org-invite-existing-user.ftl and executeActions.ftl to personalize invitation emails
    */
   private async buildEmailTemplateAttributes(
     type: 'user' | 'partner',
@@ -241,9 +242,26 @@ export class AccessInviteFactory {
       magic_link_token: [magicToken || ''],
       custom_app_url: [process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || ''],
 
+      // Organization contact email (fallback to support email)
+      organization_contact_email: [process.env.SUPPORT_EMAIL || 'crmcup1@gmail.com'],
+
       // Expiry information for email template
       invitation_expiry_hours: [calculatedExpiryHours.toString()],
     };
+
+    // User/Staff-specific attributes
+    if (type === 'user' && metadata) {
+      const staffMetadata = metadata as StaffAccessMetadata;
+
+      // Add roles to email template (show assigned role names)
+      if (staffMetadata.roles && staffMetadata.roles.length > 0) {
+        // Join multiple role names with commas for display in email
+        const roleNames = staffMetadata.roles
+          .map((role) => role.name || 'Role')
+          .join(', ');
+        attributes.access_invite_roles = [roleNames];
+      }
+    }
 
     // Partner-specific attributes
     if (type === 'partner' && metadata) {
