@@ -27,7 +27,6 @@ import {
 import { customerToast, handleCustomerError } from '../customer-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import {useGetArea} from "@/core/api/generated/spring";
 
 interface CustomerFormProps {
   id?: number;
@@ -312,45 +311,29 @@ export function CustomerForm({ id }: CustomerFormProps) {
   }
 
   return (
-      <CustomerFormProvider
-          id={id}
-          onSuccess={async (transformedData) => {
-            // Quick Fix: Unwrap area if incorrectly nested under 'id' (bug in provider transform)
-            // This ensures area is the full AreaDTO object, matching the create sheet backend expectation
-            let customerData = { ...transformedData } as any;
-            if (customerData.area && customerData.area.id && typeof customerData.area.id === 'object') {
-              // Unwrap: Set area to the full object (with id: number, name, hierarchy, etc.)
-              customerData.area = customerData.area.id;
-            }
-            // Optional: Handle edit case where area might be just a number (fetch full if needed)
-            if (typeof customerData.area === 'number' && id) {
-              // Fetch full area:
-              const { data: fullArea } = await useGetArea(customerData.area);
-               customerData.area = fullArea;
-            }
-
-            const customerDataWithStatus = {
-              ...customerData,
-              status: 'ACTIVE',
-            };
-
-            // Log for verification (remove in production if not needed)
-            console.log('Creating/Updating customer with fixed data wizard:', customerDataWithStatus);
-
-            // Make the actual API call with the transformed data
-            if (isNew) {
-              createEntity({ data: customerDataWithStatus as any });
-            } else if (id) {
-              // Ensure the entity data includes the ID for updates
-              const entityData = { ...customerDataWithStatus, id };
-              updateEntity({ id, data: entityData as any });
-            }
-          }}
-          onError={(error) => {
-            handleCustomerError(error);
-          }}
-      >
-        <CustomerFormContent id={id} />
-      </CustomerFormProvider>
+    <CustomerFormProvider
+      id={id}
+      onSuccess={async (transformedData) => {
+        // This callback receives the properly transformed data from the form provider
+        const { ...customerData } = transformedData as any;
+        const customerDataWithStatus = {
+          ...customerData,
+          status: 'ACTIVE',
+        };
+        // Make the actual API call with the transformed data
+        if (isNew) {
+          createEntity({ data: customerDataWithStatus as any });
+        } else if (id) {
+          // Ensure the entity data includes the ID for updates
+          const entityData = { ...customerDataWithStatus, id };
+          updateEntity({ id, data: entityData as any });
+        }
+      }}
+      onError={(error) => {
+        handleCustomerError(error);
+      }}
+    >
+      <CustomerFormContent id={id} />
+    </CustomerFormProvider>
   );
 }
