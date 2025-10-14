@@ -1,13 +1,9 @@
 'use client';
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
     FormField,
-    FormItem,
-    FormLabel,
-    FormControl,
 } from '@/components/ui/form';
-import {Input} from '@/components/ui/input';
 import {RelationshipRenderer} from '../relationship-renderer';
 import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
 
@@ -236,26 +232,6 @@ export function CallClassificationStep({
                                 actions={actions}
                                 config={config}
                             />
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="leadNo"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Input
-                                            {...field}
-                                            value={field.value || ''}
-                                            readOnly
-                                            className="font-mono text-sm bg-gray-50 border-dashed"
-                                            placeholder="Auto-generated lead number"
-                                        />
-                                    </div>
-                                </FormControl>
-                            </FormItem>
                         )}
                     />
                 </div>
