@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { Shield, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useUserRoleGroupCounts } from '@/features/user-management/hooks/client';
+import { useUserRoleGroupCounts } from '@/features/user-management/hooks';
 import type { RoleRepresentation } from '@/core/api/generated/keycloak';
 
 interface ClickableRolesBadgeProps {

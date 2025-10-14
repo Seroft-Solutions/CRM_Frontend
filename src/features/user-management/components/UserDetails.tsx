@@ -14,7 +14,7 @@ import {
   useOrganizationContext,
   useAvailableRoles,
   useAvailableGroups,
-} from '@/features/user-management/hooks/client';
+} from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
