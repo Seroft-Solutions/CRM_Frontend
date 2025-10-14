@@ -406,13 +406,22 @@ export function CallTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
-  // Get visible columns - hide Channel Type and Channel Parties for business partners
+  // Get visible columns - hide Channel Type and Channel Parties based on tab and user role
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => {
       // Hide columns if visibility is explicitly set to false
       if (columnVisibility[col.id] === false) return false;
 
-      // For business partners, hide Channel Type, Channel Parties, and Assigned To columns
+      // For business partners tab, hide Channel Type, Channel Parties, and Assigned To columns
+      // (since these calls are always from business partners themselves)
+      if (
+        activeStatusTab === 'business-partners' &&
+        (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
+      ) {
+        return false;
+      }
+
+      // For business partner users, hide Channel Type, Channel Parties, and Assigned To columns
       if (
         isBusinessPartner &&
         (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
@@ -422,7 +431,7 @@ export function CallTable() {
 
       return true;
     });
-  }, [columnVisibility, isBusinessPartner]);
+  }, [columnVisibility, isBusinessPartner, activeStatusTab]);
 
   // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
@@ -462,7 +471,7 @@ export function CallTable() {
 
   // Export functionality
   const exportToCSV = () => {
-    if (!data || data.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
       toast.error('No data to export');
       return;
     }
@@ -470,7 +479,7 @@ export function CallTable() {
     const headers = visibleColumns.map((col) => col.label);
     const csvContent = [
       headers.join(','),
-      ...data.map((item) => {
+      ...filteredData.map((item) => {
         return visibleColumns
           .map((col) => {
             let value = '';
@@ -604,6 +613,15 @@ export function CallTable() {
     return entity?.id;
   };
 
+  // Helper function to identify if a call was created by a business partner
+  // A call is considered "business partner call" when createdBy matches channelParties login
+  const isBusinessPartnerCall = (call: any) => {
+    if (!call.createdBy || !call.channelParties?.internalUser?.login) {
+      return false;
+    }
+    return call.createdBy === call.channelParties.internalUser.login;
+  };
+
   // Status configuration
   const statusOptions = [
     {
@@ -631,6 +649,9 @@ export function CallTable() {
   // Get status filter based on active tab
   const getStatusFilter = () => {
     switch (activeStatusTab) {
+      case 'business-partners':
+        // Business partner calls are always ACTIVE status
+        return { 'status.equals': CallDTOStatus.ACTIVE };
       case 'draft':
         return { 'status.equals': CallDTOStatus.DRAFT };
       case 'active':
@@ -850,6 +871,38 @@ export function CallTable() {
       refetchOnWindowFocus: true,
     },
   });
+
+  // Apply client-side filtering for Business Partners vs Regular calls
+  const filteredData = useMemo(() => {
+    if (!data) return data;
+
+    // For business partners tab, show only BP calls
+    if (activeStatusTab === 'business-partners') {
+      return data.filter(isBusinessPartnerCall);
+    }
+
+    // For active tab, exclude BP calls (show only regular internal calls)
+    if (activeStatusTab === 'active') {
+      return data.filter((call) => !isBusinessPartnerCall(call));
+    }
+
+    // For other tabs (draft, archived, all), show all calls
+    return data;
+  }, [data, activeStatusTab]);
+
+  // Calculate filtered count for pagination
+  const filteredCount = useMemo(() => {
+    if (!countData) return 0;
+
+    // For tabs that need client-side filtering, we can't rely on server count
+    // We'll use the filtered data length instead
+    if (activeStatusTab === 'business-partners' || activeStatusTab === 'active') {
+      // Note: This is an approximation. For accurate counts, backend support would be needed
+      return filteredData?.length || 0;
+    }
+
+    return countData;
+  }, [countData, filteredData, activeStatusTab]);
 
   // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
@@ -1143,7 +1196,7 @@ export function CallTable() {
 
   const confirmArchive = () => {
     if (archiveId) {
-      const currentEntity = data?.find((item) => item.id === archiveId);
+      const currentEntity = filteredData?.find((item) => item.id === archiveId);
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
@@ -1157,7 +1210,7 @@ export function CallTable() {
 
   const confirmStatusChange = () => {
     if (statusChangeId && newStatus) {
-      const currentEntity = data?.find((item) => item.id === statusChangeId);
+      const currentEntity = filteredData?.find((item) => item.id === statusChangeId);
       if (currentEntity) {
         const statusValue = CallDTOStatus[newStatus as keyof typeof CallDTOStatus];
         updateEntityStatus({
@@ -1195,7 +1248,7 @@ export function CallTable() {
   };
 
   // Calculate total pages
-  const totalItems = countData || 0;
+  const totalItems = filteredCount || 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   // Handle row selection
@@ -1211,11 +1264,11 @@ export function CallTable() {
 
   // Handle select all
   const handleSelectAll = () => {
-    if (data && selectedRows.size === data.length) {
+    if (filteredData && selectedRows.size === filteredData.length) {
       setSelectedRows(new Set());
-    } else if (data) {
+    } else if (filteredData) {
       setSelectedRows(
-        new Set(data.map((item) => item.id).filter((id): id is number => id !== undefined))
+        new Set(filteredData.map((item) => item.id).filter((id): id is number => id !== undefined))
       );
     }
   };
@@ -1249,7 +1302,7 @@ export function CallTable() {
     try {
       // Process status updates to ARCHIVED
       const updatePromises = Array.from(selectedRows).map(async (id) => {
-        const currentEntity = data?.find((item) => item.id === id);
+        const currentEntity = filteredData?.find((item) => item.id === id);
         if (currentEntity) {
           return new Promise<void>((resolve, reject) => {
             updateEntityStatus(
@@ -1334,7 +1387,7 @@ export function CallTable() {
       // Process bulk status updates
       const statusValue = CallDTOStatus[bulkNewStatus as keyof typeof CallDTOStatus];
       const updatePromises = Array.from(selectedRows).map(async (id) => {
-        const currentEntity = data?.find((item) => item.id === id);
+        const currentEntity = filteredData?.find((item) => item.id === id);
         if (currentEntity) {
           return new Promise<void>((resolve, reject) => {
             updateEntityStatus(
@@ -1415,7 +1468,7 @@ export function CallTable() {
 
     return new Promise<void>((resolve, reject) => {
       // Get the current entity data first
-      const currentEntity = data?.find((item) => item.id === entityId);
+      const currentEntity = filteredData?.find((item) => item.id === entityId);
       if (!currentEntity) {
         setUpdatingCells((prev) => {
           const newSet = new Set(prev);
@@ -1679,8 +1732,8 @@ export function CallTable() {
     Boolean(searchTerm) ||
     Boolean(dateRange.from) ||
     Boolean(dateRange.to);
-  const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
-  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
+  const isAllSelected = filteredData && filteredData.length > 0 && selectedRows.size === filteredData.length;
+  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (filteredData?.length || 0);
 
   // Don't render the table until column visibility is loaded to prevent flash
   if (!isColumnVisibilityLoaded) {
@@ -1704,23 +1757,42 @@ export function CallTable() {
       <div className="w-full space-y-4">
         {/* Status Filter Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
-          <TabsList
-            className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-5' : 'grid-cols-4'}`}
-          >
-            <TabsTrigger value="active" className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1">
+            <TabsTrigger
+              value="business-partners"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-blue-500 data-[state=active]:bg-white rounded-full"></div>
+              Business Partners
+            </TabsTrigger>
+            <TabsTrigger
+              value="active"
+              className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
               Active
             </TabsTrigger>
-            <TabsTrigger value="draft" className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <TabsTrigger
+              value="draft"
+              className="flex items-center gap-2 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-yellow-500 data-[state=active]:bg-white rounded-full"></div>
               Draft
             </TabsTrigger>
-            <TabsTrigger value="archived" className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <TabsTrigger
+              value="archived"
+              className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-red-500 data-[state=active]:bg-white rounded-full"></div>
               Archived
             </TabsTrigger>
 
-            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              All
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -1740,7 +1812,16 @@ export function CallTable() {
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {ALL_COLUMNS.filter((column) => {
-                  // Hide Channel Type, Channel Parties, and Assigned To options for business partners
+                  // Hide Channel Type, Channel Parties, and Assigned To options for business partners tab
+                  if (
+                    activeStatusTab === 'business-partners' &&
+                    (column.id === 'channelType' ||
+                      column.id === 'channelParties' ||
+                      column.id === 'assignedTo')
+                  ) {
+                    return false;
+                  }
+                  // Hide Channel Type, Channel Parties, and Assigned To options for business partner users
                   if (
                     isBusinessPartner &&
                     (column.id === 'channelType' ||
@@ -1788,7 +1869,7 @@ export function CallTable() {
               size="sm"
               onClick={exportToCSV}
               className="gap-2 text-xs sm:text-sm"
-              disabled={!data || data.length === 0}
+              disabled={!filteredData || filteredData.length === 0}
             >
               <Download className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Export CSV</span>
@@ -1901,8 +1982,8 @@ export function CallTable() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : data?.length ? (
-                  data.map((call) => (
+                ) : filteredData?.length ? (
+                  filteredData.map((call) => (
                     <CallTableRow
                       key={call.id}
                       call={call}
