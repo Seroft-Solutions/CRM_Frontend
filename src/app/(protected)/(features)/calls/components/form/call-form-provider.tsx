@@ -166,7 +166,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   React.useEffect(() => {
     if (isNew && !form.getValues('assignedTo')) {
-      const id = tenantData?.[0].id || '';
+      const id = tenantData?.[0]?.id || '';
       form.setValue('assignedTo', id);
     }
   }, [isNew, form, tenantData]);
