@@ -5,12 +5,13 @@
 'use client';
 
 import { CallForm } from '../components/call-form';
-import { PermissionGuard } from '@/core/auth';
+import {PermissionGuard, useAccount, useUserAuthorities} from '@/core/auth';
 import { useState, useEffect } from 'react';
 
 export default function CreateCallPage() {
   const [isBusinessPartner, setIsBusinessPartner] = useState(false);
-
+  const { user} = useAccount();
+  console.log('Current User:', user?.name);
   useEffect(() => {
     const handleBusinessPartnerToggle = (event: CustomEvent) => {
       setIsBusinessPartner(event.detail.enabled);
@@ -62,7 +63,9 @@ export default function CreateCallPage() {
             <div className="text-white">
               <h1 className="text-2xl font-bold">Create Call</h1>
               <p className="text-white/90">
-                Enter the details below to create a new call
+                {isBusinessPartner
+                    ? `Enter the details below to create a new call for ${user?.name || ''}`
+                    : 'Enter the details below to create a new call'}
               </p>
             </div>
           </div>
