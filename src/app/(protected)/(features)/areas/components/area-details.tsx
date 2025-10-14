@@ -62,6 +62,20 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
+  // For city relationship, display full hierarchy if available
+  if (relConfig.name === 'city' && typeof value === 'object') {
+    const parts = [];
+    if (value.district?.state?.name) parts.push(value.district.state.name);
+    if (value.district?.name) parts.push(value.district.name);
+    if (value.name) parts.push(value.name);
+    
+    return parts.length > 0 ? (
+      <span>{parts.join(', ')}</span>
+    ) : (
+      <span className="text-muted-foreground italic">Location data incomplete</span>
+    );
+  }
+
   // Get the appropriate data for this relationship
   let allData = null;
   if (relConfig.name === 'city') {

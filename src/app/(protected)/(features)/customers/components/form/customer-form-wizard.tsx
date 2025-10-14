@@ -90,7 +90,12 @@ function CustomerFormContent({ id }: CustomerFormProps) {
             ? value.map((item: any) => item[relConfig.primaryKey])
             : [];
         } else {
-          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+          // For area relationship, store the full object so IntelligentLocationField can display it
+          if (relConfig.name === 'area') {
+            formValues[relConfig.name] = value || null;
+          } else {
+            formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+          }
         }
       });
 

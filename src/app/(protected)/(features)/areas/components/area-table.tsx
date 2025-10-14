@@ -174,7 +174,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 
   {
     id: 'city',
-    label: 'City',
+    label: 'Location (State, District, City)',
     accessor: 'city',
     type: 'relationship',
     visible: true,
@@ -375,7 +375,12 @@ export function AreaTable() {
               const relationship = item[col.accessor as keyof typeof item] as any;
 
               if (col.id === 'city' && relationship) {
-                value = relationship.name || '';
+                // Export full hierarchy for city
+                const parts = [];
+                if (relationship.district?.state?.name) parts.push(relationship.district.state.name);
+                if (relationship.district?.name) parts.push(relationship.district.name);
+                if (relationship.name) parts.push(relationship.name);
+                value = parts.join(', ');
               }
             }
             // Escape CSV values
