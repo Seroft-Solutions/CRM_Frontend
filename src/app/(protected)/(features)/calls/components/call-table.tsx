@@ -616,10 +616,10 @@ export function CallTable() {
   // Helper function to identify if a call was created by a business partner
   // A call is considered "business partner call" when createdBy matches channelParties login
   const isBusinessPartnerCall = (call: any) => {
-    if (!call.createdBy || !call.channelParties?.internalUser?.login) {
+    if (!call.channelType || !call.channelParties) {
       return false;
     }
-    return call.createdBy === call.channelParties.internalUser.login;
+    return !!call.channelType && !!call.channelParties;
   };
 
   // Status configuration
