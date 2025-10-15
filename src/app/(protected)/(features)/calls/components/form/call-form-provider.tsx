@@ -1086,15 +1086,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [draftsEnabled, deleteDraft]
   );
 
-  const handleCheckForDrafts = useCallback(() => {
-    if (!draftsEnabled || !isNew) return;
-
-    if (drafts.length > 0 && !restorationAttempted) {
-      // Instead of showing dialog, navigate to user-drafts page
-      router.push('/user-drafts?entityType=Call');
-      setRestorationAttempted(true);
-    }
-  }, [draftsEnabled, isNew, drafts.length, restorationAttempted, router]);
 
   // Check for drafts on mount and handle restoration from drafts page
   useEffect(() => {
@@ -1145,9 +1136,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           setDraftRestorationInProgress(false);
         }
       }
-
-      // Otherwise, show restoration dialog if drafts exist
-      handleCheckForDrafts();
     }
   }, [
     draftsEnabled,
@@ -1155,7 +1143,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     isLoadingDrafts,
     restorationAttempted,
     draftRestorationInProgress,
-    handleCheckForDrafts,
     handleLoadDraft,
     config.entity,
   ]);
@@ -1229,7 +1216,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       saveDraft: handleSaveDraft,
       loadDraft: handleLoadDraft,
       deleteDraft: handleDeleteDraft,
-      checkForDrafts: handleCheckForDrafts,
     },
     form,
     navigation: {
