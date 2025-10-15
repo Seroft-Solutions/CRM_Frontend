@@ -153,7 +153,7 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 if (column.id === 'lastModifiedBy') {
@@ -161,7 +161,7 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 return field?.toString() || '';
