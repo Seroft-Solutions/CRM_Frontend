@@ -334,6 +334,12 @@ export function CallTable() {
   const [newStatus, setNewStatus] = useState<string | null>(null);
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
+
+  useEffect(() => {
+    if (isBusinessPartner) {
+      setActiveStatusTab('business-partners');
+    }
+  }, [isBusinessPartner]);
   const [filters, setFilters] = useState<FilterState>({});
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
@@ -1757,7 +1763,7 @@ export function CallTable() {
       <div className="w-full space-y-4">
         {/* Status Filter Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
-          <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1">
+          <TabsList className={`grid w-full ${isBusinessPartner ? 'grid-cols-4' : 'grid-cols-5'} bg-gray-100 p-1`}>
             <TabsTrigger
               value="business-partners"
               className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
@@ -1765,13 +1771,15 @@ export function CallTable() {
               <div className="w-2 h-2 bg-blue-500 data-[state=active]:bg-white rounded-full"></div>
               Business Partners
             </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-            >
-              <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
-              Active
-            </TabsTrigger>
+            {!isBusinessPartner && (
+              <TabsTrigger
+                value="active"
+                className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              >
+                <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
+                Active
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="draft"
               className="flex items-center gap-2 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
