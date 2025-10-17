@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
@@ -334,6 +334,12 @@ export function CallTable() {
   const [newStatus, setNewStatus] = useState<string | null>(null);
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
+  const [isArchiveCompleted, setIsArchiveCompleted] = useState(false);
+
+  const handleArchiveSuccess = () => {
+    setIsArchiveCompleted(true);
+  };
+
 
   useEffect(() => {
     if (isBusinessPartner) {
@@ -447,33 +453,6 @@ export function CallTable() {
     }));
   };
 
-  // Manual refresh functionality
-  const handleRefresh = async () => {
-    try {
-      // Invalidate all related queries to force fresh data
-      await queryClient.invalidateQueries({
-        queryKey: ['getAllCalls'],
-        refetchType: 'active',
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['countCalls'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchCalls'],
-        refetchType: 'active',
-      });
-
-      // Also manually trigger refetch
-      await refetch();
-
-      toast.success('Data refreshed successfully');
-    } catch (error) {
-      console.error('Failed to refresh data:', error);
-      toast.error('Failed to refresh data');
-    }
-  };
 
   // Export functionality
   const exportToCSV = () => {
@@ -868,6 +847,40 @@ export function CallTable() {
           },
         }
       );
+// Manual refresh functionality
+  const handleRefresh = useCallback(async () => {
+    try {
+      // Invalidate all related queries to force fresh data
+      await queryClient.invalidateQueries({
+        queryKey: ['getAllCalls'],
+        refetchType: 'active',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['countCalls'],
+        refetchType: 'active',
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['searchCalls'],
+        refetchType: 'active',
+      });
+
+      // Also manually trigger refetch
+      await refetch();
+
+      toast.success('Data refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+      toast.error('Failed to refresh data');
+    }
+  }, [queryClient, refetch]);
+
+  useEffect(() => {
+    if (isArchiveCompleted) {
+      handleRefresh();
+      setIsArchiveCompleted(false);
+    }
+  }, [isArchiveCompleted, handleRefresh]);
 
   // Get total count for pagination
   const { data: countData } = useCountCalls(filterParams, {
@@ -1119,6 +1132,10 @@ export function CallTable() {
           statusOptions.find((opt) => opt.value.includes(variables.data.status))?.label ||
           variables.data.status;
         callToast.custom.success(`Status Updated`, `Call status changed to ${statusLabel}`);
+
+        if (variables.data.status === CallDTOStatus.ARCHIVED) {
+          handleArchiveSuccess();
+        }
 
         // Update count cache if item was removed from current view
         const currentFilter = getStatusFilter();
