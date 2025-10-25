@@ -14,6 +14,7 @@ import { CustomerCreateSheet } from './components/customer-create-sheet';
 import { PageHeader } from '@/components/page-header';
 import { PageTitle } from '@/components/page-title';
 import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
+import Link from "next/link";
 
 export const metadata = {
   title: 'Customers',
@@ -73,7 +74,18 @@ export default function CustomerPage() {
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
-              <CustomerCreateSheet />
+              <InlinePermissionGuard requiredPermission="customer:create">
+                <Button
+                    asChild
+                    size="sm"
+                    className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
+                >
+                  <Link href="/customers/new">
+                    <Plus className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Create</span>
+                  </Link>
+                </Button>
+              </InlinePermissionGuard>
             </div>
           </div>
         </div>

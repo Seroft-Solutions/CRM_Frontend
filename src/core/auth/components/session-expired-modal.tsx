@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, LogOut } from 'lucide-react';
+import { clearAuthStorage } from '@/lib/auth-cleanup';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -186,12 +187,17 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true);
     try {
+      // Clear all auth storage before re-authenticating
+      clearAuthStorage();
+
       await signIn('keycloak', {
         callbackUrl: window.location.href,
         redirect: true,
       });
     } catch (error) {
       console.error('Re-authentication failed:', error);
+      // Ensure cleanup even on error
+      clearAuthStorage();
       onRetryAuth();
     } finally {
       setIsReauthorizing(false);
@@ -210,6 +216,7 @@ export function SessionExpiredModal({
       if (success) {
         onClose();
       } else {
+        // Session refresh failed, cleanup and re-authenticate
         await handleContinue();
       }
     } catch (error) {
@@ -221,6 +228,9 @@ export function SessionExpiredModal({
   };
 
   const handleLogout = async () => {
+    // Clear all auth storage before logout
+    clearAuthStorage();
+
     if (onLogout) {
       await onLogout();
     } else {

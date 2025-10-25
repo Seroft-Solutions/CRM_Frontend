@@ -212,6 +212,10 @@ export class UserManagementService {
         success: true,
         message: 'User invited successfully with group assignments',
         invitationId: result.invitationId,
+        userId: result.userId,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
       };
     } catch (error) {
       console.error('Failed to invite user with groups:', error);

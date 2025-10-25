@@ -20,7 +20,22 @@ export function useUserOrganizations() {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
+// Hook for getting organization details by ID
+export function useOrganizationDetails(organizationId: string) {
+  const { data: session, status } = useSession();
+  const isAuthenticated = !!session?.user?.id;
+  const isLoading = status === 'loading';
 
+  return useQuery({
+    queryKey: ['organization-details', organizationId],
+    queryFn: () => organizationApiService.getOrganizationDetails(organizationId),
+    enabled: isAuthenticated && !isLoading && !!organizationId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+}
 // Hook for getting current organization (first one by default)
 export function useCurrentOrganization(): UserOrganization | null {
   const { data: organizations, isError } = useUserOrganizations();

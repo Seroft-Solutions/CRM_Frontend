@@ -18,20 +18,9 @@ export const areaFormConfig: FormConfig = {
   steps: [
     {
       id: 'basic',
-      title: 'Basic Information',
-      description: 'Enter essential details',
+      title: 'Area Information',
+      description: 'Enter area details and select city',
       fields: ['name', 'pincode', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'geographic',
-      title: 'Location Details',
-      description: 'Select geographic information',
-      fields: [],
       relationships: ['city'],
       validation: {
         mode: 'onBlur',
@@ -79,18 +68,7 @@ export const areaFormConfig: FormConfig = {
         pattern: /^[0-9]{6}$/,
       },
       ui: {},
-    },
-    {
-      name: 'status',
-      type: 'text',
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {},
-    },
+    }
   ],
 
   // Relationship definitions
@@ -169,7 +147,7 @@ export const areaFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
     },
     drafts: {
       enabled: true,

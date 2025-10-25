@@ -128,6 +128,22 @@ export function CallTableRow({
               (() => {
                 const field = call[column.accessor as keyof typeof call];
 
+                if (column.id === 'leadNo' && call.id) {
+                  const displayValue = field?.toString() || '';
+                  if (!displayValue) {
+                    return '';
+                  }
+
+                  return (
+                    <Link
+                      href={`/calls/${call.id}`}
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                    >
+                      {displayValue}
+                    </Link>
+                  );
+                }
+
                 if (column.id === 'status') {
                   return getStatusBadge(field as string);
                 }
@@ -137,7 +153,7 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 if (column.id === 'lastModifiedBy') {
@@ -145,7 +161,7 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 return field?.toString() || '';

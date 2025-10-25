@@ -240,6 +240,9 @@ export function PaginatedRelationshipCombobox({
       return `${value.length} item${value.length === 1 ? '' : 's'} selected`;
     } else {
       if (typeof value !== 'number' && typeof value !== 'string') {
+        if (parentField && parentFilter && !isLoading && currentData && allLoadedData.length === 0) {
+          return 'N/A';
+        }
         return placeholder;
       }
       const selectedOption = allLoadedData.find((option: any) => option.id === value);
@@ -413,7 +416,7 @@ export function PaginatedRelationshipCombobox({
                     <CommandEmpty>
                       {deferredSearchQuery
                         ? `No ${entityName.toLowerCase()} found for "${deferredSearchQuery}".`
-                        : `N/A`}
+                        : `No ${entityName.toLowerCase()} found.`}
                     </CommandEmpty>
                   )}
 

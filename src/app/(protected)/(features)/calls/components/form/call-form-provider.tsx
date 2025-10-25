@@ -16,8 +16,9 @@ import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 import {
   useGetAllUserProfiles,
-  useGetUserProfile,
+  useGetUserProfile, useSearchUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { useCreateCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
 import { callFormConfig } from './call-form-config';
 import { callFormSchema } from './call-form-schema';
@@ -26,6 +27,8 @@ import { generateLeadNo } from '../../utils/leadNo-generator';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog } from '@/components/form-drafts';
+import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
+import {useGetAllAvailableTimeSlots} from "@/core/api/generated/spring";
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -57,12 +60,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     },
   });
-  const { data: allUsers } = useGetAllUserProfiles();
 
-  const Partners = React.useMemo(() => {
-    if (!allUsers) return [];
-    return allUsers.filter((user) => user.channelType !== null);
-  }, [allUsers]);
+
+
 
   // Create filtered config for business partners (exclude channel and assignment steps)
   const config = React.useMemo(() => {
@@ -72,16 +72,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         steps: baseConfig.steps.filter((step) => step.id !== 'channel' && step.id !== 'assignment'),
       };
     }
-    if (!Partners?.length) {
-      console.log('ART length checked 2');
-      return {
-        ...baseConfig,
-        steps: baseConfig.steps.filter((step) => step.id !== 'channel'),
-      };
-    }
-
     return baseConfig;
-  }, [isBusinessPartner, baseConfig, Partners]);
+  }, [isBusinessPartner, baseConfig]);
   const formRef = useRef<HTMLDivElement>(null);
 
   // Cross-form navigation hooks
@@ -109,17 +101,17 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   const [isInsideForm, setIsInsideForm] = useState(false);
 
+  const { mutate: createEntity, isPending: isCreating } = useCreateCall();
+
   // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
   const {
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
-    saveDraft,
     loadDraft,
     restoreDraft,
     deleteDraft,
     getLatestDraft,
-    isSaving: isSavingDraft,
     isDeleting: isDeletingDraft,
   } = useEntityDrafts({
     entityType: config.entity,
@@ -152,15 +144,32 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     defaultValues: getDefaultValues(),
   });
 
-  // Ensure leadNo is generated on mount for new forms
+  const {data: organizations, isLoading:OrganizationLoading} = useUserOrganizations();
+
+  // Extract organization ID and store in a variable
+  const orgId = organizations?.[0]?.id || '';
+
+  const {data: organizationData} = useOrganizationDetails(orgId);
+  const { data: tenantData } = useGetAllUserProfiles({'email.equals': organizationData?.attributes?.organizationEmail?.[0] || ''}, {
+  query:{
+    enabled: !!organizationData,
+  }
+  })
+  console.log("ART User All Data:", tenantData);
+  // Ensure leadNo is organization code on mount for new forms
   React.useEffect(() => {
     if (isNew && !form.getValues('leadNo')) {
-      const orgName = getOrganizationName();
-      const generatedLeadNo = generateLeadNo(orgName);
-      form.setValue('leadNo', generatedLeadNo);
-      console.log('Generated leadNo:', generatedLeadNo);
+      const orgCode = organizationData?.attributes?.organizationCode?.[0] || '';
+      form.setValue('leadNo', orgCode);
     }
-  }, [isNew, form, getOrganizationName]);
+  }, [isNew, form, organizationData]);
+
+  React.useEffect(() => {
+    if (isNew && !form.getValues('assignedTo')) {
+      const id = tenantData?.[0]?.id || '';
+      form.setValue('assignedTo', id);
+    }
+  }, [isNew, form, tenantData]);
   // Auto-populate channel and assignment data when account/profile data loads for business partners
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
@@ -982,16 +991,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       // Use comprehensive form data instead of just current form values
       const currentFormValues = form.getValues();
       const completeFormData = { ...allFormData, ...currentFormValues };
+      const entityToSave = transformFormDataForSubmission(completeFormData);
 
-      const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
+      entityToSave.status = 'DRAFT';
 
-      if (success) {
-        toast.success('Draft saved successfully');
-      } else {
-        toast.error('Failed to save draft');
-      }
+      await createEntity({ data: entityToSave });
 
-      return success;
+      toast.success('Draft saved successfully');
+
+      return true;
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
@@ -1002,10 +1010,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     isNew,
     form,
     allFormData,
-    currentStep,
-    formSessionId,
-    currentDraftId,
-    saveDraft,
+    createEntity,
   ]);
 
   const handleLoadDraft = useCallback(
@@ -1081,15 +1086,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [draftsEnabled, deleteDraft]
   );
 
-  const handleCheckForDrafts = useCallback(() => {
-    if (!draftsEnabled || !isNew) return;
-
-    if (drafts.length > 0 && !restorationAttempted) {
-      // Instead of showing dialog, navigate to user-drafts page
-      router.push('/user-drafts?entityType=Call');
-      setRestorationAttempted(true);
-    }
-  }, [draftsEnabled, isNew, drafts.length, restorationAttempted, router]);
 
   // Check for drafts on mount and handle restoration from drafts page
   useEffect(() => {
@@ -1140,9 +1136,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           setDraftRestorationInProgress(false);
         }
       }
-
-      // Otherwise, show restoration dialog if drafts exist
-      handleCheckForDrafts();
     }
   }, [
     draftsEnabled,
@@ -1150,7 +1143,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     isLoadingDrafts,
     restorationAttempted,
     draftRestorationInProgress,
-    handleCheckForDrafts,
     handleLoadDraft,
     config.entity,
   ]);
@@ -1203,7 +1195,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       // Draft-related state
       drafts,
       isLoadingDrafts,
-      isSavingDraft,
+      isSavingDraft: isCreating, // Use isCreating from useCreateCall
       isDeletingDraft,
       showDraftDialog,
       currentDraftId,
@@ -1224,7 +1216,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       saveDraft: handleSaveDraft,
       loadDraft: handleLoadDraft,
       deleteDraft: handleDeleteDraft,
-      checkForDrafts: handleCheckForDrafts,
     },
     form,
     navigation: {

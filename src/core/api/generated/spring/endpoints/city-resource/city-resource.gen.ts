@@ -28,7 +28,8 @@ import type {
   CityDTO,
   CountCitiesParams,
   GetAllCitiesParams,
-  SearchCitiesParams
+  SearchCitiesParams,
+  SearchCitiesWithHierarchyParams
 } from '../../schemas';
 
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
@@ -431,7 +432,89 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const countCities = (
+    export const searchCitiesWithHierarchy = (
+    params: SearchCitiesWithHierarchyParams,
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<CityDTO[]>(
+      {url: `/api/cities/search-with-hierarchy`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+export const getSearchCitiesWithHierarchyQueryKey = (params: SearchCitiesWithHierarchyParams,) => {
+    return [`/api/cities/search-with-hierarchy`, ...(params ? [params]: [])] as const;
+    }
+
+    
+export const getSearchCitiesWithHierarchyQueryOptions = <TData = Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError = ErrorType<unknown>>(params: SearchCitiesWithHierarchyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchCitiesWithHierarchyQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>> = ({ signal }) => searchCitiesWithHierarchy(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type SearchCitiesWithHierarchyQueryResult = NonNullable<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>>
+export type SearchCitiesWithHierarchyQueryError = ErrorType<unknown>
+
+
+export function useSearchCitiesWithHierarchy<TData = Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError = ErrorType<unknown>>(
+ params: SearchCitiesWithHierarchyParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchCitiesWithHierarchy>>,
+          TError,
+          Awaited<ReturnType<typeof searchCitiesWithHierarchy>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchCitiesWithHierarchy<TData = Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError = ErrorType<unknown>>(
+ params: SearchCitiesWithHierarchyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchCitiesWithHierarchy>>,
+          TError,
+          Awaited<ReturnType<typeof searchCitiesWithHierarchy>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchCitiesWithHierarchy<TData = Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError = ErrorType<unknown>>(
+ params: SearchCitiesWithHierarchyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useSearchCitiesWithHierarchy<TData = Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError = ErrorType<unknown>>(
+ params: SearchCitiesWithHierarchyParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchCitiesWithHierarchy>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSearchCitiesWithHierarchyQueryOptions(params,options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const countCities = (
     params?: CountCitiesParams,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {

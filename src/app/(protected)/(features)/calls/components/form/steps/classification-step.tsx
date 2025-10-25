@@ -1,29 +1,12 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
     FormField,
-    FormItem,
-    FormLabel,
-    FormControl,
 } from '@/components/ui/form';
-import {Input} from '@/components/ui/input';
 import {RelationshipRenderer} from '../relationship-renderer';
-import {formatLeadNoForDisplay} from '../../../utils/leadNo-generator';
 import {getAllCallStatuses, getAllPriorities} from "@/core/api/generated/spring";
-import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {MessageSquare, Plus, X} from "lucide-react";
-import {Badge} from "@/components/ui/badge";
-import {Textarea} from "@/components/ui/textarea";
-import {Button} from "@/components/ui/button";
+import {useUserAuthorities} from "@/core/auth";
 
 interface CallClassificationStepProps {
     form: any;
@@ -32,46 +15,12 @@ interface CallClassificationStepProps {
     entity?: any;
 }
 
-export function CallClassificationStep({
-                                           form,
-                                           config,
-                                           actions,
-                                           entity,
-                                       }: CallClassificationStepProps) {
-    const leadNoValue = form.watch('leadNo');
-    const [remarkText, setRemarkText] = useState('');
+export function CallClassificationStep({form, config, actions, entity,}: CallClassificationStepProps) {
 
-    // Initialize remark from form state on mount
-    useEffect(() => {
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        if (existingRemarks.length > 0) {
-            setRemarkText(existingRemarks[0].remark);
-        }
-    }, [form]);
+    const { hasGroup } = useUserAuthorities();
 
-    const saveRemark = () => {
-        const trimmedRemark = remarkText.trim();
-        if (!trimmedRemark) {
-            form.setValue('tempRemarks', [], {shouldDirty: true});
-            return;
-        }
+    const isBusinessPartner = hasGroup('Business Partners');
 
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        const newRemarkObj: CallRemark = {
-            id: existingRemarks.length > 0 ? existingRemarks[0].id : Date.now().toString(),
-            remark: trimmedRemark,
-            dateTime: new Date(),
-        };
-
-        form.setValue('tempRemarks', [newRemarkObj], {shouldDirty: true});
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault(); // prevent new line
-            saveRemark();
-        }
-    };
     // Fetch call statuses and set default value for callStatus field
     useEffect(() => {
         const setDefaultCallStatus = async () => {
@@ -251,7 +200,9 @@ export function CallClassificationStep({
                     />
 
                     {/* Assigned To Relationship */}
-                    <FormField
+
+                    {!isBusinessPartner && <FormField
+
                         control={form.control}
                         name="assignedTo"
                         render={({field}) => (
@@ -284,42 +235,9 @@ export function CallClassificationStep({
                                 config={config}
                             />
                         )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="leadNo"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel className="flex items-center gap-2">🏷️ Lead Number</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Input
-                                            {...field}
-                                            value={field.value || ''}
-                                            readOnly
-                                            className="font-mono text-sm bg-gray-50 border-dashed"
-                                            placeholder="Auto-generated lead number"
-                                        />
-                                    </div>
-                                </FormControl>
-                            </FormItem>
-                        )}
-                    />
-                    <div className="col-span-2">
-                        <FormLabel htmlFor="remark">Remark</FormLabel>
-                        <div className="flex gap-2">
-                            <Textarea
-                                id="remark"
-                                placeholder="Enter remark here..."
-                                value={remarkText}
-                                onChange={(e) => setRemarkText(e.target.value)}
-                                onKeyDown={handleKeyPress}
-                                onBlur={saveRemark}
-                                rows={3}
-                                className="flex-1 resize-none"
-                            />
-                        </div>
-                    </div>
+
+                    />}
+
                 </div>
             </div>
         </>

@@ -123,6 +123,17 @@ export function CallTableHeader({
           >
             {column.type === 'field'
               ? (() => {
+                  if (column.accessor === 'leadNo') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['leadNo'] as string) || ''}
+                        onChange={(e) => onFilterChange('leadNo', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
                   if (column.accessor === 'status') {
                     return (
                       <Input

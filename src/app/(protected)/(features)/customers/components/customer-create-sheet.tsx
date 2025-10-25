@@ -10,7 +10,6 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -27,49 +26,59 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import { customerFormSchemaFields } from './form/customer-form-schema';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
+import type { CustomerDTO, AreaDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
 
 
-// Create simplified form schema for customer creation
+// Create simplified form schema for customer creation with AreaDTO
 const customerCreationSchema = z.object({
-  customerBusinessName: customerFormSchemaFields.customerBusinessName,
-  email: customerFormSchemaFields.email,
-  mobile: customerFormSchemaFields.mobile,
-  whatsApp: z.string().optional().or(z.literal('')),
-  contactPerson: customerFormSchemaFields.contactPerson,
-  location: z.object({
-    state: customerFormSchemaFields.state,
-    district: customerFormSchemaFields.district,
-    city: customerFormSchemaFields.city,
-    area: customerFormSchemaFields.area,
+  customerBusinessName: z
+    .string({ message: 'Please enter business name' })
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(100, { message: 'Please enter no more than 100 characters' }),
+  email: z
+    .string()
+    .email({ message: 'Please enter a valid email address' })
+    .max(254, { message: 'Please enter no more than 254 characters' })
+    .optional()
+    .or(z.literal('')),
+  mobile: z
+    .string({ message: 'Please enter mobile number' })
+    .regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, {
+      message: 'Please enter a valid phone number (10-15 digits)',
+    }),
+  whatsApp: z
+    .string()
+    .regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, {
+      message: 'Please enter a valid phone number (10-15 digits)',
+    })
+    .optional()
+    .or(z.literal('')),
+  contactPerson: z
+    .string()
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional()
+    .or(z.literal('')),
+  area: z.custom<AreaDTO>((val) => {
+    return val && typeof val === 'object' && 'id' in val && 'name' in val;
+  }, {
+    message: 'Please select a location',
   }),
 });
 
-type CustomerCreationFormData = {
-  customerBusinessName: string;
-  email?: string;
-  mobile: string;
-  whatsApp?: string;
-  contactPerson?: string;
-  location: {
-    state: number;
-    district: number;
-    city: number;
-    area: number;
-  };
-};
+type CustomerCreationFormData = z.infer<typeof customerCreationSchema>;
 
 interface CustomerCreateSheetProps {
   onSuccess?: (customer: CustomerDTO) => void;
   trigger?: React.ReactNode;
+  isBusinessPartner?: boolean;
 }
 
-export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetProps) {
+export function CustomerCreateSheet({ onSuccess, trigger, isBusinessPartner = false }: CustomerCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
   const queryClient = useQueryClient();
@@ -82,12 +91,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
       mobile: '',
       whatsApp: '',
       contactPerson: '',
-      location: {
-        state: 0,
-        district: 0,
-        city: 0,
-        area: 0,
-      },
+      area: undefined,
     },
   });
 
@@ -134,32 +138,8 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile, // Default to mobile if whatsApp is empty
       contactPerson: data.contactPerson || undefined,
-      // Create proper nested objects for location entities as required by generated schema
-      state: { 
-        id: data.location.state,
-        name: '', // Will be populated by backend
-        country: '', // Will be populated by backend  
-        status: CustomerDTOStatus.ACTIVE
-      },
-      district: { 
-        id: data.location.district,
-        name: '', // Will be populated by backend
-        status: CustomerDTOStatus.ACTIVE,
-        state: { id: data.location.state } as any
-      },
-      city: { 
-        id: data.location.city,
-        name: '', // Will be populated by backend
-        status: CustomerDTOStatus.ACTIVE,
-        district: { id: data.location.district } as any
-      },
-      area: {
-        id: data.location.area,
-        name: '', // Will be populated by backend
-        status: CustomerDTOStatus.ACTIVE,
-        city: {id: data.location.city} as any,
-        pincode: ''
-      },
+      // Only send the area with its full hierarchy (backend derives state/district/city)
+      area: data.area,
       status: CustomerDTOStatus.ACTIVE,
     };
 
@@ -186,28 +166,39 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
-          <SheetHeader>
-            <SheetTitle>Create New Customer</SheetTitle>
-            <SheetDescription>
-              Add a new customer to your database. Fill in the required information below.
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50"
+      >
+        <div className={`sticky top-0 z-10 text-white shadow-sm ${
+          isBusinessPartner
+            ? 'bg-bp-primary'
+            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+        }`}>
+          <SheetHeader className="px-6 py-5 space-y-1">
+            <SheetTitle className="text-lg font-semibold leading-tight text-white">
+              Create New Customer
+            </SheetTitle>
+            <SheetDescription className={`text-sm ${
+              isBusinessPartner ? 'text-white/90' : 'text-blue-100'
+            }`}>
+              Capture core customer details and select their location hierarchy.
             </SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-6 py-5">
           <Form {...form}>
             <form 
               id="customer-creation-form"
               onSubmit={form.handleSubmit(onSubmit)} 
-              className="space-y-6"
+              className="space-y-5"
             >
             {/* Basic Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Essential customer details</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
+                <p className="text-xs text-slate-500">Provide the key identifiers used across customer journeys.</p>
               </div>
 
               <FormField
@@ -215,7 +206,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="customerBusinessName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Business Name
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -236,7 +227,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Contact Person</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Contact Person</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter contact person name"
@@ -254,7 +245,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Email Address</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Email Address</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -270,10 +261,10 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
             </div>
 
             {/* Contact Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Contact Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Phone numbers for communication</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Contact Information</h3>
+                <p className="text-xs text-slate-500">Phone numbers the team will use for day-to-day communication.</p>
               </div>
 
               <FormField
@@ -281,7 +272,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Mobile Number
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -315,7 +306,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 name="whatsApp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">WhatsApp Number</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">WhatsApp Number</FormLabel>
                     <FormControl>
                       <PhoneInput
                         placeholder="Enter WhatsApp number"
@@ -334,18 +325,18 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
             </div>
 
             {/* Location Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Location</h3>
-                <p className="text-xs text-gray-500 mt-1">Geographic information</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Location</h3>
+                <p className="text-xs text-slate-500">Search for the area to automatically attach its full hierarchy.</p>
               </div>
 
               <FormField
                 control={form.control}
-                name="location"
+                name="area"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Address
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -354,7 +345,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                         value={field.value}
                         onChange={field.onChange}
                         onError={(error) => {
-                          form.setError('location', { message: error });
+                          form.setError('area', { message: error });
                         }}
                       />
                     </FormControl>
@@ -368,8 +359,8 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
         </Form>
         </div>
 
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
-          <SheetFooter>
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -382,6 +373,9 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
               type="submit"
               form="customer-creation-form"
               disabled={isPending}
+              className={`min-w-[160px] ${
+                isBusinessPartner ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+              }`}
             >
               {isPending ? (
                 <>
@@ -392,7 +386,7 @@ export function CustomerCreateSheet({ onSuccess, trigger }: CustomerCreateSheetP
                 'Create Customer'
               )}
             </Button>
-          </SheetFooter>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

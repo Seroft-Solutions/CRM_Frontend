@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
  * Configuration for Customer form
- * This file is auto-generated. To modify the form structure, update the generator templates.
  */
 export const customerFormConfig: FormConfig = {
   entity: 'Customer',
@@ -21,18 +13,7 @@ export const customerFormConfig: FormConfig = {
       title: 'Basic Information',
       description: 'Enter essential details',
       fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'geographic',
-      title: 'Location Details',
-      description: 'Select geographic information',
-      fields: [],
-      relationships: ['state', 'district', 'city', 'area'],
+      relationships: ['area'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -118,94 +99,8 @@ export const customerFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
+  // Relationship definitions - Only Area with full hierarchy
   relationships: [
-    {
-      name: 'state',
-      type: 'many-to-one',
-      targetEntity: 'state',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'geographic',
-      api: {
-        useGetAllHook: 'useGetAllStates',
-        useSearchHook: 'useSearchStates',
-        useCountHook: 'useCountStates',
-        entityName: 'States',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/states/new',
-        createPermission: 'state:create:inline',
-      },
-      ui: {
-        label: 'State',
-        placeholder: 'Select state',
-        icon: '📍',
-      },
-    },
-    {
-      name: 'district',
-      type: 'many-to-one',
-      targetEntity: 'district',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'geographic',
-      cascadingFilter: {
-        parentField: 'state',
-        filterField: 'state',
-      },
-      api: {
-        useGetAllHook: 'useGetAllDistricts',
-        useSearchHook: 'useSearchDistricts',
-        useCountHook: 'useCountDistricts',
-        entityName: 'Districts',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/districts/new',
-        createPermission: 'district:create:inline',
-      },
-      ui: {
-        label: 'District',
-        placeholder: 'Select district',
-        icon: '📍',
-      },
-    },
-    {
-      name: 'city',
-      type: 'many-to-one',
-      targetEntity: 'city',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'geographic',
-      cascadingFilter: {
-        parentField: 'district',
-        filterField: 'district',
-      },
-      api: {
-        useGetAllHook: 'useGetAllCities',
-        useSearchHook: 'useSearchCities',
-        useCountHook: 'useCountCities',
-        entityName: 'Cities',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/cities/new',
-        createPermission: 'city:create:inline',
-      },
-      ui: {
-        label: 'City',
-        placeholder: 'Select city',
-        icon: '📍',
-      },
-    },
     {
       name: 'area',
       type: 'many-to-one',
@@ -215,13 +110,9 @@ export const customerFormConfig: FormConfig = {
       required: true,
       multiple: false,
       category: 'geographic',
-      cascadingFilter: {
-        parentField: 'city',
-        filterField: 'city',
-      },
       api: {
         useGetAllHook: 'useGetAllAreas',
-        useSearchHook: 'useSearchAreas',
+        useSearchHook: 'useSearchGeography',
         useCountHook: 'useCountAreas',
         entityName: 'Areas',
       },
@@ -232,7 +123,7 @@ export const customerFormConfig: FormConfig = {
       },
       ui: {
         label: 'Area',
-        placeholder: 'Select area',
+        placeholder: 'Search for location...',
         icon: '📍',
       },
     },
@@ -284,14 +175,14 @@ export const customerFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
       showRestorationDialog: true,
     },
   },

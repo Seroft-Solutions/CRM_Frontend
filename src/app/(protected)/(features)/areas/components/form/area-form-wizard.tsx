@@ -18,7 +18,7 @@ import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 // Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+import { stepComponents } from './steps';
 import {
   useCreateArea,
   useUpdateArea,
@@ -90,7 +90,12 @@ function AreaFormContent({ id }: AreaFormProps) {
             ? value.map((item: any) => item[relConfig.primaryKey])
             : [];
         } else {
-          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+          // For city relationship, store the full object so IntelligentCityField can display it
+          if (relConfig.name === 'city') {
+            formValues[relConfig.name] = value || null;
+          } else {
+            formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+          }
         }
       });
 
@@ -112,14 +117,12 @@ function AreaFormContent({ id }: AreaFormProps) {
 
     // Use imported step components (requires manual import after generation)
     try {
-      // STEP_GENERATOR_START
-      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      // if (StepComponent) {
-      //   return <StepComponent {...stepProps} />;
-      // }
-      // STEP_GENERATOR_END
+      const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
+      if (StepComponent) {
+        return <StepComponent {...stepProps} />;
+      }
     } catch (error) {
-      // Steps not imported yet
+      console.error('Error loading step component:', error);
     }
 
     // Fallback message - replace with generated steps
@@ -311,13 +314,17 @@ export function AreaForm({ id }: AreaFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         // This callback receives the properly transformed data from the form provider
-
+        const { ...areaData } = transformedData as any;
+        const priorityDataWithStatus = {
+          ...areaData,
+          status: 'ACTIVE',
+        };
         // Make the actual API call with the transformed data
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          createEntity({ data: priorityDataWithStatus as any });
         } else if (id) {
           // Ensure the entity data includes the ID for updates
-          const entityData = { ...transformedData, id };
+          const entityData = { ...priorityDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }
       }}

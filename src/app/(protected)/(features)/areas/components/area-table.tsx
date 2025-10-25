@@ -107,6 +107,7 @@ import {
   useUpdateArea,
   usePartialUpdateArea,
   useSearchAreas,
+  useSearchGeography,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 // Relationship data imports
@@ -173,7 +174,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 
   {
     id: 'city',
-    label: 'City',
+    label: 'Location (State, District, City)',
     accessor: 'city',
     type: 'relationship',
     visible: true,
@@ -236,8 +237,8 @@ export function AreaTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10); // Default to 25 items per page
 
-  const [sort, setSort] = useState('id');
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState('lastModifiedDate');
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -335,16 +336,11 @@ export function AreaTable() {
     try {
       // Invalidate all related queries to force fresh data
       await queryClient.invalidateQueries({
-        queryKey: ['getAllAreas'],
+        queryKey: ['/api/areas/search-geography'],
         refetchType: 'active',
       });
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchAreas'],
         refetchType: 'active',
       });
 
@@ -379,7 +375,12 @@ export function AreaTable() {
               const relationship = item[col.accessor as keyof typeof item] as any;
 
               if (col.id === 'city' && relationship) {
-                value = relationship.name || '';
+                // Export full hierarchy for city
+                const parts = [];
+                if (relationship.district?.state?.name) parts.push(relationship.district.state.name);
+                if (relationship.district?.name) parts.push(relationship.district.name);
+                if (relationship.name) parts.push(relationship.name);
+                value = parts.join(', ');
               }
             }
             // Escape CSV values
@@ -584,40 +585,29 @@ export function AreaTable() {
 
   const filterParams = buildFilterParams();
 
-  // Fetch data with React Query
+  // Fetch data with React Query using tenant-specific searchGeography endpoint
+  // This endpoint filters areas by the current tenant/organization automatically
 
-  const { data, isLoading, refetch } = searchTerm
-    ? useSearchAreas(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
-    : useGetAllAreas(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useSearchGeography(
+    {
+      term: searchTerm || '', // Use empty string if no search term to get all tenant areas
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+    },
+    {
+      query: {
+        enabled: true,
+        staleTime: 0, // Always consider data stale for immediate refetch
+        refetchOnWindowFocus: true,
+      },
+    }
+  );
+
+  // Force refetch on mount to ensure correct initial sort
+  useEffect(() => {
+    refetch();
+  }, [refetch]); // Run on mount and when refetch changes
 
   // Get total count for pagination
   const { data: countData } = useCountAreas(filterParams, {
@@ -634,21 +624,17 @@ export function AreaTable() {
       onMutate: async (variables) => {
         // Cancel any outgoing refetches
         await queryClient.cancelQueries({
-          queryKey: ['getAllAreas'],
-        });
-
-        await queryClient.cancelQueries({
-          queryKey: ['searchAreas'],
+          queryKey: ['/api/areas/search-geography'],
         });
 
         // Snapshot the previous value
         const previousData = queryClient.getQueryData([
-          'getAllAreas',
+          '/api/areas/search-geography',
           {
+            term: searchTerm || '',
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
           },
         ]);
 
@@ -656,34 +642,16 @@ export function AreaTable() {
         if (previousData && Array.isArray(previousData)) {
           queryClient.setQueryData(
             [
-              'getAllAreas',
+              '/api/areas/search-geography',
               {
+                term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
               },
             ],
             (old: any[]) =>
               old.map((area) => (area.id === variables.id ? { ...area, ...variables.data } : area))
-          );
-        }
-
-        // Also update search cache if applicable
-        if (searchTerm) {
-          queryClient.setQueryData(
-            [
-              'searchAreas',
-              {
-                query: searchTerm,
-                page: apiPage,
-                size: pageSize,
-                sort: [`${sort},${order}`],
-                ...filterParams,
-              },
-            ],
-            (old: any[]) =>
-              old?.map((area) => (area.id === variables.id ? { ...area, ...variables.data } : area))
           );
         }
 
@@ -693,12 +661,12 @@ export function AreaTable() {
         // CRITICAL: Update cache with server response to ensure UI reflects actual data
         queryClient.setQueryData(
           [
-            'getAllAreas',
+            '/api/areas/search-geography',
             {
+              term: searchTerm || '',
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
             },
           ],
           (old: any[]) =>
@@ -709,28 +677,6 @@ export function AreaTable() {
             )
         );
 
-        // Also update search cache if applicable
-        if (searchTerm) {
-          queryClient.setQueryData(
-            [
-              'searchAreas',
-              {
-                query: searchTerm,
-                page: apiPage,
-                size: pageSize,
-                sort: [`${sort},${order}`],
-                ...filterParams,
-              },
-            ],
-            (old: any[]) =>
-              old?.map((area) =>
-                area.id === variables.id
-                  ? data // Use complete server response
-                  : area
-              )
-          );
-        }
-
         areaToast.updated();
       },
       onError: (error, variables, context) => {
@@ -738,12 +684,12 @@ export function AreaTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllAreas',
+              '/api/areas/search-geography',
               {
+                term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
               },
             ],
             context.previousData
@@ -754,16 +700,11 @@ export function AreaTable() {
       onSettled: async () => {
         // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
-          queryKey: ['getAllAreas'],
+          queryKey: ['/api/areas/search-geography'],
           refetchType: 'active',
         });
         await queryClient.invalidateQueries({
           queryKey: ['countAreas'],
-          refetchType: 'active',
-        });
-
-        await queryClient.invalidateQueries({
-          queryKey: ['searchAreas'],
           refetchType: 'active',
         });
       },
@@ -774,27 +715,27 @@ export function AreaTable() {
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateArea({
     mutation: {
       onMutate: async (variables) => {
-        await queryClient.cancelQueries({ queryKey: ['getAllAreas'] });
+        await queryClient.cancelQueries({ queryKey: ['/api/areas/search-geography'] });
 
         const previousData = queryClient.getQueryData([
-          'getAllAreas',
+          '/api/areas/search-geography',
           {
+            term: searchTerm || '',
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
           },
         ]);
 
         // Optimistically update or remove the item based on status change
         queryClient.setQueryData(
           [
-            'getAllAreas',
+            '/api/areas/search-geography',
             {
+              term: searchTerm || '',
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
             },
           ],
           (old: any[]) => {
@@ -856,12 +797,12 @@ export function AreaTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllAreas',
+              '/api/areas/search-geography',
               {
+                term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
               },
             ],
             context.previousData
@@ -872,16 +813,11 @@ export function AreaTable() {
       onSettled: async () => {
         // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
-          queryKey: ['getAllAreas'],
+          queryKey: ['/api/areas/search-geography'],
           refetchType: 'active',
         });
         await queryClient.invalidateQueries({
           queryKey: ['countAreas'],
-          refetchType: 'active',
-        });
-
-        await queryClient.invalidateQueries({
-          queryKey: ['searchAreas'],
           refetchType: 'active',
         });
       },
@@ -1010,16 +946,16 @@ export function AreaTable() {
 
   const confirmBulkArchive = async () => {
     // Cancel any outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ['getAllAreas'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/areas/search-geography'] });
 
     // Get current data for rollback
     const previousData = queryClient.getQueryData([
-      'getAllAreas',
+      '/api/areas/search-geography',
       {
+        term: searchTerm || '',
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
       },
     ]);
 
@@ -1048,16 +984,11 @@ export function AreaTable() {
 
       // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
-        queryKey: ['getAllAreas'],
+        queryKey: ['/api/areas/search-geography'],
         refetchType: 'active',
       });
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchAreas'],
         refetchType: 'active',
       });
 
@@ -1071,12 +1002,12 @@ export function AreaTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllAreas',
+            '/api/areas/search-geography',
             {
+              term: searchTerm || '',
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
             },
           ],
           previousData
@@ -1094,16 +1025,16 @@ export function AreaTable() {
     if (!bulkNewStatus) return;
 
     // Cancel any outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ['getAllAreas'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/areas/search-geography'] });
 
     // Get current data for rollback
     const previousData = queryClient.getQueryData([
-      'getAllAreas',
+      '/api/areas/search-geography',
       {
+        term: searchTerm || '',
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
       },
     ]);
 
@@ -1133,16 +1064,11 @@ export function AreaTable() {
 
       // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
-        queryKey: ['getAllAreas'],
+        queryKey: ['/api/areas/search-geography'],
         refetchType: 'active',
       });
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchAreas'],
         refetchType: 'active',
       });
 
@@ -1158,12 +1084,12 @@ export function AreaTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllAreas',
+            '/api/areas/search-geography',
             {
+              term: searchTerm || '',
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
             },
           ],
           previousData
@@ -1233,12 +1159,12 @@ export function AreaTable() {
               // Update cache with server response for this specific entity
               queryClient.setQueryData(
                 [
-                  'getAllAreas',
+                  '/api/areas/search-geography',
                   {
+                    term: searchTerm || '',
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
                   },
                 ],
                 (old: any[]) =>
@@ -1248,28 +1174,6 @@ export function AreaTable() {
                       : area
                   )
               );
-
-              // Also update search cache if applicable
-              if (searchTerm) {
-                queryClient.setQueryData(
-                  [
-                    'searchAreas',
-                    {
-                      query: searchTerm,
-                      page: apiPage,
-                      size: pageSize,
-                      sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
-                  ],
-                  (old: any[]) =>
-                    old?.map((area) =>
-                      area.id === entityId
-                        ? serverResponse // Use server response
-                        : area
-                    )
-                );
-              }
             }
 
             // Only show individual toast if not part of bulk operation
@@ -1301,16 +1205,16 @@ export function AreaTable() {
     newValue: number | null
   ) => {
     // Cancel any outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ['getAllAreas'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/areas/search-geography'] });
 
     // Get current data for rollback
     const previousData = queryClient.getQueryData([
-      'getAllAreas',
+      '/api/areas/search-geography',
       {
+        term: searchTerm || '',
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
       },
     ]);
 
@@ -1352,12 +1256,12 @@ export function AreaTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllAreas',
+            '/api/areas/search-geography',
             {
+              term: searchTerm || '',
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
             },
           ],
           previousData
