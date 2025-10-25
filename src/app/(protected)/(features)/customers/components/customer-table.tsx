@@ -116,12 +116,6 @@ import {
 
 // Relationship data imports
 
-import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-
-import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-
-import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-
 import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 import { CustomerSearchAndFilters } from './table/customer-search-filters';
@@ -211,35 +205,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'state',
-    label: 'State',
-    accessor: 'state',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
-    id: 'district',
-    label: 'District',
-    accessor: 'district',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
-    id: 'city',
-    label: 'City',
-    accessor: 'city',
-    type: 'relationship',
-    visible: true,
-    sortable: false,
-  },
-
-  {
     id: 'area',
-    label: 'Area',
+    label: 'Location',
     accessor: 'area',
     type: 'relationship',
     visible: true,
@@ -446,18 +413,6 @@ export function CustomerTable() {
             } else if (col.type === 'relationship') {
               const relationship = item[col.accessor as keyof typeof item] as any;
 
-              if (col.id === 'state' && relationship) {
-                value = relationship.name || '';
-              }
-
-              if (col.id === 'district' && relationship) {
-                value = relationship.name || '';
-              }
-
-              if (col.id === 'city' && relationship) {
-                value = relationship.name || '';
-              }
-
               if (col.id === 'area' && relationship) {
                 value = relationship.name || '';
               }
@@ -492,22 +447,6 @@ export function CustomerTable() {
   const apiPage = page - 1;
 
   // Fetch relationship data for dropdowns
-
-  const { data: stateOptions = [] } = useGetAllStates(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-
-  const { data: districtOptions = [] } = useGetAllDistricts(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-
-  const { data: cityOptions = [] } = useGetAllCities(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-
   const { data: areaOptions = [] } = useGetAllAreas(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
@@ -571,24 +510,6 @@ export function CustomerTable() {
 
     // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
-      'state.name': {
-        apiParam: 'stateId.equals',
-        options: stateOptions,
-        displayField: 'name',
-      },
-
-      'district.name': {
-        apiParam: 'districtId.equals',
-        options: districtOptions,
-        displayField: 'name',
-      },
-
-      'city.name': {
-        apiParam: 'cityId.equals',
-        options: cityOptions,
-        displayField: 'name',
-      },
-
       'area.name': {
         apiParam: 'areaId.equals',
         options: areaOptions,
@@ -1512,30 +1433,6 @@ export function CustomerTable() {
 
   // Prepare relationship configurations for components
   const relationshipConfigs = [
-    {
-      name: 'state',
-      displayName: 'State',
-      options: stateOptions || [],
-      displayField: 'name',
-      isEditable: false, // Disabled by default
-    },
-
-    {
-      name: 'district',
-      displayName: 'District',
-      options: districtOptions || [],
-      displayField: 'name',
-      isEditable: false, // Disabled by default
-    },
-
-    {
-      name: 'city',
-      displayName: 'City',
-      options: cityOptions || [],
-      displayField: 'name',
-      isEditable: false, // Disabled by default
-    },
-
     {
       name: 'area',
       displayName: 'Area',

@@ -145,7 +145,7 @@ export function AreaTableRow({
                 }
 
                 if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : ''; // PPp includes date and time
                 }
 
                 if (column.id === 'lastModifiedBy') {
@@ -153,7 +153,7 @@ export function AreaTableRow({
                 }
 
                 if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
+                  return field ? format(new Date(field as string), 'PPp') : ''; // PPp includes date and time
                 }
 
                 return field?.toString() || '';

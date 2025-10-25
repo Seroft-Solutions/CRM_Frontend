@@ -161,48 +161,56 @@ export function BusinessPartnerDashboard() {
         <TabsContent value="overview" className="space-y-6 mt-6">
           {/* KPI Cards */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-blue-50/30 border-blue-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">My Leads</CardTitle>
-                <Phone className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Phone className="h-4 w-4 text-blue-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{myCalls.length}</div>
+                <div className="text-2xl font-bold text-blue-900">{myCalls.length}</div>
                 <p className="text-xs text-muted-foreground">
                   {myLast30Days.length} in last 30 days
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-emerald-50/30 border-emerald-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">My Customers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <Users className="h-4 w-4 text-emerald-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{myCustomers.length}</div>
+                <div className="text-2xl font-bold text-emerald-900">{myCustomers.length}</div>
                 <p className="text-xs text-muted-foreground">Customers you added</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-purple-50/30 border-purple-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{myConversionRate}%</div>
+                <div className="text-2xl font-bold text-purple-900">{myConversionRate}%</div>
                 <p className="text-xs text-muted-foreground">Your success rate</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-orange-50/30 border-orange-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Active Leads</CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Activity className="h-4 w-4 text-orange-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-orange-900">
                   {
                     myCalls.filter(
                       (call) =>
@@ -219,7 +227,7 @@ export function BusinessPartnerDashboard() {
 
           {/* Charts Section */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>My Lead Status Distribution</CardTitle>
                 <CardDescription>Status of your leads and calls</CardDescription>
@@ -245,7 +253,7 @@ export function BusinessPartnerDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="col-span-3">
+            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>My Priority Distribution</CardTitle>
                 <CardDescription>Priority breakdown of your leads</CardDescription>
@@ -282,7 +290,7 @@ export function BusinessPartnerDashboard() {
           </div>
 
           {/* Recent Activity */}
-          <Card>
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
               <CardTitle>My Recent Leads</CardTitle>
               <CardDescription>Your latest lead activities</CardDescription>
@@ -293,7 +301,7 @@ export function BusinessPartnerDashboard() {
                   {myRecentCalls.map((call) => (
                     <div
                       key={call.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
                     >
                       <div className="flex items-center space-x-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
@@ -334,9 +342,9 @@ export function BusinessPartnerDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-6 mt-6">
           {/* Lead Types Analysis */}
-          <Card>
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
               <CardTitle>My Lead Types Analysis</CardTitle>
               <CardDescription>Breakdown of lead types you've been working with</CardDescription>

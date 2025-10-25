@@ -33,6 +33,7 @@ interface EnhancedCustomerRelationshipFieldProps {
   createPermission?: string;
   onCustomerCreated?: (customerId: number) => void;
   customFilters?: Record<string, any>; // Add support for custom filters
+  buttonClassName?: string; // Custom class for the + button
 }
 
 export function EnhancedCustomerRelationshipField({
@@ -46,10 +47,15 @@ export function EnhancedCustomerRelationshipField({
   createPermission,
   onCustomerCreated,
   customFilters = {},
+  buttonClassName = '',
 }: EnhancedCustomerRelationshipFieldProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [deferredSearchQuery, setDeferredSearchQuery] = useState('');
+  const [createdCustomers, setCreatedCustomers] = useState<CustomerDTO[]>([]);
+
+  // Detect if Business Partner mode is active based on button className
+  const isBusinessPartner = buttonClassName.includes('bp-primary');
 
   // Debounced search query (300ms delay)
   React.useEffect(() => {
@@ -90,11 +96,19 @@ export function EnhancedCustomerRelationshipField({
 
   // Get available options (either all customers or search results) from paginated responses
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
-    if (deferredSearchQuery.length > 1 && searchResponse) {
-      return searchResponse;
-    }
-    return customersResponse || [];
-  }, [customersResponse, searchResponse, deferredSearchQuery]);
+    const baseOptions =
+      deferredSearchQuery.length > 1 && searchResponse ? searchResponse : customersResponse || [];
+
+    const merged = [...createdCustomers];
+
+    baseOptions.forEach((option) => {
+      if (!merged.some((customer) => customer.id === option.id)) {
+        merged.push(option);
+      }
+    });
+
+    return merged;
+  }, [customersResponse, searchResponse, deferredSearchQuery, createdCustomers]);
 
   // Get selected options for display with proper typing - handle newly created items
   const getSelectedOptions = (): CustomerDTO[] => {
@@ -178,23 +192,31 @@ export function EnhancedCustomerRelationshipField({
   const handleCustomerCreated = useCallback(
     (customer: CustomerDTO) => {
       const customerId = customer.id!;
-      
-      // Immediately update the available options with the new customer
-      // This ensures the new customer appears in the list before refetch completes
-      
+
+      setCreatedCustomers((prev) => {
+        if (prev.some((existing) => existing.id === customerId)) {
+          return prev.map((existing) => (existing.id === customerId ? customer : existing));
+        }
+        return [customer, ...prev];
+      });
+
       // Auto-select the newly created customer
       if (multiple) {
         const currentValues = Array.isArray(value) ? value : [];
         onValueChange([...currentValues, customerId]);
       } else {
         onValueChange(customerId);
+        setOpen(false);
       }
-      
+
       // Refetch customers to include the new one (this will update the full list)
       setTimeout(() => {
         refetchCustomers();
       }, 100);
-      
+
+      setSearchQuery('');
+      setDeferredSearchQuery('');
+
       // Call the optional callback
       onCustomerCreated?.(customerId);
     },
@@ -323,12 +345,16 @@ export function EnhancedCustomerRelationshipField({
           <InlinePermissionGuard requiredPermission={createPermission}>
             <CustomerCreateSheet
               onSuccess={handleCustomerCreated}
+              isBusinessPartner={isBusinessPartner}
               trigger={
                 <Button
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="shrink-0 bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
+                    className={cn(
+                      "shrink-0",
+                      buttonClassName || "bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
+                    )}
                     title="Create new customer"
                 >
                   <Plus className="h-4 w-4 text-white" />

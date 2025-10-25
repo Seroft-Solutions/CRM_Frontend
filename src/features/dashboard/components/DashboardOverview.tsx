@@ -234,46 +234,54 @@ export function DashboardOverview() {
         <TabsContent value="overview" className="space-y-6 mt-6">
           {/* Enhanced KPI Cards */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-blue-50/30 border-blue-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Calls</CardTitle>
-                <Phone className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Phone className="h-4 w-4 text-blue-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{calls.length}</div>
+                <div className="text-2xl font-bold text-blue-900">{calls.length}</div>
                 <p className="text-xs text-muted-foreground">{last30Days.length} in last 30 days</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-emerald-50/30 border-emerald-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <Users className="h-4 w-4 text-emerald-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{parties.length}</div>
+                <div className="text-2xl font-bold text-emerald-900">{parties.length}</div>
                 <p className="text-xs text-muted-foreground">Customer database size</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-purple-50/30 border-purple-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{conversionRate}%</div>
+                <div className="text-2xl font-bold text-purple-900">{conversionRate}%</div>
                 <p className="text-xs text-muted-foreground">Call success rate</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-orange-50/30 border-orange-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Products</CardTitle>
-                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <ShoppingCart className="h-4 w-4 text-orange-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{products.length}</div>
+                <div className="text-2xl font-bold text-orange-900">{products.length}</div>
                 <p className="text-xs text-muted-foreground">Available products</p>
               </CardContent>
             </Card>
@@ -281,7 +289,7 @@ export function DashboardOverview() {
 
           {/* Enhanced Charts Section */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Call Status Distribution</CardTitle>
                 <CardDescription>Real-time status of all calls in the system</CardDescription>
@@ -307,7 +315,7 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
 
-            <Card className="col-span-3">
+            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Priority Distribution</CardTitle>
                 <CardDescription>Call priority breakdown</CardDescription>
@@ -345,7 +353,7 @@ export function DashboardOverview() {
 
           {/* Recent Activity and Geographic Distribution */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Top States</CardTitle>
                 <CardDescription>Geographic call distribution</CardDescription>
@@ -371,7 +379,7 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
 
-            <Card className="col-span-2">
+            <Card className="col-span-2 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Recent Calls</CardTitle>
                 <CardDescription>Latest call activities with detailed information</CardDescription>
@@ -382,7 +390,7 @@ export function DashboardOverview() {
                     {recentCalls.map((call) => (
                       <div
                         key={call.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
@@ -426,10 +434,10 @@ export function DashboardOverview() {
           </div>
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-6 mt-6">
           {/* Channel and Category Analysis */}
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
                 <CardDescription>How customers are reaching us</CardDescription>
@@ -462,7 +470,7 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Call Categories</CardTitle>
                 <CardDescription>Types of customer interactions</CardDescription>
@@ -487,7 +495,7 @@ export function DashboardOverview() {
           </div>
 
           {/* Call Types Analysis */}
-          <Card>
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
               <CardTitle>Call Types Analysis</CardTitle>
               <CardDescription>
@@ -513,10 +521,10 @@ export function DashboardOverview() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="performance" className="space-y-6">
+        <TabsContent value="performance" className="space-y-6 mt-6">
           {/* Agent Performance */}
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Top Performers</CardTitle>
                 <CardDescription>Agents with highest call volumes</CardDescription>
@@ -547,7 +555,7 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Performance Metrics</CardTitle>
                 <CardDescription>Key performance indicators</CardDescription>
@@ -601,7 +609,7 @@ export function DashboardOverview() {
           </div>
 
           {/* Detailed Status Analysis */}
-          <Card>
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
               <CardTitle>Call Status Performance</CardTitle>
               <CardDescription>
@@ -611,7 +619,7 @@ export function DashboardOverview() {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-6">
                 {callStatusData.map((status, index) => (
-                  <div key={status.name} className="p-4 border rounded-lg">
+                  <div key={status.name} className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-slate-50">
                     <div className="flex items-center space-x-2 mb-2">
                       <div
                         className="w-3 h-3 rounded-full"

@@ -9,7 +9,6 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -78,9 +77,10 @@ type ProductCreationFormData = {
 interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
   trigger?: React.ReactNode;
+  isBusinessPartner?: boolean;
 }
 
-export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetProps) {
+export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = false }: ProductCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -187,31 +187,40 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-blue-600" />
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-xl overflow-y-auto p-0 bg-slate-50"
+      >
+        <div className={`sticky top-0 z-10 text-white shadow-sm ${
+          isBusinessPartner
+            ? 'bg-bp-primary'
+            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+        }`}>
+          <SheetHeader className="px-6 py-5 space-y-1">
+            <SheetTitle className="flex items-center gap-2 text-lg font-semibold leading-tight text-white">
+              <Package className="h-5 w-5" />
               Create New Product
             </SheetTitle>
-            <SheetDescription>
-              Add a new product to your catalog. Fill in the required information below.
+            <SheetDescription className={`text-sm ${
+              isBusinessPartner ? 'text-white/90' : 'text-blue-100'
+            }`}>
+              Capture catalog information and map the product to the correct category.
             </SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-6 py-5">
           <Form {...form}>
             <form 
               id="product-creation-form"
               onSubmit={form.handleSubmit(onSubmit)} 
-              className="space-y-6"
+              className="space-y-5"
             >
             {/* Basic Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Essential product details</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
+                <p className="text-xs text-slate-500">Define how the product should appear across the catalog.</p>
               </div>
 
               <FormField
@@ -219,7 +228,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Product Name
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -253,7 +262,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-semibold text-slate-700">
                       Product Code
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
@@ -274,7 +283,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Description</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Description</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Enter product description"
@@ -289,10 +298,10 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
             </div>
 
             {/* Pricing Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Pricing Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Product pricing details</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Pricing Information</h3>
+                <p className="text-xs text-slate-500">Set indicative prices to guide sales and margin checks.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -301,7 +310,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                   name="basePrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">Base Price</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-700">Base Price</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -323,7 +332,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                   name="minPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">Min Price</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-700">Min Price</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -353,7 +362,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                   name="maxPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">Max Price</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-700">Max Price</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -381,10 +390,10 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
             </div>
 
             {/* Category Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Category Classification</h3>
-                <p className="text-xs text-gray-500 mt-1">Product category and subcategory</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Category Classification</h3>
+                <p className="text-xs text-slate-500">Associate the product with the correct category hierarchy.</p>
               </div>
 
               <FormField
@@ -392,7 +401,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 name="categoryHierarchy"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Category & Subcategory</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Category & Subcategory</FormLabel>
                     <FormControl>
                       <IntelligentCategoryField
                         value={field.value}
@@ -409,10 +418,10 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
             </div>
 
             {/* Additional Information Section */}
-            <div className="space-y-4">
-              <div className="border-b pb-2">
-                <h3 className="text-sm font-medium text-gray-900">Additional Information</h3>
-                <p className="text-xs text-gray-500 mt-1">Optional product details</p>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-slate-900">Additional Information</h3>
+                <p className="text-xs text-slate-500">Add optional remarks that help teams position the product.</p>
               </div>
 
               <FormField
@@ -420,7 +429,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 name="remark"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Remarks</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700">Remarks</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Enter any additional remarks or notes"
@@ -437,8 +446,8 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
         </Form>
         </div>
 
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4">
-          <SheetFooter>
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -451,6 +460,9 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
               type="submit"
               form="product-creation-form"
               disabled={isPending}
+              className={`min-w-[160px] ${
+                isBusinessPartner ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+              }`}
             >
               {isPending ? (
                 <>
@@ -461,7 +473,7 @@ export function ProductCreateSheet({ onSuccess, trigger }: ProductCreateSheetPro
                 'Create Product'
               )}
             </Button>
-          </SheetFooter>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

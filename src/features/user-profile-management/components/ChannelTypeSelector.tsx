@@ -17,6 +17,7 @@ interface ChannelTypeSelectorProps {
   onValueChange: (value: number | undefined) => void;
   disabled?: boolean;
   className?: string;
+  hideAddButton?: boolean;
 }
 
 interface ChannelPartySelectorProps {
@@ -25,6 +26,7 @@ interface ChannelPartySelectorProps {
   channelTypeId?: number;
   disabled?: boolean;
   className?: string;
+  hideAddButton?: boolean;
 }
 
 interface CascadingChannelSelectorsProps {
@@ -39,6 +41,7 @@ export function ChannelTypeSelector({
   onValueChange,
   disabled = false,
   className,
+  hideAddButton = false,
 }: ChannelTypeSelectorProps) {
   return (
     <PaginatedRelationshipCombobox
@@ -52,7 +55,7 @@ export function ChannelTypeSelector({
       useCountHook={useCountChannelTypes}
       entityName="ChannelTypes"
       searchField="name"
-      canCreate={true}
+      canCreate={!hideAddButton}
       createEntityPath="/channel-types/new"
       createPermission="channelType:create"
     />

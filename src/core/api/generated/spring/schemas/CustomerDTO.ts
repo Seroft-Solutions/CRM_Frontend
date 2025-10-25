@@ -6,9 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { CustomerDTOStatus } from './CustomerDTOStatus';
-import type { StateDTO } from './StateDTO';
-import type { DistrictDTO } from './DistrictDTO';
-import type { CityDTO } from './CityDTO';
 import type { AreaDTO } from './AreaDTO';
 
 export interface CustomerDTO {
@@ -46,8 +43,5 @@ export interface CustomerDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  state: StateDTO;
-  district: DistrictDTO;
-  city: CityDTO;
   area: AreaDTO;
 }

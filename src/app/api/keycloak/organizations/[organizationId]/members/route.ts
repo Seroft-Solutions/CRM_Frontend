@@ -334,7 +334,7 @@ export async function POST(
     const { organizationId } = await params;
     const body = await request.json();
     const realm = keycloakService.getRealm();
-
+console.log("Route Checking avdul,",body);
     // Check if this is a simple member addition (for organization setup)
     if (body.userId && !body.email) {
       console.log('Simple member addition:', { organizationId, userId: body.userId });
@@ -620,6 +620,9 @@ export async function POST(
       success: true,
       message: 'User invited successfully',
       email: inviteData.email,
+      firstName: inviteData.firstName,
+      lastName: inviteData.lastName,
+      organizationId,
       userId,
       invitationId,
       selectedGroups: inviteData.selectedGroups?.length || 0,
