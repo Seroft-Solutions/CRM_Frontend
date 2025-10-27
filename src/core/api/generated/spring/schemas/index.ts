@@ -401,3 +401,6 @@ export * from './UserProfileDTO';
 export * from './UserProfileDTOStatus';
 export * from './WhatsappRequest';
 export * from './WhatsappRequestMessageContent';
+export * from './GetImportTemplate8200';
+export * from './ImportMasterDataFromFile200';
+export * from './ImportMasterDataFromFileBody';
