@@ -6,12 +6,22 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import {
     useImportMasterDataFromFile
@@ -19,6 +29,16 @@ import {
 
 interface MasterDataImportProps {
     // Add props if needed, e.g., for handling file submission
+}
+
+interface ImportResponse {
+    success: boolean;
+    successCount: number;
+    skippedCount: number;
+    totalRows: number;
+    message: string;
+    errorCount: number;
+    errors: string[];
 }
 
 const importConfig = {
@@ -73,14 +93,19 @@ export function MasterDataImport({}: MasterDataImportProps) {
         },
     });
 
+    // State for dialog
+    const [isOpen, setIsOpen] = useState(false);
+    const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+
     // Use the mutation hook from the generated file
     const { mutate: importMasterData, isPending: isUploading, error } = useImportMasterDataFromFile({
         mutation: {
             onSuccess: (data) => {
                 console.log('Import successful:', data);
+                setResponseData(data);
+                setIsOpen(true);
                 // Optional: Show success toast or reset form
                 form.reset();
-                alert('Import completed successfully!'); // Replace with toast notification
             },
             onError: (err) => {
                 console.error('Import failed:', err);
@@ -191,6 +216,66 @@ export function MasterDataImport({}: MasterDataImportProps) {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Import Results Dialog */}
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5 text-green-500" />
+                                Import Results
+                            </DialogTitle>
+                            <DialogDescription>
+                                Your import has been processed. Here's a summary:
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground">Total Rows Processed</span>
+                                    <span className="font-semibold">{responseData?.totalRows || 0}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground">Successfully Imported</span>
+                                    <Badge variant="default" className="mt-1 bg-green-100 text-green-800">
+                                        {responseData?.successCount || 0}
+                                    </Badge>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground">Skipped (Duplicates)</span>
+                                    <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800">
+                                        {responseData?.skippedCount || 0}
+                                    </Badge>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground">Failed</span>
+                                    <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800">
+                                        {responseData?.errorCount || 0}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <div className="border-t pt-4">
+                                <p className="text-sm text-muted-foreground mb-2">Summary:</p>
+                                <p className="text-sm">{responseData?.message}</p>
+                            </div>
+                            {responseData?.errors && responseData.errors.length > 0 && (
+                                <div className="border rounded-md p-3 bg-red-50">
+                                    <p className="text-sm font-medium text-red-800 mb-2">Errors:</p>
+                                    <ul className="list-disc pl-5 text-sm text-red-700 space-y-1">
+                                        {responseData.errors.map((err, index) => (
+                                            <li key={index}>{err}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={() => setIsOpen(false)} variant="outline">
+                                Close
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </form>
         </Form>
     );
