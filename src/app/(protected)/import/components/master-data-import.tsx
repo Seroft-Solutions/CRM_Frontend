@@ -11,7 +11,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
+import {
+    useImportMasterDataFromFile
+} from "@/core/api/generated/spring/endpoints/import-master-data-controller/import-master-data-controller.gen";
 
 interface MasterDataImportProps {
     // Add props if needed, e.g., for handling file submission
@@ -69,9 +73,29 @@ export function MasterDataImport({}: MasterDataImportProps) {
         },
     });
 
+    // Use the mutation hook from the generated file
+    const { mutate: importMasterData, isPending: isUploading, error } = useImportMasterDataFromFile({
+        mutation: {
+            onSuccess: (data) => {
+                console.log('Import successful:', data);
+                // Optional: Show success toast or reset form
+                form.reset();
+                alert('Import completed successfully!'); // Replace with toast notification
+            },
+            onError: (err) => {
+                console.error('Import failed:', err);
+                alert('Import failed: ' + (err?.message || 'Unknown error')); // Replace with error toast
+            },
+        },
+    });
+
     const handleSubmit = (data: any) => {
-        console.log('File Selected:', data.importFile);
-        // Add logic to handle file upload, e.g., send to an API
+        if (!data.importFile) {
+            alert('Please select a file');
+            return;
+        }
+        // Call the mutation with the file
+        importMasterData({ data: { file: data.importFile } });
     };
 
     return (
@@ -153,6 +177,18 @@ export function MasterDataImport({}: MasterDataImportProps) {
                                 </FormItem>
                             )}
                         />
+                        {/* Submit Button */}
+                        <Button
+                            type="submit"
+                            className="mt-4 w-full"
+                            disabled={isUploading || !form.watch('importFile')}
+                            variant={isUploading ? 'secondary' : 'default'}
+                        >
+                            {isUploading ? 'Uploading...' : 'Import Data'}
+                        </Button>
+                        {error && (
+                            <p className="text-sm text-destructive mt-2">{error.message || 'An error occurred during import'}</p>
+                        )}
                     </CardContent>
                 </Card>
             </form>
