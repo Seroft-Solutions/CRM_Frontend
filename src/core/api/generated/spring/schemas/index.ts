@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.0.1
  */
 
+import {ImportCallsFromExcelBody} from "@/core/api/generated/spring";
+
 export * from './AdminUserDTO';
 export * from './ApiStatus200';
 export * from './AreaDTO';
@@ -404,3 +406,6 @@ export * from './WhatsappRequestMessageContent';
 export * from './GetImportTemplate8200';
 export * from './ImportMasterDataFromFile200';
 export * from './ImportMasterDataFromFileBody';
+export * from './ImportCallsFromExcelBody';
+export * from './ImportCallsFromExcel200';
+export * from './GetImportTemplate7200';
