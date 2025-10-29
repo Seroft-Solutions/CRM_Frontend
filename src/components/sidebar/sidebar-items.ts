@@ -182,4 +182,10 @@ export const sidebarItems: SidebarItem[] = [
         path: '/import',
         icon: ArrowDownToLine,
     },
+    {
+        key: 'call import',
+        label: 'Bulk Import Call',
+        path: '/calls/import',
+        icon: ArrowDownToLine,
+    },
 ];
