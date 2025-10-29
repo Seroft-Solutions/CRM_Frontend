@@ -1,6 +1,6 @@
 // ===============================================================
 // 🛑 AUTO-GENERATED INSPIRED FILE – CUSTOMIZATION ALLOWED 🛑
-// - Purpose: Display import instructions for master data and a file input field
+// - Purpose: Display import instructions for Call bulk data and a file input field
 // - To customize: Edit directly or use feature-level extensions
 // ===============================================================
 
@@ -21,73 +21,82 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import {
-    useImportMasterDataFromFile
-} from "@/core/api/generated/spring/endpoints/import-master-data-controller/import-master-data-controller.gen";
 import {useImportCallsFromExcel} from "@/core/api/generated/spring";
 
-interface MasterDataImportProps {
+interface CallDataImportProps {
     // Add props if needed, e.g., for handling file submission
 }
 
 interface ImportResponse {
     success: boolean;
-    successCount: number;
-    skippedCount: number;
     totalRows: number;
+    successfulRows: number;
+    skippedRows: number;
+    failedRows: number;
+    failedErrors: string[];
+    errorReportCsv: string;
     message: string;
-    errorCount: number;
-    errors: string[];
 }
 
 const importConfig = {
     instructions: [
         "Fill in the data starting from row 2 (row 1 contains headers)",
-        "Each column represents a different master data type; provide names only",
-        "Other fields (e.g., description, status) will default to standard values",
-        "Maximum 500 data rows (excluding header)",
-        "Empty cells or rows will be skipped",
-        "Duplicate names (already existing) will be skipped",
-        "Save the file as .xlsx, .xls, or .csv format"
+        "Maximum 500 data rows per upload",
+        "All fields are required and must match existing master data exactly (no new masters created during import)",
+        "Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped",
+        "Download error report CSV from response for failed rows details",
+        "Save the file as .xlsx or .xls format"
     ],
-    filename: "master_data_import_template.xlsx",
+    filename: "call_import_template.xlsx",
     columns: [
         {
-            header: "Call Type",
+            header: "Customer name",
             column: "A",
+            example: "Wood Business",
+            description: "Customer business name (Required) - must match existing customer exactly"
+        },
+        {
+            header: "Zip code",
+            column: "B",
+            example: "12345",
+            description: "Zip code (Required)"
+        },
+        {
+            header: "Product Name",
+            column: "C",
+            example: "iPhone 15 Pro",
+            description: "Product name (Required) - must match existing product exactly"
+        },
+        {
+            header: "Call Type",
+            column: "D",
             example: "Customer Support",
-            description: "Call Type name (2-50 characters)"
+            description: "CallType name (Required) - must match existing CallType exactly"
         },
         {
             header: "Sub Call Type",
-            column: "B",
+            column: "E",
             example: "Technical Issue",
-            description: "Sub Call Type name (2-50 characters)"
-        },
-        {
-            header: "Call Status",
-            column: "C",
-            example: "Open",
-            description: "Call Status name (2-50 characters)"
+            description: "SubCallType name (Required) - must match existing SubCallType and belong to the CallType"
         },
         {
             header: "Priority",
-            column: "D",
+            column: "F",
             example: "High",
-            description: "Priority name (2-50 characters)"
+            description: "Priority name (Required) - must match existing Priority exactly"
         },
         {
-            header: "Source",
-            column: "E",
-            example: "Email",
-            description: "Source name (2-50 characters)"
+            header: "Call Status",
+            column: "G",
+            example: "Open",
+            description: "CallStatus name (Required) - must match existing CallStatus exactly"
         }
     ],
 };
 
-export function CallDataImport({}: MasterDataImportProps) {
+export function CallDataImport({}: CallDataImportProps) {
     const form = useForm({
         defaultValues: {
             importFile: null,
@@ -99,7 +108,7 @@ export function CallDataImport({}: MasterDataImportProps) {
     const [responseData, setResponseData] = useState<ImportResponse | null>(null);
 
     // Use the mutation hook from the generated file
-    const { mutate: importMasterData, isPending: isUploading, error } = useImportCallsFromExcel({
+    const { mutate: importCalls, isPending: isUploading, error } = useImportCallsFromExcel({
         mutation: {
             onSuccess: (data) => {
                 console.log('Import successful:', data);
@@ -121,7 +130,21 @@ export function CallDataImport({}: MasterDataImportProps) {
             return;
         }
         // Call the mutation with the file
-        importMasterData({ data: { file: data.importFile } });
+        importCalls({ data: { file: data.importFile } });
+    };
+
+    const handleDownloadErrorReport = () => {
+        if (responseData?.errorReportCsv) {
+            const blob = new Blob([responseData.errorReportCsv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'error-report.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
     };
 
     return (
@@ -129,7 +152,7 @@ export function CallDataImport({}: MasterDataImportProps) {
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
                 <Card>
                     <CardContent className="p-4 sm:p-6">
-                        <h4 className="font-semibold mb-2">Master Data Import Instructions</h4>
+                        <h4 className="font-semibold mb-2">Call Data Bulk Import Instructions</h4>
                         <div className="space-y-4">
                             {/* Instructions List */}
                             <div>
@@ -192,7 +215,7 @@ export function CallDataImport({}: MasterDataImportProps) {
                                     <FormControl>
                                         <Input
                                             type="file"
-                                            accept=".xlsx,.xls,.csv"
+                                            accept=".xlsx,.xls"
                                             onChange={(e) => {
                                                 field.onChange(e.target.files ? e.target.files[0] : null);
                                                 form.trigger('importFile');
@@ -237,21 +260,21 @@ export function CallDataImport({}: MasterDataImportProps) {
                                     <span className="font-semibold">{responseData?.totalRows || 0}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-muted-foreground">Successfully Imported</span>
+                                    <span className="text-muted-foreground">✅ Successful Rows</span>
                                     <Badge variant="default" className="mt-1 bg-green-100 text-green-800">
-                                        {responseData?.successCount || 0}
+                                        {responseData?.successfulRows || 0}
                                     </Badge>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-muted-foreground">Skipped (Duplicates)</span>
+                                    <span className="text-muted-foreground">⚠️ Skipped Rows (Existing or Duplicate)</span>
                                     <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800">
-                                        {responseData?.skippedCount || 0}
+                                        {responseData?.skippedRows || 0}
                                     </Badge>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-muted-foreground">Failed</span>
+                                    <span className="text-muted-foreground">❌ Failed Rows (Missing master data)</span>
                                     <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800">
-                                        {responseData?.errorCount || 0}
+                                        {responseData?.failedRows || 0}
                                     </Badge>
                                 </div>
                             </div>
@@ -259,11 +282,11 @@ export function CallDataImport({}: MasterDataImportProps) {
                                 <p className="text-sm text-muted-foreground mb-2">Summary:</p>
                                 <p className="text-sm">{responseData?.message}</p>
                             </div>
-                            {responseData?.errors && responseData.errors.length > 0 && (
+                            {responseData?.failedErrors && responseData.failedErrors.length > 0 && (
                                 <div className="border rounded-md p-3 bg-red-50">
                                     <p className="text-sm font-medium text-red-800 mb-2">Errors:</p>
                                     <ul className="list-disc pl-5 text-sm text-red-700 space-y-1">
-                                        {responseData.errors.map((err, index) => (
+                                        {responseData.failedErrors.map((err, index) => (
                                             <li key={index}>{err}</li>
                                         ))}
                                     </ul>
@@ -271,6 +294,12 @@ export function CallDataImport({}: MasterDataImportProps) {
                             )}
                         </div>
                         <DialogFooter>
+                            {responseData?.failedRows > 0 && responseData.errorReportCsv && (
+                                <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Download Error Report (.CSV)
+                                </Button>
+                            )}
                             <Button onClick={() => setIsOpen(false)} variant="outline">
                                 Close
                             </Button>
