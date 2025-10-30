@@ -243,8 +243,8 @@ export function CallDataImport({}: CallDataImportProps) {
 
                 {/* Import Results Dialog */}
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
+                    <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col"> {/* Wider dialog, taller max-height, flex for internal scrolling */}
+                        <DialogHeader className="flex-shrink-0"> {/* Prevent header from shrinking */}
                             <DialogTitle className="flex items-center gap-2">
                                 <CheckCircle className="h-5 w-5 text-green-500" />
                                 Import Results
@@ -253,7 +253,7 @@ export function CallDataImport({}: CallDataImportProps) {
                                 Your import has been processed. Here's a summary:
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
+                        <div className="flex-1 overflow-y-auto py-4 space-y-4"> {/* Main content scrolls, takes remaining space */}
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div className="flex flex-col">
                                     <span className="text-muted-foreground">Total Rows Processed</span>
@@ -283,17 +283,24 @@ export function CallDataImport({}: CallDataImportProps) {
                                 <p className="text-sm">{responseData?.message}</p>
                             </div>
                             {responseData?.failedErrors && responseData.failedErrors.length > 0 && (
-                                <div className="border rounded-md p-3 bg-red-50">
-                                    <p className="text-sm font-medium text-red-800 mb-2">Errors:</p>
-                                    <ul className="list-disc pl-5 text-sm text-red-700 space-y-1">
-                                        {responseData.failedErrors.map((err, index) => (
-                                            <li key={index}>{err}</li>
-                                        ))}
-                                    </ul>
+                                <div className="border rounded-md p-3 bg-red-50 flex flex-col"> {/* Flex for error section */}
+                                    <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                        <p className="text-sm font-medium text-red-800">Field Errors:</p>
+                                    </div>
+                                    <div className="flex-1 min-h-0"> {/* Allow this to take space and scroll */}
+                                        <div className="h-64 overflow-y-auto border border-red-200 rounded-md bg-red-50 p-2 text-sm"> {/* Increased height to 16rem (256px) */}
+                                            <ul className="list-disc pl-5 text-red-700 space-y-1">
+                                                {responseData.failedErrors.map((err, index) => (
+                                                    <li key={index}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 mt-auto"> {/* Footer sticks to bottom */}
                             {responseData?.failedRows > 0 && responseData.errorReportCsv && (
                                 <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
                                     <Download className="h-4 w-4" />
