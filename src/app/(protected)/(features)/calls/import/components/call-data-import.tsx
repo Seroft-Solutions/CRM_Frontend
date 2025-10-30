@@ -35,7 +35,9 @@ interface ImportResponse {
     successfulRows: number;
     skippedRows: number;
     failedRows: number;
+    skippedErrors: string[];
     failedErrors: string[];
+    skippedReportCsv: string;
     errorReportCsv: string;
     message: string;
 }
@@ -140,6 +142,20 @@ export function CallDataImport({}: CallDataImportProps) {
             const link = document.createElement('a');
             link.href = url;
             link.download = 'error-report.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleDownloadSkippedReport = () => {
+        if (responseData?.skippedReportCsv) {
+            const blob = new Blob([responseData.skippedReportCsv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'skipped-report.csv';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -282,6 +298,23 @@ export function CallDataImport({}: CallDataImportProps) {
                                 <p className="text-sm text-muted-foreground mb-2">Summary:</p>
                                 <p className="text-sm">{responseData?.message}</p>
                             </div>
+                            {responseData?.skippedErrors && responseData.skippedErrors.length > 0 && (
+                                <div className="border rounded-md p-3 bg-yellow-50 flex flex-col">
+                                    <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+                                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                                        <p className="text-sm font-medium text-yellow-800">Skipped Errors:</p>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
+                                        <div className="h-64 overflow-y-auto border border-yellow-200 rounded-md bg-yellow-50 p-2 text-sm">
+                                            <ul className="list-disc pl-5 text-yellow-700 space-y-1">
+                                                {responseData.skippedErrors.map((err, index) => (
+                                                    <li key={index}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             {responseData?.failedErrors && responseData.failedErrors.length > 0 && (
                                 <div className="border rounded-md p-3 bg-red-50 flex flex-col"> {/* Flex for error section */}
                                     <div className="flex items-center gap-2 mb-2 flex-shrink-0">
@@ -301,6 +334,12 @@ export function CallDataImport({}: CallDataImportProps) {
                             )}
                         </div>
                         <DialogFooter className="flex-shrink-0 mt-auto"> {/* Footer sticks to bottom */}
+                            {responseData?.skippedRows > 0 && responseData.skippedReportCsv && (
+                                <Button onClick={handleDownloadSkippedReport} variant="outline" className="flex items-center gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Download Skipped Report (.CSV)
+                                </Button>
+                            )}
                             {responseData?.failedRows > 0 && responseData.errorReportCsv && (
                                 <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
                                     <Download className="h-4 w-4" />
