@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import {useImportCallsFromExcel} from "@/core/api/generated/spring";
+import * as XLSX from 'xlsx';
 
 interface CallDataImportProps {
     // Add props if needed, e.g., for handling file submission
@@ -163,6 +164,27 @@ export function CallDataImport({}: CallDataImportProps) {
         }
     };
 
+    const handleDownloadTemplate = () => {
+        const wsData = [
+            ['Customer name', 'Zip code', 'Product Name', 'Call Type', 'Sub Call Type', 'Priority', 'Call Status'],
+            ['Wood Business', '12345', 'iPhone 15 Pro', 'Customer Support', 'Technical Issue', 'High', 'Open'],
+            ['ABC Enterprises', '67890', 'Software XYZ', 'Billing Inquiry', 'Payment Issue', 'Medium', 'In Progress'],
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Calls');
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = importConfig.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -217,6 +239,13 @@ export function CallDataImport({}: CallDataImportProps) {
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                            {/* Download Template Button */}
+                            <div className="pt-4">
+                                <Button onClick={handleDownloadTemplate} variant="outline" className="flex items-center gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Download Template (.xlsx)
+                                </Button>
                             </div>
                         </div>
                         {/* File Input Field */}
