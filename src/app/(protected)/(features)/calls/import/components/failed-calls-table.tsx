@@ -24,6 +24,8 @@ import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/custom
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
+import { useCreateCall } from '@/core/api/generated/spring';
+
 interface FailedCallsTableProps {
     errorReportCsv: string;
 }
@@ -62,8 +64,8 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
             const parsedHeaders = jsonData[0] as string[];
             setHeaders(parsedHeaders);
 
-            const parsedData = jsonData.slice(1).map((row: any[]) => {
-                const rowData: { [key: string]: any } = {};
+            const parsedData = jsonData.slice(1).map((row: any[], index) => {
+                const rowData: { [key: string]: any } = { id: index }; // Add a unique id for react key
                 parsedHeaders.forEach((header, index) => {
                     rowData[header] = row[index];
                 });
@@ -83,11 +85,18 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
     const { data: productOptions = [] } = useGetAllProducts({ page: 0, size: 1000 });
     const { data: callstatusOptions = [] } = useGetAllCallStatuses({ page: 0, size: 1000 });
 
+    const { mutate: createCall, isPending: isCreating } = useCreateCall({
+        mutation: {
+            onError: (error) => {
+                toast.error('Failed to update call: ' + error.message);
+            },
+        },
+    });
+
     const handleFieldChange = (rowIndex: number, fieldName: string, value: any) => {
         const updatedData = [...editableData];
         updatedData[rowIndex][fieldName] = value;
 
-        // If Call Type is changed, reset Sub Call Type
         if (fieldName === 'Call Type') {
             updatedData[rowIndex]['Sub Call Type'] = '';
         }
@@ -96,9 +105,25 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
 
     const handleUpdateRow = (rowIndex: number) => {
         const rowData = editableData[rowIndex];
-        console.log("Submitting updated row:", rowData);
-        toast.success(`Row ${rowIndex + 1} submitted for update.`);
-        // TODO: Implement API call to update the record
+
+        // Map form data to CallDTO
+        const callDTO = {
+            customer: customerOptions.find(c => c.customerBusinessName === rowData['Customer name']),
+            product: productOptions.find(p => p.name === rowData['Product Name']),
+            callType: calltypeOptions.find(ct => ct.name === rowData['Call Type']),
+            subCallType: subcalltypeOptions.find(sct => sct.name === rowData['Sub Call Type']),
+            priority: priorityOptions.find(p => p.name === rowData['Priority']),
+            callStatus: callstatusOptions.find(cs => cs.name === rowData['Call Status']),
+            // Assuming other fields like leadNo are not present in the failed import to be created
+        };
+
+        // @ts-ignore
+        createCall({ data: callDTO }, {
+            onSuccess: () => {
+                toast.success(`Row ${rowIndex + 1} updated and removed.`);
+                setEditableData(prevData => prevData.filter((_, index) => index !== rowIndex));
+            }
+        });
     };
 
     if (editableData.length === 0) {
@@ -154,14 +179,17 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
                                 </TableHeader>
                                 <TableBody>
                                     {editableData.map((row, rowIndex) => (
-                                        <TableRow key={rowIndex} className="hover:bg-gray-50 transition-colors">
+                                        <TableRow key={row.id} className="hover:bg-gray-50 transition-colors">
                                             {headers.map((header, cellIndex) => {
                                                 const options = getColumnOptions(header, row);
+                                                const isIssueColumn = header.toLowerCase() === 'issue';
                                                 return (
                                                     <TableCell
                                                         key={header}
                                                         className={`px-2 sm:px-3 py-2 text-sm align-top ${cellIndex === headers.length - 1 ? 'whitespace-normal' : 'min-w-[200px]'}`}>
-                                                        {options ? (
+                                                        {isIssueColumn ? (
+                                                            <span className='text-red-600 font-medium'>{row[header]}</span>
+                                                        ) : options ? (
                                                             <Select
                                                                 value={row[header] || ''}
                                                                 onValueChange={(value) => handleFieldChange(rowIndex, header, value)}>
@@ -186,9 +214,9 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
                                                 );
                                             })}
                                             <TableCell className="px-2 sm:px-3 py-2 text-center align-middle">
-                                                <Button variant="outline" size="sm" onClick={() => handleUpdateRow(rowIndex)}>
+                                                <Button variant="default" size="sm" onClick={() => handleUpdateRow(rowIndex)} disabled={isCreating}>
                                                     <Upload className="h-4 w-4 mr-2" />
-                                                    Update
+                                                    {isCreating ? 'Updating...' : 'Update'}
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
