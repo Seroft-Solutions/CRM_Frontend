@@ -11,10 +11,16 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   email: z
-    .string()
-    .max(254, { message: 'Please enter no more than 254 characters' })
-    .email({ message: 'Please enter a valid email address (example: name@company.com)' })
-    .optional(),
+      .string()
+      .max(254, { message: 'Please enter no more than 254 characters' })
+      .transform((val) => (val === '' ? undefined : val)) // Treat empty string as unset
+      .pipe(
+          z
+              .string()
+              .email({ message: 'Please enter a valid email address (example: name@company.com)' })
+              .optional() // Now optional after transform
+      )
+      .optional(), // Top-level optional for omission/undefined/null
   mobile: z
     .string({ message: 'Please enter mobile' })
     .min(1, { message: 'Please enter mobile' })
@@ -51,10 +57,16 @@ export const customerFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   email: z
-    .string()
-    .max(254, { message: 'Please enter no more than 254 characters' })
-    .email({ message: 'Please enter a valid email address (example: name@company.com)' })
-    .optional(),
+      .string()
+      .max(254, { message: 'Please enter no more than 254 characters' })
+      .transform((val) => (val === '' ? undefined : val)) // Treat empty string as unset
+      .pipe(
+          z
+              .string()
+              .email({ message: 'Please enter a valid email address (example: name@company.com)' })
+              .optional() // Now optional after transform
+      )
+      .optional(), // Top-level optional for omission/undefined/null
   mobile: z
     .string({ message: 'Please enter mobile' })
     .min(1, { message: 'Please enter mobile' })
