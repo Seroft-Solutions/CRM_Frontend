@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -161,6 +162,7 @@ export function FailedCallsTable({ errorReportCsv }: FailedCallsTableProps) {
                     <CardTitle className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-red-500" />
                         Failed Import Entries
+                        <Badge variant="destructive">{editableData.length}</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
