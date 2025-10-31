@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import {useImportCallsFromExcel} from "@/core/api/generated/spring";
 import * as XLSX from 'xlsx';
 
@@ -105,19 +106,17 @@ export function CallDataImport({}: CallDataImportProps) {
             importFile: null,
         },
     });
-
-    // State for dialog
-    const [isOpen, setIsOpen] = useState(false);
-    const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+    const router = useRouter();
 
     // Use the mutation hook from the generated file
     const { mutate: importCalls, isPending: isUploading, error } = useImportCallsFromExcel({
         mutation: {
             onSuccess: (data) => {
                 console.log('Import successful:', data);
-                setResponseData(data);
-                setIsOpen(true);
-                // Optional: Show success toast or reset form
+                // Store response in session storage to pass to the results page
+                sessionStorage.setItem('importResponse', JSON.stringify(data));
+                // Redirect to the results page
+                router.push('/calls/import/results');
                 form.reset();
             },
             onError: (err) => {
@@ -134,34 +133,6 @@ export function CallDataImport({}: CallDataImportProps) {
         }
         // Call the mutation with the file
         importCalls({ data: { file: data.importFile } });
-    };
-
-    const handleDownloadErrorReport = () => {
-        if (responseData?.errorReportCsv) {
-            const blob = new Blob([responseData.errorReportCsv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'error-report.csv';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-    };
-
-    const handleDownloadSkippedReport = () => {
-        if (responseData?.skippedReportCsv) {
-            const blob = new Blob([responseData.skippedReportCsv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'skipped-report.csv';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
     };
 
     const handleDownloadTemplate = () => {
@@ -278,110 +249,16 @@ export function CallDataImport({}: CallDataImportProps) {
                             disabled={isUploading || !form.watch('importFile')}
                             variant={isUploading ? 'secondary' : 'default'}
                         >
-                            {isUploading ? 'Uploading...' : 'Import Data'}
-                        </Button>
-                        {error && (
-                            <p className="text-sm text-destructive mt-2">{error.message || 'An error occurred during import'}</p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Import Results Dialog */}
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                    <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col"> {/* Wider dialog, taller max-height, flex for internal scrolling */}
-                        <DialogHeader className="flex-shrink-0"> {/* Prevent header from shrinking */}
-                            <DialogTitle className="flex items-center gap-2">
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                Import Results
-                            </DialogTitle>
-                            <DialogDescription>
-                                Your import has been processed. Here's a summary:
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto py-4 space-y-4"> {/* Main content scrolls, takes remaining space */}
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="flex flex-col">
-                                    <span className="text-muted-foreground">Total Rows Processed</span>
-                                    <span className="font-semibold">{responseData?.totalRows || 0}</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-muted-foreground">✅ Successful Rows</span>
-                                    <Badge variant="default" className="mt-1 bg-green-100 text-green-800">
-                                        {responseData?.successfulRows || 0}
-                                    </Badge>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-muted-foreground">⚠️ Skipped Rows (Existing or Duplicate)</span>
-                                    <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800">
-                                        {responseData?.skippedRows || 0}
-                                    </Badge>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-muted-foreground">❌ Failed Rows (Missing master data)</span>
-                                    <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800">
-                                        {responseData?.failedRows || 0}
-                                    </Badge>
-                                </div>
-                            </div>
-                            <div className="border-t pt-4">
-                                <p className="text-sm text-muted-foreground mb-2">Summary:</p>
-                                <p className="text-sm">{responseData?.message}</p>
-                            </div>
-                            {responseData?.skippedErrors && responseData.skippedErrors.length > 0 && (
-                                <div className="border rounded-md p-3 bg-yellow-50 flex flex-col">
-                                    <div className="flex items-center gap-2 mb-2 flex-shrink-0">
-                                        <AlertCircle className="h-4 w-4 text-yellow-500" />
-                                        <p className="text-sm font-medium text-yellow-800">Skipped Errors:</p>
-                                    </div>
-                                    <div className="flex-1 min-h-0">
-                                        <div className="h-64 overflow-y-auto border border-yellow-200 rounded-md bg-yellow-50 p-2 text-sm">
-                                            <ul className="list-disc pl-5 text-yellow-700 space-y-1">
-                                                {responseData.skippedErrors.map((err, index) => (
-                                                    <li key={index}>{err}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            {responseData?.failedErrors && responseData.failedErrors.length > 0 && (
-                                <div className="border rounded-md p-3 bg-red-50 flex flex-col"> {/* Flex for error section */}
-                                    <div className="flex items-center gap-2 mb-2 flex-shrink-0">
-                                        <AlertCircle className="h-4 w-4 text-red-500" />
-                                        <p className="text-sm font-medium text-red-800">Field Errors:</p>
-                                    </div>
-                                    <div className="flex-1 min-h-0"> {/* Allow this to take space and scroll */}
-                                        <div className="h-64 overflow-y-auto border border-red-200 rounded-md bg-red-50 p-2 text-sm"> {/* Increased height to 16rem (256px) */}
-                                            <ul className="list-disc pl-5 text-red-700 space-y-1">
-                                                {responseData.failedErrors.map((err, index) => (
-                                                    <li key={index}>{err}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <DialogFooter className="flex-shrink-0 mt-auto"> {/* Footer sticks to bottom */}
-                            {responseData?.skippedRows > 0 && responseData.skippedReportCsv && (
-                                <Button onClick={handleDownloadSkippedReport} variant="outline" className="flex items-center gap-2">
-                                    <Download className="h-4 w-4" />
-                                    Download Skipped Report (.CSV)
-                                </Button>
-                            )}
-                            {responseData?.failedRows > 0 && responseData.errorReportCsv && (
-                                <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
-                                    <Download className="h-4 w-4" />
-                                    Download Error Report (.CSV)
-                                </Button>
-                            )}
-                            <Button onClick={() => setIsOpen(false)} variant="outline">
-                                Close
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </form>
-        </Form>
+                                                    {
+                                                        isUploading ? 'Uploading...' : 'Import Data'
+                                                    }
+                                                    </Button>
+                                                    {error && (
+                                                        <p className="text-sm text-destructive mt-2">{error.message || 'An error occurred during import'}</p>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </form>
+                                    </Form>
     );
 }
