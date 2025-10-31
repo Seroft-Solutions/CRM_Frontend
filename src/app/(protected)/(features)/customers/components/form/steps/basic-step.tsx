@@ -59,6 +59,7 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
           )}
         />
 
+
         {/* Email Field */}
         <FormField
           control={form.control}
@@ -67,7 +68,6 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Email
-                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Input
