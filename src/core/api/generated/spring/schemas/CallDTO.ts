@@ -19,6 +19,7 @@ import type { CallStatusDTO } from './CallStatusDTO';
 export interface CallDTO {
   id?: number;
   leadNo?: string;
+  externalId?: string;
   status: CallDTOStatus;
   /**
    * @minLength 0
