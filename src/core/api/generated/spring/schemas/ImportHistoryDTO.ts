@@ -17,4 +17,5 @@ export interface ImportHistoryDTO {
   subCallType?: string;
   priority?: string;
   callStatus?: string;
+  issue?: string;
 }
