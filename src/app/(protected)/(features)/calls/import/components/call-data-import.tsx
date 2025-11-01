@@ -12,15 +12,6 @@ import { Form } from '@/components/ui/form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
@@ -48,7 +39,7 @@ const importConfig = {
     instructions: [
         "Fill in the data starting from row 2 (row 1 contains headers)",
         "Maximum 500 data rows per upload",
-        "All fields are required and must match existing master data exactly (no new masters created during import)",
+        "All fields are required except External ID and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)",
         "Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped",
         "Download error report CSV from response for failed rows details",
         "Save the file as .xlsx or .xls format"
@@ -56,46 +47,52 @@ const importConfig = {
     filename: "call_import_template.xlsx",
     columns: [
         {
-            header: "Customer name",
             column: "A",
-            example: "Wood Business",
-            description: "Customer business name (Required) - must match existing customer exactly"
+            header: "External ID",
+            description: "External ID (Optional) - Unique identifier. If empty, a UUID will be generated",
+            example: "81d9fe86-22d4-4b1b-9a26-f837d364b6d4"
         },
         {
-            header: "Zip code",
             column: "B",
-            example: "12345",
-            description: "Zip code (Required)"
+            header: "Customer name",
+            description: "Customer business name (Required) - must match existing customer exactly",
+            example: "ABC Enterprises"
         },
         {
-            header: "Product Name",
             column: "C",
-            example: "iPhone 15 Pro",
-            description: "Product name (Required) - must match existing product exactly"
+            header: "Zip code",
+            description: "Zip code (Required)",
+            example: "12345"
         },
         {
-            header: "Call Type",
             column: "D",
-            example: "Customer Support",
-            description: "CallType name (Required) - must match existing CallType exactly"
+            header: "Product Name",
+            description: "Product name (Required) - must match existing product exactly",
+            example: "Software XYZ"
         },
         {
-            header: "Sub Call Type",
             column: "E",
-            example: "Technical Issue",
-            description: "SubCallType name (Required) - must match existing SubCallType and belong to the CallType"
+            header: "Call Type",
+            description: "CallType name (Required) - must match existing CallType exactly",
+            example: "Customer Support"
         },
         {
-            header: "Priority",
             column: "F",
-            example: "High",
-            description: "Priority name (Required) - must match existing Priority exactly"
+            header: "Sub Call Type",
+            description: "SubCallType name (Optional) - must match existing SubCallType and belong to the CallType if provided",
+            example: "Technical Support"
         },
         {
-            header: "Call Status",
             column: "G",
-            example: "Open",
-            description: "CallStatus name (Required) - must match existing CallStatus exactly"
+            header: "Priority",
+            description: "Priority name (Required) - must match existing Priority exactly",
+            example: "High"
+        },
+        {
+            column: "H",
+            header: "Call Status",
+            description: "CallStatus name (Required) - must match existing CallStatus exactly",
+            example: "Open"
         }
     ],
 };
@@ -137,9 +134,9 @@ export function CallDataImport({}: CallDataImportProps) {
 
     const handleDownloadTemplate = () => {
         const wsData = [
-            ['Customer name', 'Zip code', 'Product Name', 'Call Type', 'Sub Call Type', 'Priority', 'Call Status'],
-            ['Wood Business', '12345', 'iPhone 15 Pro', 'Customer Support', 'Technical Issue', 'High', 'Open'],
-            ['ABC Enterprises', '67890', 'Software XYZ', 'Billing Inquiry', 'Payment Issue', 'Medium', 'In Progress'],
+            ['External ID', 'Customer name', 'Zip code', 'Product Name', 'Call Type', 'Sub Call Type', 'Priority', 'Call Status'],
+            ['81d9fe86-22d4-4b1b-9a26-f837d364b6d4', 'ABC Enterprises', '12345', 'Software XYZ', 'Customer Support', 'Technical Support', 'High', 'Open'],
+            ['EXT-123', 'Wood Business', '67890', 'iPhone 15 Pro', 'Billing Inquiry', '', 'Medium', 'In Progress'],
         ];
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
@@ -249,16 +246,16 @@ export function CallDataImport({}: CallDataImportProps) {
                             disabled={isUploading || !form.watch('importFile')}
                             variant={isUploading ? 'secondary' : 'default'}
                         >
-                                                    {
-                                                        isUploading ? 'Uploading...' : 'Import Data'
-                                                    }
-                                                    </Button>
-                                                    {error && (
-                                                        <p className="text-sm text-destructive mt-2">{error.message || 'An error occurred during import'}</p>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </form>
-                                    </Form>
+                            {
+                                isUploading ? 'Uploading...' : 'Import Data'
+                            }
+                        </Button>
+                        {error && (
+                            <p className="text-sm text-destructive mt-2">{error.message || 'An error occurred during import'}</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </form>
+        </Form>
     );
 }
