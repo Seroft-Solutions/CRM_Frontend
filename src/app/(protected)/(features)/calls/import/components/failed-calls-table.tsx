@@ -1,4 +1,3 @@
-
 // ===============================================================
 // 🛑 NEW FILE – CUSTOMIZATION ALLOWED 🛑
 // - Purpose: Display and edit failed call import entries in a table
@@ -163,7 +162,7 @@ export function FailedCallsTable() {
                 return null;
         }
     };
-    
+
     const headerMapping: { [key: string]: keyof ImportHistoryDTO } = {
         'Customer name': 'customerBusinessName',
         'Zip Code': 'zipCode',
@@ -211,9 +210,9 @@ export function FailedCallsTable() {
                                                 return (
                                                     <TableCell
                                                         key={header}
-                                                        className={`px-2 sm:px-3 py-2 text-sm align-top ${cellIndex === HEADERS.length - 1 ? 'whitespace-normal' : 'min-w-[200px]'}`}>
+                                                        className={`px-2 sm:px-3 py-2 text-sm align-top ${cellIndex === HEADERS.length - 1 ? 'whitespace-nowrap min-w-[400px]' : 'min-w-[200px]'}`}>
                                                         {isIssueColumn ? (
-                                                            <span className='text-red-600 font-medium'>{row[fieldName]}</span>
+                                                            <span className='text-red-600 font-medium whitespace-nowrap'>{row[fieldName]}</span>
                                                         ) : options ? (
                                                             <Select
                                                                 value={row[fieldName] || ''}
