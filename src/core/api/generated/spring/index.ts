@@ -36,3 +36,4 @@ export * from './endpoints/public-user-resource/public-user-resource.gen';
 export * from './endpoints/index-controller/index-controller.gen';
 export * from './endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 export * from './endpoints/product-category-resource/product-category-resource.gen';
+export * from './endpoints/product-image-resource/product-image-resource.gen';

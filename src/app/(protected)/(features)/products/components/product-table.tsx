@@ -99,8 +99,9 @@ const tableScrollStyles = `
     }
   }
   .table-scroll td {
-    white-space: normal;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;
 
@@ -148,6 +149,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
     type: 'field',
     visible: true,
     sortable: true,
+  },
+
+  {
+    id: 'image',
+    label: 'Image',
+    accessor: 'images',
+    type: 'field',
+    visible: true,
+    sortable: false,
   },
 
   {

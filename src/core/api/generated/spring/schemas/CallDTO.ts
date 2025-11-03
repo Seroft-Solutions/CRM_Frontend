@@ -19,7 +19,7 @@ import type { CallStatusDTO } from './CallStatusDTO';
 export interface CallDTO {
   id?: number;
   leadNo?: string;
-  status: CallDTOStatus;
+  status?: CallDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50
@@ -32,14 +32,14 @@ export interface CallDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  priority: PriorityDTO;
-  callType: CallTypeDTO;
+  priority?: PriorityDTO;
+  callType?: CallTypeDTO;
   subCallType?: SubCallTypeDTO;
-  source: SourceDTO;
-  customer: CustomerDTO;
-  product: ProductDTO;
+  source?: SourceDTO;
+  customer?: CustomerDTO;
+  product?: ProductDTO;
   channelType?: ChannelTypeDTO;
   channelParties?: UserProfileDTO;
   assignedTo?: UserProfileDTO;
-  callStatus: CallStatusDTO;
+  callStatus?: CallStatusDTO;
 }
