@@ -25,6 +25,7 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 
 // Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
@@ -114,14 +115,40 @@ export function ProductTableRow({
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
         <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
       </TableCell>
-      {visibleColumns.map((column, index) => (
+      {visibleColumns.map((column, index) => {
+        // Determine column-specific styling
+        const getColumnClassName = () => {
+          // Special handling for image column
+          if (column.id === 'image') {
+            return 'px-2 sm:px-3 py-2 w-[60px]';
+          }
+          // Special handling for long text columns
+          if (['description', 'remark'].includes(column.id)) {
+            return 'px-2 sm:px-3 py-2 max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis';
+          }
+          // Special handling for name column
+          if (column.id === 'name') {
+            return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
+          }
+          // Special handling for numeric columns
+          if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+            return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
+          }
+          // Special handling for ID
+          if (column.id === 'id') {
+            return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
+          }
+          // Default: auto-width with no wrapping
+          return 'px-2 sm:px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis';
+        };
+
+        return (
         <TableCell
           key={column.id}
-          className={`
-            px-2 sm:px-3 py-2 
-            ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
-            whitespace-nowrap overflow-hidden text-ellipsis
-          `}
+          className={getColumnClassName()}
+          title={column.type === 'field' && ['description', 'remark', 'name'].includes(column.id)
+            ? String(product[column.accessor as keyof typeof product] || '')
+            : undefined}
         >
           {column.type === 'field'
             ? // Render field column
@@ -174,6 +201,23 @@ export function ProductTableRow({
 
                 if (column.id === 'lastModifiedDate') {
                   return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                if (column.id === 'image') {
+                  // ProductDTO may not have images field in generated types yet
+                  // Access it as optional property until backend regenerates OpenAPI spec
+                  const images = (product as any).images as any[] | undefined;
+                  const primaryImageUrl = images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
+                                          images?.[0]?.cdnUrl ||
+                                          null;
+
+                  return (
+                    <ProductImageThumbnail
+                      imageUrl={primaryImageUrl}
+                      productName={product.name || 'Product'}
+                      size={40}
+                    />
+                  );
                 }
 
                 return field?.toString() || '';
@@ -241,7 +285,8 @@ export function ProductTableRow({
                 return null;
               })()}
         </TableCell>
-      ))}
+        );
+      })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="product:read">
