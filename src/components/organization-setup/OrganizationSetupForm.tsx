@@ -58,7 +58,7 @@ export function OrganizationSetupForm({
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '');
-    const domain = `${orgName}.crmcup.com`;
+    const domain = `${orgName}.dev.crmcup.com`;
 
     await onSubmit({
       organizationName: formData.organizationName.trim(),
