@@ -148,6 +148,10 @@ export function CallTableRow({
                   return getStatusBadge(field as string);
                 }
 
+                if (column.id === 'externalId') {
+                  return field?.toString() || '';
+                }
+
                 if (column.id === 'createdBy') {
                   return field?.toString() || '';
                 }
