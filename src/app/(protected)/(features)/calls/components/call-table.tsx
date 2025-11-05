@@ -169,6 +169,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'externalId',
+    label: 'External Id',
+    accessor: 'externalId',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'status',
     label: 'Status',
     accessor: 'status',
@@ -774,6 +783,13 @@ export function CallTable() {
         else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
+          }
+        }
+
+        // Handle externalId text filter with contains
+        else if (key === 'externalId') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['externalId.contains'] = value;
           }
         }
 
