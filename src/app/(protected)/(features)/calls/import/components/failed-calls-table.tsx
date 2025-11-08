@@ -60,13 +60,16 @@ export function FailedCallsTable() {
     const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
     const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
 
+    const apiPage = Math.max(page - 1, 0);
+
     const { data: importHistoryData, isLoading, refetch } = useGetAllImportHistories({
-        page: page - 1,
+        page: apiPage,
         size: pageSize,
         sort: ['id,asc']
     });
 
     const { data: totalCount = 0 } = useCountImportHistories({});
+    const totalItems = totalCount ?? 0;
 
     useEffect(() => {
         if (importHistoryData) {
@@ -183,7 +186,7 @@ export function FailedCallsTable() {
                     <CardTitle className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-red-500" />
                         Failed Import Entries
-                        <Badge variant="destructive">{totalCount}</Badge>
+                        <Badge variant="destructive">{totalItems}</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -250,11 +253,16 @@ export function FailedCallsTable() {
                         </div>
                     </div>
                     <AdvancedPagination
-                        page={page}
+                        currentPage={page}
                         pageSize={pageSize}
-                        totalItems={totalCount}
+                        totalItems={totalItems}
                         onPageChange={handlePageChange}
                         onPageSizeChange={handlePageSizeChange}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        showPageInput
+                        showItemsInfo
+                        showFirstLastButtons
+                        isLoading={isLoading}
                     />
                 </CardContent>
             </Card>
