@@ -105,7 +105,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/yargs": "^17.0.33",
-    "@types/xlsx": "^0.17.11",
     "change-case": "^5.4.4",
     "eslint": "^9.0.0",
     "eslint-config-next": "15.5.6",
