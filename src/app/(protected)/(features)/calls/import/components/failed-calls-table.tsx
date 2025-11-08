@@ -56,6 +56,7 @@ const HEADERS = [
     'Issue'
 ];
 
+
 export function FailedCallsTable() {
     const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
     const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
