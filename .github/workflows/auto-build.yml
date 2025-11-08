@@ -2,9 +2,13 @@ name: 🐳 Frontend Docker Build
 
 on:
   repository_dispatch:
-    types: [build_latest]
+    # allow external repos (e.g. backend or other automation) to trigger the build
+    types: [build_latest, build_from_frontend]
   push:
-    branches: [master]
+    # build on master and feature branches (feature/*) — feature branch builds only trigger when commit message includes [latest]
+    branches: [master, 'feature/**']
+  # allow manual runs from the Actions UI
+  workflow_dispatch: {}
 
 jobs:
   check_ci_trigger:
@@ -14,22 +18,28 @@ jobs:
     outputs:
       should_build: ${{ steps.check.outputs.should_build }}
     steps:
-      - name: Check commit message
+      - name: Check commit message and branch
         id: check
         run: |
+          # Build when commit message contains [CI]
           if [[ "${{ github.event.head_commit.message }}" == *"[CI]"* ]]; then
             echo "should_build=true" >> $GITHUB_OUTPUT
             echo "✅ [CI] found - will build"
+          # Or when on a feature/* branch and commit message explicitly contains [latest]
+          elif [[ "${{ github.ref }}" == refs/heads/feature/* ]] && [[ "${{ github.event.head_commit.message }}" == *"[latest]"* ]]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "✅ feature branch + [latest] found - will build latest"
           else
             echo "should_build=false" >> $GITHUB_OUTPUT
-            echo "❌ [CI] not found - skipping build"
+            echo "❌ No build trigger found - skipping build"
           fi
 
   build_latest:
     name: Build & Push Latest
     runs-on: ubuntu-latest
     needs: [check_ci_trigger]
-    if: always() && (needs.check_ci_trigger.outputs.should_build == 'true' || github.event_name == 'repository_dispatch')
+    # Run when check decided to build, or when the workflow is invoked externally/manually
+    if: always() && (needs.check_ci_trigger.outputs.should_build == 'true' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
