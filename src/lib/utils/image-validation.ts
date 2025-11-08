@@ -5,15 +5,15 @@
  * Validates file type, size, and dimensions before upload
  */
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
-export const MIN_DIMENSION = 100; // pixels
+export const MAX_FILE_SIZE = 5 * 1024 * 1024;
+export const MIN_DIMENSION = 100;
 export const MAX_IMAGES_PER_UPLOAD = 10;
 export const MAX_IMAGES_PER_PRODUCT = 20;
 
 export const ALLOWED_FORMATS = {
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/png": [".png"],
-  "image/webp": [".webp"],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
 } as const;
 
 export type AllowedMimeType = keyof typeof ALLOWED_FORMATS;
@@ -53,39 +53,34 @@ export interface ImageValidationResult {
  * }
  * ```
  */
-export async function validateImageFile(
-  file: File
-): Promise<ImageValidationResult> {
+export async function validateImageFile(file: File): Promise<ImageValidationResult> {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
 
-  // Validate file type
   if (!Object.keys(ALLOWED_FORMATS).includes(file.type)) {
     errors.push({
-      code: "INVALID_FORMAT",
+      code: 'INVALID_FORMAT',
       message: `File format '${file.type}' is not supported. Allowed formats: JPEG, PNG, WEBP`,
-      field: "format",
+      field: 'format',
     });
   }
 
-  // Validate file size
   if (file.size > MAX_FILE_SIZE) {
     errors.push({
-      code: "FILE_TOO_LARGE",
+      code: 'FILE_TOO_LARGE',
       message: `File size (${formatFileSize(file.size)}) exceeds maximum allowed size (${formatFileSize(MAX_FILE_SIZE)})`,
-      field: "size",
+      field: 'size',
     });
   }
 
   if (file.size === 0) {
     errors.push({
-      code: "EMPTY_FILE",
-      message: "File is empty",
-      field: "size",
+      code: 'EMPTY_FILE',
+      message: 'File is empty',
+      field: 'size',
     });
   }
 
-  // If basic validations fail, return early
   if (errors.length > 0) {
     return {
       valid: false,
@@ -94,15 +89,14 @@ export async function validateImageFile(
     };
   }
 
-  // Validate dimensions (requires loading image)
   try {
     const dimensions = await getImageDimensions(file);
 
     if (dimensions.width < MIN_DIMENSION || dimensions.height < MIN_DIMENSION) {
       warnings.push({
-        code: "SMALL_DIMENSIONS",
+        code: 'SMALL_DIMENSIONS',
         message: `Image dimensions (${dimensions.width}x${dimensions.height}px) are below recommended minimum (${MIN_DIMENSION}x${MIN_DIMENSION}px). Image may appear blurry.`,
-        field: "dimensions",
+        field: 'dimensions',
       });
     }
 
@@ -114,12 +108,10 @@ export async function validateImageFile(
     };
   } catch (error) {
     errors.push({
-      code: "INVALID_IMAGE",
+      code: 'INVALID_IMAGE',
       message:
-        error instanceof Error
-          ? `Failed to read image: ${error.message}`
-          : "Failed to read image",
-      field: "content",
+        error instanceof Error ? `Failed to read image: ${error.message}` : 'Failed to read image',
+      field: 'content',
     });
 
     return {
@@ -146,28 +138,23 @@ export async function validateImageFiles(
 }> {
   const globalErrors: ValidationError[] = [];
 
-  // Validate upload limit
   if (files.length > MAX_IMAGES_PER_UPLOAD) {
     globalErrors.push({
-      code: "TOO_MANY_FILES",
+      code: 'TOO_MANY_FILES',
       message: `Cannot upload more than ${MAX_IMAGES_PER_UPLOAD} images at once. You selected ${files.length} images.`,
     });
   }
 
-  // Validate total product image limit
   const totalAfterUpload = currentImageCount + files.length;
   if (totalAfterUpload > MAX_IMAGES_PER_PRODUCT) {
     const allowedCount = MAX_IMAGES_PER_PRODUCT - currentImageCount;
     globalErrors.push({
-      code: "PRODUCT_IMAGE_LIMIT",
+      code: 'PRODUCT_IMAGE_LIMIT',
       message: `Product already has ${currentImageCount} image(s). You can only add ${allowedCount} more (maximum ${MAX_IMAGES_PER_PRODUCT} per product).`,
     });
   }
 
-  // Validate each file
-  const results = await Promise.all(
-    files.map((file) => validateImageFile(file))
-  );
+  const results = await Promise.all(files.map((file) => validateImageFile(file)));
 
   return {
     results,
@@ -196,7 +183,7 @@ function getImageDimensions(file: File): Promise<ImageDimensions> {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Failed to load image"));
+      reject(new Error('Failed to load image'));
     };
 
     img.src = url;
@@ -210,10 +197,10 @@ function getImageDimensions(file: File): Promise<ImageDimensions> {
  * @returns Formatted string (e.g., "2.5 MB")
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
@@ -237,7 +224,7 @@ export function isAllowedFormat(mimeType: string): boolean {
  */
 export function getExtensionFromMimeType(mimeType: string): string {
   const extensions = ALLOWED_FORMATS[mimeType as AllowedMimeType];
-  return extensions ? extensions[0] : "";
+  return extensions ? extensions[0] : '';
 }
 
 /**
@@ -251,5 +238,5 @@ export function getExtensionFromMimeType(mimeType: string): string {
  * ```
  */
 export function getAcceptString(): string {
-  return Object.keys(ALLOWED_FORMATS).join(",");
+  return Object.keys(ALLOWED_FORMATS).join(',');
 }

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * City form validation schema with user-friendly messages
  */
@@ -24,7 +17,6 @@ export const cityFormSchema = z.object(cityFormSchemaFields);
 
 export type CityFormValues = z.infer<typeof cityFormSchema>;
 
-// Individual field schemas for granular validation
 export const cityFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -35,7 +27,6 @@ export const cityFieldSchemas = {
   district: z.number({ message: 'Please select district from the dropdown' }),
 };
 
-// Step-specific validation schemas
 export const cityStepSchemas = {
   basic: z.object({
     name: cityFieldSchemas.name,
@@ -49,7 +40,6 @@ export const cityStepSchemas = {
   review: cityFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = cityStepSchemas[stepId as keyof typeof cityStepSchemas];
   if (!schema) return { success: true, data };

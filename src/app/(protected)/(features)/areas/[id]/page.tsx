@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import { redirect } from 'next/navigation';
 import { AreaDetails } from '../components/area-details';
 import { PermissionGuard } from '@/core/auth';
@@ -21,15 +14,13 @@ export const metadata = {
 
 export default async function AreaPage({ params }: AreaPageProps) {
   const { id: idParam } = await params;
-  
-  // Redirect if id is not a number (e.g., "create", "new")
+
   if (idParam === 'create' || idParam === 'new') {
     redirect('/areas/new');
   }
-  
+
   const id = parseInt(idParam, 10);
-  
-  // If parsing failed, show not found
+
   if (isNaN(id)) {
     redirect('/areas');
   }

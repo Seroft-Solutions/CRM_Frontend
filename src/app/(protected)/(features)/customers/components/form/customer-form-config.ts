@@ -6,7 +6,6 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const customerFormConfig: FormConfig = {
   entity: 'Customer',
 
-  // Form steps configuration
   steps: [
     {
       id: 'basic',
@@ -32,7 +31,6 @@ export const customerFormConfig: FormConfig = {
     },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'customerBusinessName',
@@ -99,7 +97,6 @@ export const customerFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions - Only Area with full hierarchy
   relationships: [
     {
       name: 'area',
@@ -129,7 +126,6 @@ export const customerFormConfig: FormConfig = {
     },
   ],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -188,7 +184,6 @@ export const customerFormConfig: FormConfig = {
   },
 };
 
-// Export utility functions for external use
 export const customerFormHelpers = {
   getStepById: (stepId: string) => customerFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>

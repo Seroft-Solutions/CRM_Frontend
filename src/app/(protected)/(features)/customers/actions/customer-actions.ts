@@ -1,15 +1,8 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createCustomer,
   updateCustomer,
@@ -19,10 +12,8 @@ import { customerToast } from '../components/customer-toast';
 
 export async function createCustomerAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createCustomer(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/customers');
     revalidatePath('/customers/new');
     customerToast.created();
@@ -37,10 +28,8 @@ export async function createCustomerAction(data: any) {
 
 export async function updateCustomerAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateCustomer(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/customers');
     revalidatePath(`/customers/${id}`);
     revalidatePath(`/customers/${id}/edit`);
@@ -117,7 +106,6 @@ export async function bulkArchiveCustomerAction(ids: number[], entitiesData: any
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/customers');
 
     if (errorCount === 0) {
@@ -161,7 +149,6 @@ export async function bulkUpdateStatusCustomerAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/customers');
 
     if (errorCount === 0) {

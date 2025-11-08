@@ -5,7 +5,6 @@
  * for consistent usage throughout the application.
  */
 
-// Main service exports
 export { keycloakService, KeycloakService } from './index';
 export { keycloakServiceMutator, KeycloakAdminOperations } from './service-mutator';
 export {
@@ -15,23 +14,19 @@ export {
   KEYCLOAK_ENDPOINTS,
 } from './config';
 
-// Re-export commonly used generated types for convenience
 export type {
   UserRepresentation,
   GroupRepresentation,
   RoleRepresentation,
   MemberRepresentation,
   OrganizationRepresentation,
-  // Query parameter types
   GetAdminRealmsRealmUsersParams,
   GetAdminRealmsRealmGroupsParams,
   GetAdminRealmsRealmRolesParams,
   GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
-  // Request body types
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteUserBody,
 } from '@/core/api/generated/keycloak';
 
-// Utility type for admin operations
 export interface KeycloakAdminClientConfig {
   realm: string;
   baseUrl: string;
@@ -41,7 +36,6 @@ export interface KeycloakAdminClientConfig {
   clientSecret?: string;
 }
 
-// Common error types for Keycloak operations
 export interface KeycloakError {
   message: string;
   status: number;
@@ -50,7 +44,6 @@ export interface KeycloakError {
   context?: string;
 }
 
-// Permission check result type
 export interface PermissionCheckResult {
   authorized: boolean;
   error?: string;

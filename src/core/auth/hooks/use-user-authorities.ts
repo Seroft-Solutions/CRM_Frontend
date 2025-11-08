@@ -31,13 +31,12 @@ export function useUserAuthorities() {
   const [allAuthorities, setAllAuthorities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use the enhanced account hook with optimized caching
   const {
     data: accountData,
     isLoading: accountLoading,
     error: accountError,
   } = useAccount({
-    refetchInBackground: true, // Keep authorities fresh in background
+    refetchInBackground: true,
     staleTime: AUTH_CACHE_CONFIG.authorities.staleTime,
   });
 
@@ -70,7 +69,6 @@ export function useUserAuthorities() {
           } else if (authority.startsWith('GROUP_')) {
             userGroups.push(normalized);
           } else {
-            // Handle authorities without prefixes - assume they are roles for backward compatibility
             userRoles.push(normalized);
           }
         });
@@ -99,7 +97,6 @@ export function useUserAuthorities() {
     authorities: allAuthorities,
     isLoading,
 
-    // Helper functions
     hasRole: (role: string) => roles.includes(normalizeRole(role)),
     hasGroup: (group: string) => groups.includes(normalizeGroup(group)),
     hasAuthority: (authority: string) => allAuthorities.includes(normalizeAuthority(authority)),
@@ -112,5 +109,4 @@ export function useUserAuthorities() {
   };
 }
 
-// Backward compatibility export
 export { useUserAuthorities as useUserRoles };

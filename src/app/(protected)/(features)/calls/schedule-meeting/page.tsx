@@ -15,7 +15,7 @@ function ScheduleMeetingContent() {
     ? parseInt(searchParams.get('customerId')!)
     : undefined;
   const assignedUserId = searchParams.get('assignedUserId')
-    ? searchParams.get('assignedUserId')! // Keep as string for UUID
+    ? searchParams.get('assignedUserId')!
     : undefined;
   const callId = searchParams.get('callId') ? parseInt(searchParams.get('callId')!) : undefined;
 
@@ -29,7 +29,6 @@ function ScheduleMeetingContent() {
 
   const handleMeetingError = (error: any) => {
     console.error('Meeting scheduling error:', error);
-    // Error dialog will handle the user interaction
   };
 
   const handleBack = () => {

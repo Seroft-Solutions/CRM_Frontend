@@ -33,7 +33,6 @@ export function MeetingErrorDialog({
   const handleClose = () => {
     onOpenChange(false);
 
-    // Redirect to calls page when dialog closes
     if (redirectToCalls) {
       setTimeout(() => {
         router.push('/calls');

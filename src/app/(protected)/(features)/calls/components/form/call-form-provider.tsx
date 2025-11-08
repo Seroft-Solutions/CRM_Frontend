@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
@@ -16,7 +9,8 @@ import { useUserAuthorities } from '@/core/auth';
 import { useAccount } from '@/core/auth';
 import {
   useGetAllUserProfiles,
-  useGetUserProfile, useSearchUserProfiles,
+  useGetUserProfile,
+  useSearchUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import { useCreateCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
@@ -27,8 +21,8 @@ import { generateLeadNo } from '../../utils/leadNo-generator';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog } from '@/components/form-drafts';
-import {useOrganizationDetails, useUserOrganizations} from "@/hooks/useUserOrganizations";
-import {useGetAllAvailableTimeSlots} from "@/core/api/generated/spring";
+import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
+import { useGetAllAvailableTimeSlots } from '@/core/api/generated/spring';
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -47,24 +41,18 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
 
-  // Get organization name from localStorage (same as sidebar)
   const getOrganizationName = () => {
     if (typeof window === 'undefined') return 'DEFAULT';
     return localStorage.getItem('selectedOrganizationName') || 'DEFAULT';
   };
 
-  // Fetch user profile data to get channel type information for business partners
   const { data: userProfile } = useGetUserProfile(accountData?.id || '', {
     query: {
       enabled: isBusinessPartner && !!accountData?.id,
-      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   });
 
-
-
-
-  // Create filtered config for business partners (exclude channel and assignment steps)
   const config = React.useMemo(() => {
     if (isBusinessPartner) {
       return {
@@ -76,12 +64,10 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   }, [isBusinessPartner, baseConfig]);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Cross-form navigation hooks
   const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } =
     useCrossFormNavigation();
   const urlParams = useNavigationFromUrl();
 
-  // Form state management
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,10 +77,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const [restorationAttempted, setRestorationAttempted] = useState(false);
   const [draftRestorationInProgress, setDraftRestorationInProgress] = useState(false);
 
-  // Comprehensive form data state to track all steps
   const [allFormData, setAllFormData] = useState<Record<string, any>>({});
 
-  // Draft-related state
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
@@ -103,7 +87,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
   const { mutate: createEntity, isPending: isCreating } = useCreateCall();
 
-  // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
   const {
     drafts,
@@ -119,7 +102,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     maxDrafts: config.behavior?.drafts?.maxDrafts ?? 5,
   });
 
-  // Generate unique session ID for this form instance
   const [formSessionId] = useState(() => {
     if (typeof window === 'undefined') {
       return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -136,7 +118,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     return newSessionId;
   });
 
-  // Initialize React Hook Form
   const form = useForm<Record<string, any>>({
     resolver: zodResolver(callFormSchema) as any,
     mode: config.validation.mode,
@@ -144,19 +125,21 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     defaultValues: getDefaultValues(),
   });
 
-  const {data: organizations, isLoading:OrganizationLoading} = useUserOrganizations();
+  const { data: organizations, isLoading: OrganizationLoading } = useUserOrganizations();
 
-  // Extract organization ID and store in a variable
   const orgId = organizations?.[0]?.id || '';
 
-  const {data: organizationData} = useOrganizationDetails(orgId);
-  const { data: tenantData } = useGetAllUserProfiles({'email.equals': organizationData?.attributes?.organizationEmail?.[0] || ''}, {
-  query:{
-    enabled: !!organizationData,
-  }
-  })
-  console.log("ART User All Data:", tenantData);
-  // Ensure leadNo is organization code on mount for new forms
+  const { data: organizationData } = useOrganizationDetails(orgId);
+  const { data: tenantData } = useGetAllUserProfiles(
+    { 'email.equals': organizationData?.attributes?.organizationEmail?.[0] || '' },
+    {
+      query: {
+        enabled: !!organizationData,
+      },
+    }
+  );
+  console.log('ART User All Data:', tenantData);
+
   React.useEffect(() => {
     if (isNew && !form.getValues('leadNo')) {
       const orgCode = organizationData?.attributes?.organizationCode?.[0] || '';
@@ -170,10 +153,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       form.setValue('assignedTo', id);
     }
   }, [isNew, form, tenantData]);
-  // Auto-populate channel and assignment data when account/profile data loads for business partners
+
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
-      // Only set if not already set to avoid overriding user changes
       const currentChannelParties = form.getValues('channelParties');
       const currentChannelType = form.getValues('channelType');
 
@@ -181,7 +163,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         form.setValue('channelParties', accountData.id);
       }
 
-      // Use user profile data for channel type
       if (
         !currentChannelType &&
         userProfile?.channelType?.id &&
@@ -195,25 +176,21 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
 
-    // Generate leadNo for new calls (will be set in useEffect for client-side)
     if (isNew) {
-      defaults.leadNo = ''; // Will be populated on client-side
+      defaults.leadNo = '';
     }
 
-    // Auto-populate channel and assignment data for business partners
     if (isBusinessPartner && accountData) {
-      // Channel data - ensure these are numbers
       if (typeof accountData.id === 'number') {
         defaults.channelParties = accountData.id;
       }
-      // Get channel type from user profile, not account data
+
       if (userProfile?.channelType?.id && typeof userProfile.channelType.id === 'number') {
         defaults.channelType = userProfile.channelType.id;
       }
     }
 
     config.fields.forEach((field) => {
-      // Use defaultValue from field config if available
       if (field.defaultValue !== undefined) {
         defaults[field.name] = field.defaultValue;
       } else {
@@ -242,28 +219,25 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
     return defaults;
   }
-  // Check if form has unsaved changes
+
   const hasUnsavedChanges = useCallback(() => {
     return form.formState.isDirty && isNew && draftsEnabled;
   }, [form.formState.isDirty, isNew, draftsEnabled]);
 
-  // Show draft dialog when trying to navigate with unsaved changes
   const showDraftDialogForNavigation = useCallback(
     (navigationCallback: () => void) => {
       if (hasUnsavedChanges()) {
         setPendingNavigation(() => navigationCallback);
         setShowDraftDialog(true);
-        return true; // Navigation blocked
+        return true;
       }
-      return false; // Navigation allowed
+      return false;
     },
     [hasUnsavedChanges]
   );
 
-  // Form state persistence functions - only for cross-form navigation
   const saveFormState = useCallback(
     (forCrossNavigation = false) => {
-      // Only save form state for cross-form navigation scenarios
       if (!isNew || !config.behavior.persistence.enabled || !forCrossNavigation) return;
       if (typeof window === 'undefined') return;
 
@@ -274,7 +248,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         timestamp: Date.now(),
         entity: config.entity,
         sessionId: formSessionId,
-        crossFormNavigation: true, // Mark this as cross-form navigation state
+        crossFormNavigation: true,
       };
 
       const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
@@ -306,7 +280,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           const isSameEntity = savedState.entity === config.entity;
           const isCrossFormState = savedState.crossFormNavigation === true;
 
-          // Only restore states that were saved for cross-form navigation
           if (isRecent && isSameSession && isSameEntity && isCrossFormState) {
             setIsRestoring(true);
 
@@ -321,7 +294,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
             setTimeout(() => setIsRestoring(false), 100);
 
-            // Only show form restored toast if not suppressed (i.e., not during cross-entity auto-population)
             if (!suppressToast) {
               callToast.formRestored();
             }
@@ -340,7 +312,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [form, isNew, formSessionId, config]
   );
 
-  // Clear old form states
   const clearOldFormStates = useCallback(() => {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -355,7 +326,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     keysToRemove.forEach((key) => localStorage.removeItem(key));
   }, [formSessionId, config]);
 
-  // Handle newly created relationship entities
   const handleEntityCreated = useCallback(
     (entityId: number, relationshipName: string, skipValidation = false) => {
       const relationshipConfig = config.relationships.find((rel) => rel.name === relationshipName);
@@ -370,7 +340,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         form.setValue(relationshipName as any, entityId, { shouldValidate: !skipValidation });
       }
 
-      // Only trigger validation if not skipping it (e.g., during auto-population)
       if (!skipValidation && !isAutoPopulating) {
         form.trigger(relationshipName as any);
       }
@@ -378,10 +347,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [form, config, isAutoPopulating]
   );
 
-  // Validation for current step
   const validateStep = useCallback(
     async (stepIndex?: number): Promise<boolean> => {
-      // Skip validation during auto-population to prevent interference
       if (isAutoPopulating) {
         return true;
       }
@@ -397,9 +364,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [form, currentStep, config, isAutoPopulating]
   );
 
-  // Navigation actions
   const nextStep = useCallback(async (): Promise<boolean> => {
-    // Preserve current form values before moving to next step
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -420,7 +385,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   }, [currentStep, config, validateStep, form]);
 
   const prevStep = useCallback(() => {
-    // Preserve current form values before moving to previous step
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -436,7 +400,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     async (stepIndex: number): Promise<boolean> => {
       if (stepIndex < 0 || stepIndex >= config.steps.length) return false;
 
-      // Preserve current form values before changing step
       const currentValues = form.getValues();
       setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -445,7 +408,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         return true;
       }
 
-      // Validate all steps up to target step
       for (let i = 0; i < stepIndex; i++) {
         const isValid = await validateStep(i);
         if (!isValid) return false;
@@ -457,14 +419,11 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [config, validateStep, form]
   );
 
-  // Form submission
   const submitForm = useCallback(async () => {
-    // Don't allow submission during auto-population
     if (isAutoPopulating) {
       return;
     }
 
-    // Check if we're on the last step (review step)
     const reviewStepIndex = config.steps.length - 1;
     if (currentStep !== reviewStepIndex) {
       return;
@@ -481,14 +440,12 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     try {
       const formData = form.getValues();
 
-      // Transform data for submission
       const entityToSave = transformFormDataForSubmission(formData);
 
       if (onSuccess) {
         await onSuccess(entityToSave);
       }
 
-      // Clean up form state
       cleanupFormState();
     } catch (error) {
       if (onError) {
@@ -504,7 +461,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   function transformFormDataForSubmission(data: Record<string, any>) {
     const entityToSave: Record<string, any> = {};
 
-    // Handle regular fields
     config.fields.forEach((fieldConfig) => {
       const value = data[fieldConfig.name];
 
@@ -533,7 +489,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       } else if (fieldConfig.type === 'boolean') {
         entityToSave[fieldConfig.name] = Boolean(value);
       } else {
-        // String fields
         if (value !== '' && value != null) {
           entityToSave[fieldConfig.name] = String(value);
         } else if (fieldConfig.required) {
@@ -542,19 +497,16 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     });
 
-    // Handle relationships - use reference object pattern { entityName: { id: value } }
     config.relationships.forEach((relConfig) => {
       const value = data[relConfig.name];
 
       if (relConfig.multiple) {
-        // For many-to-many or one-to-many relationships
         if (value && Array.isArray(value) && value.length > 0) {
           entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
         } else {
           entityToSave[relConfig.name] = value || [];
         }
       } else {
-        // For many-to-one relationships - use reference object pattern
         if (value) {
           entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
         } else {
@@ -563,24 +515,19 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     });
 
-    // Handle special fields that are not in config (like tempRemarks)
     if (data.tempRemarks !== undefined) {
       entityToSave.tempRemarks = data.tempRemarks;
     }
 
-    // Add createdBy field for business partners when creating new records
     if (isNew && isBusinessPartner && accountData?.login) {
       entityToSave.createdBy = accountData.login;
     }
 
-    // Auto-populate channel and assignment data for business partners (since these steps are skipped)
     if (isBusinessPartner && accountData) {
-      // Set the current user as the channel party
       entityToSave.channelParties = {
         id: accountData.id,
       };
 
-      // Set the channel type from user's profile if available
       if (userProfile?.channelType?.id) {
         entityToSave.channelType = {
           id: userProfile.channelType.id,
@@ -588,20 +535,17 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       }
     }
 
-    // Remove undefined values to avoid sending them to the backend
     Object.keys(entityToSave).forEach((key) => {
       if (entityToSave[key] === undefined) {
         delete entityToSave[key];
       }
     });
 
-    // Always ensure status is ACTIVE for new call entities
     entityToSave.status = 'ACTIVE';
 
     return entityToSave;
   }
 
-  // Form cleanup
   const cleanupFormState = useCallback(() => {
     if (typeof window === 'undefined') return;
 
@@ -609,7 +553,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     localStorage.removeItem(storageKey);
     sessionStorage.removeItem(`${config.entity}_FormSession`);
 
-    // Clear all old form states for this entity type
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -629,7 +572,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     setCurrentStep(0);
     setConfirmSubmission(false);
   }, [form]);
-  // Browser navigation protection (back/forward buttons, URL changes)
+
   useEffect(() => {
     if (!isNew || !draftsEnabled) return;
 
@@ -644,12 +587,9 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
     const handlePopState = (e: PopStateEvent) => {
       if (hasUnsavedChanges()) {
-        // Prevent the navigation
         window.history.pushState(null, '', window.location.href);
 
-        // Show draft dialog
         setPendingNavigation(() => () => {
-          // Allow the navigation to proceed
           window.history.back();
         });
         setShowDraftDialog(true);
@@ -659,7 +599,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
 
-    // Push current state to handle back button
     if (hasUnsavedChanges()) {
       window.history.pushState(null, '', window.location.href);
     }
@@ -670,7 +609,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     };
   }, [hasUnsavedChanges, isNew, draftsEnabled]);
 
-  // Outside click detection
   useEffect(() => {
     if (!isNew || !draftsEnabled) return;
 
@@ -679,11 +617,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
 
     const handleClickOutside = (event: MouseEvent) => {
       if (formRef.current && !formRef.current.contains(event.target as Node)) {
-        // User clicked outside the form
         if (hasUnsavedChanges() && isInsideForm && !showDraftDialog) {
-          // Only show dialog if user was previously inside the form and no dialogs are already open
           setPendingNavigation(() => () => {
-            // Focus is lost, but no actual navigation needed
             setIsInsideForm(false);
           });
           setShowDraftDialog(true);
@@ -707,39 +642,28 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     };
   }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled, showDraftDialog]);
 
-  // Router event handling for programmatic navigation
   useEffect(() => {
     if (!isNew || !draftsEnabled) return;
 
     const handleRouteChangeStart = (url: string) => {
-      // Only block if we have unsaved changes and it's a different route
       if (hasUnsavedChanges()) {
-        // This might not work in all cases, but we'll handle it with Link interception
         console.log('Route change detected:', url);
       }
     };
 
-    // Note: Next.js 13+ App Router doesn't have routeChangeStart events
-    // So we rely primarily on Link click interception
-
-    return () => {
-      // Cleanup if needed
-    };
+    return () => {};
   }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
 
-  // Intercept all Link clicks and navigation attempts
   useEffect(() => {
     if (!isNew || !draftsEnabled) return;
 
     let isNavigating = false;
 
-    // Global click handler to intercept all navigation clicks
     const handleNavigationClick = (event: Event) => {
       if (isNavigating) return;
 
       const target = event.target as Element;
 
-      // Check for Link components (anchor tags)
       const link = target.closest('a[href]') as HTMLAnchorElement;
       if (link && hasUnsavedChanges()) {
         const href = link.getAttribute('href');
@@ -753,7 +677,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           event.preventDefault();
           event.stopImmediatePropagation();
 
-          // Show draft dialog with the navigation callback
           setPendingNavigation(() => () => {
             isNavigating = true;
             router.push(href);
@@ -766,10 +689,8 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
         }
       }
 
-      // Special handling for ContextAwareBackButton (contains a Link inside a Button)
       const button = target.closest('button') as HTMLButtonElement;
       if (button && hasUnsavedChanges()) {
-        // Check if this button contains a Link (like ContextAwareBackButton)
         const linkInsideButton = button.querySelector('a[href]') as HTMLAnchorElement;
         if (linkInsideButton) {
           const href = linkInsideButton.getAttribute('href');
@@ -783,7 +704,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
             event.preventDefault();
             event.stopImmediatePropagation();
 
-            // Show draft dialog with the navigation callback
             setPendingNavigation(() => () => {
               isNavigating = true;
               router.push(href);
@@ -796,7 +716,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           }
         }
 
-        // Check if this is a navigation button by text content
         const buttonText = button.textContent?.toLowerCase() || '';
         const isNavigationButton =
           buttonText.includes('back') ||
@@ -804,14 +723,11 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           buttonText.includes('close');
 
         if (isNavigationButton && formRef.current && !formRef.current.contains(button)) {
-          // For generic navigation buttons, we can't easily determine the target
-          // So we'll just show a warning for now
           console.log('Navigation button clicked with unsaved changes:', buttonText);
         }
       }
     };
 
-    // Add capture phase listener to catch events before other handlers
     document.addEventListener('click', handleNavigationClick, true);
 
     return () => {
@@ -819,40 +735,32 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     };
   }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
 
-  // Form restoration on mount and auto-population
   useEffect(() => {
     if (!restorationAttempted && isNew) {
       setRestorationAttempted(true);
       clearOldFormStates();
 
-      // Check for auto-population from cross-form navigation (primary path)
       const createdEntityInfo = localStorage.getItem('createdEntityInfo');
       if (createdEntityInfo) {
         try {
           const info = JSON.parse(createdEntityInfo);
 
-          // Check if this form should receive the created entity
           const sessionMatches = info.targetSessionId === formSessionId;
           const isRecent = Date.now() - info.timestamp < 5 * 60 * 1000;
 
           if (sessionMatches || isRecent) {
             setIsAutoPopulating(true);
 
-            const restored = restoreFormState(true); // Suppress form restoration toast
+            const restored = restoreFormState(true);
 
-            // Auto-populate with proper timing and validation control
             setTimeout(
               () => {
-                // Set the value without triggering validation during auto-population
                 handleEntityCreated(info.entityId, info.targetField, true);
 
-                // Clear the created entity info
                 localStorage.removeItem('createdEntityInfo');
 
-                // Show single comprehensive success message
                 toast.success(`${info.entityType} created and selected successfully`);
 
-                // Re-enable auto-populating state after a short delay
                 setTimeout(() => {
                   setIsAutoPopulating(false);
                 }, 300);
@@ -860,21 +768,19 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
               restored ? 600 : 200
             );
           } else {
-            // Clean up stale entity info
             localStorage.removeItem('createdEntityInfo');
-            // No auto-population, fall through to normal restoration
+
             restoreFormState();
           }
         } catch (error) {
           console.error('Error processing created entity info:', error);
           localStorage.removeItem('createdEntityInfo');
-          // Error occurred, fall through to normal restoration
+
           restoreFormState();
         }
-        return; // Exit early since we handled the createdEntityInfo case
+        return;
       }
 
-      // Fallback to legacy auto-population logic (only if no createdEntityInfo)
       const newEntityId = localStorage.getItem(config.behavior.crossEntity.newEntityIdKey);
       const relationshipInfo = localStorage.getItem(
         config.behavior.crossEntity.relationshipInfoKey
@@ -885,16 +791,14 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           const info = JSON.parse(relationshipInfo);
 
           setIsAutoPopulating(true);
-          const restored = restoreFormState(true); // Suppress form restoration toast for legacy path too
+          const restored = restoreFormState(true);
 
           setTimeout(
             () => {
               handleEntityCreated(parseInt(newEntityId), Object.keys(info)[0] || 'id', true);
 
-              // Show single success message for legacy path
               toast.success('Entity created and selected successfully');
 
-              // Clean up
               localStorage.removeItem(config.behavior.crossEntity.newEntityIdKey);
               localStorage.removeItem(config.behavior.crossEntity.relationshipInfoKey);
               localStorage.removeItem(config.behavior.crossEntity.returnUrlKey);
@@ -908,20 +812,18 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           );
         } catch (error) {
           console.error('Error processing newly created entity:', error);
-          // Error occurred, fall through to normal restoration
+
           restoreFormState();
         }
-        return; // Exit early since we handled the legacy case
+        return;
       }
 
-      // Normal form restoration (only if no auto-population occurred)
-      // But suppress toast if draft restoration is in progress
       restoreFormState(draftRestorationInProgress);
     }
 
     const handleSaveFormState = () => {
       if (isNew) {
-        saveFormState(true); // Save with cross-form navigation flag
+        saveFormState(true);
       }
     };
 
@@ -953,7 +855,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     hasUnsavedChanges,
   ]);
 
-  // Helper function to get navigation props for relationship components
   const getNavigationProps = useCallback(
     (fieldName: string) => ({
       referrerForm: config.entity,
@@ -963,7 +864,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [config.entity, formSessionId]
   );
 
-  // Watch form changes and maintain comprehensive form data
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (type === 'change' && name) {
@@ -977,18 +877,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Initialize comprehensive form data with current form values
   useEffect(() => {
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
   }, [form]);
 
-  // Draft action handlers
   const handleSaveDraft = useCallback(async (): Promise<boolean> => {
     if (!draftsEnabled || !isNew) return false;
 
     try {
-      // Use comprehensive form data instead of just current form values
       const currentFormValues = form.getValues();
       const completeFormData = { ...allFormData, ...currentFormValues };
       const entityToSave = transformFormDataForSubmission(completeFormData);
@@ -1005,20 +902,13 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       toast.error('Failed to save draft');
       return false;
     }
-  }, [
-    draftsEnabled,
-    isNew,
-    form,
-    allFormData,
-    createEntity,
-  ]);
+  }, [draftsEnabled, isNew, form, allFormData, createEntity]);
 
   const handleLoadDraft = useCallback(
     async (draftId: number, suppressToast = false): Promise<boolean> => {
       if (!draftsEnabled) return false;
 
       try {
-        // Attempt to restore draft data
         const draftData = await restoreDraft(draftId);
         if (!draftData) {
           if (!suppressToast) {
@@ -1027,29 +917,23 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
           return false;
         }
 
-        // Restore form data to both React Hook Form and comprehensive state
         Object.keys(draftData.formData).forEach((key) => {
           form.setValue(key, draftData.formData[key]);
         });
 
-        // Update comprehensive form data state
         setAllFormData(draftData.formData);
 
-        // Restore current step
         if (draftData.currentStep !== undefined) {
           setCurrentStep(draftData.currentStep);
         }
 
-        setCurrentDraftId(undefined); // Clear since draft restoration is complete
+        setCurrentDraftId(undefined);
 
-        // CRITICAL FIX: Reset form state to clean after draft restoration
-        // This ensures hasUnsavedChanges() returns false after restoration
         setTimeout(() => {
           form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
-          setIsInsideForm(false); // Reset the mouse tracking state
+          setIsInsideForm(false);
         }, 100);
 
-        // Show single success message only if not suppressed
         if (!suppressToast) {
           toast.success('Draft restored successfully');
         }
@@ -1086,8 +970,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     [draftsEnabled, deleteDraft]
   );
 
-
-  // Check for drafts on mount and handle restoration from drafts page
   useEffect(() => {
     if (
       draftsEnabled &&
@@ -1096,34 +978,28 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       !restorationAttempted &&
       !draftRestorationInProgress
     ) {
-      // First check if there's a specific draft to restore from the drafts management page
       const draftToRestore = sessionStorage.getItem('draftToRestore');
       if (draftToRestore) {
         setDraftRestorationInProgress(true);
         try {
           const restorationData = JSON.parse(draftToRestore);
           if (restorationData.entityType === config.entity) {
-            // Restore form data directly from the stored restoration data
             Object.keys(restorationData.formData).forEach((key) => {
               form.setValue(key, restorationData.formData[key]);
             });
 
-            // Update comprehensive form data state
             setAllFormData(restorationData.formData);
 
-            // Restore current step
             if (restorationData.currentStep !== undefined) {
               setCurrentStep(restorationData.currentStep);
             }
 
-            // Archive the original draft in background
             if (restorationData.draftId) {
               handleLoadDraft(restorationData.draftId, true).catch((error) => {
                 console.warn('Failed to archive draft after restoration:', error);
               });
             }
 
-            // Clean up and show success
             sessionStorage.removeItem('draftToRestore');
             setRestorationAttempted(true);
             setDraftRestorationInProgress(false);
@@ -1147,18 +1023,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     config.entity,
   ]);
 
-  // Register draft check with cross-form navigation
   useEffect(() => {
     if (draftsEnabled && isNew) {
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
           if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
-            // Show draft dialog
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
           } else {
-            // No changes or dialog disabled, proceed directly
             onProceed();
           }
         },
@@ -1180,7 +1053,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     unregisterDraftCheck,
   ]);
 
-  // Create context value
   const contextValue: FormContextValue = {
     config,
     state: {
@@ -1192,10 +1064,10 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       values: form.getValues(),
       touchedFields: form.formState.touchedFields as Record<string, boolean>,
       isAutoPopulating,
-      // Draft-related state
+
       drafts,
       isLoadingDrafts,
-      isSavingDraft: isCreating, // Use isCreating from useCreateCall
+      isSavingDraft: isCreating,
       isDeletingDraft,
       showDraftDialog,
       currentDraftId,
@@ -1212,7 +1084,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       restoreFormState,
       handleEntityCreated,
       getNavigationProps,
-      // Draft-related actions
+
       saveDraft: handleSaveDraft,
       loadDraft: handleLoadDraft,
       deleteDraft: handleDeleteDraft,
@@ -1240,7 +1112,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
               onSaveDraft={async () => {
                 const success = await handleSaveDraft();
                 if (success) {
-                  // Reset form state to clean after successful draft save
                   setTimeout(() => {
                     form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
                   }, 50);
@@ -1271,7 +1142,6 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   );
 }
 
-// Custom hook to use form context
 export function useEntityForm(): FormContextValue {
   const context = useContext(FormContext);
   if (!context) {
@@ -1280,7 +1150,6 @@ export function useEntityForm(): FormContextValue {
   return context;
 }
 
-// Additional hooks for specific functionality
 export function useFormConfig() {
   const { config } = useEntityForm();
   return config;

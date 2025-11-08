@@ -45,8 +45,6 @@ export async function updateUserBasicInfo(request: UpdateBasicInfoRequest): Prom
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to update user information');
     }
-
-    // Return success - the server handles both Keycloak and Spring backend updates
   } catch (error) {
     console.error('Error updating user basic info:', error);
     throw new Error(
@@ -74,8 +72,6 @@ export async function updateUserPassword(request: UpdatePasswordRequest): Promis
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || 'Failed to update password');
     }
-
-    // Return success - the server handles Keycloak password update
   } catch (error) {
     console.error('Error updating user password:', error);
     throw new Error(

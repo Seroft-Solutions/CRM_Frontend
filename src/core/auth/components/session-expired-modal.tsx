@@ -43,32 +43,25 @@ export function SessionExpiredModal({
 }: SessionExpiredModalProps) {
   const [isReauthorizing, setIsReauthorizing] = useState(false);
 
-  // Safety wrapper to prevent closing expired/idle modals
   const safeOnClose = useCallback(() => {
-    // Only allow closing for warning modals
     if (type === 'warning') {
       onClose();
     }
-    // For expired/idle modals, do nothing - they can only be closed via logout
   }, [type, onClose]);
 
-  // Apply blur and prevent interactions when session expired or idle
   useEffect(() => {
     if (isOpen && (type === 'expired' || type === 'idle')) {
-      // Store original styles to restore later
       const originalBodyStyle = {
         overflow: document.body.style.overflow,
         pointerEvents: document.body.style.pointerEvents,
         userSelect: document.body.style.userSelect,
       };
 
-      // Apply styles to prevent all interactions
       document.body.style.overflow = 'hidden';
       document.body.style.pointerEvents = 'none';
       document.body.style.userSelect = 'none';
       document.body.classList.add('session-locked');
 
-      // Create and add blur overlay with high z-index
       const blurOverlay = document.createElement('div');
       blurOverlay.id = 'session-blur-overlay';
       blurOverlay.setAttribute('aria-hidden', 'true');
@@ -87,7 +80,6 @@ export function SessionExpiredModal({
       `;
       document.body.appendChild(blurOverlay);
 
-      // Focus trap - ensure focus stays within modal
       const modalElement = document.querySelector('[data-session-modal="true"]') as HTMLElement;
       const focusableElements = modalElement?.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -95,12 +87,10 @@ export function SessionExpiredModal({
       const firstFocusableElement = focusableElements?.[0];
       const lastFocusableElement = focusableElements?.[focusableElements.length - 1];
 
-      // Comprehensive event blocking
       const preventKeyboard = (e: KeyboardEvent) => {
         const target = e.target as HTMLElement;
         const isInModal = target.closest('[data-session-modal="true"]');
 
-        // Handle focus trap for Tab key within modal
         if (e.key === 'Tab' && isInModal) {
           if (e.shiftKey) {
             if (document.activeElement === firstFocusableElement) {
@@ -113,16 +103,13 @@ export function SessionExpiredModal({
               e.preventDefault();
             }
           }
-        }
-        // Block everything else except allowed keys in modal
-        else if (!isInModal || !['Enter', 'Space'].includes(e.key)) {
+        } else if (!isInModal || !['Enter', 'Space'].includes(e.key)) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
         }
       };
 
-      // Prevent all mouse interactions outside modal
       const preventMouse = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
         const modalElement = document.querySelector('[data-session-modal="true"]');
@@ -133,14 +120,12 @@ export function SessionExpiredModal({
         }
       };
 
-      // Prevent context menu everywhere
       const preventContextMenu = (e: Event) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
       };
 
-      // Add event listeners with highest priority
       const eventOptions = { capture: true, passive: false };
       document.addEventListener('keydown', preventKeyboard, eventOptions);
       document.addEventListener('keyup', preventKeyboard, eventOptions);
@@ -151,27 +136,22 @@ export function SessionExpiredModal({
       document.addEventListener('touchstart', preventMouse as any, eventOptions);
       document.addEventListener('touchend', preventMouse as any, eventOptions);
 
-      // Auto-focus first element in modal
       setTimeout(() => {
         firstFocusableElement?.focus();
       }, 100);
 
       return () => {
-        // Cleanup
         document.body.classList.remove('session-locked');
 
-        // Remove blur overlay
         const existingOverlay = document.getElementById('session-blur-overlay');
         if (existingOverlay) {
           document.body.removeChild(existingOverlay);
         }
 
-        // Restore original body styles
         Object.entries(originalBodyStyle).forEach(([property, value]) => {
           (document.body.style as any)[property] = value;
         });
 
-        // Remove event listeners
         document.removeEventListener('keydown', preventKeyboard, eventOptions);
         document.removeEventListener('keyup', preventKeyboard, eventOptions);
         document.removeEventListener('click', preventMouse, eventOptions);
@@ -187,7 +167,6 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true);
     try {
-      // Clear all auth storage before re-authenticating
       clearAuthStorage();
 
       await signIn('keycloak', {
@@ -196,7 +175,7 @@ export function SessionExpiredModal({
       });
     } catch (error) {
       console.error('Re-authentication failed:', error);
-      // Ensure cleanup even on error
+
       clearAuthStorage();
       onRetryAuth();
     } finally {
@@ -216,7 +195,6 @@ export function SessionExpiredModal({
       if (success) {
         onClose();
       } else {
-        // Session refresh failed, cleanup and re-authenticate
         await handleContinue();
       }
     } catch (error) {
@@ -228,7 +206,6 @@ export function SessionExpiredModal({
   };
 
   const handleLogout = async () => {
-    // Clear all auth storage before logout
     clearAuthStorage();
 
     if (onLogout) {
@@ -238,7 +215,6 @@ export function SessionExpiredModal({
     }
   };
 
-  // Warning modal (dismissible)
   if (type === 'warning') {
     return (
       <Dialog open={isOpen} onOpenChange={safeOnClose}>
@@ -267,13 +243,9 @@ export function SessionExpiredModal({
     );
   }
 
-  // Idle timeout modal (forced action required)
   if (type === 'idle') {
     return (
-      <Dialog
-        open={isOpen}
-        onOpenChange={() => {}} // Prevent closing by any means
-      >
+      <Dialog open={isOpen} onOpenChange={() => {}}>
         <DialogContent
           data-session-modal="true"
           className="sm:max-w-md z-[100] [&>button]:hidden border-2 border-orange-500/20 shadow-2xl bg-white"
@@ -317,12 +289,8 @@ export function SessionExpiredModal({
     );
   }
 
-  // Session expired modal (forced action required)
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={() => {}} // Prevent closing
-    >
+    <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent
         data-session-modal="true"
         className="sm:max-w-md z-[100] [&>button]:hidden border-2 border-red-500/20 shadow-2xl bg-white"

@@ -14,8 +14,6 @@ export interface RequestData {
   [key: string]: unknown;
 }
 
-// Token cache to avoid redundant session calls
-
 export class BaseService {
   protected instance: AxiosInstance;
   protected config: BaseServiceConfig;
@@ -37,14 +35,12 @@ export class BaseService {
   }
 
   private setupInterceptors() {
-    // Listen for token refresh events
     if (typeof window !== 'undefined') {
       window.addEventListener('token-refreshed', ((event: CustomEvent) => {
         this.tokenCache.invalidate();
       }) as EventListener);
     }
 
-    // Request interceptor for authentication
     this.instance.interceptors.request.use(
       async (config) => {
         const token = await this.tokenCache.getToken(() => this.getAuthTokenFromSession());
@@ -56,7 +52,6 @@ export class BaseService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor for error handling
     this.instance.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -113,7 +108,6 @@ export class BaseService {
   }
 
   protected async getClientCredentialsToken(): Promise<string | null> {
-    // Implement client credentials flow if needed
     return null;
   }
 
@@ -131,12 +125,10 @@ export class BaseService {
     return Promise.reject(enhancedError);
   }
 
-  // Method to manually invalidate token cache (useful for logout)
   public invalidateTokenCache() {
     this.tokenCache.invalidate();
   }
 
-  // Generic HTTP methods with improved error handling
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.get<T>(url, config);
     return response.data;

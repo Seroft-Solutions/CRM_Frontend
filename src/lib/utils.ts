@@ -17,7 +17,3 @@ export function formatDate(dateString: string | Date): string {
     day: 'numeric',
   });
 }
-//
-// export function cn(...classes: (string | boolean | undefined)[]) {
-//   return classes.filter(Boolean).join(' ');
-// }

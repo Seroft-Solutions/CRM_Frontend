@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * SubCallType form validation schema with user-friendly messages
  */
@@ -29,7 +22,6 @@ export const subCallTypeFormSchema = z.object(subCallTypeFormSchemaFields);
 
 export type SubCallTypeFormValues = z.infer<typeof subCallTypeFormSchema>;
 
-// Individual field schemas for granular validation
 export const subCallTypeFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -45,7 +37,6 @@ export const subCallTypeFieldSchemas = {
   callType: z.number({ message: 'Please select call type from the dropdown' }),
 };
 
-// Step-specific validation schemas
 export const subCallTypeStepSchemas = {
   basic: z.object({
     name: subCallTypeFieldSchemas.name,
@@ -61,7 +52,6 @@ export const subCallTypeStepSchemas = {
   review: subCallTypeFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = subCallTypeStepSchemas[stepId as keyof typeof subCallTypeStepSchemas];
   if (!schema) return { success: true, data };

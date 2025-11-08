@@ -16,7 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar, // Added import for useSidebar
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { type SidebarItem } from '@/components/sidebar/sidebar-items';
 
@@ -24,13 +24,11 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
   const { roles: userRoles, isLoading: rolesLoading } = useUserRoles();
 
-  // Helper function to check if the current path matches or is a child of the given path
   const isActive = (item: SidebarItem): boolean => {
     if (item.path && pathname === item.path) {
       return true;
     }
 
-    // Check if any child item is active
     if (item.children) {
       return item.children.some(
         (child) =>
@@ -42,7 +40,6 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
     return false;
   };
 
-  // Helper function to check permission
   const hasPermission = (requiredPermission?: string): boolean => {
     if (!requiredPermission) return true;
     if (rolesLoading) return false;
@@ -68,7 +65,6 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
   );
 }
 
-// Separate component to handle individual navigation items with permission checking
 function NavItem({
   item,
   pathname,
@@ -80,31 +76,27 @@ function NavItem({
   isActive: (item: SidebarItem) => boolean;
   hasPermission: (requiredPermission?: string) => boolean;
 }) {
-  const { state, setOpen } = useSidebar(); // Added: Access sidebar state and setter
+  const { state, setOpen } = useSidebar();
 
   const itemHasPermission = hasPermission(item.requiredPermission);
 
-  // If permission is required and user doesn't have it, don't render
   if (item.requiredPermission && !itemHasPermission) {
     return null;
   }
 
   const active = isActive(item);
 
-  // Filter children based on permissions
   const visibleChildren = item.children?.filter((child) => {
     const childHasPermission = hasPermission(child.requiredPermission);
     return !child.requiredPermission || childHasPermission;
   });
 
-  // Added: Handler to expand sidebar if collapsed
   const handleClick = () => {
     if (state === 'collapsed') {
       setOpen(true);
     }
   };
 
-  // Handler to collapse sidebar on navigation if expanded
   const handleNavigation = () => {
     if (state === 'expanded') {
       setOpen(false);
@@ -112,8 +104,6 @@ function NavItem({
   };
 
   return item.children ? (
-    // Items with children - collapsible menu
-    // Only render if there are visible children or no permission requirement
     visibleChildren && visibleChildren.length > 0 ? (
       <Collapsible
         key={item.key}
@@ -136,7 +126,7 @@ function NavItem({
                   <SidebarMenuSubButton
                     asChild
                     data-active={subItem.path && pathname === subItem.path}
-                    onClick={handleNavigation} // Added: Collapse on navigation
+                    onClick={handleNavigation}
                   >
                     <Link href={subItem.path || '#'}>
                       <span>{subItem.label}</span>
@@ -150,7 +140,6 @@ function NavItem({
       </Collapsible>
     ) : null
   ) : (
-    // Items without children - direct link
     <SidebarMenuItem key={item.key}>
       <SidebarMenuButton
         asChild
@@ -158,7 +147,7 @@ function NavItem({
         data-active={active}
         onClick={() => {
           handleClick();
-          handleNavigation(); // Added: Collapse on navigation
+          handleNavigation();
         }}
       >
         <Link href={item.path || '#'}>

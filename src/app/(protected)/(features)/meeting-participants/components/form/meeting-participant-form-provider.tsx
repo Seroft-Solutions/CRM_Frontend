@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
@@ -42,12 +35,10 @@ export function MeetingParticipantFormProvider({
   const isNew = !id;
   const config = meetingParticipantFormConfig;
 
-  // Cross-form navigation hooks
   const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } =
     useCrossFormNavigation();
   const urlParams = useNavigationFromUrl();
 
-  // Form state management
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,16 +48,13 @@ export function MeetingParticipantFormProvider({
   const [restorationAttempted, setRestorationAttempted] = useState(false);
   const [draftRestorationInProgress, setDraftRestorationInProgress] = useState(false);
 
-  // Comprehensive form data state to track all steps
   const [allFormData, setAllFormData] = useState<Record<string, any>>({});
 
-  // Draft-related state
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [showRestorationDialog, setShowRestorationDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
-  // Initialize drafts hook
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
   const {
     drafts,
@@ -84,7 +72,6 @@ export function MeetingParticipantFormProvider({
     maxDrafts: config.behavior?.drafts?.maxDrafts ?? 5,
   });
 
-  // Generate unique session ID for this form instance
   const [formSessionId] = useState(() => {
     if (typeof window === 'undefined') {
       return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -101,7 +88,6 @@ export function MeetingParticipantFormProvider({
     return newSessionId;
   });
 
-  // Initialize React Hook Form
   const form = useForm<Record<string, any>>({
     resolver: zodResolver(meetingParticipantFormSchema),
     mode: config.validation.mode,
@@ -138,10 +124,8 @@ export function MeetingParticipantFormProvider({
     return defaults;
   }
 
-  // Form state persistence functions - only for cross-form navigation
   const saveFormState = useCallback(
     (forCrossNavigation = false) => {
-      // Only save form state for cross-form navigation scenarios
       if (!isNew || !config.behavior.persistence.enabled || !forCrossNavigation) return;
       if (typeof window === 'undefined') return;
 
@@ -152,7 +136,7 @@ export function MeetingParticipantFormProvider({
         timestamp: Date.now(),
         entity: config.entity,
         sessionId: formSessionId,
-        crossFormNavigation: true, // Mark this as cross-form navigation state
+        crossFormNavigation: true,
       };
 
       const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
@@ -184,7 +168,6 @@ export function MeetingParticipantFormProvider({
           const isSameEntity = savedState.entity === config.entity;
           const isCrossFormState = savedState.crossFormNavigation === true;
 
-          // Only restore states that were saved for cross-form navigation
           if (isRecent && isSameSession && isSameEntity && isCrossFormState) {
             setIsRestoring(true);
 
@@ -199,7 +182,6 @@ export function MeetingParticipantFormProvider({
 
             setTimeout(() => setIsRestoring(false), 100);
 
-            // Only show form restored toast if not suppressed (i.e., not during cross-entity auto-population)
             if (!suppressToast) {
               meetingParticipantToast.formRestored();
             }
@@ -218,7 +200,6 @@ export function MeetingParticipantFormProvider({
     [form, isNew, formSessionId, config]
   );
 
-  // Clear old form states
   const clearOldFormStates = useCallback(() => {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -233,7 +214,6 @@ export function MeetingParticipantFormProvider({
     keysToRemove.forEach((key) => localStorage.removeItem(key));
   }, [formSessionId, config]);
 
-  // Handle newly created relationship entities
   const handleEntityCreated = useCallback(
     (entityId: number, relationshipName: string, skipValidation = false) => {
       const relationshipConfig = config.relationships.find((rel) => rel.name === relationshipName);
@@ -248,7 +228,6 @@ export function MeetingParticipantFormProvider({
         form.setValue(relationshipName as any, entityId, { shouldValidate: !skipValidation });
       }
 
-      // Only trigger validation if not skipping it (e.g., during auto-population)
       if (!skipValidation && !isAutoPopulating) {
         form.trigger(relationshipName as any);
       }
@@ -256,10 +235,8 @@ export function MeetingParticipantFormProvider({
     [form, config, isAutoPopulating]
   );
 
-  // Validation for current step
   const validateStep = useCallback(
     async (stepIndex?: number): Promise<boolean> => {
-      // Skip validation during auto-population to prevent interference
       if (isAutoPopulating) {
         return true;
       }
@@ -275,9 +252,7 @@ export function MeetingParticipantFormProvider({
     [form, currentStep, config, isAutoPopulating]
   );
 
-  // Navigation actions
   const nextStep = useCallback(async (): Promise<boolean> => {
-    // Preserve current form values before moving to next step
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -298,7 +273,6 @@ export function MeetingParticipantFormProvider({
   }, [currentStep, config, validateStep, form]);
 
   const prevStep = useCallback(() => {
-    // Preserve current form values before moving to previous step
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -314,7 +288,6 @@ export function MeetingParticipantFormProvider({
     async (stepIndex: number): Promise<boolean> => {
       if (stepIndex < 0 || stepIndex >= config.steps.length) return false;
 
-      // Preserve current form values before changing step
       const currentValues = form.getValues();
       setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
@@ -323,7 +296,6 @@ export function MeetingParticipantFormProvider({
         return true;
       }
 
-      // Validate all steps up to target step
       for (let i = 0; i < stepIndex; i++) {
         const isValid = await validateStep(i);
         if (!isValid) return false;
@@ -335,9 +307,7 @@ export function MeetingParticipantFormProvider({
     [config, validateStep, form]
   );
 
-  // Form submission
   const submitForm = useCallback(async () => {
-    // Don't allow submission during auto-population
     if (isAutoPopulating) {
       return;
     }
@@ -357,14 +327,12 @@ export function MeetingParticipantFormProvider({
     try {
       const formData = form.getValues();
 
-      // Transform data for submission
       const entityToSave = transformFormDataForSubmission(formData);
 
       if (onSuccess) {
         await onSuccess(entityToSave);
       }
 
-      // Clean up form state
       cleanupFormState();
     } catch (error) {
       if (onError) {
@@ -380,7 +348,6 @@ export function MeetingParticipantFormProvider({
   function transformFormDataForSubmission(data: Record<string, any>) {
     const entityToSave: Record<string, any> = {};
 
-    // Handle regular fields
     config.fields.forEach((fieldConfig) => {
       const value = data[fieldConfig.name];
 
@@ -409,7 +376,6 @@ export function MeetingParticipantFormProvider({
       } else if (fieldConfig.type === 'boolean') {
         entityToSave[fieldConfig.name] = Boolean(value);
       } else {
-        // String fields
         if (value !== '' && value != null) {
           entityToSave[fieldConfig.name] = String(value);
         } else if (fieldConfig.required) {
@@ -418,19 +384,16 @@ export function MeetingParticipantFormProvider({
       }
     });
 
-    // Handle relationships - use reference object pattern { entityName: { id: value } }
     config.relationships.forEach((relConfig) => {
       const value = data[relConfig.name];
 
       if (relConfig.multiple) {
-        // For many-to-many or one-to-many relationships
         if (value && Array.isArray(value) && value.length > 0) {
           entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
         } else {
           entityToSave[relConfig.name] = value || [];
         }
       } else {
-        // For many-to-one relationships - use reference object pattern
         if (value) {
           entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
         } else {
@@ -439,7 +402,6 @@ export function MeetingParticipantFormProvider({
       }
     });
 
-    // Remove undefined values to avoid sending them to the backend
     Object.keys(entityToSave).forEach((key) => {
       if (entityToSave[key] === undefined) {
         delete entityToSave[key];
@@ -449,7 +411,6 @@ export function MeetingParticipantFormProvider({
     return entityToSave;
   }
 
-  // Form cleanup
   const cleanupFormState = useCallback(() => {
     if (typeof window === 'undefined') return;
 
@@ -457,7 +418,6 @@ export function MeetingParticipantFormProvider({
     localStorage.removeItem(storageKey);
     sessionStorage.removeItem(`${config.entity}_FormSession`);
 
-    // Clear all old form states for this entity type
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -478,40 +438,32 @@ export function MeetingParticipantFormProvider({
     setConfirmSubmission(false);
   }, [form]);
 
-  // Form restoration on mount and auto-population
   useEffect(() => {
     if (!restorationAttempted && isNew) {
       setRestorationAttempted(true);
       clearOldFormStates();
 
-      // Check for auto-population from cross-form navigation (primary path)
       const createdEntityInfo = localStorage.getItem('createdEntityInfo');
       if (createdEntityInfo) {
         try {
           const info = JSON.parse(createdEntityInfo);
 
-          // Check if this form should receive the created entity
           const sessionMatches = info.targetSessionId === formSessionId;
           const isRecent = Date.now() - info.timestamp < 5 * 60 * 1000;
 
           if (sessionMatches || isRecent) {
             setIsAutoPopulating(true);
 
-            const restored = restoreFormState(true); // Suppress form restoration toast
+            const restored = restoreFormState(true);
 
-            // Auto-populate with proper timing and validation control
             setTimeout(
               () => {
-                // Set the value without triggering validation during auto-population
                 handleEntityCreated(info.entityId, info.targetField, true);
 
-                // Clear the created entity info
                 localStorage.removeItem('createdEntityInfo');
 
-                // Show single comprehensive success message
                 toast.success(`${info.entityType} created and selected successfully`);
 
-                // Re-enable auto-populating state after a short delay
                 setTimeout(() => {
                   setIsAutoPopulating(false);
                 }, 300);
@@ -519,21 +471,19 @@ export function MeetingParticipantFormProvider({
               restored ? 600 : 200
             );
           } else {
-            // Clean up stale entity info
             localStorage.removeItem('createdEntityInfo');
-            // No auto-population, fall through to normal restoration
+
             restoreFormState();
           }
         } catch (error) {
           console.error('Error processing created entity info:', error);
           localStorage.removeItem('createdEntityInfo');
-          // Error occurred, fall through to normal restoration
+
           restoreFormState();
         }
-        return; // Exit early since we handled the createdEntityInfo case
+        return;
       }
 
-      // Fallback to legacy auto-population logic (only if no createdEntityInfo)
       const newEntityId = localStorage.getItem(config.behavior.crossEntity.newEntityIdKey);
       const relationshipInfo = localStorage.getItem(
         config.behavior.crossEntity.relationshipInfoKey
@@ -544,16 +494,14 @@ export function MeetingParticipantFormProvider({
           const info = JSON.parse(relationshipInfo);
 
           setIsAutoPopulating(true);
-          const restored = restoreFormState(true); // Suppress form restoration toast for legacy path too
+          const restored = restoreFormState(true);
 
           setTimeout(
             () => {
               handleEntityCreated(parseInt(newEntityId), Object.keys(info)[0] || 'id', true);
 
-              // Show single success message for legacy path
               toast.success('Entity created and selected successfully');
 
-              // Clean up
               localStorage.removeItem(config.behavior.crossEntity.newEntityIdKey);
               localStorage.removeItem(config.behavior.crossEntity.relationshipInfoKey);
               localStorage.removeItem(config.behavior.crossEntity.returnUrlKey);
@@ -567,20 +515,18 @@ export function MeetingParticipantFormProvider({
           );
         } catch (error) {
           console.error('Error processing newly created entity:', error);
-          // Error occurred, fall through to normal restoration
+
           restoreFormState();
         }
-        return; // Exit early since we handled the legacy case
+        return;
       }
 
-      // Normal form restoration (only if no auto-population occurred)
-      // But suppress toast if draft restoration is in progress
       restoreFormState(draftRestorationInProgress);
     }
 
     const handleSaveFormState = () => {
       if (isNew) {
-        saveFormState(true); // Save with cross-form navigation flag
+        saveFormState(true);
       }
     };
 
@@ -599,7 +545,6 @@ export function MeetingParticipantFormProvider({
     config,
   ]);
 
-  // Helper function to get navigation props for relationship components
   const getNavigationProps = useCallback(
     (fieldName: string) => ({
       referrerForm: config.entity,
@@ -609,7 +554,6 @@ export function MeetingParticipantFormProvider({
     [config.entity, formSessionId]
   );
 
-  // Watch form changes and maintain comprehensive form data
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (type === 'change' && name) {
@@ -623,18 +567,15 @@ export function MeetingParticipantFormProvider({
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Initialize comprehensive form data with current form values
   useEffect(() => {
     const currentValues = form.getValues();
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
   }, [form]);
 
-  // Draft action handlers
   const handleSaveDraft = useCallback(async (): Promise<boolean> => {
     if (!draftsEnabled || !isNew) return false;
 
     try {
-      // Use comprehensive form data instead of just current form values
       const currentFormValues = form.getValues();
       const completeFormData = { ...allFormData, ...currentFormValues };
 
@@ -668,7 +609,6 @@ export function MeetingParticipantFormProvider({
       if (!draftsEnabled) return false;
 
       try {
-        // Attempt to restore draft data
         const draftData = await restoreDraft(draftId);
         if (!draftData) {
           if (!suppressToast) {
@@ -677,23 +617,19 @@ export function MeetingParticipantFormProvider({
           return false;
         }
 
-        // Restore form data to both React Hook Form and comprehensive state
         Object.keys(draftData.formData).forEach((key) => {
           form.setValue(key, draftData.formData[key]);
         });
 
-        // Update comprehensive form data state
         setAllFormData(draftData.formData);
 
-        // Restore current step
         if (draftData.currentStep !== undefined) {
           setCurrentStep(draftData.currentStep);
         }
 
-        setCurrentDraftId(undefined); // Clear since draft restoration is complete
+        setCurrentDraftId(undefined);
         setShowRestorationDialog(false);
 
-        // Show single success message only if not suppressed
         if (!suppressToast) {
           toast.success('Draft restored successfully');
         }
@@ -745,7 +681,6 @@ export function MeetingParticipantFormProvider({
     restorationAttempted,
   ]);
 
-  // Check for drafts on mount and handle restoration from drafts page
   useEffect(() => {
     if (
       draftsEnabled &&
@@ -754,19 +689,17 @@ export function MeetingParticipantFormProvider({
       !restorationAttempted &&
       !draftRestorationInProgress
     ) {
-      // First check if there's a specific draft to restore from the drafts management page
       const draftToRestore = sessionStorage.getItem('draftToRestore');
       if (draftToRestore) {
         setDraftRestorationInProgress(true);
         try {
           const restorationData = JSON.parse(draftToRestore);
           if (restorationData.entityType === config.entity) {
-            // Restore the specific draft (suppress toast since this is from management page)
             handleLoadDraft(restorationData.draftId, true).then((success) => {
               if (success) {
                 sessionStorage.removeItem('draftToRestore');
                 setRestorationAttempted(true);
-                // Show single comprehensive message for management page restoration
+
                 toast.success('Draft restored successfully');
               }
               setDraftRestorationInProgress(false);
@@ -780,7 +713,6 @@ export function MeetingParticipantFormProvider({
         }
       }
 
-      // Otherwise, show restoration dialog if drafts exist
       handleCheckForDrafts();
     }
   }, [
@@ -794,18 +726,15 @@ export function MeetingParticipantFormProvider({
     config.entity,
   ]);
 
-  // Register draft check with cross-form navigation
   useEffect(() => {
     if (draftsEnabled && isNew) {
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
           if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
-            // Show draft dialog
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
           } else {
-            // No changes or dialog disabled, proceed directly
             onProceed();
           }
         },
@@ -827,7 +756,6 @@ export function MeetingParticipantFormProvider({
     unregisterDraftCheck,
   ]);
 
-  // Create context value
   const contextValue: FormContextValue = {
     config,
     state: {
@@ -839,7 +767,7 @@ export function MeetingParticipantFormProvider({
       values: form.getValues(),
       touchedFields: form.formState.touchedFields as Record<string, boolean>,
       isAutoPopulating,
-      // Draft-related state
+
       drafts,
       isLoadingDrafts,
       isSavingDraft,
@@ -860,7 +788,7 @@ export function MeetingParticipantFormProvider({
       restoreFormState,
       handleEntityCreated,
       getNavigationProps,
-      // Draft-related actions
+
       saveDraft: handleSaveDraft,
       loadDraft: handleLoadDraft,
       deleteDraft: handleDeleteDraft,
@@ -923,7 +851,6 @@ export function MeetingParticipantFormProvider({
   );
 }
 
-// Custom hook to use form context
 export function useEntityForm(): FormContextValue {
   const context = useContext(FormContext);
   if (!context) {
@@ -932,7 +859,6 @@ export function useEntityForm(): FormContextValue {
   return context;
 }
 
-// Additional hooks for specific functionality
 export function useFormConfig() {
   const { config } = useEntityForm();
   return config;

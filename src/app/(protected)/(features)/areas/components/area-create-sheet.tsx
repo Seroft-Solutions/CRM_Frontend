@@ -22,11 +22,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
@@ -45,7 +41,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { AreaDTO, CityDTO } from '@/core/api/generated/spring/schemas';
 import { cn } from '@/lib/utils';
 
-// Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -62,7 +57,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-// Simplified schema for area creation
 const areaCreationSchema = z.object({
   name: z
     .string({ message: 'Please enter area name' })
@@ -104,11 +98,13 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
     },
   });
 
-  // Debounce search term to reduce API calls
   const debouncedSearchTerm = useDebounce(citySearchTerm, 500);
 
-  // Server-side search with pagination
-  const { data: citiesResponse, isLoading: isLoadingCities, isFetching } = useSearchCitiesWithHierarchy(
+  const {
+    data: citiesResponse,
+    isLoading: isLoadingCities,
+    isFetching,
+  } = useSearchCitiesWithHierarchy(
     {
       term: debouncedSearchTerm || '',
       page: cityPage,
@@ -124,15 +120,12 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
     }
   );
 
-  // Handle search results with proper reset logic
   useEffect(() => {
-    // If search term changed, reset pagination and cities
     if (debouncedSearchTerm !== prevSearchTermRef.current) {
       prevSearchTermRef.current = debouncedSearchTerm;
       setCityPage(0);
       setAllCities(citiesResponse && Array.isArray(citiesResponse) ? citiesResponse : []);
     } else if (citiesResponse && Array.isArray(citiesResponse)) {
-      // Same search term, accumulate results for pagination
       if (cityPage === 0) {
         setAllCities(citiesResponse);
       } else {
@@ -141,7 +134,6 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
     }
   }, [citiesResponse, debouncedSearchTerm, cityPage]);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (!observerTarget.current || !citySearchOpen) return;
 
@@ -182,7 +174,6 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
 
         toast.success('Location created successfully!');
 
-        // Invalidate geography search cache
         queryClient.invalidateQueries({ queryKey: ['searchGeography'] });
         queryClient.invalidateQueries({ queryKey: ['areas'] });
 
@@ -194,7 +185,8 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
         }
       },
       onError: (error: any) => {
-        const errorMessage = error?.response?.data?.message || error?.message || 'Failed to create location';
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Failed to create location';
         toast.error(errorMessage);
       },
     },
@@ -249,10 +241,7 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50"
-      >
+      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50">
         <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white shadow-sm">
           <SheetHeader className="px-6 py-5 space-y-1">
             <SheetTitle className="text-lg font-semibold leading-tight text-white">
@@ -352,8 +341,8 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                               role="combobox"
                               aria-expanded={citySearchOpen}
                               className={cn(
-                                "w-full justify-between font-normal",
-                                !field.value && "text-muted-foreground"
+                                'w-full justify-between font-normal',
+                                !field.value && 'text-muted-foreground'
                               )}
                               disabled={isPending}
                             >
@@ -361,17 +350,19 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                                 <span className="truncate">
                                   {selectedCity.name}
                                   {selectedCity.district?.name &&
-                                    ` (${selectedCity.district.name}, ${selectedCity.district.state?.name || ''})`
-                                  }
+                                    ` (${selectedCity.district.name}, ${selectedCity.district.state?.name || ''})`}
                                 </span>
                               ) : (
-                                "Search and select a city"
+                                'Search and select a city'
                               )}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <PopoverContent
+                          className="w-[--radix-popover-trigger-width] p-0"
+                          align="start"
+                        >
                           <Command shouldFilter={false}>
                             <CommandInput
                               placeholder="Type to search cities..."
@@ -390,7 +381,9 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                               ) : allCities.length === 0 ? (
                                 <CommandEmpty>
                                   <div className="p-4 text-center text-sm text-muted-foreground">
-                                    {citySearchTerm ? `No cities found matching "${citySearchTerm}"` : 'No cities available'}
+                                    {citySearchTerm
+                                      ? `No cities found matching "${citySearchTerm}"`
+                                      : 'No cities available'}
                                   </div>
                                 </CommandEmpty>
                               ) : (
@@ -411,10 +404,8 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                                       >
                                         <Check
                                           className={cn(
-                                            "mr-2 h-4 w-4 flex-shrink-0",
-                                            city.id === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
+                                            'mr-2 h-4 w-4 flex-shrink-0',
+                                            city.id === field.value ? 'opacity-100' : 'opacity-0'
                                           )}
                                         />
                                         <div className="flex flex-col flex-1 min-w-0">
@@ -422,7 +413,8 @@ export function AreaCreateSheet({ isOpen, onOpenChange, onSuccess }: AreaCreateS
                                           {city.district?.name && (
                                             <span className="text-xs text-muted-foreground truncate">
                                               {city.district.name}
-                                              {city.district.state?.name && `, ${city.district.state.name}`}
+                                              {city.district.state?.name &&
+                                                `, ${city.district.state.name}`}
                                             </span>
                                           )}
                                         </div>

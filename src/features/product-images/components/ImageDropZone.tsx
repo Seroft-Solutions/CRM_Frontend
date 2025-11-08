@@ -1,8 +1,7 @@
-"use client";
-// JUSTIFICATION: Requires file input interaction and drag-drop event handlers
+'use client';
 
-import { useRef } from "react";
-import { Upload } from "lucide-react";
+import { useRef } from 'react';
+import { Upload } from 'lucide-react';
 
 interface ImageDropZoneProps {
   isDragging: boolean;
@@ -39,11 +38,7 @@ export function ImageDropZone({
       className={`
         border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
         transition-colors duration-200
-        ${
-          isDragging
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-gray-400"
-        }
+        ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
       `}
       onClick={() => fileInputRef.current?.click()}
     >
@@ -51,7 +46,7 @@ export function ImageDropZone({
         ref={fileInputRef}
         type="file"
         multiple
-        accept={allowedFormats.join(",")}
+        accept={allowedFormats.join(',')}
         onChange={(e) => onFileSelect(e.target.files)}
         className="hidden"
       />
@@ -61,9 +56,7 @@ export function ImageDropZone({
           <Upload className="w-6 h-6 text-gray-600" />
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-700">
-            Drop images here or click to browse
-          </p>
+          <p className="text-sm font-medium text-gray-700">Drop images here or click to browse</p>
           <p className="text-xs text-gray-500 mt-1">
             JPEG, PNG, WEBP • Max {maxFileSize}MB • Up to {maxFiles} files
           </p>

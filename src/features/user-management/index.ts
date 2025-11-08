@@ -3,19 +3,16 @@
  * Centralized exports for the user management feature
  */
 
-// Components
 export { OrganizationUsers } from './components/OrganizationUsers';
 export { InviteUsers } from './components/InviteUsers';
 export { UserDetails } from './components/UserDetails';
 
-// Utility Components
 export { UserAvatar } from './components/UserAvatar';
 export { UserStatusBadge } from './components/UserStatusBadge';
 export { RolesBadgesList } from './components/RolesBadgesList';
 export { GroupsBadgesList } from './components/GroupsBadgesList';
 export { UserCard } from './components/UserCard';
 
-// Hooks
 export {
   useOrganizationUsers,
   useUserDetails,
@@ -30,7 +27,6 @@ export {
   USER_MANAGEMENT_QUERY_KEYS,
 } from './hooks';
 
-// Services
 export { UserManagementService, userManagementService } from './services/user-management.service';
 export {
   UserOnboardingService,
@@ -38,10 +34,8 @@ export {
   createOnboardingService,
 } from './services/user-onboarding.service';
 
-// Configuration
 export { USER_MANAGEMENT_CONFIG } from './config';
 
-// Types
 export type {
   OrganizationUser,
   UserInvitation,

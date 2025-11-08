@@ -6,14 +6,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
-    getAdminRealmsRealmOrganizations, OrganizationRepresentationAttributes,
-    postAdminRealmsRealmOrganizations,
+  getAdminRealmsRealmOrganizations,
+  OrganizationRepresentationAttributes,
+  postAdminRealmsRealmOrganizations,
 } from '@/core/api/generated/keycloak';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -24,12 +24,10 @@ export async function GET(request: NextRequest) {
       throw new Error('Realm configuration missing');
     }
 
-    // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
     const params = search ? { search } : undefined;
 
-    // Get organizations using generated endpoint
     const organizations = await getAdminRealmsRealmOrganizations(realm, params);
 
     return NextResponse.json({
@@ -53,7 +51,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -64,29 +61,26 @@ export async function POST(request: NextRequest) {
       throw new Error('Realm configuration missing');
     }
 
-    // Parse request body
     const requestData = await request.json();
     console.log('Raw request data:', JSON.stringify(requestData, null, 2));
 
-    // Validate required fields
     if (!requestData.organizationName && !requestData.name) {
       return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
     }
-      const attributes: OrganizationRepresentationAttributes = {};
-      if (requestData.organizationCode) {
-          attributes.organizationCode = [requestData.organizationCode.toString()];
-      }
+    const attributes: OrganizationRepresentationAttributes = {};
+    if (requestData.organizationCode) {
+      attributes.organizationCode = [requestData.organizationCode.toString()];
+    }
     if (requestData.organizationEmail) {
       attributes.organizationEmail = [requestData.organizationEmail.toString()];
     }
-    // Create minimal valid organization data structure for Keycloak
+
     const organizationData: OrganizationRepresentation = {
       name: requestData.organizationName || requestData.name,
       attributes,
       enabled: true,
     };
 
-    // Only add optional fields if they have meaningful values
     if (requestData.displayName && requestData.displayName.trim()) {
       organizationData.alias = requestData.displayName.trim();
     }
@@ -95,11 +89,9 @@ export async function POST(request: NextRequest) {
       organizationData.description = requestData.description.trim();
     }
 
-    // Handle domains properly - must be valid domain format (no @ symbol)
     if (requestData.domain && requestData.domain.trim()) {
-      const domain = requestData.domain.trim().replace(/^@/, ''); // Remove @ if present
+      const domain = requestData.domain.trim().replace(/^@/, '');
       if (domain && domain.includes('.')) {
-        // Basic domain validation
         organizationData.domains = [
           {
             name: domain,
@@ -111,7 +103,6 @@ export async function POST(request: NextRequest) {
 
     console.log('Sending to Keycloak:', JSON.stringify(organizationData, null, 2));
 
-    // Create organization using generated endpoint
     await postAdminRealmsRealmOrganizations(realm, organizationData);
 
     return NextResponse.json(

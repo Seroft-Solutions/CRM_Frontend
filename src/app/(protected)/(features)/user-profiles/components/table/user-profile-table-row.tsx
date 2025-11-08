@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +19,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { UserProfileDTO } from '@/core/api/generated/spring/schemas/UserProfileDTO';
 import { UserProfileDTOStatus } from '@/core/api/generated/spring/schemas/UserProfileDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +82,11 @@ export function UserProfileTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: UserProfileTableRowProps) {
-  // Get current status display info
   const currentStatus = userProfile.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -127,8 +117,7 @@ export function UserProfileTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = userProfile[column.accessor as keyof typeof userProfile];
 
                 if (column.id === 'keycloakId') {
@@ -177,8 +166,7 @@ export function UserProfileTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 if (column.id === 'internalUser') {
                   const cellKey = `${userProfile.id}-internalUser`;
                   return (

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Organization form validation schema with user-friendly messages
  */
@@ -42,7 +35,6 @@ export const organizationFormSchema = z.object(organizationFormSchemaFields);
 
 export type OrganizationFormValues = z.infer<typeof organizationFormSchema>;
 
-// Individual field schemas for granular validation
 export const organizationFieldSchemas = {
   keycloakOrgId: z
     .string({ message: 'Please enter keycloakorgid' })
@@ -71,7 +63,6 @@ export const organizationFieldSchemas = {
   members: z.string().optional(),
 };
 
-// Step-specific validation schemas
 export const organizationStepSchemas = {
   basic: z.object({
     keycloakOrgId: organizationFieldSchemas.keycloakOrgId,
@@ -88,7 +79,6 @@ export const organizationStepSchemas = {
   review: organizationFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = organizationStepSchemas[stepId as keyof typeof organizationStepSchemas];
   if (!schema) return { success: true, data };

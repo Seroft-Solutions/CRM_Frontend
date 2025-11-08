@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
@@ -14,7 +7,6 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const meetingFormConfig: FormConfig = {
   entity: 'Meeting',
 
-  // Form steps configuration
   steps: [
     {
       id: 'basic',
@@ -106,7 +98,6 @@ export const meetingFormConfig: FormConfig = {
     },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'meetingDateTime',
@@ -275,7 +266,6 @@ export const meetingFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
   relationships: [
     {
       name: 'organizer',
@@ -357,7 +347,6 @@ export const meetingFormConfig: FormConfig = {
     },
   ],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -403,20 +392,19 @@ export const meetingFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
       showRestorationDialog: true,
     },
   },
 };
 
-// Export utility functions for external use
 export const meetingFormHelpers = {
   getStepById: (stepId: string) => meetingFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>

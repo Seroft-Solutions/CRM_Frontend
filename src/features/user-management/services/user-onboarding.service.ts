@@ -6,9 +6,9 @@
 import type { UserInvitationWithGroups, PendingInvitation, InvitationActionResult } from '../types';
 
 export interface OnboardingConfig {
-  defaultGroups?: string[]; // Default groups for new users
-  defaultPasswordLifespan?: number; // Password reset link lifespan
-  defaultRedirectUri?: string; // Post-setup redirect
+  defaultGroups?: string[];
+  defaultPasswordLifespan?: number;
+  defaultRedirectUri?: string;
   requireEmailVerification?: boolean;
   autoAssignUsersGroup?: boolean;
 }
@@ -32,7 +32,7 @@ export class UserOnboardingService {
 
   constructor(config: OnboardingConfig = {}) {
     this.config = {
-      defaultPasswordLifespan: 43200, // 12 hours
+      defaultPasswordLifespan: 43200,
       autoAssignUsersGroup: true,
       requireEmailVerification: false,
       ...config,
@@ -49,15 +49,13 @@ export class UserOnboardingService {
     }
   ): Promise<OnboardingResult> {
     try {
-      // Prepare partner invitation data with proper defaults
       const partnerData = {
         ...inviteData,
-        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true for partner onboarding
-        sendWelcomeEmail: false, // Prefer password reset over org invite
+        sendPasswordReset: inviteData.sendPasswordReset !== false,
+        sendWelcomeEmail: false,
         redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
       };
 
-      // Call the partners API endpoint
       const response = await fetch(`/api/keycloak/organizations/${organizationId}/partners`, {
         method: 'POST',
         headers: {
@@ -106,11 +104,10 @@ export class UserOnboardingService {
     inviteData: UserInvitationWithGroups
   ): Promise<OnboardingResult> {
     try {
-      // Prepare invitation data with proper defaults
       const onboardingData: UserInvitationWithGroups = {
         ...inviteData,
-        sendPasswordReset: inviteData.sendPasswordReset !== false, // Default to true for user onboarding
-        sendWelcomeEmail: false, // Prefer password reset over org invite
+        sendPasswordReset: inviteData.sendPasswordReset !== false,
+        sendWelcomeEmail: false,
         redirectUri: inviteData.redirectUri || this.config.defaultRedirectUri,
         selectedGroups: [
           ...(inviteData.selectedGroups || []),
@@ -118,7 +115,6 @@ export class UserOnboardingService {
         ],
       };
 
-      // Call the API endpoint
       const response = await fetch(`/api/keycloak/organizations/${organizationId}/members`, {
         method: 'POST',
         headers: {
@@ -221,7 +217,6 @@ export class UserOnboardingService {
       const result = await this.inviteUserWithPasswordSetup(organizationId, invitation);
       results.push(result);
 
-      // Add small delay to prevent overwhelming the server
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
@@ -268,7 +263,6 @@ export class UserOnboardingService {
       const response = await fetch(`/api/keycloak/users/${userId}`);
       const user = await response.json();
 
-      // This would need to be implemented based on your user data structure
       return {
         hasPassword: !user.user?.requiredActions?.includes('UPDATE_PASSWORD'),
         emailVerified: user.user?.emailVerified || false,
@@ -300,9 +294,7 @@ export class UserOnboardingService {
   }
 }
 
-// Export singleton instance
 export const userOnboardingService = new UserOnboardingService();
 
-// Export factory for custom configurations
 export const createOnboardingService = (config: OnboardingConfig) =>
   new UserOnboardingService(config);

@@ -5,7 +5,6 @@ import {
 } from '@/core/api/services/spring-service/config';
 import { getTenantHeader } from '@/core/api/services/shared/tenant-helper';
 
-// Simple in-memory token cache to avoid circular dependencies
 class SimpleTokenCache {
   private token: string | null = null;
   private expiry = 0;
@@ -30,7 +29,7 @@ class SimpleTokenCache {
       const newToken = await refreshFn();
       if (newToken) {
         this.token = newToken;
-        this.expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+        this.expiry = Date.now() + 5 * 60 * 1000;
       }
       return newToken;
     } catch (error) {
@@ -48,10 +47,8 @@ class SimpleTokenCache {
   }
 }
 
-// Import the proper session event emitter to ensure consistency
 import { sessionEventEmitter } from '@/core/auth/session/events';
 
-// Standalone token fetching function to avoid circular dependencies
 async function fetchAccessTokenStandalone(): Promise<string | null> {
   try {
     if (typeof window !== 'undefined') {
@@ -76,7 +73,6 @@ if (typeof window !== 'undefined') {
   }) as EventListener);
 }
 
-// Check if the request is a long-running operation
 const isLongRunningOperation = (url: string): boolean => {
   return (
     url.includes('/tenants/organizations/setup') ||
@@ -96,14 +92,12 @@ export const springServiceMutator = async <T>(
 
   const instance = axios.create(axiosConfig);
 
-  // Add custom parameter serialization for Spring Boot compatibility
   instance.defaults.paramsSerializer = (params) => {
     const searchParams = new URLSearchParams();
 
     Object.keys(params).forEach((key) => {
       const value = params[key];
       if (Array.isArray(value)) {
-        // For arrays, add each value as a separate parameter (Spring Boot format)
         value.forEach((item) => {
           searchParams.append(key, item);
         });
@@ -115,14 +109,12 @@ export const springServiceMutator = async <T>(
     return searchParams.toString();
   };
 
-  // Add auth and tenant interceptor
   instance.interceptors.request.use(async (requestConfig) => {
     const token = await tokenCache.getToken(fetchAccessTokenStandalone);
     if (token) {
       requestConfig.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Add tenant header if available
     const tenantHeader = getTenantHeader();
     if (tenantHeader) {
       requestConfig.headers['X-Tenant-Name'] = tenantHeader;
@@ -131,7 +123,6 @@ export const springServiceMutator = async <T>(
     return requestConfig;
   });
 
-  // Add response interceptor for 401 error handling
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -140,7 +131,6 @@ export const springServiceMutator = async <T>(
 
         if (typeof window !== 'undefined' && !error.config?._retry) {
           try {
-            // Try to refresh session without importing from circular dependency
             const response = await fetch('/api/auth/session', {
               method: 'GET',
               credentials: 'include',
@@ -149,7 +139,6 @@ export const springServiceMutator = async <T>(
             if (response.ok) {
               const session = await response.json();
               if (session?.access_token && !session.error) {
-                // Update token cache with new token
                 tokenCache.invalidate();
 
                 error.config._retry = true;
@@ -164,7 +153,6 @@ export const springServiceMutator = async <T>(
             console.error('Auto refresh failed:', refreshError);
           }
 
-          // Emit session expired event using the proper event emitter
           sessionEventEmitter.emit('session-expired', {
             message: 'Your session has expired',
             statusCode: 401,
@@ -187,5 +175,4 @@ export const springServiceMutator = async <T>(
   return response.data;
 };
 
-// Export error type for Orval compatibility
 export type ErrorType<E> = E;

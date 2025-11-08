@@ -1,15 +1,8 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createMeetingParticipant,
   updateMeetingParticipant,
@@ -19,10 +12,8 @@ import { meetingParticipantToast } from '../components/meeting-participant-toast
 
 export async function createMeetingParticipantAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createMeetingParticipant(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/meeting-participants');
     revalidatePath('/meeting-participants/new');
     meetingParticipantToast.created();
@@ -37,10 +28,8 @@ export async function createMeetingParticipantAction(data: any) {
 
 export async function updateMeetingParticipantAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateMeetingParticipant(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/meeting-participants');
     revalidatePath(`/meeting-participants/${id}`);
     revalidatePath(`/meeting-participants/${id}/edit`);
@@ -128,7 +117,6 @@ export async function bulkArchiveMeetingParticipantAction(ids: number[], entitie
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/meeting-participants');
 
     if (errorCount === 0) {
@@ -176,7 +164,6 @@ export async function bulkUpdateStatusMeetingParticipantAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/meeting-participants');
 
     if (errorCount === 0) {

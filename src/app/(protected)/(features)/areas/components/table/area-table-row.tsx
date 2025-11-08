@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +19,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
 import { AreaDTOStatus } from '@/core/api/generated/spring/schemas/AreaDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +82,11 @@ export function AreaTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: AreaTableRowProps) {
-  // Get current status display info
   const currentStatus = area.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -124,8 +114,7 @@ export function AreaTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = area[column.accessor as keyof typeof area];
 
                 if (column.id === 'name') {
@@ -145,7 +134,7 @@ export function AreaTableRow({
                 }
 
                 if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPp') : ''; // PPp includes date and time
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 if (column.id === 'lastModifiedBy') {
@@ -153,13 +142,12 @@ export function AreaTableRow({
                 }
 
                 if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPp') : ''; // PPp includes date and time
+                  return field ? format(new Date(field as string), 'PPp') : '';
                 }
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 if (column.id === 'city') {
                   const cellKey = `${area.id}-city`;
                   return (

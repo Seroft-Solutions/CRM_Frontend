@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import { useState } from 'react';
@@ -39,9 +32,7 @@ interface GroupDetailsProps {
   id: number;
 }
 
-// Component to display relationship values by fetching related entity data
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
-  // Get the appropriate hook for this relationship
   const { data: organizationData } =
     relConfig.name === 'organization'
       ? useGetAllOrganizations(
@@ -75,7 +66,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
-  // Get the appropriate data for this relationship
   let allData = null;
   if (relConfig.name === 'organization') {
     allData = organizationData;
@@ -85,7 +75,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
   }
 
   if (!allData) {
-    // Fallback: try to use the existing data structure
     if (relConfig.multiple && Array.isArray(value)) {
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">None selected</span>;
@@ -100,7 +89,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     }
   }
 
-  // Extract data array from response (handle both direct array and paginated response)
   const dataArray = Array.isArray(allData)
     ? allData
     : allData.content
@@ -128,7 +116,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
     return <span>{displayValues.join(', ')}</span>;
   } else {
-    // Single value
     const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
     const selectedItem = dataArray.find((item: any) => item[relConfig.primaryKey] === valueId);
 
@@ -144,17 +131,14 @@ export function GroupDetails({ id }: GroupDetailsProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Get form config for step organization
   const formConfig = groupFormConfig;
 
-  // Fetch entity details
   const { data: entity, isLoading } = useGetGroup(id, {
     query: {
       enabled: !!id,
     },
   });
 
-  // Delete mutation
   const { mutate: deleteEntity } = useDeleteGroup({
     mutation: {
       onSuccess: () => {
@@ -172,7 +156,6 @@ export function GroupDetails({ id }: GroupDetailsProps) {
     setShowDeleteDialog(false);
   };
 
-  // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
       return value ? 'Yes' : 'No';
@@ -198,11 +181,9 @@ export function GroupDetails({ id }: GroupDetailsProps) {
       return value || <span className="text-muted-foreground italic">Not set</span>;
     }
 
-    // Default text/number fields
     return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
-  // Render relationship value using the enhanced display component
   const renderRelationshipValue = (relConfig: any, value: any) => {
     return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
@@ -223,7 +204,6 @@ export function GroupDetails({ id }: GroupDetailsProps) {
     );
   }
 
-  // Filter out review step and empty steps
   const displaySteps = formConfig.steps.filter(
     (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );

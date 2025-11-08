@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
@@ -14,7 +7,6 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const productCategoryFormConfig: FormConfig = {
   entity: 'ProductCategory',
 
-  // Form steps configuration
   steps: [
     {
       id: 'basic',
@@ -40,7 +32,6 @@ export const productCategoryFormConfig: FormConfig = {
     },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'name',
@@ -95,10 +86,8 @@ export const productCategoryFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
   relationships: [],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -144,20 +133,19 @@ export const productCategoryFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
       showRestorationDialog: true,
     },
   },
 };
 
-// Export utility functions for external use
 export const productCategoryFormHelpers = {
   getStepById: (stepId: string) =>
     productCategoryFormConfig.steps.find((step) => step.id === stepId),

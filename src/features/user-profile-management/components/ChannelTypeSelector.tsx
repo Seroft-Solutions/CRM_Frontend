@@ -114,7 +114,7 @@ export function CascadingChannelSelectors({
                 value={field.value}
                 onValueChange={(value) => {
                   field.onChange(value);
-                  // Clear channel party when channel type changes
+
                   form.setValue(channelPartyFieldName, undefined);
                 }}
                 displayField="name"

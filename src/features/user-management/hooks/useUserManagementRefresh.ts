@@ -12,19 +12,16 @@ export function useUserManagementRefresh() {
 
   const refreshOrganizationUsers = useCallback(
     async (organizationId: string) => {
-      // Invalidate all organization users queries for this org
       await queryClient.invalidateQueries({
         queryKey: ['organizationUsers', organizationId],
         exact: false,
       });
 
-      // Force immediate refetch
       await queryClient.refetchQueries({
         queryKey: ['organizationUsers', organizationId],
         exact: false,
       });
 
-      // Also refresh pending invitations
       await queryClient.invalidateQueries({
         queryKey: ['pendingInvitations', organizationId],
         exact: false,
@@ -50,7 +47,6 @@ export function useUserManagementRefresh() {
 
   const refreshAllUserData = useCallback(
     async (organizationId: string) => {
-      // Clear all caches first
       await queryClient.invalidateQueries({
         queryKey: ['organizationUsers'],
         exact: false,
@@ -66,7 +62,6 @@ export function useUserManagementRefresh() {
         exact: false,
       });
 
-      // Force refetch of organization users
       setTimeout(async () => {
         await queryClient.refetchQueries({
           queryKey: ['organizationUsers', organizationId],

@@ -20,7 +20,6 @@ export function useActivityTracker(options: ActivityTrackerOptions = {}) {
   const [lastActivity, setLastActivity] = useState(Date.now());
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  // Memoize events array to prevent re-renders
   const memoizedEvents = useMemo(() => events, [events.join(',')]);
 
   const resetIdleTimer = useCallback(() => {
@@ -28,12 +27,10 @@ export function useActivityTracker(options: ActivityTrackerOptions = {}) {
     setLastActivity(now);
     setIsIdle(false);
 
-    // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set new timeout
     timeoutRef.current = setTimeout(() => {
       setIsIdle(true);
     }, timeout);
@@ -46,16 +43,13 @@ export function useActivityTracker(options: ActivityTrackerOptions = {}) {
   useEffect(() => {
     if (!immediate) return;
 
-    // Initial setup
     resetIdleTimer();
 
-    // Add event listeners
     memoizedEvents.forEach((event) => {
       document.addEventListener(event, handleActivity, true);
     });
 
     return () => {
-      // Cleanup
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

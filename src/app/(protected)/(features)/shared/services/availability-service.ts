@@ -10,9 +10,9 @@ import {
 } from '@/core/api/generated/spring/schemas';
 
 export interface DefaultAvailabilityConfig {
-  startTime: string; // "09:00"
-  endTime: string; // "19:00"
-  slotDurationMinutes: number; // 30
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
   workingDays: UserAvailabilityDTODayOfWeek[];
   timeZone?: string;
 }
@@ -52,8 +52,8 @@ export class AvailabilityService {
       startTime: config.startTime,
       endTime: config.endTime,
       isAvailable: true,
-      effectiveFrom: new Date().toISOString().split('T')[0], // Today
-      effectiveTo: undefined, // No end date (permanent)
+      effectiveFrom: new Date().toISOString().split('T')[0],
+      effectiveTo: undefined,
       timeZone: config.timeZone,
       user: { id: userId } as any,
       createdBy: 'system',
@@ -78,13 +78,11 @@ export class AvailabilityService {
     while (currentDate <= endDate) {
       const dayOfWeek = this.getDayOfWeekEnum(currentDate.getDay());
 
-      // Only generate slots for working days
       if (config.workingDays.includes(dayOfWeek)) {
         const daySlots = this.generateDaySlots(userId, currentDate, config);
         slots.push(...daySlots);
       }
 
-      // Move to next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
@@ -122,7 +120,6 @@ export class AvailabilityService {
         lastModifiedDate: new Date().toISOString(),
       });
 
-      // Move to next slot
       currentMin += config.slotDurationMinutes;
       if (currentMin >= 60) {
         currentMin = 0;
@@ -158,7 +155,6 @@ export class AvailabilityService {
   ): GeneratedAvailability {
     const userAvailabilities = this.generateWeeklyAvailability(userId, config);
 
-    // Generate slots for next 30 days
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + 30);

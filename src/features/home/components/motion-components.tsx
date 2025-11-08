@@ -3,7 +3,6 @@
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
-// Common animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {

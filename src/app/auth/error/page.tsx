@@ -19,7 +19,6 @@ export default function AuthErrorPage() {
   const router = useRouter();
   const error = searchParams.get('error');
 
-  // Auto-redirect to login after 10 seconds for certain errors
   useEffect(() => {
     if (error === 'RefreshAccessTokenError') {
       const timer = setTimeout(() => {
@@ -30,7 +29,6 @@ export default function AuthErrorPage() {
     }
   }, [error]);
 
-  // Map error codes to user-friendly messages
   const getErrorDetails = () => {
     switch (error) {
       case 'RefreshAccessTokenError':

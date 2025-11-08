@@ -2,10 +2,8 @@
 
 import { Session } from 'next-auth';
 
-// Keycloak APIs
 import { getAdminRealmsRealmOrganizations } from '@/core/api/generated/keycloak/endpoints/organizations/organizations.gen';
 
-// Types
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import {
@@ -45,8 +43,6 @@ export class OrganizationSyncService {
       errors: [],
     };
 
-    // This service needs to be refactored to work with API-based organization data
-    // For now, we'll attempt to get organizations from Keycloak directly
     try {
       const keycloakOrgs = await getAdminRealmsRealmOrganizations(this.realm);
       if (!keycloakOrgs?.length) {
@@ -54,16 +50,13 @@ export class OrganizationSyncService {
         return result;
       }
 
-      // Use first organization found
       const sessionOrg = { id: keycloakOrgs[0].id!, name: keycloakOrgs[0].name! };
 
-      // Sync organization
       const orgResult = await this.syncOrganization(sessionOrg);
       result.organizationSynced = orgResult.synced;
       result.organizationId = orgResult.id;
       if (orgResult.error) result.errors.push(orgResult.error);
 
-      // Sync user profile
       const userResult = await this.syncUserProfile(session, result.organizationId);
       result.userProfileSynced = userResult.synced;
       result.userProfileId = userResult.id;
@@ -83,7 +76,6 @@ export class OrganizationSyncService {
     name: string;
   }): Promise<{ synced: boolean; id?: number; error?: string }> {
     try {
-      // Check if organization exists in Spring by keycloakOrgId
       const existingOrgs = await getAllOrganizations({
         'keycloakOrgId.equals': sessionOrg.id,
       });
@@ -92,7 +84,6 @@ export class OrganizationSyncService {
         return { synced: true, id: existingOrgs[0].id };
       }
 
-      // Get full organization data from Keycloak
       const keycloakOrgs = await getAdminRealmsRealmOrganizations(this.realm, {
         search: sessionOrg.name,
       });
@@ -102,13 +93,12 @@ export class OrganizationSyncService {
         return { synced: false, error: 'Organization not found in Keycloak' };
       }
 
-      // Create organization in Spring
       const organizationDTO: OrganizationDTO = {
         keycloakOrgId: sessionOrg.id,
         name: keycloakOrg.name || sessionOrg.name,
         displayName: keycloakOrg.displayName || sessionOrg.name,
         domain: keycloakOrg.domains?.[0]?.name,
-        status: 'ACTIVE', // Required field with enum value
+        status: 'ACTIVE',
         createdDate: new Date().toISOString(),
       };
 
@@ -138,7 +128,6 @@ export class OrganizationSyncService {
         return { synced: false, error: 'Invalid session data' };
       }
 
-      // Check if user profile exists in Spring by keycloakId
       const existingUsers = await searchUserProfiles({
         query: `keycloakId:${session.user.id}`,
       });
@@ -146,12 +135,10 @@ export class OrganizationSyncService {
       if (existingUsers?.length > 0) {
         const existingUser = existingUsers[0];
 
-        // Check if user needs organization association
         if (
           organizationId &&
           existingUser.organization?.every((org) => org.id !== organizationId)
         ) {
-          // TODO: Add API to associate user with organization
           console.log('User profile exists but needs organization association', {
             userId: existingUser.id,
             organizationId,
@@ -161,13 +148,12 @@ export class OrganizationSyncService {
         return { synced: true, id: existingUser.id };
       }
 
-      // Create user profile in Spring
       const userProfileDTO: UserProfileDTO = {
         keycloakId: session.user.id,
         email: session.user.email,
         firstName: session.user.name?.split(' ')[0] || '',
         lastName: session.user.name?.split(' ').slice(1).join(' ') || '',
-        status: 'ACTIVE', // Use status instead of isActive
+        status: 'ACTIVE',
         createdDate: new Date().toISOString(),
         organization: organizationId ? [{ id: organizationId }] : undefined,
       };
@@ -191,8 +177,6 @@ export class OrganizationSyncService {
    * Note: This method is deprecated as organizations are now fetched via API
    */
   static async checkSyncNeeded(session: Session): Promise<boolean> {
-    // This method needs to be refactored to work with API-based organization data
-    // For now, return false as sync logic should be handled elsewhere
     console.warn(
       'OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking'
     );
