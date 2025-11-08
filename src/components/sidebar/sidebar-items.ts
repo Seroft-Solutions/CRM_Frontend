@@ -55,6 +55,16 @@ export const sidebarItems: SidebarItem[] = [
                 path: '/calls',
                 requiredPermission: 'call:sidebar',
             },
+            {
+                key: 'callImport',
+                label: 'Import Leads',
+                path: '/calls/import',
+            },
+            {
+                key: 'callImportHistory',
+                label: 'Import History',
+                path: '/calls/import/results',
+            },
         ],
     },
     {
@@ -181,11 +191,5 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Bulk Import',
         path: '/import',
         icon: ArrowDownToLine,
-    },
-    {
-        key: 'call import',
-        label: 'Bulk Import Call',
-        path: '/calls/import',
-        icon: ArrowDownToLine,
-    },
+    }
 ];
