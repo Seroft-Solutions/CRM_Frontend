@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
 
 /**
@@ -14,67 +7,32 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const callFormConfig: FormConfig = {
   entity: 'Call',
 
-  // Form steps configuration
   steps: [
     {
       id: 'business',
       title: 'Business Relations',
       description: 'Connect with customers and sources',
       fields: [],
-      relationships: ['source', 'customer', 'product','channelParties', 'channelType'],
+      relationships: ['source', 'customer', 'product', 'channelParties', 'channelType'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
-    // {
-    //   id: 'channel',
-    //   title: 'Channel Details',
-    //   description: 'Channel type and parties',
-    //   fields: [],
-    //   relationships: [],
-    //   validation: {
-    //     mode: 'onBlur',
-    //     validateOnNext: true,
-    //   },
-    // },
+
     {
       id: 'classification',
       title: 'Classification',
       description: 'Set priority, status, and categories',
       fields: ['leadNo'],
-      relationships: ['priority', 'callType', 'subCallType', 'callStatus','assignedTo'],
+      relationships: ['priority', 'callType', 'subCallType', 'callStatus', 'assignedTo'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
       },
     },
-
-    // {
-    //   id: 'assignment and remarks',
-    //   title: 'Assignment and Remarks',
-    //   description: 'Assign user and add any additional remarks or notes',
-    //   fields: [],
-    //   relationships: [],
-    //   validation: {
-    //     mode: 'onBlur',
-    //     validateOnNext: true,
-    //   },
-    // },
-    // {
-    //   id: 'review',
-    //   title: 'Review',
-    //   description: 'Confirm your details',
-    //   fields: [],
-    //   relationships: [],
-    //   validation: {
-    //     mode: 'onBlur',
-    //     validateOnNext: true,
-    //   },
-    // },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'leadNo',
@@ -108,7 +66,6 @@ export const callFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
   relationships: [
     {
       name: 'priority',
@@ -388,7 +345,6 @@ export const callFormConfig: FormConfig = {
     },
   ],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -434,19 +390,18 @@ export const callFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: true, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: true,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
     },
   },
 };
 
-// Export utility functions for external use
 export const callFormHelpers = {
   getStepById: (stepId: string) => callFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>

@@ -1,8 +1,7 @@
-"use client";
-// JUSTIFICATION: Requires user interaction for file removal
+'use client';
 
-import { X, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { X, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export interface FileWithPreview {
   file: File;
@@ -67,7 +66,7 @@ function ImagePreviewItem({
         alt={fileWithPreview.file.name}
         className="w-full h-full object-cover"
         style={{
-          display: imageLoaded ? 'block' : 'none'
+          display: imageLoaded ? 'block' : 'none',
         }}
         onLoad={() => {
           console.log('Image loaded successfully:', fileWithPreview.file.name);
@@ -79,7 +78,7 @@ function ImagePreviewItem({
             previewUrl: fileWithPreview.preview,
             fileType: fileWithPreview.file.type,
             fileSize: fileWithPreview.file.size,
-            error: e
+            error: e,
           });
           setImageError(true);
         }}
@@ -103,9 +102,7 @@ function ImagePreviewItem({
 
       {/* File Info Overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-        <p className="text-xs text-white truncate font-medium">
-          {fileWithPreview.file.name}
-        </p>
+        <p className="text-xs text-white truncate font-medium">{fileWithPreview.file.name}</p>
         <p className="text-xs text-gray-300">
           {(fileWithPreview.file.size / 1024 / 1024).toFixed(2)} MB
         </p>

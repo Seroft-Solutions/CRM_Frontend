@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +19,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRemarkDTO';
 import { CallRemarkDTOStatus } from '@/core/api/generated/spring/schemas/CallRemarkDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +82,11 @@ export function CallRemarkTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: CallRemarkTableRowProps) {
-  // Get current status display info
   const currentStatus = callRemark.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -127,8 +117,7 @@ export function CallRemarkTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = callRemark[column.accessor as keyof typeof callRemark];
 
                 if (column.id === 'remark') {
@@ -161,8 +150,7 @@ export function CallRemarkTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 if (column.id === 'call') {
                   const cellKey = `${callRemark.id}-call`;
                   return (

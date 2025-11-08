@@ -1,4 +1,3 @@
-// Enhanced User Management Components
 export { InviteUsers } from './InviteUsers';
 export { PendingInvitations } from './PendingInvitations';
 export { OrganizationUsers } from './OrganizationUsers';

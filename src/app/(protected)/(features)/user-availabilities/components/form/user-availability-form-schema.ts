@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * UserAvailability form validation schema with user-friendly messages
  */
@@ -44,7 +37,6 @@ export const userAvailabilityFormSchema = z.object(userAvailabilityFormSchemaFie
 
 export type UserAvailabilityFormValues = z.infer<typeof userAvailabilityFormSchema>;
 
-// Individual field schemas for granular validation
 export const userAvailabilityFieldSchemas = {
   dayOfWeek: z
     .string({ message: 'Please enter dayofweek' })
@@ -75,7 +67,6 @@ export const userAvailabilityFieldSchemas = {
   user: z.string().optional(),
 };
 
-// Step-specific validation schemas
 export const userAvailabilityStepSchemas = {
   basic: z.object({
     dayOfWeek: userAvailabilityFieldSchemas.dayOfWeek,
@@ -94,7 +85,6 @@ export const userAvailabilityStepSchemas = {
   review: userAvailabilityFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = userAvailabilityStepSchemas[stepId as keyof typeof userAvailabilityStepSchemas];
   if (!schema) return { success: true, data };

@@ -16,11 +16,10 @@ export function hasOrganizations(organizations: UserOrganization[] | undefined):
  * Legacy session-based function (deprecated - use API-based functions)
  */
 export function hasOrganization(session: Session | null): boolean {
-  // For backward compatibility during migration
   console.warn(
     'hasOrganization(session) is deprecated - use hasOrganizations(organizations) with API data'
   );
-  return false; // Always return false to force API-based checks
+  return false;
 }
 
 /**

@@ -25,11 +25,9 @@ import type {
 import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 import { toast } from 'sonner';
 
-// Export additional hooks
 export { useUserRoleGroupCounts, useBatchUserRoleGroupCounts } from './useUserRoleGroupCounts';
 export { useUserManagementRefresh } from './useUserManagementRefresh';
 
-// Query Keys
 export const USER_MANAGEMENT_QUERY_KEYS = {
   organizationUsers: (orgId: string, filters?: UserFilters) => [
     'organizationUsers',
@@ -47,7 +45,6 @@ export const USER_MANAGEMENT_QUERY_KEYS = {
   ],
 } as const;
 
-// Hook for organization users list
 export function useOrganizationUsers(organizationId: string, filters?: UserFilters) {
   const {
     data: userListResponse,
@@ -58,11 +55,11 @@ export function useOrganizationUsers(organizationId: string, filters?: UserFilte
     queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(organizationId, filters),
     queryFn: () => userManagementService.getOrganizationUsers(organizationId, filters),
     enabled: !!organizationId,
-    staleTime: 0, // Always consider data stale so it refetches readily
-    cacheTime: 30 * 1000, // Keep cache for 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    refetchOnMount: true, // Always refetch on mount
-    refetchInterval: false, // Don't auto-refresh continuously
+    staleTime: 0,
+    cacheTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: false,
   });
 
   return {
@@ -76,7 +73,6 @@ export function useOrganizationUsers(organizationId: string, filters?: UserFilte
   };
 }
 
-// Hook for user details
 export function useUserDetails(organizationId: string, userId: string) {
   const {
     data: userDetails,
@@ -87,7 +83,7 @@ export function useUserDetails(organizationId: string, userId: string) {
     queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(organizationId, userId),
     queryFn: () => userManagementService.getUserDetails(organizationId, userId),
     enabled: !!organizationId && !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 
   return {
@@ -98,7 +94,6 @@ export function useUserDetails(organizationId: string, userId: string) {
   };
 }
 
-// Hook for available realm roles
 export function useAvailableRoles() {
   const {
     data: roles,
@@ -107,7 +102,7 @@ export function useAvailableRoles() {
   } = useQuery({
     queryKey: USER_MANAGEMENT_QUERY_KEYS.availableRoles,
     queryFn: () => userManagementService.getAvailableRealmRoles(),
-    staleTime: 10 * 60 * 1000, // 10 minutes - roles don't change often
+    staleTime: 10 * 60 * 1000,
   });
 
   return {
@@ -117,7 +112,6 @@ export function useAvailableRoles() {
   };
 }
 
-// Hook for available groups
 export function useAvailableGroups() {
   const {
     data: groups,
@@ -126,7 +120,7 @@ export function useAvailableGroups() {
   } = useQuery({
     queryKey: USER_MANAGEMENT_QUERY_KEYS.availableGroups,
     queryFn: () => userManagementService.getAvailableGroups(),
-    staleTime: 10 * 60 * 1000, // 10 minutes - groups don't change often
+    staleTime: 10 * 60 * 1000,
   });
 
   return {
@@ -136,7 +130,6 @@ export function useAvailableGroups() {
   };
 }
 
-// ENHANCED: Hook for pending invitations
 export function usePendingInvitations(organizationId: string, filters?: InvitationFilters) {
   const {
     data: invitationResponse,
@@ -147,7 +140,7 @@ export function usePendingInvitations(organizationId: string, filters?: Invitati
     queryKey: USER_MANAGEMENT_QUERY_KEYS.pendingInvitations(organizationId, filters),
     queryFn: () => userManagementService.getPendingInvitations(organizationId, filters),
     enabled: !!organizationId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 
   return {
@@ -161,7 +154,6 @@ export function usePendingInvitations(organizationId: string, filters?: Invitati
   };
 }
 
-// ENHANCED: Hook for user invitation with groups
 export function useInviteUserWithGroups() {
   const queryClient = useQueryClient();
 
@@ -172,9 +164,7 @@ export function useInviteUserWithGroups() {
       if (result.success) {
         toast.success(result.message || 'User invited successfully');
 
-        // Optimized refresh strategy - prevents infinite loops
         const performRefresh = async () => {
-          // Step 1: Invalidate queries (mark as stale)
           await Promise.all([
             queryClient.invalidateQueries({
               queryKey: ['organizationUsers', variables.organizationId],
@@ -186,21 +176,20 @@ export function useInviteUserWithGroups() {
             }),
           ]);
 
-          // Step 2: Single delayed refetch to allow backend processing
           setTimeout(async () => {
             await Promise.all([
               queryClient.refetchQueries({
                 queryKey: ['organizationUsers', variables.organizationId],
                 exact: false,
-                type: 'active', // Only refetch active queries
+                type: 'active',
               }),
               queryClient.refetchQueries({
                 queryKey: ['pendingInvitations', variables.organizationId],
                 exact: false,
-                type: 'active', // Only refetch active queries
+                type: 'active',
               }),
             ]);
-          }, 500); // Single 500ms delay
+          }, 500);
         };
 
         performRefresh();
@@ -223,7 +212,6 @@ export function useInviteUserWithGroups() {
   };
 }
 
-// Hook for user invitation (enhanced backward compatibility)
 export function useInviteUser() {
   const queryClient = useQueryClient();
 
@@ -250,7 +238,6 @@ export function useInviteUser() {
   };
 }
 
-// Hook for removing user from organization
 export function useRemoveUser() {
   const queryClient = useQueryClient();
 
@@ -259,7 +246,7 @@ export function useRemoveUser() {
       userManagementService.removeUserFromOrganization(organizationId, userId),
     onSuccess: (_, variables) => {
       toast.success('User removed from organization successfully');
-      // Invalidate and refetch organization users
+
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.organizationUsers(variables.organizationId),
       });
@@ -276,7 +263,6 @@ export function useRemoveUser() {
   };
 }
 
-// Hook for role assignment
 export function useRoleAssignment() {
   const queryClient = useQueryClient();
 
@@ -286,7 +272,6 @@ export function useRoleAssignment() {
       const action = variables.action === 'assign' ? 'assigned' : 'unassigned';
       toast.success(`Roles ${action} successfully`);
 
-      // Invalidate user details and organization users
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(
           variables.organizationId,
@@ -309,7 +294,6 @@ export function useRoleAssignment() {
   };
 }
 
-// Hook for group assignment
 export function useGroupAssignment() {
   const queryClient = useQueryClient();
 
@@ -319,7 +303,6 @@ export function useGroupAssignment() {
       const action = variables.action === 'assign' ? 'assigned' : 'unassigned';
       toast.success(`Groups ${action} successfully`);
 
-      // Invalidate user details and organization users
       queryClient.invalidateQueries({
         queryKey: USER_MANAGEMENT_QUERY_KEYS.userDetails(
           variables.organizationId,
@@ -342,7 +325,6 @@ export function useGroupAssignment() {
   };
 }
 
-// Hook for organization context - Gets organization from API
 export function useOrganizationContext() {
   const { data: session, status } = useSession();
   const { data: organizations, isLoading: orgLoading } = useUserOrganizations();
@@ -363,9 +345,8 @@ export function useOrganizationContext() {
       return;
     }
 
-    // Get organization from API data
     if (organizations && organizations.length > 0) {
-      const primaryOrg = organizations[0]; // Use first organization as primary
+      const primaryOrg = organizations[0];
       setOrganizationId(primaryOrg.id);
       setOrganizationName(primaryOrg.name);
 
@@ -375,7 +356,6 @@ export function useOrganizationContext() {
         totalOrgs: organizations.length,
       });
     } else {
-      // User has no organizations
       console.warn('User has no organizations, using fallback');
       setOrganizationId('');
       setOrganizationName('No Organization');
@@ -384,7 +364,6 @@ export function useOrganizationContext() {
     setIsLoading(false);
   }, [session, status, organizations, orgLoading]);
 
-  // Function to switch organization (if user has multiple)
   const switchOrganization = useCallback(
     (orgId: string) => {
       if (organizations) {
@@ -405,11 +384,10 @@ export function useOrganizationContext() {
     availableOrganizations: organizations || [],
     hasMultipleOrganizations: (organizations?.length || 0) > 1,
     switchOrganization,
-    setOrganizationId, // Keep for backward compatibility
+    setOrganizationId,
   };
 }
 
-// ENHANCED: Hook for user groups management
 export function useUserGroups(userId: string) {
   const {
     data: userGroupsData,
@@ -433,7 +411,6 @@ export function useUserGroups(userId: string) {
   };
 }
 
-// ENHANCED: Hook for assigning user groups
 export function useAssignUserGroups() {
   const queryClient = useQueryClient();
 
@@ -469,7 +446,6 @@ export function useAssignUserGroups() {
   };
 }
 
-// Custom hook for bulk operations
 export function useBulkUserOperations() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({

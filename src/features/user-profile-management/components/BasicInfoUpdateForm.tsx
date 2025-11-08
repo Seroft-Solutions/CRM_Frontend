@@ -21,7 +21,6 @@ import {
 import { Loader2, Save, User } from 'lucide-react';
 import { useUserProfileUpdate } from '../hooks/useUserProfileUpdate';
 
-// Validation schema for basic info update
 const basicInfoSchema = z.object({
   firstName: z
     .string({ message: 'Please enter your first name' })
@@ -63,11 +62,9 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
     },
   });
 
-  // Initialize form with current user data
   useEffect(() => {
     const initializeForm = async () => {
       try {
-        // Extract names from session
         const nameParts = session.user?.name?.split(' ') || [];
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -105,7 +102,6 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
     });
 
     if (success) {
-      // Form will be reset and success message shown by the hook
     }
   };
 

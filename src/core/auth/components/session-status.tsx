@@ -16,7 +16,6 @@ export function SessionStatus({ className, showInProduction = false }: SessionSt
   const { isIdle, minutesIdle, getActivityStatus, getTimeUntilWarning, getTimeUntilLogout } =
     useIdleTimeout();
 
-  // Hide in production unless explicitly shown
   if (process.env.NODE_ENV === 'production' && !showInProduction) {
     return null;
   }

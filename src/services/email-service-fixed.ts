@@ -62,7 +62,6 @@ class EnhancedEmailService {
 
     let lastError: Error | null = null;
 
-    // Try different email delivery methods in order of preference
     const deliveryMethods = this.getAvailableDeliveryMethods();
 
     for (const method of deliveryMethods) {
@@ -81,12 +80,10 @@ class EnhancedEmailService {
         console.warn(`Email delivery via ${method} failed:`, error.message);
         lastError = error;
 
-        // Add delay before trying next method
         await this.delay(this.config.retryDelayMs);
       }
     }
 
-    // All methods failed
     const failureStatus: EmailDeliveryStatus = {
       sent: false,
       error: lastError?.message || 'All email delivery methods failed',
@@ -96,7 +93,6 @@ class EnhancedEmailService {
 
     this.deliveryStatus.set(emailKey, failureStatus);
 
-    // Schedule for manual notification as fallback
     await this.scheduleManualNotification(emailData, failureStatus.error!);
 
     return failureStatus;
@@ -371,7 +367,6 @@ If you didn't expect this invitation, you can safely ignore this email.
     error: string
   ): Promise<void> {
     try {
-      // Create a notification for administrators
       await fetch('/api/notifications/manual-invitation', {
         method: 'POST',
         headers: {
@@ -398,7 +393,6 @@ If you didn't expect this invitation, you can safely ignore this email.
    * Check email delivery status
    */
   async checkDeliveryStatus(recipientEmail: string): Promise<EmailDeliveryStatus | null> {
-    // Look for the most recent delivery status for this email
     for (const [key, status] of this.deliveryStatus.entries()) {
       if (key.includes(recipientEmail)) {
         return status;
@@ -445,7 +439,6 @@ If you didn't expect this invitation, you can safely ignore this email.
       errors: [] as string[],
     };
 
-    // Test Keycloak email capability
     try {
       const response = await fetch('/api/keycloak/test-email', { method: 'POST' });
       results.keycloak = response.ok;
@@ -456,7 +449,6 @@ If you didn't expect this invitation, you can safely ignore this email.
       results.errors.push(`Keycloak: ${error.message}`);
     }
 
-    // Test SMTP
     try {
       const response = await fetch('/api/email/test', { method: 'POST' });
       results.smtp = response.ok;
@@ -467,7 +459,6 @@ If you didn't expect this invitation, you can safely ignore this email.
       results.errors.push(`SMTP: ${error.message}`);
     }
 
-    // Test SendGrid
     try {
       const response = await fetch('/api/email/sendgrid/test', { method: 'POST' });
       results.sendgrid = response.ok;

@@ -15,14 +15,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { FileText, Plus, Loader2, Trash2 } from 'lucide-react';
 import type { DraftItem } from '@/core/hooks/use-entity-drafts';
 
-// Import leadNo formatter for calls (with try-catch to handle if not available)
 let formatLeadNoForDisplay: ((leadNo: string) => string) | null = null;
 try {
   const leadNoUtils = require('@/app/(protected)/(features)/calls/utils/leadNo-generator');
   formatLeadNoForDisplay = leadNoUtils.formatLeadNoForDisplay;
-} catch {
-  // Module not available, will use raw leadNo
-}
+} catch {}
 
 export interface DraftRestorationDialogProps {
   open: boolean;
@@ -63,7 +60,7 @@ export function DraftRestorationDialog({
   };
 
   const handleRestoreDraft = async (draftId: number) => {
-    if (restoringDraftId) return; // Prevent multiple clicks
+    if (restoringDraftId) return;
     setRestoringDraftId(draftId);
     try {
       onRestoreDraft(draftId);
@@ -93,14 +90,12 @@ export function DraftRestorationDialog({
   };
 
   const getDraftDisplayName = (draft: DraftItem) => {
-    // Try to get leadNo from form data for calls
     if (entityType.toLowerCase() === 'call' && draft.data.formData?.leadNo) {
       const leadNo = draft.data.formData.leadNo;
       const formattedLeadNo = formatLeadNoForDisplay ? formatLeadNoForDisplay(leadNo) : leadNo;
       return `Lead ${formattedLeadNo}`;
     }
 
-    // Try to get other identifying fields for different entity types
     const formData = draft.data.formData;
     if (formData?.name) {
       return formData.name;
@@ -112,7 +107,6 @@ export function DraftRestorationDialog({
       return formData.customerBusinessName;
     }
 
-    // Fallback to draft ID
     return `Draft #${draft.id}`;
   };
 

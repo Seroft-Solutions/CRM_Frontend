@@ -2,7 +2,6 @@
 
 import { Session } from 'next-auth';
 
-// Types
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
 import { createOrganizationWithSchema } from '@/core/api/generated/spring';
@@ -10,8 +9,8 @@ import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 export interface OrganizationSetupRequest {
   organizationName: string;
   domain?: string;
-  organizationCode?: string; // Optional code for custom org codes
-  organizationEmail?: string; // Optional email for org contact
+  organizationCode?: string;
+  organizationEmail?: string;
 }
 
 export interface OrganizationSetupResult {
@@ -42,22 +41,18 @@ export class OrganizationSetupService {
     }
 
     try {
-      // Step 1: Get correct Keycloak user ID
       console.log('Step 1: Getting Keycloak user ID...');
       const keycloakUserId = await this.getKeycloakUserId();
       console.log('✓ Step 1 completed - Keycloak user ID:', keycloakUserId);
 
-      // Step 2: Create Keycloak organization
       console.log('Step 2: Creating Keycloak organization...');
       const keycloakOrgId = await this.createKeycloakOrganization(request);
       console.log('✓ Step 2 completed - Keycloak org ID:', keycloakOrgId);
 
-      // Step 3: Add user as organization member
       console.log('Step 3: Adding user to organization...');
       await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
       console.log('✓ Step 3 completed - User added to organization');
 
-      // Step 4: Create Spring organization record and setup tenant schema
       console.log('Step 4: Creating Spring organization with schema setup...');
       try {
         const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
@@ -73,10 +68,9 @@ export class OrganizationSetupService {
           console.log('⚠️ Setup timed out on frontend, but backend may still be processing');
           console.log('✓ Returning partial result - progress tracking will handle completion');
 
-          // Return partial result, progress tracking will monitor completion
           return {
             keycloakOrgId,
-            springOrgId: 0, // Placeholder - actual ID will be retrieved by progress tracking
+            springOrgId: 0,
           };
         }
         throw error;
@@ -113,14 +107,13 @@ export class OrganizationSetupService {
   private async createKeycloakOrganization(request: OrganizationSetupRequest): Promise<string> {
     const organizationData = {
       organizationName: request.organizationName,
-      displayName: request.organizationName, // Use organization name as display name
+      displayName: request.organizationName,
       description: `CRM organization for ${request.organizationName}`,
       organizationCode: request.organizationCode,
       organizationEmail: request.organizationEmail,
       domain: request.domain,
     };
 
-    // Create the organization via API route
     const createResponse = await fetch('/api/keycloak/organizations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -130,7 +123,6 @@ export class OrganizationSetupService {
     if (!createResponse.ok) {
       const error = await createResponse.json();
 
-      // Handle 409 conflict error specifically
       if (createResponse.status === 409) {
         throw new Error('ORGANIZATION_EXISTS');
       }
@@ -138,7 +130,6 @@ export class OrganizationSetupService {
       throw new Error(error.error || 'Failed to create organization');
     }
 
-    // Fetch organizations to get the created one's ID
     const listResponse = await fetch(
       `/api/keycloak/organizations?search=${encodeURIComponent(request.organizationName)}`
     );
@@ -166,7 +157,7 @@ export class OrganizationSetupService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId,
-        isOrganizationOwner: true, // Flag to indicate this user should get admin privileges
+        isOrganizationOwner: true,
       }),
     });
 
@@ -195,15 +186,13 @@ export class OrganizationSetupService {
       keycloakOrgId,
       name: request.organizationName,
       displayName: request.organizationName,
-      status: 'ACTIVE', // Required field with enum value
+      status: 'ACTIVE',
       ...(request.domain && { domain: request.domain }),
     };
 
     console.log('Sending OrganizationDTO to Spring:', organizationDTO);
 
     try {
-      // Use the correct endpoint that creates organization AND sets up schema
-      // This is a long-running operation, so we handle timeouts gracefully
       const response = await createOrganizationWithSchema(organizationDTO);
 
       if (!response.id) {
@@ -212,14 +201,11 @@ export class OrganizationSetupService {
 
       return response.id;
     } catch (error: any) {
-      // If it's a timeout error, the backend might still be processing
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
         console.log(
           '⚠️ Organization creation timed out on frontend, but backend may still be processing...'
         );
 
-        // For timeout errors, we'll return a placeholder ID and let the progress tracking handle it
-        // The progress component will poll for actual completion
         throw new Error('SETUP_TIMEOUT');
       }
 
@@ -233,7 +219,6 @@ export class OrganizationSetupService {
    * TODO: Implement proper organization checking logic
    */
   static hasOrganization(session: Session | null): boolean {
-    // TODO: Implement organization checking logic
     return false;
   }
 
@@ -242,7 +227,6 @@ export class OrganizationSetupService {
    * TODO: Implement proper organization retrieval logic
    */
   static getPrimaryOrganization(session: Session | null) {
-    // TODO: Implement organization retrieval logic
     return null;
   }
 }

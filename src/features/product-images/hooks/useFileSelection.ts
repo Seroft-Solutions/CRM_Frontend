@@ -1,11 +1,11 @@
-import { useState } from "react";
-import type { FileWithPreview } from "../components/ImagePreviewGrid";
+import { useState } from 'react';
+import type { FileWithPreview } from '../components/ImagePreviewGrid';
 
-const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_FORMATS = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface UseFileSelectionOptions {
   maxFiles: number;
-  maxFileSize: number; // in MB
+  maxFileSize: number;
 }
 
 /**
@@ -44,8 +44,6 @@ export function useFileSelection({ maxFiles, maxFileSize }: UseFileSelectionOpti
         return;
       }
 
-      // Use URL.createObjectURL for blob URL generation
-      // This creates a temporary URL that points to the File object in memory
       const preview = URL.createObjectURL(file);
 
       console.log('Created preview URL:', preview, 'for file:', file.name, 'type:', file.type);
@@ -58,7 +56,7 @@ export function useFileSelection({ maxFiles, maxFileSize }: UseFileSelectionOpti
     });
 
     if (errors.length > 0) {
-      setError(errors.join(" "));
+      setError(errors.join(' '));
     } else {
       setError(null);
     }

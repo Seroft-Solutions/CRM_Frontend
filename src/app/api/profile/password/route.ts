@@ -23,13 +23,11 @@ export interface UpdatePasswordRequest {
  */
 export async function PUT(request: NextRequest) {
   try {
-    // Get current session
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No authenticated user found' }, { status: 401 });
     }
 
-    // Verify admin permissions for Keycloak operations
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -43,7 +41,6 @@ export async function PUT(request: NextRequest) {
     const updateData: UpdatePasswordRequest = await request.json();
     const { currentPassword, newPassword } = updateData;
 
-    // Validate required fields
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
         { error: 'Current password and new password are required' },
@@ -51,15 +48,12 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get current Keycloak user
     let keycloakUser: UserRepresentation | null = null;
     let userId = session.user.id;
 
     try {
-      // First try to get by user ID if it's a Keycloak ID
       keycloakUser = await getAdminRealmsRealmUsersUserId(realm, userId);
     } catch (error) {
-      // If that fails, search by email to get the actual Keycloak user ID
       if (session.user.email) {
         const users = await getAdminRealmsRealmUsers(realm, {
           email: session.user.email,
@@ -79,21 +73,18 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Verify current password by attempting to authenticate
     try {
       await verifyCurrentPassword(keycloakUser.username, currentPassword);
     } catch (authError) {
       return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
     }
 
-    // Create new password credential
     const passwordCredential: CredentialRepresentation = {
       type: 'password',
       value: newPassword,
-      temporary: false, // User doesn't need to change password on next login
+      temporary: false,
     };
 
-    // Update password in Keycloak
     await putAdminRealmsRealmUsersUserIdResetPassword(realm, userId, passwordCredential);
 
     return NextResponse.json({
@@ -103,7 +94,6 @@ export async function PUT(request: NextRequest) {
   } catch (error: any) {
     console.error('Profile password update API error:', error);
 
-    // Handle specific Keycloak errors
     if (error.status === 404) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -152,8 +142,6 @@ async function verifyCurrentPassword(username: string, password: string): Promis
 
       throw new Error('Authentication verification failed');
     }
-
-    // If we get here, the current password is correct
   } catch (error) {
     if (error instanceof Error) {
       throw error;

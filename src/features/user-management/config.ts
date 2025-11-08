@@ -4,28 +4,22 @@
  */
 
 export const USER_MANAGEMENT_CONFIG = {
-  // Pagination settings
   DEFAULT_PAGE_SIZE: 20,
   MAX_PAGE_SIZE: 100,
 
-  // Search settings
   SEARCH_DEBOUNCE_MS: 300,
   MIN_SEARCH_LENGTH: 2,
 
-  // Invitation settings
   MAX_BULK_INVITATIONS: 50,
   INVITATION_TIMEOUT_MS: 30000,
 
-  // Role and group settings
   MAX_VISIBLE_BADGES: 3,
   MAX_ROLES_PER_USER: 100,
   MAX_GROUPS_PER_USER: 50,
 
-  // UI settings
   CARD_HOVER_DELAY: 200,
   TOAST_DURATION: 5000,
 
-  // Avatar settings
   AVATAR_SIZES: {
     sm: 'h-6 w-6',
     md: 'h-8 w-8',
@@ -33,15 +27,13 @@ export const USER_MANAGEMENT_CONFIG = {
     xl: 'h-16 w-16',
   },
 
-  // Query stale times (in milliseconds)
   STALE_TIME: {
-    USERS: 5 * 60 * 1000, // 5 minutes
-    USER_DETAILS: 2 * 60 * 1000, // 2 minutes
-    ROLES: 10 * 60 * 1000, // 10 minutes
-    GROUPS: 10 * 60 * 1000, // 10 minutes
+    USERS: 5 * 60 * 1000,
+    USER_DETAILS: 2 * 60 * 1000,
+    ROLES: 10 * 60 * 1000,
+    GROUPS: 10 * 60 * 1000,
   },
 
-  // Error messages
   ERROR_MESSAGES: {
     FETCH_USERS_FAILED: 'Failed to load organization users',
     FETCH_USER_DETAILS_FAILED: 'Failed to load user details',
@@ -51,7 +43,6 @@ export const USER_MANAGEMENT_CONFIG = {
     REMOVE_USER_FAILED: 'Failed to remove user from organization',
   },
 
-  // Success messages
   SUCCESS_MESSAGES: {
     USER_INVITED: 'User invitation sent successfully',
     ROLES_ASSIGNED: 'Roles assigned successfully',
@@ -59,7 +50,6 @@ export const USER_MANAGEMENT_CONFIG = {
     USER_REMOVED: 'User removed from organization',
   },
 
-  // Validation rules
   VALIDATION: {
     EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     NAME_MIN_LENGTH: 1,
@@ -68,7 +58,6 @@ export const USER_MANAGEMENT_CONFIG = {
     USERNAME_MAX_LENGTH: 30,
   },
 
-  // Feature flags
   FEATURES: {
     BULK_OPERATIONS: true,
     CSV_IMPORT: false,
@@ -78,5 +67,4 @@ export const USER_MANAGEMENT_CONFIG = {
   },
 } as const;
 
-// Type for the configuration
 export type UserManagementConfig = typeof USER_MANAGEMENT_CONFIG;

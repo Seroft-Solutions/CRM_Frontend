@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * ChannelType form validation schema with user-friendly messages
  */
@@ -32,7 +25,6 @@ export const channelTypeFormSchema = z.object(channelTypeFormSchemaFields);
 
 export type ChannelTypeFormValues = z.infer<typeof channelTypeFormSchema>;
 
-// Individual field schemas for granular validation
 export const channelTypeFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -51,7 +43,6 @@ export const channelTypeFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const channelTypeStepSchemas = {
   basic: z.object({
     name: channelTypeFieldSchemas.name,
@@ -67,7 +58,6 @@ export const channelTypeStepSchemas = {
   review: channelTypeFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = channelTypeStepSchemas[stepId as keyof typeof channelTypeStepSchemas];
   if (!schema) return { success: true, data };

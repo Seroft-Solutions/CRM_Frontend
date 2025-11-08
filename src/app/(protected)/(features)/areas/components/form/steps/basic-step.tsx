@@ -13,7 +13,6 @@ interface AreaBasicStepProps {
 }
 
 export function AreaBasicStep({ form, config, actions, entity }: AreaBasicStepProps) {
-  // Set default status to ACTIVE if not already set
   React.useEffect(() => {
     const currentStatus = form.getValues('status');
     if (!currentStatus) {

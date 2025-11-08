@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   ProductImageUploader,
   ProductImageGallery,
   useProductImages,
   useDeleteImage,
   useReorderImages,
-} from "@/features/product-images";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeftRight } from "lucide-react";
+} from '@/features/product-images';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeftRight } from 'lucide-react';
 
 interface ProductImagesManagerProps {
   productId: number;
@@ -24,7 +24,7 @@ interface ProductImagesManagerProps {
  */
 export function ProductImagesManager({ productId, organizationId }: ProductImagesManagerProps) {
   const [isReordering, setIsReordering] = useState(false);
-  
+
   const { data: images = [], isLoading, refetch } = useProductImages(productId);
   const deleteImage = useDeleteImage();
   const reorderImages = useReorderImages();
@@ -34,7 +34,7 @@ export function ProductImagesManager({ productId, organizationId }: ProductImage
   };
 
   const handleDelete = async (imageId: number) => {
-    if (confirm("Are you sure you want to delete this image?")) {
+    if (confirm('Are you sure you want to delete this image?')) {
       await deleteImage.mutateAsync(imageId);
     }
   };
@@ -63,11 +63,11 @@ export function ProductImagesManager({ productId, organizationId }: ProductImage
                 </div>
                 {images.length > 0 && (
                   <Button
-                    variant={isReordering ? "default" : "outline"}
+                    variant={isReordering ? 'default' : 'outline'}
                     onClick={() => setIsReordering(!isReordering)}
                   >
                     <ArrowLeftRight className="mr-2 h-4 w-4" />
-                    {isReordering ? "Done Reordering" : "Reorder"}
+                    {isReordering ? 'Done Reordering' : 'Reorder'}
                   </Button>
                 )}
               </div>

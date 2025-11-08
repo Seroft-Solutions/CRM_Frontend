@@ -19,7 +19,6 @@ export function FormErrorsDisplay({
   onDismiss,
   className = '',
 }: FormErrorsDisplayProps) {
-  // Convert React Hook Form errors to simple string messages
   const getErrorMessage = (error: any): string | null => {
     if (!error) return null;
     if (typeof error === 'string') return error;

@@ -5,18 +5,20 @@ import { Check, ChevronDown, MapPin, Search, X, Plus, Loader2 } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { useSearchGeography } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas';
 import { cn } from '@/lib/utils';
 import { AreaCreateSheet } from '../../areas/components/area-create-sheet';
 
-// Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -45,7 +47,7 @@ export function IntelligentLocationField({
   value,
   onChange,
   onError,
-  placeholder = "Search for location...",
+  placeholder = 'Search for location...',
   disabled = false,
 }: IntelligentLocationFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,11 +57,13 @@ export function IntelligentLocationField({
   const [allAreas, setAllAreas] = useState<AreaDTO[]>([]);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Debounce search query to reduce API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  // Fetch geography search results with pagination
-  const { data: searchResults, isLoading: isSearching, isFetching } = useSearchGeography(
+  const {
+    data: searchResults,
+    isLoading: isSearching,
+    isFetching,
+  } = useSearchGeography(
     {
       term: debouncedSearchQuery,
       page: page,
@@ -75,7 +79,6 @@ export function IntelligentLocationField({
     }
   );
 
-  // Accumulate results for infinite scroll
   useEffect(() => {
     if (searchResults) {
       if (page === 0) {
@@ -86,13 +89,11 @@ export function IntelligentLocationField({
     }
   }, [searchResults, page]);
 
-  // Reset on search query change
   useEffect(() => {
     setPage(0);
     setAllAreas([]);
   }, [debouncedSearchQuery]);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (!observerTarget.current || !isOpen) return;
 
@@ -140,13 +141,11 @@ export function IntelligentLocationField({
     }
   };
 
-  // Build display text with full hierarchy
   const getDisplayText = (area: AreaDTO | null | undefined) => {
     if (!area) return '';
 
     const parts: string[] = [];
 
-    // Build hierarchy from area up to state
     if (area.city?.district?.state?.name) {
       parts.push(area.city.district.state.name);
     }
@@ -174,9 +173,7 @@ export function IntelligentLocationField({
       {value && (
         <div className="flex items-center gap-2 p-2 rounded-md bg-blue-50 border border-blue-200">
           <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
-          <div className="flex-1 text-sm text-blue-900">
-            {displayText}
-          </div>
+          <div className="flex-1 text-sm text-blue-900">{displayText}</div>
           <Button
             type="button"
             variant="ghost"
@@ -253,37 +250,41 @@ export function IntelligentLocationField({
                 </CommandEmpty>
               ) : (
                 <>
-                  <CommandGroup heading={`${allAreas.length} location${allAreas.length !== 1 ? 's' : ''} found`}>
-                    {allAreas.filter(area => area && area.id).map((area) => (
-                      <CommandItem
-                        key={area.id}
-                        value={String(area.id)}
-                        onSelect={() => handleSelect(area)}
-                        className="flex items-start gap-3 p-3 cursor-pointer"
-                      >
-                        <Check
-                          className={cn(
-                            "mt-1 h-4 w-4 flex-shrink-0",
-                            value?.id === area.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <div className="flex-1 space-y-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="outline" className="text-xs font-medium">
-                              {area.name}
-                            </Badge>
-                            {area.pincode && (
-                              <Badge variant="secondary" className="text-xs">
-                                {area.pincode}
-                              </Badge>
+                  <CommandGroup
+                    heading={`${allAreas.length} location${allAreas.length !== 1 ? 's' : ''} found`}
+                  >
+                    {allAreas
+                      .filter((area) => area && area.id)
+                      .map((area) => (
+                        <CommandItem
+                          key={area.id}
+                          value={String(area.id)}
+                          onSelect={() => handleSelect(area)}
+                          className="flex items-start gap-3 p-3 cursor-pointer"
+                        >
+                          <Check
+                            className={cn(
+                              'mt-1 h-4 w-4 flex-shrink-0',
+                              value?.id === area.id ? 'opacity-100' : 'opacity-0'
                             )}
+                          />
+                          <div className="flex-1 space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="outline" className="text-xs font-medium">
+                                {area.name}
+                              </Badge>
+                              {area.pincode && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {area.pincode}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {getDisplayText(area)}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {getDisplayText(area)}
-                          </div>
-                        </div>
-                      </CommandItem>
-                    ))}
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                   {/* Infinite scroll trigger */}
                   <div ref={observerTarget} className="h-4 w-full">
@@ -301,9 +302,7 @@ export function IntelligentLocationField({
       </Popover>
 
       {/* Validation Message */}
-      {!value && (
-        <p className="text-sm text-red-500">Please select a location</p>
-      )}
+      {!value && <p className="text-sm text-red-500">Please select a location</p>}
 
       {/* Area Create Sheet */}
       <AreaCreateSheet

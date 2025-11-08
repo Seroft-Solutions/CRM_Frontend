@@ -1,15 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-
-// ⚠️ MANUAL ADDITION FOR FEATURE 001-product-image-management ⚠️
-// Added ProductImagesManager component integration below
-// This is a required feature implementation that needs to persist
-
 import { ProductDetails } from '../components/product-details';
 import { PermissionGuard } from '@/core/auth';
 import { ProductImagesManager } from '@/features/product-images/components/ProductImagesManager';

@@ -1,28 +1,27 @@
-"use client";
-// JUSTIFICATION: Requires state management for file upload and user interactions
+'use client';
 
-import { useState } from "react";
-import { useUploadImages } from "@/features/product-images";
-import { useFileSelection } from "../hooks/useFileSelection";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, CheckCircle2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { ImageDropZone } from "./ImageDropZone";
-import { ImagePreviewGrid } from "./ImagePreviewGrid";
+import { useState } from 'react';
+import { useUploadImages } from '@/features/product-images';
+import { useFileSelection } from '../hooks/useFileSelection';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { ImageDropZone } from './ImageDropZone';
+import { ImagePreviewGrid } from './ImagePreviewGrid';
 
 interface ProductImageUploaderProps {
   productId: number;
   organizationId: number;
   onUploadComplete?: () => void;
   maxFiles?: number;
-  maxFileSize?: number; // in MB
+  maxFileSize?: number;
 }
 
-const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_FORMATS = ['image/jpeg', 'image/png', 'image/webp'];
 const DEFAULT_MAX_FILES = 10;
-const DEFAULT_MAX_FILE_SIZE = 5; // MB
+const DEFAULT_MAX_FILE_SIZE = 5;
 
 /**
  * ProductImageUploader - Main orchestrator for image upload workflow
@@ -79,15 +78,15 @@ export function ProductImageUploader({
       clearAll();
       setUploadProgress(100);
 
-      toast.success("Success!", {
+      toast.success('Success!', {
         description: `Successfully uploaded ${files.length} image(s)`,
       });
 
       onUploadComplete?.();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
+      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
       setError(errorMessage);
-      toast.error("Upload Failed", { description: errorMessage });
+      toast.error('Upload Failed', { description: errorMessage });
     }
   };
 
@@ -144,7 +143,7 @@ export function ProductImageUploader({
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload {selectedFiles.length} Image{selectedFiles.length > 1 ? "s" : ""}
+                Upload {selectedFiles.length} Image{selectedFiles.length > 1 ? 's' : ''}
               </>
             )}
           </Button>

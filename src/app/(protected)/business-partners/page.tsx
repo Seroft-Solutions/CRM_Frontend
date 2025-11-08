@@ -87,22 +87,17 @@ export default function BusinessPartnersPage() {
   const [partnerToRemove, setPartnerToRemove] = useState<BusinessPartner | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Fetch channel types for parallel resolution
   const { data: channelTypes } = useGetAllChannelTypes();
 
-  // FIXED: Use enhanced data mutation hook for proper cache invalidation
   const { deletePartner } = useBusinessPartnersDataMutation();
 
-  // Helper function to get channel type information from Keycloak attributes
   const getChannelTypeInfo = (partner: BusinessPartner): ChannelTypeInfo | null => {
-    // Get channel type ID from Keycloak attributes
     const channelTypeId = partner.attributes?.channel_type_id?.[0];
 
     if (!channelTypeId) {
       return null;
     }
 
-    // Try to resolve with channel types API data (parallel processing)
     if (channelTypes) {
       const channelType = channelTypes.find((ct) => ct.id === parseInt(channelTypeId));
       if (channelType) {
@@ -115,7 +110,6 @@ export default function BusinessPartnersPage() {
       }
     }
 
-    // Fallback for unknown channel type ID
     return {
       id: parseInt(channelTypeId),
       name: `Channel Type ${channelTypeId}`,
@@ -124,16 +118,13 @@ export default function BusinessPartnersPage() {
     };
   };
 
-  // Helper function to determine partner status (directly from Keycloak)
   const getPartnerStatus = (partner: BusinessPartner) => {
-    // Show exactly what Keycloak says - enabled or disabled
     return {
       status: partner.enabled ? 'Active' : 'Inactive',
       variant: partner.enabled ? 'default' : ('secondary' as const),
     };
   };
 
-  // Fetch business partners from Keycloak
   const fetchPartners = async () => {
     if (!organizationId) return;
 
@@ -145,7 +136,6 @@ export default function BusinessPartnersPage() {
       }
       const data = await response.json();
 
-      // Show all business partners (verification status affects status, not visibility)
       setPartners(data);
     } catch (error) {
       console.error('Failed to fetch partners:', error);
@@ -159,19 +149,16 @@ export default function BusinessPartnersPage() {
     fetchPartners();
   }, [organizationId]);
 
-  // Filter partners based on search
   const filteredPartners = partners.filter(
     (partner) =>
       partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${partner.firstName} ${partner.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Navigate to edit partner page
   const handleEditPartner = (partner: BusinessPartner) => {
     router.push(`/business-partners/${partner.id}/edit`);
   };
 
-  // FIXED: Remove partner with enhanced error handling and cache invalidation
   const handleRemovePartner = async () => {
     if (!partnerToRemove || !organizationId) return;
     let springRemovalSucceeded = false;
@@ -187,17 +174,14 @@ export default function BusinessPartnersPage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-          // Handle different error scenarios with specific toast messages
           if (responseData.details) {
             const { keycloakRemoval, springRemoval, rollback } = responseData.details;
 
             if (keycloakRemoval === 'succeeded' && rollback === 'successful') {
-              // Rollback scenario - Spring failed but Keycloak was restored
               throw new Error(
                 'Partner removal failed: Backend sync issue. No changes were made. The partner remains in the system. Please try again later.'
               );
             } else if (keycloakRemoval === 'succeeded' && rollback === 'failed') {
-              // Critical failure - data inconsistency
               throw new Error(
                 'CRITICAL: Partner removal partially failed! Please contact system administrator immediately. Data may be inconsistent.'
               );
@@ -210,25 +194,22 @@ export default function BusinessPartnersPage() {
             throw new Error(responseData.error || 'Unknown error occurred');
           }
         }
-        // Check for success
+
         if (!responseData.success) {
           throw new Error('Partner removal failed - no success confirmation received');
         }
       });
 
-      // Success - the deletePartner hook will handle success toast and cache invalidation
       setPartnerToRemove(null);
     } catch (error) {
       console.error('Failed to remove partner:', error);
-      // Error handling is done by the deletePartner hook
     } finally {
       setIsRemoving(false);
     }
-    // Step 2: Remove partner from Spring backend
+
     try {
       console.log('Removing partner from Spring backend...');
 
-      // First, search for the user profile by keycloakId to get the database ID
       console.log('Searching for user profile by keycloakId:', partnerToRemove.id);
       const userProfile = await getUserProfile(partnerToRemove.id);
 
@@ -238,7 +219,6 @@ export default function BusinessPartnersPage() {
         );
         springRemovalSucceeded = true;
       } else {
-        // User profile exists, delete it using the database ID
         const userProfileDatabaseId = userProfile.id;
 
         console.log(`Found user profile in Spring backend:`, {
@@ -247,7 +227,6 @@ export default function BusinessPartnersPage() {
           email: userProfile.email,
         });
 
-        // Delete using the database ID
         const deletePromise = deleteUserProfile(userProfileDatabaseId);
         const deleteTimeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Spring backend delete timeout')), 10000)
@@ -262,7 +241,6 @@ export default function BusinessPartnersPage() {
     } catch (springError: any) {
       console.error('Failed to remove partner from Spring backend:', springError);
 
-      // Check if it's a redirect error (which might indicate auth issues)
       const isRedirectError =
         springError.message?.includes('Maximum number of redirects exceeded') ||
         springError.message?.includes('redirect') ||
@@ -273,7 +251,6 @@ export default function BusinessPartnersPage() {
 
       const isTimeoutError = springError.message?.includes('timeout');
 
-      // If user doesn't exist in Spring backend, consider it a successful removal
       if (isNotFoundError) {
         console.log('Partner not found in Spring backend, considering removal successful');
         springRemovalSucceeded = true;
@@ -286,10 +263,8 @@ export default function BusinessPartnersPage() {
         console.warn(
           'Spring backend timeout - backend may be slow, but will proceed with rollback to be safe'
         );
-        // Don't mark as successful, proceed with rollback
       } else {
         console.error('Genuine Spring backend error occurred');
-        // Don't mark as successful, proceed with rollback
       }
     }
   };

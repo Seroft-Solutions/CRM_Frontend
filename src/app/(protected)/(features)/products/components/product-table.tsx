@@ -1,11 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -57,13 +49,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
-// Configuration for table features
 const TABLE_CONFIG = {
-  showDraftTab: false, // Set to true to show Draft tab
-  centerAlignActions: true, // Center align action icons
+  showDraftTab: false,
+  centerAlignActions: true,
 };
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -74,7 +64,6 @@ function transformEnumValue(enumValue: string): string {
     .join(' ');
 }
 
-// Add custom scrollbar styles
 const tableScrollStyles = `
   .table-scroll::-webkit-scrollbar {
     height: 8px;
@@ -114,8 +103,6 @@ import {
   useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
-// Relationship data imports
-
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
@@ -126,11 +113,9 @@ import { ProductTableRow } from './table/product-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
-// Define sort ordering constants
 const ASC = 'asc';
 const DESC = 'desc';
 
-// Define column configuration
 interface ColumnConfig {
   id: string;
   label: string;
@@ -140,7 +125,6 @@ interface ColumnConfig {
   sortable: boolean;
 }
 
-// Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
   {
     id: 'id',
@@ -255,7 +239,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Created By',
     accessor: 'createdBy',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -264,7 +248,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Created Date',
     accessor: 'createdDate',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -273,7 +257,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Last Modified By',
     accessor: 'lastModifiedBy',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -282,13 +266,12 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Last Modified Date',
     accessor: 'lastModifiedDate',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 ];
 
-// Local storage key for column visibility with version
-const COLUMN_VISIBILITY_KEY = 'product-table-columns'; // v2 to force reset for auditing fields
+const COLUMN_VISIBILITY_KEY = 'product-table-columns';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -302,9 +285,8 @@ interface DateRange {
 export function ProductTable() {
   const queryClient = useQueryClient();
 
-  // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
-    usePaginationState(1, 10); // Default to 25 items per page
+    usePaginationState(1, 10);
 
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
@@ -323,34 +305,27 @@ export function ProductTable() {
   const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
-  // Track individual cell updates instead of global state
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
 
-  // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
 
-  // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
-  // Load column visibility from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-      const oldKey = 'product-table-columns'; // Old key without version
+      const oldKey = 'product-table-columns';
 
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
-        // Check for old localStorage data and migrate/reset
         const oldSaved = localStorage.getItem(oldKey);
         if (oldSaved) {
-          // Remove old key to force reset for auditing fields
           localStorage.removeItem(oldKey);
         }
 
-        // Set default visibility with auditing fields hidden
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
@@ -362,7 +337,7 @@ export function ProductTable() {
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
-      // Fallback to default visibility
+
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
@@ -376,7 +351,6 @@ export function ProductTable() {
     }
   }, []);
 
-  // Save column visibility to localStorage whenever it changes
   useEffect(() => {
     if (isColumnVisibilityLoaded && typeof window !== 'undefined') {
       try {
@@ -387,12 +361,10 @@ export function ProductTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
-  // Get visible columns
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
-  // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
@@ -400,10 +372,8 @@ export function ProductTable() {
     }));
   };
 
-  // Manual refresh functionality
   const handleRefresh = async () => {
     try {
-      // Invalidate all related queries to force fresh data
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
         refetchType: 'active',
@@ -418,7 +388,6 @@ export function ProductTable() {
         refetchType: 'active',
       });
 
-      // Also manually trigger refetch
       await refetch();
 
       toast.success('Data refreshed successfully');
@@ -428,7 +397,6 @@ export function ProductTable() {
     }
   };
 
-  // Export functionality
   const exportToCSV = () => {
     if (!data || data.length === 0) {
       toast.error('No data to export');
@@ -456,7 +424,7 @@ export function ProductTable() {
                 value = relationship.name || '';
               }
             }
-            // Escape CSV values
+
             if (
               typeof value === 'string' &&
               (value.includes(',') || value.includes('"') || value.includes('\n'))
@@ -482,10 +450,7 @@ export function ProductTable() {
     toast.success('Data exported successfully');
   };
 
-  // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
-
-  // Fetch relationship data for dropdowns
 
   const { data: productcategoryOptions = [] } = useGetAllProductCategories(
     { page: 0, size: 1000 },
@@ -497,7 +462,6 @@ export function ProductTable() {
     { query: { enabled: true } }
   );
 
-  // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
     const entity = entities?.find((e) =>
       e[displayField]?.toLowerCase().includes(name.toLowerCase())
@@ -505,7 +469,6 @@ export function ProductTable() {
     return entity?.id;
   };
 
-  // Status configuration
   const statusOptions = [
     {
       value: ProductDTOStatus.DRAFT,
@@ -529,7 +492,6 @@ export function ProductTable() {
     },
   ];
 
-  // Get status filter based on active tab
   const getStatusFilter = () => {
     switch (activeStatusTab) {
       case 'draft':
@@ -547,13 +509,11 @@ export function ProductTable() {
     }
   };
 
-  // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(), // Add status filtering based on active tab
+      ...getStatusFilter(),
     };
 
-    // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
       'category.name': {
         apiParam: 'categoryId.equals',
@@ -568,10 +528,8 @@ export function ProductTable() {
       },
     };
 
-    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
-        // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
           const entityId = findEntityIdByName(
@@ -582,108 +540,65 @@ export function ProductTable() {
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
-        }
-
-        // Handle createdDate date filter
-        else if (key === 'createdDate') {
+        } else if (key === 'createdDate') {
           if (value instanceof Date) {
             params['createdDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
             params['createdDate.equals'] = value;
           }
-        }
-
-        // Handle lastModifiedDate date filter
-        else if (key === 'lastModifiedDate') {
+        } else if (key === 'lastModifiedDate') {
           if (value instanceof Date) {
             params['lastModifiedDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedDate.equals'] = value;
           }
-        }
-
-        // Handle name text filter with contains
-        else if (key === 'name') {
+        } else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
-        }
-
-        // Handle code text filter with contains
-        else if (key === 'code') {
+        } else if (key === 'code') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['code.contains'] = value;
           }
-        }
-
-        // Handle description text filter with contains
-        else if (key === 'description') {
+        } else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['description.contains'] = value;
           }
-        }
-
-        // Handle basePrice text filter with contains
-        else if (key === 'basePrice') {
+        } else if (key === 'basePrice') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['basePrice.contains'] = value;
           }
-        }
-
-        // Handle minPrice text filter with contains
-        else if (key === 'minPrice') {
+        } else if (key === 'minPrice') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['minPrice.contains'] = value;
           }
-        }
-
-        // Handle maxPrice text filter with contains
-        else if (key === 'maxPrice') {
+        } else if (key === 'maxPrice') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['maxPrice.contains'] = value;
           }
-        }
-
-        // Handle remark text filter with contains
-        else if (key === 'remark') {
+        } else if (key === 'remark') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['remark.contains'] = value;
           }
-        }
-
-        // Handle status text filter with contains
-        else if (key === 'status') {
+        } else if (key === 'status') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['status.contains'] = value;
           }
-        }
-
-        // Handle createdBy text filter with contains
-        else if (key === 'createdBy') {
+        } else if (key === 'createdBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['createdBy.contains'] = value;
           }
-        }
-
-        // Handle lastModifiedBy text filter with contains
-        else if (key === 'lastModifiedBy') {
+        } else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
           }
-        }
-
-        // Handle other filters
-        else if (Array.isArray(value) && value.length > 0) {
-          // Handle array values (for multi-select filters)
+        } else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (typeof value === 'string' && value.trim() !== '') {
-          // Fallback for unknown string fields - use contains
           params[`${key}.contains`] = value;
         }
       }
     });
-
-    // Add date range filters
 
     if (dateRange.from) {
       params['createdDate.greaterThanOrEqual'] = dateRange.from.toISOString();
@@ -704,8 +619,6 @@ export function ProductTable() {
 
   const filterParams = buildFilterParams();
 
-  // Fetch data with React Query
-
   const { data, isLoading, refetch } = searchTerm
     ? useSearchProducts(
         {
@@ -718,7 +631,7 @@ export function ProductTable() {
         {
           query: {
             enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
+            staleTime: 0,
             refetchOnWindowFocus: true,
           },
         }
@@ -733,26 +646,23 @@ export function ProductTable() {
         {
           query: {
             enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
+            staleTime: 0,
             refetchOnWindowFocus: true,
           },
         }
       );
 
-  // Get total count for pagination
   const { data: countData } = useCountProducts(filterParams, {
     query: {
       enabled: true,
-      staleTime: 0, // Always consider data stale for immediate refetch
+      staleTime: 0,
       refetchOnWindowFocus: true,
     },
   });
 
-  // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateProduct({
     mutation: {
       onMutate: async (variables) => {
-        // Cancel any outgoing refetches
         await queryClient.cancelQueries({
           queryKey: ['getAllProducts'],
         });
@@ -761,7 +671,6 @@ export function ProductTable() {
           queryKey: ['searchProducts'],
         });
 
-        // Snapshot the previous value
         const previousData = queryClient.getQueryData([
           'getAllProducts',
           {
@@ -772,7 +681,6 @@ export function ProductTable() {
           },
         ]);
 
-        // Optimistically update the cache
         if (previousData && Array.isArray(previousData)) {
           queryClient.setQueryData(
             [
@@ -791,7 +699,6 @@ export function ProductTable() {
           );
         }
 
-        // Also update search cache if applicable
         if (searchTerm) {
           queryClient.setQueryData(
             [
@@ -814,7 +721,6 @@ export function ProductTable() {
         return { previousData };
       },
       onSuccess: (data, variables) => {
-        // CRITICAL: Update cache with server response to ensure UI reflects actual data
         queryClient.setQueryData(
           [
             'getAllProducts',
@@ -825,15 +731,9 @@ export function ProductTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) =>
-            old?.map((product) =>
-              product.id === variables.id
-                ? data // Use complete server response
-                : product
-            )
+          (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
         );
 
-        // Also update search cache if applicable
         if (searchTerm) {
           queryClient.setQueryData(
             [
@@ -846,19 +746,13 @@ export function ProductTable() {
                 ...filterParams,
               },
             ],
-            (old: any[]) =>
-              old?.map((product) =>
-                product.id === variables.id
-                  ? data // Use complete server response
-                  : product
-              )
+            (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
           );
         }
 
         productToast.updated();
       },
       onError: (error, variables, context) => {
-        // Rollback on error
         if (context?.previousData) {
           queryClient.setQueryData(
             [
@@ -876,7 +770,6 @@ export function ProductTable() {
         handleProductError(error);
       },
       onSettled: async () => {
-        // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllProducts'],
           refetchType: 'active',
@@ -894,7 +787,6 @@ export function ProductTable() {
     },
   });
 
-  // Status update mutation for soft delete (archive) with optimistic updates
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateProduct({
     mutation: {
       onMutate: async (variables) => {
@@ -910,7 +802,6 @@ export function ProductTable() {
           },
         ]);
 
-        // Optimistically update or remove the item based on status change
         queryClient.setQueryData(
           [
             'getAllProducts',
@@ -924,13 +815,10 @@ export function ProductTable() {
           (old: any[]) => {
             if (!old) return old;
 
-            // If the new status matches the current filter, update in place
-            // Otherwise, remove from current view
             const newStatus = variables.data.status;
             const currentFilter = getStatusFilter();
             const currentStatusFilter = currentFilter['status.equals'];
 
-            // Debug logging to help troubleshoot
             console.log('Optimistic Update Debug:', {
               newStatus,
               currentStatusFilter,
@@ -941,13 +829,11 @@ export function ProductTable() {
             });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
-              // Update in place - status matches current tab filter
               console.log(`Updating item ${variables.id} in place`);
               return old.map((product) =>
                 product.id === variables.id ? { ...product, ...variables.data } : product
               );
             } else {
-              // Remove from current filtered view - status no longer matches tab filter
               console.log(`Removing item ${variables.id} from current view`);
               return old.filter((product) => product.id !== variables.id);
             }
@@ -962,7 +848,6 @@ export function ProductTable() {
           variables.data.status;
         productToast.custom.success(`Status Updated`, `Product status changed to ${statusLabel}`);
 
-        // Update count cache if item was removed from current view
         const currentFilter = getStatusFilter();
         const currentStatusFilter = currentFilter['status.equals'];
         const newStatus = variables.data.status;
@@ -994,7 +879,6 @@ export function ProductTable() {
         handleProductError(error);
       },
       onSettled: async () => {
-        // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllProducts'],
           refetchType: 'active',
@@ -1012,7 +896,6 @@ export function ProductTable() {
     },
   });
 
-  // Handle sort column click
   const handleSort = (column: string) => {
     if (sort === column) {
       setOrder(order === ASC ? DESC : ASC);
@@ -1022,7 +905,6 @@ export function ProductTable() {
     }
   };
 
-  // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
       return 'ChevronsUpDown';
@@ -1030,7 +912,6 @@ export function ProductTable() {
     return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
-  // Handle status change (archive by default)
   const handleArchive = (id: number) => {
     setArchiveId(id);
     setShowArchiveDialog(true);
@@ -1072,34 +953,29 @@ export function ProductTable() {
     setNewStatus(null);
   };
 
-  // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [column]: value,
     }));
-    resetPagination(); // Reset to page 1 when filters change
+    resetPagination();
   };
 
-  // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
     setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
-    resetPagination(); // Reset to page 1 when clearing filters
+    resetPagination();
   };
 
-  // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    resetPagination(); // Reset to page 1 when searching
+    resetPagination();
   };
 
-  // Calculate total pages
   const totalItems = countData || 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  // Handle row selection
   const handleSelectRow = (id: number) => {
     const newSelected = new Set(selectedRows);
     if (newSelected.has(id)) {
@@ -1110,7 +986,6 @@ export function ProductTable() {
     setSelectedRows(newSelected);
   };
 
-  // Handle select all
   const handleSelectAll = () => {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
@@ -1121,22 +996,18 @@ export function ProductTable() {
     }
   };
 
-  // Handle bulk archive
   const handleBulkArchive = () => {
     setShowBulkArchiveDialog(true);
   };
 
-  // Handle bulk status change
   const handleBulkStatusChange = (status: string) => {
     setBulkNewStatus(status);
     setShowBulkStatusChangeDialog(true);
   };
 
   const confirmBulkArchive = async () => {
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllProducts',
       {
@@ -1148,7 +1019,6 @@ export function ProductTable() {
     ]);
 
     try {
-      // Process status updates to ARCHIVED
       const updatePromises = Array.from(selectedRows).map(async (id) => {
         const currentEntity = data?.find((item) => item.id === id);
         if (currentEntity) {
@@ -1170,7 +1040,6 @@ export function ProductTable() {
 
       await Promise.all(updatePromises);
 
-      // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
         refetchType: 'active',
@@ -1191,7 +1060,6 @@ export function ProductTable() {
       );
       setSelectedRows(new Set());
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1217,10 +1085,8 @@ export function ProductTable() {
   const confirmBulkStatusChange = async () => {
     if (!bulkNewStatus) return;
 
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllProducts',
       {
@@ -1232,7 +1098,6 @@ export function ProductTable() {
     ]);
 
     try {
-      // Process bulk status updates
       const statusValue = ProductDTOStatus[bulkNewStatus as keyof typeof ProductDTOStatus];
       const updatePromises = Array.from(selectedRows).map(async (id) => {
         const currentEntity = data?.find((item) => item.id === id);
@@ -1255,7 +1120,6 @@ export function ProductTable() {
 
       await Promise.all(updatePromises);
 
-      // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
         refetchType: 'active',
@@ -1278,7 +1142,6 @@ export function ProductTable() {
       );
       setSelectedRows(new Set());
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1302,7 +1165,6 @@ export function ProductTable() {
     setBulkNewStatus(null);
   };
 
-  // Enhanced relationship update handler with individual cell tracking
   const handleRelationshipUpdate = async (
     entityId: number,
     relationshipName: string,
@@ -1311,11 +1173,9 @@ export function ProductTable() {
   ) => {
     const cellKey = `${entityId}-${relationshipName}`;
 
-    // Track this specific cell as updating
     setUpdatingCells((prev) => new Set(prev).add(cellKey));
 
     return new Promise<void>((resolve, reject) => {
-      // Get the current entity data first
       const currentEntity = data?.find((item) => item.id === entityId);
       if (!currentEntity) {
         setUpdatingCells((prev) => {
@@ -1327,15 +1187,12 @@ export function ProductTable() {
         return;
       }
 
-      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
         id: entityId,
       };
 
-      // Update only the specific relationship
       if (newValue) {
-        // Find the full relationship object from options
         const relationshipConfig = relationshipConfigs.find(
           (config) => config.name === relationshipName
         );
@@ -1352,9 +1209,7 @@ export function ProductTable() {
         },
         {
           onSuccess: (serverResponse) => {
-            // CRITICAL: Ensure individual cache updates with server response for bulk operations
             if (isBulkOperation) {
-              // Update cache with server response for this specific entity
               queryClient.setQueryData(
                 [
                   'getAllProducts',
@@ -1366,14 +1221,9 @@ export function ProductTable() {
                   },
                 ],
                 (old: any[]) =>
-                  old?.map((product) =>
-                    product.id === entityId
-                      ? serverResponse // Use server response
-                      : product
-                  )
+                  old?.map((product) => (product.id === entityId ? serverResponse : product))
               );
 
-              // Also update search cache if applicable
               if (searchTerm) {
                 queryClient.setQueryData(
                   [
@@ -1387,16 +1237,11 @@ export function ProductTable() {
                     },
                   ],
                   (old: any[]) =>
-                    old?.map((product) =>
-                      product.id === entityId
-                        ? serverResponse // Use server response
-                        : product
-                    )
+                    old?.map((product) => (product.id === entityId ? serverResponse : product))
                 );
               }
             }
 
-            // Only show individual toast if not part of bulk operation
             if (!isBulkOperation) {
               productToast.relationshipUpdated(relationshipName);
             }
@@ -1406,7 +1251,6 @@ export function ProductTable() {
             reject(error);
           },
           onSettled: () => {
-            // Remove this cell from updating state
             setUpdatingCells((prev) => {
               const newSet = new Set(prev);
               newSet.delete(cellKey);
@@ -1418,16 +1262,13 @@ export function ProductTable() {
     });
   };
 
-  // Handle bulk relationship updates with individual server response syncing
   const handleBulkRelationshipUpdate = async (
     entityIds: number[],
     relationshipName: string,
     newValue: number | null
   ) => {
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllProducts',
       {
@@ -1439,14 +1280,12 @@ export function ProductTable() {
     ]);
 
     try {
-      // Process updates sequentially with bulk operation flag
-      // Each individual update will handle its own cache update with server response
       let successCount = 0;
       let errorCount = 0;
 
       for (const id of entityIds) {
         try {
-          await handleRelationshipUpdate(id, relationshipName, newValue, true); // Pass true for bulk operation
+          await handleRelationshipUpdate(id, relationshipName, newValue, true);
           successCount++;
         } catch (error) {
           console.error(`Failed to update entity ${id}:`, error);
@@ -1454,7 +1293,6 @@ export function ProductTable() {
         }
       }
 
-      // Show single bulk success toast
       if (successCount > 0) {
         const action = newValue === null ? 'cleared' : 'updated';
         productToast.custom.success(
@@ -1472,7 +1310,6 @@ export function ProductTable() {
         );
       }
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1491,14 +1328,13 @@ export function ProductTable() {
     }
   };
 
-  // Prepare relationship configurations for components
   const relationshipConfigs = [
     {
       name: 'category',
       displayName: 'Category',
       options: productcategoryOptions || [],
       displayField: 'name',
-      isEditable: false, // Disabled by default
+      isEditable: false,
     },
 
     {
@@ -1506,11 +1342,10 @@ export function ProductTable() {
       displayName: 'SubCategory',
       options: productsubcategoryOptions || [],
       displayField: 'name',
-      isEditable: false, // Disabled by default
+      isEditable: false,
     },
   ];
 
-  // Check if any filters are active
   const hasActiveFilters =
     Object.keys(filters).length > 0 ||
     Boolean(searchTerm) ||
@@ -1519,7 +1354,6 @@ export function ProductTable() {
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
-  // Don't render the table until column visibility is loaded to prevent flash
   if (!isColumnVisibilityLoaded) {
     return (
       <>

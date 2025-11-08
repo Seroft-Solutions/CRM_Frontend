@@ -33,9 +33,8 @@ import { Badge } from '@/components/ui/badge';
 import { UserPlus, Mail, ArrowLeft, Send, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
 import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
-import {useUserProfilePersistence} from "@/features/user-profile-management";
+import { useUserProfilePersistence } from '@/features/user-profile-management';
 
-// Form validation schema
 const inviteUserSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   firstName: z
@@ -66,13 +65,11 @@ export function InviteUsers({ className }: InviteUsersProps) {
   const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
   const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
 
-  // Local state
   const [invitationStatus, setInvitationStatus] = useState<{
     sent: InviteUserFormDataWithGroups[];
     failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
   }>({ sent: [], failed: [] });
 
-  // Single invitation form
   const form = useForm<InviteUserFormDataWithGroups>({
     resolver: zodResolver(inviteUserSchema),
     defaultValues: {
@@ -82,10 +79,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
       selectedGroups: [],
       invitationNote: '',
     },
-    mode: 'onChange', // Enable real-time validation
+    mode: 'onChange',
   });
 
-  // Watch form values to enable/disable button
   const watchedValues = form.watch();
   const isFormValid =
     form.formState.isValid &&
@@ -93,25 +89,23 @@ export function InviteUsers({ className }: InviteUsersProps) {
     watchedValues.firstName?.trim() !== '' &&
     watchedValues.lastName?.trim() !== '';
 
-  // Handle user invitation
   const handleInvite = async (data: InviteUserFormDataWithGroups) => {
     const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
 
     try {
-      const result= await inviteUserWithGroupsAsync({
+      const result = await inviteUserWithGroupsAsync({
         ...data,
         organizationId,
         selectedGroups,
       });
 
-      // Clear form and update status
-      console.log("Invitation result In page haha:", result);
+      console.log('Invitation result In page haha:', result);
       if (result.userId) {
         await createProfileForPartner(
-            result.userId,
-            result.email as string,
-            result.firstName,
-            result.lastName,
+          result.userId,
+          result.email as string,
+          result.firstName,
+          result.lastName
         );
       }
       form.reset();
@@ -120,10 +114,8 @@ export function InviteUsers({ className }: InviteUsersProps) {
         sent: [...prev.sent, data],
       }));
 
-      // Show clear success message
       toast.success(`Invitation sent to ${data.firstName} ${data.lastName} (${data.email})`);
 
-      // Refresh data in background (no UI blocking)
       refreshAllUserData(organizationId);
     } catch (error) {
       setInvitationStatus((prev) => ({
@@ -139,7 +131,6 @@ export function InviteUsers({ className }: InviteUsersProps) {
     }
   };
 
-  // Navigate back to organization users
   const handleBack = () => {
     router.push('/user-management/organization-users');
   };
@@ -164,14 +155,16 @@ export function InviteUsers({ className }: InviteUsersProps) {
             {/* How it works info */}
             <Alert className="border-blue-200 bg-blue-50">
               <Mail className="h-4 w-4 text-blue-600" />
-              <AlertTitle className="text-blue-800 text-sm font-semibold">How User Invitations Work</AlertTitle>
+              <AlertTitle className="text-blue-800 text-sm font-semibold">
+                How User Invitations Work
+              </AlertTitle>
               <AlertDescription className="text-blue-700 text-xs">
                 <div className="space-y-1.5 mt-2">
                   <p>• Invited user receives an email with account setup instructions</p>
                   <p>• They'll set their password and can immediately access the organization</p>
                   <p>
-                    • You can view all users (including pending invitations) in the Organization Users
-                    page
+                    • You can view all users (including pending invitations) in the Organization
+                    Users page
                   </p>
                 </div>
               </AlertDescription>
@@ -184,7 +177,9 @@ export function InviteUsers({ className }: InviteUsersProps) {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-base">Recent Invitations</CardTitle>
-                      <CardDescription className="text-xs">Status of your invitations</CardDescription>
+                      <CardDescription className="text-xs">
+                        Status of your invitations
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -204,9 +199,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                             <p className="text-xs font-medium text-green-900 truncate">
                               {invitation.firstName} {invitation.lastName}
                             </p>
-                            <p className="text-xs text-green-700 truncate">
-                              {invitation.email}
-                            </p>
+                            <p className="text-xs text-green-700 truncate">{invitation.email}</p>
                           </div>
                           <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs ml-2 shrink-0">
                             Sent
@@ -228,9 +221,13 @@ export function InviteUsers({ className }: InviteUsersProps) {
                             <span className="text-xs font-medium text-red-900 truncate">
                               {failure.invitation.firstName} {failure.invitation.lastName}
                             </span>
-                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">Failed</Badge>
+                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">
+                              Failed
+                            </Badge>
                           </div>
-                          <p className="text-xs text-red-700 truncate">{failure.invitation.email}</p>
+                          <p className="text-xs text-red-700 truncate">
+                            {failure.invitation.email}
+                          </p>
                           <p className="text-xs text-red-600 mt-1">{failure.error}</p>
                         </div>
                       ))}
@@ -273,103 +270,107 @@ export function InviteUsers({ className }: InviteUsersProps) {
                   Invite User to Organization
                 </CardTitle>
                 <CardDescription>
-                  Send an invitation to a user to join your organization. They'll receive an email with
-                  setup instructions.
+                  Send an invitation to a user to join your organization. They'll receive an email
+                  with setup instructions.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4 max-w-2xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John" disabled={isInvitingWithGroups} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="John"
+                                disabled={isInvitingWithGroups}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Doe" disabled={isInvitingWithGroups} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="john.doe@example.com"
-                          disabled={isInvitingWithGroups}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="john.doe@example.com"
+                              disabled={isInvitingWithGroups}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || isInvitingWithGroups}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 gap-2"
-                  >
-                    {isInvitingWithGroups ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Sending Invitation...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Send Invitation
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      form.reset();
-                      setInvitationStatus({ sent: [], failed: [] }); // Clear status when clearing form
-                    }}
-                    disabled={isInvitingWithGroups}
-                  >
-                    Clear
-                  </Button>
-                </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="submit"
+                        disabled={!isFormValid || isInvitingWithGroups}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 gap-2"
+                      >
+                        {isInvitingWithGroups ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Sending Invitation...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4" />
+                            Send Invitation
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          form.reset();
+                          setInvitationStatus({ sent: [], failed: [] });
+                        }}
+                        disabled={isInvitingWithGroups}
+                      >
+                        Clear
+                      </Button>
+                    </div>
 
-                {/* Helper text */}
-                <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
-                  <p className="text-blue-800">
-                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
-                    required fields (* fields) are properly filled.
-                  </p>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                    {/* Helper text */}
+                    <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <p className="text-blue-800">
+                        💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once
+                        all required fields (* fields) are properly filled.
+                      </p>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

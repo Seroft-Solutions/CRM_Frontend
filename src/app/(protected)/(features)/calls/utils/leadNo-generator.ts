@@ -17,29 +17,23 @@
  * @returns Generated lead number string (8 characters total)
  */
 export function generateLeadNo(organizationName: string): string {
-  // Generate organization prefix (first 3 alphabetic characters, uppercase only)
   const orgPrefix = organizationName
-    .replace(/[^a-zA-Z]/g, '') // Remove non-alphabetic characters
+    .replace(/[^a-zA-Z]/g, '')
     .substring(0, 3)
     .toUpperCase()
-    .padEnd(3, 'A'); // Pad with A if less than 3 characters
+    .padEnd(3, 'A');
 
-  // Generate 5-digit numeric sequence
   const now = new Date();
 
-  // Use last 2 digits of year + month + day for first 4 digits
-  const year = now.getFullYear() % 100; // Get last 2 digits of year
-  const month = now.getMonth() + 1; // 1-12
-  const day = now.getDate(); // 1-31
+  const year = now.getFullYear() % 100;
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
 
-  // Combine to create a base number, then take last 4 digits
   const dateNumber = (year * 10000 + month * 100 + day) % 10000;
   const dateDigits = String(dateNumber).padStart(4, '0');
 
-  // Generate 1 random digit for the 5th digit
   const randomDigit = Math.floor(Math.random() * 10);
 
-  // Combine all parts: 3 letters + 5 digits = 8 characters total
   return `${orgPrefix}${dateDigits}${randomDigit}`;
 }
 
@@ -69,7 +63,6 @@ export function validateLeadNoFormat(leadNo: string): boolean {
     return false;
   }
 
-  // Expected format: ABC12345 (3 letters + 5 digits = 8 characters total)
   const pattern = /^[A-Z]{3}\d{5}$/;
   return pattern.test(leadNo);
 }
@@ -101,11 +94,10 @@ export function parseLeadNo(leadNo: string): {
 export function formatLeadNoForDisplay(leadNo: string): string {
   const parsed = parseLeadNo(leadNo);
   if (!parsed) {
-    return leadNo; // Return as-is if invalid format
+    return leadNo;
   }
 
   const { orgPrefix, numericPart } = parsed;
 
-  // Format as ORG-NNNNN for better readability
   return `${orgPrefix}-${numericPart}`;
 }

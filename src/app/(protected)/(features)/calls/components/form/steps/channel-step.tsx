@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced channel step with business partner support
-// - This step is now filtered out for business partners in the form provider
-// - Channel data is auto-populated in the form provider instead
-// - Simplified UI with proper validation handling
-// ===============================================================
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -23,11 +16,5 @@ interface CallChannelStepProps {
 }
 
 export function CallChannelStep({ form, config, actions, entity }: CallChannelStepProps) {
-
-
-  return (
-    <div className="space-y-6">
-
-    </div>
-  );
+  return <div className="space-y-6"></div>;
 }

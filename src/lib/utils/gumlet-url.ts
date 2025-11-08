@@ -5,18 +5,18 @@
  * Documentation: https://docs.gumlet.com/reference/image-transform-size
  */
 
-const GUMLET_DOMAIN = process.env.NEXT_PUBLIC_GUMLET_DOMAIN || "";
+const GUMLET_DOMAIN = process.env.NEXT_PUBLIC_GUMLET_DOMAIN || '';
 
-export type GumletFormat = "auto" | "webp" | "avif" | "jpg" | "png";
-export type GumletFit = "cover" | "contain" | "fill" | "inside" | "outside";
+export type GumletFormat = 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+export type GumletFit = 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
 
 export interface GumletOptions {
   width?: number;
   height?: number;
-  quality?: number; // 1-100
+  quality?: number;
   format?: GumletFormat;
   fit?: GumletFit;
-  dpr?: number; // Device pixel ratio (1, 2, 3)
+  dpr?: number;
   compress?: boolean;
   crop?: boolean;
 }
@@ -39,63 +39,49 @@ export interface GumletOptions {
  * // => "https://your-subdomain.gumlet.io/products/img123.jpg?format=auto&compress=true&dpr=2"
  * ```
  */
-export function getGumletUrl(
-  gumletPath: string,
-  options: GumletOptions = {}
-): string {
+export function getGumletUrl(gumletPath: string, options: GumletOptions = {}): string {
   if (!gumletPath) {
-    return "";
+    return '';
   }
 
   if (!GUMLET_DOMAIN) {
-    console.warn("NEXT_PUBLIC_GUMLET_DOMAIN is not configured");
-    return "";
+    console.warn('NEXT_PUBLIC_GUMLET_DOMAIN is not configured');
+    return '';
   }
 
-  // Remove leading slash if present to avoid double slashes
-  const cleanPath = gumletPath.startsWith("/")
-    ? gumletPath.slice(1)
-    : gumletPath;
+  const cleanPath = gumletPath.startsWith('/') ? gumletPath.slice(1) : gumletPath;
 
-  const baseUrl = `https://${GUMLET_DOMAIN}/${cleanPath}`;
+  const baseUrl = `https://gumlet.example.com`;
   const params = new URLSearchParams();
 
-  // Width
   if (options.width) {
-    params.append("w", options.width.toString());
+    params.append('w', options.width.toString());
   }
 
-  // Height
   if (options.height) {
-    params.append("h", options.height.toString());
+    params.append('h', options.height.toString());
   }
 
-  // Quality (1-100)
   if (options.quality) {
-    params.append("q", Math.min(100, Math.max(1, options.quality)).toString());
+    params.append('q', Math.min(100, Math.max(1, options.quality)).toString());
   }
 
-  // Format
   if (options.format) {
-    params.append("format", options.format);
+    params.append('format', options.format);
   }
 
-  // Fit mode (applies when crop=true or both width/height specified)
   if (options.fit) {
-    params.append("fit", options.fit);
+    params.append('fit', options.fit);
   } else if (options.crop || (options.width && options.height)) {
-    // Default to 'cover' for cropping/fixed dimensions
-    params.append("fit", "cover");
+    params.append('fit', 'cover');
   }
 
-  // Device pixel ratio
   if (options.dpr) {
-    params.append("dpr", options.dpr.toString());
+    params.append('dpr', options.dpr.toString());
   }
 
-  // Compression
   if (options.compress) {
-    params.append("compress", "true");
+    params.append('compress', 'true');
   }
 
   const queryString = params.toString();
@@ -114,7 +100,7 @@ export function getThumbnailUrl(gumletPath: string): string {
     height: 60,
     crop: true,
     quality: 80,
-    format: "auto",
+    format: 'auto',
     compress: true,
   });
 }
@@ -129,7 +115,7 @@ export function getThumbnailUrl(gumletPath: string): string {
 export function getResponsiveUrl(gumletPath: string, width: number): string {
   return getGumletUrl(gumletPath, {
     width,
-    format: "auto",
+    format: 'auto',
     compress: true,
     quality: 85,
   });
@@ -155,9 +141,7 @@ export function getResponsiveSrcSet(
   gumletPath: string,
   sizes: number[] = [400, 800, 1200]
 ): string {
-  return sizes
-    .map((size) => `${getResponsiveUrl(gumletPath, size)} ${size}w`)
-    .join(", ");
+  return sizes.map((size) => `${getResponsiveUrl(gumletPath, size)} ${size}w`).join(', ');
 }
 
 /**

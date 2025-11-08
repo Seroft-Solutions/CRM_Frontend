@@ -76,12 +76,10 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
   const { assignRoles, isAssigning: isAssigningRoles } = useRoleAssignment();
   const { assignGroups, isAssigning: isAssigningGroups } = useGroupAssignment();
 
-  // Fetch user details
   const { userDetails, isLoading, error, refetch } = useUserDetails(organizationId, userId);
   const { roles: availableRoles } = useAvailableRoles();
   const { groups: availableGroups } = useAvailableGroups();
 
-  // Initialize activeTab from URL query parameter
   const getInitialTab = (): 'overview' | 'roles' | 'groups' => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'roles' || tabParam === 'groups' || tabParam === 'overview') {
@@ -90,7 +88,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     return 'overview';
   };
 
-  // Local state
   const [activeTab, setActiveTab] = useState<'overview' | 'roles' | 'groups'>(getInitialTab);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
@@ -103,7 +100,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     item: RoleRepresentation | GroupRepresentation;
   } | null>(null);
 
-  // Effect to handle URL parameter changes
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'roles' || tabParam === 'groups' || tabParam === 'overview') {
@@ -139,12 +135,10 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
 
   const { user } = userDetails;
 
-  // Handle navigation
   const handleBack = () => {
     router.push('/user-management/organization-users');
   };
 
-  // Role management
   const handleAssignRoles = () => {
     setSelectedRoles([]);
     setRoleDialogOpen(true);
@@ -175,7 +169,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     setItemToRemove({ type: 'role', item: role });
   };
 
-  // Group management
   const handleAssignGroups = () => {
     setSelectedGroups([]);
     setGroupDialogOpen(true);
@@ -206,7 +199,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     setItemToRemove({ type: 'group', item: group });
   };
 
-  // Confirm removal
   const handleConfirmRemoval = () => {
     if (itemToRemove) {
       if (itemToRemove.type === 'role') {
@@ -228,7 +220,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
     }
   };
 
-  // Filter functions
   const filteredAvailableRoles = availableRoles.filter(
     (role) =>
       !userDetails.assignedRealmRoles.some((assigned) => assigned.id === role.id) &&
@@ -241,7 +232,6 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
       group.name?.toLowerCase().includes(groupSearchTerm.toLowerCase())
   );
 
-  // Format date
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleDateString();

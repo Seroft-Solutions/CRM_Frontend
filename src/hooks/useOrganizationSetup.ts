@@ -63,11 +63,9 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     organizationName: null,
   });
 
-  // Initialize services
   const setupService = new OrganizationSetupService();
   const syncService = new OrganizationSyncService();
 
-  // Setup mutation for new organizations
   const setupMutation = useMutation({
     mutationFn: async (request: OrganizationSetupRequest): Promise<OrganizationSetupResult> => {
       if (!session) throw new Error('No active session');
@@ -77,17 +75,14 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       setState((prev) => ({ ...prev, isSetupInProgress: true, error: null }));
     },
     onSuccess: (result, variables) => {
-      // Keep setup in progress to show progress tracking component
       setState((prev) => ({
         ...prev,
-        isSetupInProgress: true, // Keep true to trigger progress tracking
+        isSetupInProgress: true,
         error: null,
-        organizationName: variables.organizationName, // Set organization name for progress tracking
+        organizationName: variables.organizationName,
       }));
-      // Don't refetch organizations here - wait for progress to complete
     },
     onError: (error: Error, variables) => {
-      // Check if it's a 409 conflict error (organization already exists)
       if (error.message === 'ORGANIZATION_EXISTS') {
         toast.error('Organization already exists', {
           description:
@@ -99,13 +94,12 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           error: 'Organization already exists',
         }));
       } else if (error.message === 'SETUP_TIMEOUT') {
-        // Handle timeout gracefully - backend may still be processing
         console.log('⚠️ Setup timed out on frontend, starting progress tracking...');
         setState((prev) => ({
           ...prev,
-          isSetupInProgress: true, // Keep true to trigger progress tracking
+          isSetupInProgress: true,
           error: null,
-          organizationName: variables.organizationName, // Set organization name for progress tracking
+          organizationName: variables.organizationName,
         }));
         toast.info('Setup in progress', {
           description:
@@ -121,7 +115,6 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     },
   });
 
-  // Sync mutation for existing Keycloak data
   const syncMutation = useMutation({
     mutationFn: async () => {
       if (!session) throw new Error('No active session');
@@ -138,15 +131,12 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
           error: `Sync completed with warnings: ${result.errors.join(', ')}`,
         }));
       } else {
-        // Keep sync in progress to show progress tracking component
         setState((prev) => ({
           ...prev,
-          isSyncInProgress: true, // Keep true to trigger progress tracking
+          isSyncInProgress: true,
           error: null,
-          // organizationName should already be set from checkSetupStatus
         }));
         queryClient.invalidateQueries({ queryKey: ['session'] });
-        // Don't refetch organizations here - wait for progress to complete
       }
     },
     onError: (error: Error) => {
@@ -158,11 +148,9 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     },
   });
 
-  // Check if setup is required based on API organizations
   const checkSetupStatus = useCallback(() => {
     if (status === 'loading' || orgLoading) return;
 
-    // Don't update state if setup/sync is in progress
     if (state.isSetupInProgress || state.isSyncInProgress) return;
 
     const userHasOrganization = !!organizations?.length;
@@ -184,7 +172,6 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     }));
   }, [status, orgLoading, organizations, state.isSetupInProgress, state.isSyncInProgress]);
 
-  // Setup organization
   const setupOrganization = useCallback(
     async (request: OrganizationSetupRequest) => {
       await setupMutation.mutateAsync(request);
@@ -192,27 +179,22 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
     [setupMutation]
   );
 
-  // Sync existing data
   const syncExistingData = useCallback(async () => {
     await syncMutation.mutateAsync();
   }, [syncMutation]);
 
-  // Clear error
   const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  // Set error
   const setError = useCallback((error: string) => {
     setState((prev) => ({ ...prev, error, isSetupInProgress: false, isSyncInProgress: false }));
   }, []);
 
-  // Set show welcome
   const setShowWelcome = useCallback((show: boolean) => {
     setState((prev) => ({ ...prev, showWelcome: show }));
   }, []);
 
-  // Complete setup - mark as complete but don't refetch yet
   const completeSetup = useCallback(() => {
     setState((prev) => ({
       ...prev,
@@ -220,26 +202,21 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       isSyncInProgress: false,
       isSetupCompleted: true,
     }));
-    // Don't refetch organizations here - wait for welcome page dismissal
   }, []);
 
-  // Finish welcome and refetch organizations
   const finishWelcome = useCallback(() => {
     setState((prev) => ({ ...prev, showWelcome: false }));
     refetchOrganizations();
   }, [refetchOrganizations]);
 
-  // Ensure localStorage is synced with organizations data
   const syncLocalStorageWithOrganizations = useCallback(() => {
     if (!organizations?.length) return;
 
     const currentStoredOrgId = localStorage.getItem('selectedOrganizationId');
     const currentStoredOrgName = localStorage.getItem('selectedOrganizationName');
 
-    // Find the organization that should be selected
-    let targetOrg = organizations[0]; // Default to first org
+    let targetOrg = organizations[0];
 
-    // If there's a stored org ID, try to find that organization
     if (currentStoredOrgId) {
       const foundOrg = organizations.find((org) => org.id === currentStoredOrgId);
       if (foundOrg) {
@@ -247,7 +224,6 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       }
     }
 
-    // Update localStorage if it's missing or incorrect
     if (!currentStoredOrgId || currentStoredOrgId !== targetOrg.id) {
       localStorage.setItem('selectedOrganizationId', targetOrg.id);
       console.log('Updated localStorage selectedOrganizationId:', targetOrg.id);
@@ -258,17 +234,14 @@ export function useOrganizationSetup(): UseOrganizationSetupResult {
       console.log('Updated localStorage selectedOrganizationName:', targetOrg.name);
     }
 
-    // Also update cookies for SSR
     document.cookie = `selectedOrganizationId=${targetOrg.id}; path=/; max-age=31536000; SameSite=Lax`;
     document.cookie = `selectedOrganizationName=${encodeURIComponent(targetOrg.name)}; path=/; max-age=31536000; SameSite=Lax`;
   }, [organizations]);
 
-  // Auto-check setup status when session changes
   useEffect(() => {
     checkSetupStatus();
   }, [checkSetupStatus]);
 
-  // Auto-sync localStorage when organizations data changes
   useEffect(() => {
     syncLocalStorageWithOrganizations();
   }, [syncLocalStorageWithOrganizations]);
