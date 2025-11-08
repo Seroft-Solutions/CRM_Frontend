@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useGetAllImportHistories } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 
 interface ImportResponse {
     success: boolean;
@@ -31,6 +32,25 @@ interface ImportResponse {
 export default function ImportResultsPage() {
     const router = useRouter();
     const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+    const {
+        data: importHistoryPreview,
+        isLoading: isImportHistoryLoading,
+        isError: isImportHistoryError,
+        error: importHistoryError,
+        refetch: refetchImportHistory,
+    } = useGetAllImportHistories(
+        {
+            page: 0,
+            size: 1,
+            sort: ['id,desc'],
+        },
+        {
+            query: {
+                staleTime: 30 * 1000,
+            },
+        }
+    );
+    const hasBackendHistory = (importHistoryPreview?.length ?? 0) > 0;
 
     useEffect(() => {
         const storedData = sessionStorage.getItem('importResponse');
@@ -78,85 +98,141 @@ export default function ImportResultsPage() {
         }
     };
 
-    if (!responseData) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-                <Card className="w-full max-w-md">
+    const renderImportHistorySection = () => {
+        if (isImportHistoryLoading) {
+            return (
+                <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center justify-center gap-2">
-                            <AlertCircle className="h-5 w-5 text-yellow-500" />
-                            No Import Data
+                        <CardTitle className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                            Loading Import History
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>No import result data found. Please start by importing a file.</p>
-                        <Button asChild className="mt-4">
-                            <Link href="/calls/import">Go to Import Page</Link>
+                        <p className="text-sm text-muted-foreground">Fetching the latest failed import rows from the backend.</p>
+                    </CardContent>
+                </Card>
+            );
+        }
+
+        if (isImportHistoryError) {
+            const errorMessage =
+                importHistoryError instanceof Error ? importHistoryError.message : 'Unable to load import history data.';
+            return (
+                <Card className="border-red-200 bg-red-50">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-red-700">
+                            <AlertCircle className="h-5 w-5" />
+                            Failed to Fetch Import History
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-red-700">{errorMessage}</p>
+                        <Button onClick={() => refetchImportHistory()} size="sm" variant="outline">
+                            Try Again
                         </Button>
                     </CardContent>
                 </Card>
-            </div>
-        );
-    }
+            );
+        }
+
+        if (!hasBackendHistory) {
+            return (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                            No Failed Import Rows in History
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                            We could not find any import history records. Start a new import or check back later for results.
+                        </p>
+                    </CardContent>
+                </Card>
+            );
+        }
+
+        return <FailedCallsTable />;
+    };
 
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        Import Results
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div className="flex flex-col p-4 border rounded-lg">
-                            <span className="text-muted-foreground">Total Rows Processed</span>
-                            <span className="font-semibold text-2xl">{responseData.totalRows}</span>
+            {responseData ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                            Import Results
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div className="flex flex-col p-4 border rounded-lg">
+                                <span className="text-muted-foreground">Total Rows Processed</span>
+                                <span className="font-semibold text-2xl">{responseData.totalRows}</span>
+                            </div>
+                            <div className="flex flex-col p-4 border rounded-lg bg-green-50">
+                                <span className="text-muted-foreground">✅ Successful Rows</span>
+                                <Badge variant="default" className="mt-1 bg-green-100 text-green-800 w-fit">
+                                    {responseData.successfulRows}
+                                </Badge>
+                            </div>
+                            <div className="flex flex-col p-4 border rounded-lg bg-yellow-50">
+                                <span className="text-muted-foreground">⚠️ Skipped Rows</span>
+                                <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800 w-fit">
+                                    {responseData.skippedRows}
+                                </Badge>
+                            </div>
+                            <div className="flex flex-col p-4 border rounded-lg bg-red-50">
+                                <span className="text-muted-foreground">❌ Failed Rows</span>
+                                <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800 w-fit">
+                                    {responseData.failedRows}
+                                </Badge>
+                            </div>
                         </div>
-                        <div className="flex flex-col p-4 border rounded-lg bg-green-50">
-                            <span className="text-muted-foreground">✅ Successful Rows</span>
-                            <Badge variant="default" className="mt-1 bg-green-100 text-green-800 w-fit">
-                                {responseData.successfulRows}
-                            </Badge>
+                        <div className="border-t pt-4">
+                            <p className="text-sm text-muted-foreground mb-2">Summary:</p>
+                            <p className="text-sm">{responseData.message}</p>
                         </div>
-                        <div className="flex flex-col p-4 border rounded-lg bg-yellow-50">
-                            <span className="text-muted-foreground">⚠️ Skipped Rows</span>
-                            <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800 w-fit">
-                                {responseData.skippedRows}
-                            </Badge>
-                        </div>
-                        <div className="flex flex-col p-4 border rounded-lg bg-red-50">
-                            <span className="text-muted-foreground">❌ Failed Rows</span>
-                            <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800 w-fit">
-                                {responseData.failedRows}
-                            </Badge>
-                        </div>
-                    </div>
-                    <div className="border-t pt-4">
-                        <p className="text-sm text-muted-foreground mb-2">Summary:</p>
-                        <p className="text-sm">{responseData.message}</p>
-                    </div>
-                     {responseData.skippedRows > 0 && responseData.skippedReportCsv && (
-                        <Button onClick={handleDownloadSkippedReport} variant="outline" className="flex items-center gap-2">
-                            <Download className="h-4 w-4" />
-                            Download Skipped Report (.CSV)
+                         {responseData.skippedRows > 0 && responseData.skippedReportCsv && (
+                            <Button onClick={handleDownloadSkippedReport} variant="outline" className="flex items-center gap-2">
+                                <Download className="h-4 w-4" />
+                                Download Skipped Report (.CSV)
+                            </Button>
+                        )}
+                        {responseData.failedRows > 0 && responseData.errorReportCsv && (
+                            <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
+                                <Download className="h-4 w-4" />
+                                Download Error Report (.CSV)
+                            </Button>
+                        )}
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-yellow-500" />
+                            No Session Summary Available
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            We could not locate the latest summary in session storage. The table below still reflects the current import
+                            history stored in the backend.
+                        </p>
+                        <Button asChild variant="outline">
+                            <Link href="/calls/import">Start a New Import</Link>
                         </Button>
-                    )}
-                    {responseData.failedRows > 0 && responseData.errorReportCsv && (
-                        <Button onClick={handleDownloadErrorReport} variant="outline" className="flex items-center gap-2">
-                            <Download className="h-4 w-4" />
-                            Download Error Report (.CSV)
-                        </Button>
-                    )}
-                </CardContent>
-            </Card>
-
-            {responseData.failedRows > 0 && responseData.errorReportCsv && (
-                <FailedCallsTable errorReportCsv={responseData.errorReportCsv} />
+                    </CardContent>
+                </Card>
             )}
 
-            {responseData.skippedRows > 0 && responseData.skippedErrors && responseData.skippedErrors.length > 0 && (
+            {renderImportHistorySection()}
+
+            {responseData?.skippedRows > 0 && responseData.skippedErrors && responseData.skippedErrors.length > 0 && (
                  <Card className="mt-6 border-yellow-200 bg-yellow-50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-yellow-800">
