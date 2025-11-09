@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React from 'react';
+import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 import {
+  useCountUserProfiles,
   useGetAllUserProfiles,
   useSearchUserProfiles,
-  useCountUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 import type { RelationshipConfig } from './form-types';

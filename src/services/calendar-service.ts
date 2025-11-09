@@ -7,7 +7,7 @@
 
 'use client';
 
-import { format, addMinutes } from 'date-fns';
+import { addMinutes } from 'date-fns';
 
 export interface CalendarEvent {
   summary: string;

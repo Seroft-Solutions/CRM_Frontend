@@ -6,12 +6,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { CredentialRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 import {
+  getAdminRealmsRealmUsers,
   getAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdResetPassword,
-  getAdminRealmsRealmUsers,
 } from '@/core/api/generated/keycloak';
-import type { UserRepresentation, CredentialRepresentation } from '@/core/api/generated/keycloak';
 
 export interface UpdatePasswordRequest {
   currentPassword: string;

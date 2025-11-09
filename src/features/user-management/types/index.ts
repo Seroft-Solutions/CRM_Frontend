@@ -4,11 +4,10 @@
  */
 
 import type {
-  UserRepresentation,
-  RoleRepresentation,
   GroupRepresentation,
-  OrganizationRepresentation,
   MemberRepresentation,
+  OrganizationRepresentation,
+  RoleRepresentation,
 } from '@/core/api/generated/keycloak';
 
 export interface EnhancedMemberRepresentation extends MemberRepresentation {

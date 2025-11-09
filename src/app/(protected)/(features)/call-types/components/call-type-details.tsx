@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { callTypeToast, handleCallTypeError } from './call-type-toast';
 import { callTypeFormConfig } from './form/call-type-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetCallType,
   useDeleteCallType,
+  useGetCallType,
 } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
 
 interface CallTypeDetailsProps {

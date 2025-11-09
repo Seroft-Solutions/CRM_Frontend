@@ -8,31 +8,28 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { districtToast, handleDistrictError } from './district-toast';
 import { DistrictDTOStatus } from '@/core/api/generated/spring/schemas/DistrictDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -54,8 +51,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountDistricts,
+  useGetAllDistricts,
+  useSearchDistricts,
+  useUpdateDistrict,
+} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+
+// Relationship data imports
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+import { DistrictTableHeader } from './table/district-table-header';
+import { DistrictTableRow } from './table/district-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 // Configuration for table features
 const TABLE_CONFIG = {
@@ -99,25 +108,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllDistricts,
-  useDeleteDistrict,
-  useCountDistricts,
-  useUpdateDistrict,
-  usePartialUpdateDistrict,
-  useSearchDistricts,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-
-// Relationship data imports
-
-import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-
-import { DistrictSearchAndFilters } from './table/district-search-filters';
-import { DistrictTableHeader } from './table/district-table-header';
-import { DistrictTableRow } from './table/district-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 // Define sort ordering constants
 const ASC = 'asc';

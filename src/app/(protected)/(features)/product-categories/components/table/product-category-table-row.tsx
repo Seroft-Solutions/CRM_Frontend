@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from './relationship-cell';
 import type { ProductCategoryDTO } from '@/core/api/generated/spring/schemas/ProductCategoryDTO';
 import { ProductCategoryDTOStatus } from '@/core/api/generated/spring/schemas/ProductCategoryDTOStatus';
 

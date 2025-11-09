@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { callStatusToast, handleCallStatusError } from './call-status-toast';
 import { CallStatusDTOStatus } from '@/core/api/generated/spring/schemas/CallStatusDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountCallStatuses,
+  useGetAllCallStatuses,
+  useSearchCallStatuses,
+  useUpdateCallStatus,
+} from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
+import { CallStatusTableHeader } from './table/call-status-table-header';
+import { CallStatusTableRow } from './table/call-status-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -93,21 +99,6 @@ const tableScrollStyles = `
     word-break: break-word;
   }
 `;
-
-import {
-  useGetAllCallStatuses,
-  useDeleteCallStatus,
-  useCountCallStatuses,
-  useUpdateCallStatus,
-  usePartialUpdateCallStatus,
-  useSearchCallStatuses,
-} from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
-
-import { CallStatusSearchAndFilters } from './table/call-status-search-filters';
-import { CallStatusTableHeader } from './table/call-status-table-header';
-import { CallStatusTableRow } from './table/call-status-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

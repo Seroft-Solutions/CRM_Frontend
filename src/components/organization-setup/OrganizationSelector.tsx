@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, ArrowRight, LogOut } from 'lucide-react';
+import { ArrowRight, Building2, LogOut } from 'lucide-react';
 import type { UserOrganization } from '@/services/organization/organization-api.service';
 import { logoutAction } from '@/core/auth';
 

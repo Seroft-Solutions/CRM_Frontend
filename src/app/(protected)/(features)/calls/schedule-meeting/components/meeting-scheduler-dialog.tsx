@@ -2,18 +2,11 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogOverlay,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, CheckCircle2, Building2, Loader2 } from 'lucide-react';
+import { Building2, CalendarDays, CheckCircle2, Loader2 } from 'lucide-react';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingSchedulerDialogProps {

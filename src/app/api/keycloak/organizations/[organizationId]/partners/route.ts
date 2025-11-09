@@ -7,28 +7,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import { getChannelType } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import type { ChannelTypeDTO } from '@/core/api/generated/spring/schemas';
-import {
-  getAdminRealmsRealmOrganizationsOrgIdMembers,
-  getAdminRealmsRealmOrganizationsOrgId,
-  postAdminRealmsRealmOrganizationsOrgIdMembers,
-  postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
-  getAdminRealmsRealmUsers,
-  postAdminRealmsRealmUsers,
-  putAdminRealmsRealmUsersUserId,
-  putAdminRealmsRealmUsersUserIdGroupsGroupId,
-  deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
-  putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
-  putAdminRealmsRealmUsersUserIdResetPassword,
-  getAdminRealmsRealmGroups,
-  getAdminRealmsRealmUsersUserIdGroups,
-  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
-} from '@/core/api/generated/keycloak';
 import type {
+  CredentialRepresentation,
+  OrganizationRepresentation,
   PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
   UserRepresentation,
-  GroupRepresentation,
-  OrganizationRepresentation,
-  CredentialRepresentation,
+} from '@/core/api/generated/keycloak';
+import {
+  deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
+  getAdminRealmsRealmGroups,
+  getAdminRealmsRealmOrganizationsOrgId,
+  getAdminRealmsRealmOrganizationsOrgIdMembers,
+  getAdminRealmsRealmUsers,
+  getAdminRealmsRealmUsersUserIdGroups,
+  getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
+  postAdminRealmsRealmOrganizationsOrgIdMembers,
+  postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
+  postAdminRealmsRealmUsers,
+  putAdminRealmsRealmUsersUserId,
+  putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
+  putAdminRealmsRealmUsersUserIdGroupsGroupId,
+  putAdminRealmsRealmUsersUserIdResetPassword,
 } from '@/core/api/generated/keycloak';
 
 interface PartnerInvitation {

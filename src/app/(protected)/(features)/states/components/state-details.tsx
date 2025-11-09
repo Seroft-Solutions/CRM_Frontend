@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { stateToast, handleStateError } from './state-toast';
+import { Pencil } from 'lucide-react';
+import { handleStateError, stateToast } from './state-toast';
 import { stateFormConfig } from './form/state-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetState,
   useDeleteState,
+  useGetState,
 } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
 interface StateDetailsProps {

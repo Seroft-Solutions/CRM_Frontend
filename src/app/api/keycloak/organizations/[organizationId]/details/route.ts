@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import { getAdminRealmsRealmOrganizationsOrgId } from '@/core/api/generated/keycloak';
 import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
+import { getAdminRealmsRealmOrganizationsOrgId } from '@/core/api/generated/keycloak';
 import { auth } from '@/auth';
 
 export async function GET(

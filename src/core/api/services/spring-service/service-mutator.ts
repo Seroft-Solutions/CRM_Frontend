@@ -4,6 +4,7 @@ import {
   SPRING_SERVICE_LONG_RUNNING_CONFIG,
 } from '@/core/api/services/spring-service/config';
 import { getTenantHeader } from '@/core/api/services/shared/tenant-helper';
+import { sessionEventEmitter } from '@/core/auth/session/events';
 
 class SimpleTokenCache {
   private token: string | null = null;
@@ -46,8 +47,6 @@ class SimpleTokenCache {
     this.refreshPromise = null;
   }
 }
-
-import { sessionEventEmitter } from '@/core/auth/session/events';
 
 async function fetchAccessTokenStandalone(): Promise<string | null> {
   try {

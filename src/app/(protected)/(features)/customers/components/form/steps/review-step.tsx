@@ -2,26 +2,10 @@
 
 import React from 'react';
 
-import {
-  useGetAllStates,
-  useSearchStates,
-  useCountStates,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-import {
-  useGetAllDistricts,
-  useSearchDistricts,
-  useCountDistricts,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import {
-  useGetAllCities,
-  useSearchCities,
-  useCountCities,
-} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-import {
-  useGetAllAreas,
-  useSearchAreas,
-  useCountAreas,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 interface CustomerReviewStepProps {
   form: any;

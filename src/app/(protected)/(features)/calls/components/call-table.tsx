@@ -1,32 +1,28 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -48,8 +44,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountCalls,
+  useGetAllCalls,
+  useSearchCalls,
+  useUpdateCall,
+} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+
+import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+
+import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
+
+import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+
+import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+
+import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+
+import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
+import { CallTableHeader } from './table/call-table-header';
+import { CallTableRow } from './table/call-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -95,39 +118,6 @@ const tableScrollStyles = `
   }
   
 `;
-
-import {
-  useGetAllCalls,
-  useDeleteCall,
-  useCountCalls,
-  useUpdateCall,
-  usePartialUpdateCall,
-  useSearchCalls,
-} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-
-import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
-
-import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
-
-import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
-
-import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
-
-import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-
-import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-
-import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
-import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
-
-import { CallSearchAndFilters } from './table/call-search-filters';
-import { CallTableHeader } from './table/call-table-header';
-import { CallTableRow } from './table/call-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

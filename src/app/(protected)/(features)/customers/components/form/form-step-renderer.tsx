@@ -2,8 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +21,10 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './customer-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -25,27 +35,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllStates,
-  useSearchStates,
-  useCountStates,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-import {
-  useGetAllDistricts,
-  useSearchDistricts,
-  useCountDistricts,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import {
-  useGetAllCities,
-  useSearchCities,
-  useCountCities,
-} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-import {
-  useGetAllAreas,
-  useSearchAreas,
-  useCountAreas,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

@@ -3,7 +3,7 @@
  * Comprehensive service for proper user onboarding with password setup
  */
 
-import type { UserInvitationWithGroups, PendingInvitation, InvitationActionResult } from '../types';
+import type { UserInvitationWithGroups } from '../types';
 
 export interface OnboardingConfig {
   defaultGroups?: string[];

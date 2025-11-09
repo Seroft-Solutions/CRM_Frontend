@@ -6,7 +6,6 @@
 'use client';
 
 import { SessionProvider, useSession } from 'next-auth/react';
-import type { Session } from 'next-auth';
 import type { SessionProviderProps } from '../types';
 
 export function AppSessionProvider({ children, session }: SessionProviderProps) {

@@ -5,7 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { ProductCategoryDTOStatus } from './ProductCategoryDTOStatus';
+import type {ProductCategoryDTOStatus} from './ProductCategoryDTOStatus';
 
 export interface ProductCategoryDTO {
   id?: number;

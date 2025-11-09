@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { callRemarkToast, handleCallRemarkError } from './call-remark-toast';
 import { CallRemarkDTOStatus } from '@/core/api/generated/spring/schemas/CallRemarkDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountCallRemarks,
+  useGetAllCallRemarks,
+  useSearchCallRemarks,
+  useUpdateCallRemark,
+} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+
+import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { CallRemarkTableHeader } from './table/call-remark-table-header';
+import { CallRemarkTableRow } from './table/call-remark-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,23 +96,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllCallRemarks,
-  useDeleteCallRemark,
-  useCountCallRemarks,
-  useUpdateCallRemark,
-  usePartialUpdateCallRemark,
-  useSearchCallRemarks,
-} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
-
-import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-
-import { CallRemarkSearchAndFilters } from './table/call-remark-search-filters';
-import { CallRemarkTableHeader } from './table/call-remark-table-header';
-import { CallRemarkTableRow } from './table/call-remark-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

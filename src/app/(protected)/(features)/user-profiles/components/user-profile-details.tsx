@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { userProfileToast, handleUserProfileError } from './user-profile-toast';
+import { Pencil, Trash2 } from 'lucide-react';
+import { handleUserProfileError, userProfileToast } from './user-profile-toast';
 import { userProfileFormConfig } from './form/user-profile-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetUserProfile,
   useDeleteUserProfile,
+  useGetUserProfile,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';

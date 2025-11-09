@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Save, Trash2 } from 'lucide-react';
 
 export interface DraftDialogProps {
   open: boolean;

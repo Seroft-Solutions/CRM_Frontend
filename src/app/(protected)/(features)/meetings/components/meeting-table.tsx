@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { meetingToast, handleMeetingError } from './meeting-toast';
+import { handleMeetingError, meetingToast } from './meeting-toast';
 import { MeetingDTOStatus } from '@/core/api/generated/spring/schemas/MeetingDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountMeetings,
+  useGetAllMeetings,
+  useSearchMeetings,
+  useUpdateMeeting,
+} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+
+import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+
+import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { MeetingTableHeader } from './table/meeting-table-header';
+import { MeetingTableRow } from './table/meeting-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,27 +100,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllMeetings,
-  useDeleteMeeting,
-  useCountMeetings,
-  useUpdateMeeting,
-  usePartialUpdateMeeting,
-  useSearchMeetings,
-} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
-
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
-import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-
-import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-
-import { MeetingSearchAndFilters } from './table/meeting-search-filters';
-import { MeetingTableHeader } from './table/meeting-table-header';
-import { MeetingTableRow } from './table/meeting-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

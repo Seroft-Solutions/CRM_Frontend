@@ -1,18 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,49 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
-import {
-  Search,
-  Trash2,
-  FileText,
-  Calendar,
-  RefreshCw,
-  Loader2,
-  Archive,
-  RotateCcw,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-  Download,
-  X,
-  Settings2,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Calendar, FileText, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useEntityDrafts, type DraftItem, type DraftData } from '@/core/hooks/use-entity-drafts';
+import { type DraftData, type DraftItem } from '@/core/hooks/use-entity-drafts';
 import {
-  useGetAllUserDrafts,
   useDeleteUserDraft,
-  useCountUserDrafts,
+  useGetAllUserDrafts,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
-import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 

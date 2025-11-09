@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -29,7 +29,7 @@ import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/custome
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { CustomerDTO, AreaDTO } from '@/core/api/generated/spring/schemas';
+import type { AreaDTO, CustomerDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
 
 const customerCreationSchema = z.object({

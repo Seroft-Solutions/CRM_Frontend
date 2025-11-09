@@ -1,16 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import {
-  Eye,
-  Pencil,
-  Trash2,
-  Archive,
-  MoreVertical,
-  RotateCcw,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
+import { AlertTriangle, Archive, MoreVertical, RefreshCw, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -26,7 +16,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from './relationship-cell';
 import type { UserDraftDTO } from '@/core/api/generated/spring/schemas/UserDraftDTO';
 import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
 

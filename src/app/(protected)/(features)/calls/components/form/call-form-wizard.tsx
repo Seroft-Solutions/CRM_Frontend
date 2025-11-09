@@ -1,21 +1,20 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CallFormProvider, useEntityForm } from './call-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import { stepComponents } from './steps';
 import {
   useCreateCall,
-  useUpdateCall,
   useGetCall,
+  useUpdateCall,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import { callToast, handleCallError } from '../call-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';

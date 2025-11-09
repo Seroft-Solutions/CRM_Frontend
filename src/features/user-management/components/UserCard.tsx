@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Settings, UserX, Mail, Calendar } from 'lucide-react';
+import { Calendar, Mail, MoreHorizontal, Settings, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';

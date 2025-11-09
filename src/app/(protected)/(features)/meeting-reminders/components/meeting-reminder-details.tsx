@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { meetingReminderToast, handleMeetingReminderError } from './meeting-reminder-toast';
+import { Pencil, Trash2 } from 'lucide-react';
+import { handleMeetingReminderError, meetingReminderToast } from './meeting-reminder-toast';
 import { meetingReminderFormConfig } from './form/meeting-reminder-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetMeetingReminder,
   useDeleteMeetingReminder,
+  useGetMeetingReminder,
 } from '@/core/api/generated/spring/endpoints/meeting-reminder-resource/meeting-reminder-resource.gen';
 
 import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';

@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { cityToast, handleCityError } from './city-toast';
 import { cityFormConfig } from './form/city-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetCity,
   useDeleteCity,
+  useGetCity,
 } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 
 import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';

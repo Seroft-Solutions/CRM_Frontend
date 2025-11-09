@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 
 interface CustomerGeographicStepProps {

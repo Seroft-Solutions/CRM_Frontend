@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
+  AlertCircle,
+  ArrowRight,
   Building2,
   CheckCircle,
-  AlertCircle,
-  Loader2,
   Coffee,
-  ArrowRight,
   Database,
+  Loader2,
   LogOut,
 } from 'lucide-react';
 import { OrganizationSetupForm } from '@/components/organization-setup/OrganizationSetupForm';

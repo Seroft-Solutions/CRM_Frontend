@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { roleToast, handleRoleError } from './role-toast';
+import { handleRoleError, roleToast } from './role-toast';
 import { RoleDTOStatus } from '@/core/api/generated/spring/schemas/RoleDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountRoles,
+  useGetAllRoles,
+  useSearchRoles,
+  useUpdateRole,
+} from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
+
+import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
+import { RoleTableHeader } from './table/role-table-header';
+import { RoleTableRow } from './table/role-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,23 +96,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllRoles,
-  useDeleteRole,
-  useCountRoles,
-  useUpdateRole,
-  usePartialUpdateRole,
-  useSearchRoles,
-} from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
-
-import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
-
-import { RoleSearchAndFilters } from './table/role-search-filters';
-import { RoleTableHeader } from './table/role-table-header';
-import { RoleTableRow } from './table/role-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

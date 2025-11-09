@@ -5,7 +5,6 @@ import { Session } from 'next-auth';
 import { getAdminRealmsRealmOrganizations } from '@/core/api/generated/keycloak/endpoints/organizations/organizations.gen';
 
 import type { OrganizationDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
-import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import {
   createUserProfile,
   getAllOrganizations,

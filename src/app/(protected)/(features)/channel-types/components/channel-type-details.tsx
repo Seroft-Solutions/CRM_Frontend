@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { channelTypeToast, handleChannelTypeError } from './channel-type-toast';
 import { channelTypeFormConfig } from './form/channel-type-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetChannelType,
   useDeleteChannelType,
+  useGetChannelType,
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 interface ChannelTypeDetailsProps {

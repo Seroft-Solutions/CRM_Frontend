@@ -1,28 +1,28 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React from 'react';
+import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 import {
+  useCountStates,
   useGetAllStates,
   useSearchStates,
-  useCountStates,
 } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 import {
+  useCountDistricts,
   useGetAllDistricts,
   useSearchDistricts,
-  useCountDistricts,
 } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
 import {
+  useCountCities,
   useGetAllCities,
   useSearchCities,
-  useCountCities,
 } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import {
+  useCountAreas,
   useGetAllAreas,
   useSearchAreas,
-  useCountAreas,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 import type { RelationshipConfig } from './form-types';

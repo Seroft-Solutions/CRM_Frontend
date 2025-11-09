@@ -6,7 +6,7 @@ import { useFileSelection } from '../hooks/useFileSelection';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageDropZone } from './ImageDropZone';
 import { ImagePreviewGrid } from './ImagePreviewGrid';

@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { organizationToast, handleOrganizationError } from './organization-toast';
+import { Pencil, Trash2 } from 'lucide-react';
+import { handleOrganizationError, organizationToast } from './organization-toast';
 import { organizationFormConfig } from './form/organization-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetOrganization,
   useDeleteOrganization,
+  useGetOrganization,
 } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
 import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';

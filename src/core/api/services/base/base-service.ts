@@ -1,6 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { sessionEventEmitter } from '@/core/auth';
-import { TokenCache } from '@/core/auth';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { sessionEventEmitter, TokenCache } from '@/core/auth';
 
 export interface BaseServiceConfig {
   baseURL: string;

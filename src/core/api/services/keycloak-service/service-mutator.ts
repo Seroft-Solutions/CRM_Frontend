@@ -1,8 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ServiceRequestConfig } from '@/core/api/services/base/types';
 import {
-  KEYCLOAK_SERVICE_CONFIG,
   KEYCLOAK_ADMIN_CONFIG,
+  KEYCLOAK_SERVICE_CONFIG,
 } from '@/core/api/services/keycloak-service/config';
 import { sessionEventEmitter } from '@/core/auth';
 

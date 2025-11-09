@@ -2,8 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +21,11 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './user-profile-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
+import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
+import { useGetAllGroups } from '@/core/api/generated/spring/endpoints/group-resource/group-resource.gen';
+import { useGetAllRoles } from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -25,31 +36,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllPublicUsers,
-  useSearchPublicUsers,
-} from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
-import {
-  useGetAllOrganizations,
-  useSearchOrganizations,
-  useCountOrganizations,
-} from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
-import {
-  useGetAllGroups,
-  useSearchGroups,
-  useCountGroups,
-} from '@/core/api/generated/spring/endpoints/group-resource/group-resource.gen';
-import {
-  useGetAllRoles,
-  useSearchRoles,
-  useCountRoles,
-} from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
-import {
-  useGetAllChannelTypes,
-  useSearchChannelTypes,
-  useCountChannelTypes,
-} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

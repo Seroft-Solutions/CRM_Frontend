@@ -5,7 +5,6 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { ImportHistoryDTOStatus } from './ImportHistoryDTOStatus';
 
 export interface ImportHistoryDTO {
   id?: number;

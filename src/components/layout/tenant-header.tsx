@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { InlinePermissionGuard, PermissionGuard, useAuth } from '@/core/auth';
+import { useAuth } from '@/core/auth';
 import { useUserAuthorities } from '@/core/auth/hooks';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Briefcase } from 'lucide-react';

@@ -3,10 +3,7 @@
  * This creates actual database records for UserAvailability and AvailableTimeSlot
  */
 
-import {
-  AvailabilityService,
-  DEFAULT_AVAILABILITY_CONFIG,
-} from '@/app/(protected)/(features)/shared/services/availability-service';
+import { AvailabilityService, } from '@/app/(protected)/(features)/shared/services/availability-service';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -14,7 +11,9 @@ import {
   useGetAllUserAvailabilities,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
-import { useCreateAvailableTimeSlot } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import {
+  useCreateAvailableTimeSlot
+} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 
 /**
  * React hook to handle real availability creation for specific users

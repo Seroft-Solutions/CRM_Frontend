@@ -5,9 +5,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,17 +39,16 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  ArrowLeft,
   Building2,
+  Edit,
+  Mail,
+  MoreHorizontal,
   Plus,
   Search,
-  MoreHorizontal,
-  UserX,
-  Mail,
-  ArrowLeft,
-  Users,
-  AlertCircle,
-  Edit,
   Send,
+  Users,
+  UserX,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
@@ -57,7 +56,6 @@ import { useOrganizationContext } from '@/features/user-management/hooks';
 import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-with-refresh';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { deleteUserProfile, getUserProfile } from '@/core/api/generated/spring';
-import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
 
 interface BusinessPartner {
   id: string;

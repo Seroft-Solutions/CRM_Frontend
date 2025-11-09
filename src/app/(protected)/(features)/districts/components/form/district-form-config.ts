@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig } from './form-types';
 
 /**
  * Configuration for District form

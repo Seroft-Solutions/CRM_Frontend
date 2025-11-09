@@ -7,15 +7,14 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import { stepComponents } from './steps';
 import {
   useCreateArea,
-  useUpdateArea,
   useGetArea,
+  useUpdateArea,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { areaToast, handleAreaError } from '../area-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';

@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { userProfileToast, handleUserProfileError } from './user-profile-toast';
+import { handleUserProfileError, userProfileToast } from './user-profile-toast';
 import { UserProfileDTOStatus } from '@/core/api/generated/spring/schemas/UserProfileDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountUserProfiles,
+  useGetAllUserProfiles,
+  useSearchUserProfiles,
+  useUpdateUserProfile,
+} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+
+import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
+
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import { UserProfileTableHeader } from './table/user-profile-table-header';
+import { UserProfileTableRow } from './table/user-profile-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,25 +98,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllUserProfiles,
-  useDeleteUserProfile,
-  useCountUserProfiles,
-  useUpdateUserProfile,
-  usePartialUpdateUserProfile,
-  useSearchUserProfiles,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
-import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
-
-import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-
-import { UserProfileSearchAndFilters } from './table/user-profile-search-filters';
-import { UserProfileTableHeader } from './table/user-profile-table-header';
-import { UserProfileTableRow } from './table/user-profile-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

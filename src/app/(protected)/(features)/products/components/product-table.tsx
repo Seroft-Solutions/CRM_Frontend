@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { productToast, handleProductError } from './product-toast';
+import { handleProductError, productToast } from './product-toast';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountProducts,
+  useGetAllProducts,
+  useSearchProducts,
+  useUpdateProduct,
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import { ProductTableHeader } from './table/product-table-header';
+import { ProductTableRow } from './table/product-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -93,25 +103,6 @@ const tableScrollStyles = `
     text-overflow: ellipsis;
   }
 `;
-
-import {
-  useGetAllProducts,
-  useDeleteProduct,
-  useCountProducts,
-  useUpdateProduct,
-  usePartialUpdateProduct,
-  useSearchProducts,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-
-import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
-
-import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
-
-import { ProductSearchAndFilters } from './table/product-search-filters';
-import { ProductTableHeader } from './table/product-table-header';
-import { ProductTableRow } from './table/product-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

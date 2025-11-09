@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Loader2, Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -32,8 +32,8 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import {
-  useCreateArea,
   getAreaWithFullHierarchy,
+  useCreateArea,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { useSearchCitiesWithHierarchy } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import { toast } from 'sonner';

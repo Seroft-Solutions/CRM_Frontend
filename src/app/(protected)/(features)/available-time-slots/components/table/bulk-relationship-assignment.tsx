@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Loader2, Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,7 +22,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import { availableTimeSlotToast } from '../available-time-slot-toast';
 
 interface BulkRelationshipAssignmentProps {

@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { sourceToast, handleSourceError } from './source-toast';
+import { handleSourceError, sourceToast } from './source-toast';
 import { SourceDTOStatus } from '@/core/api/generated/spring/schemas/SourceDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountSources,
+  useGetAllSources,
+  useSearchSources,
+  useUpdateSource,
+} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+import { SourceTableHeader } from './table/source-table-header';
+import { SourceTableRow } from './table/source-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -93,21 +99,6 @@ const tableScrollStyles = `
     word-break: break-word;
   }
 `;
-
-import {
-  useGetAllSources,
-  useDeleteSource,
-  useCountSources,
-  useUpdateSource,
-  usePartialUpdateSource,
-  useSearchSources,
-} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
-
-import { SourceSearchAndFilters } from './table/source-search-filters';
-import { SourceTableHeader } from './table/source-table-header';
-import { SourceTableRow } from './table/source-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

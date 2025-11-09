@@ -5,9 +5,8 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, LogOut } from 'lucide-react';
+import { AlertTriangle, LogOut, RefreshCw } from 'lucide-react';
 import { clearAuthStorage } from '@/lib/auth-cleanup';
 
 interface SessionExpiredModalProps {

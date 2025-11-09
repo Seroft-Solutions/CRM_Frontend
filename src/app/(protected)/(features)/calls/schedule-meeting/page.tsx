@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CalendarDays } from 'lucide-react';
 import { MeetingScheduler } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-scheduler';

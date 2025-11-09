@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { subCallTypeToast, handleSubCallTypeError } from './sub-call-type-toast';
+import { Pencil } from 'lucide-react';
+import { handleSubCallTypeError, subCallTypeToast } from './sub-call-type-toast';
 import { subCallTypeFormConfig } from './form/sub-call-type-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetSubCallType,
   useDeleteSubCallType,
+  useGetSubCallType,
 } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';

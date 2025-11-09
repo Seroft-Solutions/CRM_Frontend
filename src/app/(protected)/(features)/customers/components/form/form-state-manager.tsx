@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEntityForm } from './customer-form-provider';
 
 interface FormStateManagerProps {

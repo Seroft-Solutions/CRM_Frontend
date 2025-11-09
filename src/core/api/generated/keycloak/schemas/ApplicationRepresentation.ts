@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type { ApplicationRepresentationAttributes } from './ApplicationRepresentationAttributes';
-import type { ApplicationRepresentationAuthenticationFlowBindingOverrides } from './ApplicationRepresentationAuthenticationFlowBindingOverrides';
+import type {
+  ApplicationRepresentationAuthenticationFlowBindingOverrides
+} from './ApplicationRepresentationAuthenticationFlowBindingOverrides';
 import type { ApplicationRepresentationRegisteredNodes } from './ApplicationRepresentationRegisteredNodes';
 import type { ProtocolMapperRepresentation } from './ProtocolMapperRepresentation';
 import type { ResourceServerRepresentation } from './ResourceServerRepresentation';

@@ -1,28 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
   useGetAllUserProfiles,
   useGetUserProfile,
-  useSearchUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 import { useCreateCall } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import type { FormConfig, FormState, FormActions, FormContextValue } from './form-types';
+import type { FormContextValue } from './form-types';
 import { callFormConfig } from './call-form-config';
 import { callFormSchema } from './call-form-schema';
 import { callToast, handleCallError } from '../call-toast';
-import { generateLeadNo } from '../../utils/leadNo-generator';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { SaveDraftDialog } from '@/components/form-drafts';
 import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
-import { useGetAllAvailableTimeSlots } from '@/core/api/generated/spring';
 
 const FormContext = createContext<FormContextValue | null>(null);
 

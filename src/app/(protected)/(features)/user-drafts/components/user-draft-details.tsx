@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { userDraftToast, handleUserDraftError } from './user-draft-toast';
+import { Pencil, Trash2 } from 'lucide-react';
+import { handleUserDraftError, userDraftToast } from './user-draft-toast';
 import { userDraftFormConfig } from './form/user-draft-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetUserDraft,
   useDeleteUserDraft,
+  useGetUserDraft,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
 
 interface UserDraftDetailsProps {

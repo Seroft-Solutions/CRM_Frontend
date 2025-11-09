@@ -5,38 +5,33 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type {
+  CredentialRepresentation,
+  GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
+  MemberRepresentation,
+  PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
+  UserRepresentation,
+} from '@/core/api/generated/keycloak';
 import {
-  getAdminRealmsRealmOrganizationsOrgIdMembers,
-  getAdminRealmsRealmOrganizationsOrgId,
-  postAdminRealmsRealmOrganizationsOrgIdMembers,
-  postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
-  postAdminRealmsRealmOrganizationsOrgIdMembersInviteUser,
-  getAdminRealmsRealmUsers,
-  postAdminRealmsRealmUsers,
-  putAdminRealmsRealmUsersUserId,
-  putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
+  getAdminRealmsRealmGroups,
+  getAdminRealmsRealmOrganizationsOrgId,
+  getAdminRealmsRealmOrganizationsOrgIdMembers,
+  getAdminRealmsRealmUsers,
   getAdminRealmsRealmUsersUserIdGroups,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
+  postAdminRealmsRealmOrganizationsOrgIdMembers,
+  postAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUser,
+  postAdminRealmsRealmUsers,
+  putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdExecuteActionsEmail,
+  putAdminRealmsRealmUsersUserIdGroupsGroupId,
   putAdminRealmsRealmUsersUserIdResetPassword,
-  getAdminRealmsRealmGroups,
 } from '@/core/api/generated/keycloak';
 import type {
-  GetAdminRealmsRealmOrganizationsOrgIdMembersParams,
-  PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody,
-  PostAdminRealmsRealmOrganizationsOrgIdMembersInviteUserBody,
-  MemberRepresentation,
-  UserRepresentation,
-  GroupRepresentation,
-  OrganizationRepresentation,
-  CredentialRepresentation,
-} from '@/core/api/generated/keycloak';
-import type {
+  InvitationStatus,
   PendingInvitation,
   UserInvitationWithGroups,
-  InvitationStatus,
-  OrganizationWithInvitations,
 } from '@/features/user-management/types';
 
 function generateInvitationId(): string {

@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil, Trash2 } from 'lucide-react';
 import { groupToast, handleGroupError } from './group-toast';
 import { groupFormConfig } from './form/group-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetGroup,
   useDeleteGroup,
+  useGetGroup,
 } from '@/core/api/generated/spring/endpoints/group-resource/group-resource.gen';
 
 import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';

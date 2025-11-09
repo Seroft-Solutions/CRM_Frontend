@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Loader2, Package } from 'lucide-react';
+import { Loader2, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -26,12 +26,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { IntelligentCategoryField } from './intelligent-category-field';
 import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { productFormSchemaBase } from './form/product-form-schema';
-import { productToast, handleProductError } from './product-toast';
+import { handleProductError, productToast } from './product-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
-import { z } from 'zod';
 
 const productCreationSchema = productFormSchemaBase
   .omit({

@@ -1,33 +1,30 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  meetingParticipantToast,
   handleMeetingParticipantError,
+  meetingParticipantToast,
 } from './meeting-participant-toast';
 import { MeetingParticipantDTOStatus } from '@/core/api/generated/spring/schemas/MeetingParticipantDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -49,8 +46,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountMeetingParticipants,
+  useGetAllMeetingParticipants,
+  useSearchMeetingParticipants,
+  useUpdateMeetingParticipant,
+} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+
+import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+import { MeetingParticipantTableHeader } from './table/meeting-participant-table-header';
+import { MeetingParticipantTableRow } from './table/meeting-participant-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -91,23 +99,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllMeetingParticipants,
-  useDeleteMeetingParticipant,
-  useCountMeetingParticipants,
-  useUpdateMeetingParticipant,
-  usePartialUpdateMeetingParticipant,
-  useSearchMeetingParticipants,
-} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
-
-import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
-
-import { MeetingParticipantSearchAndFilters } from './table/meeting-participant-search-filters';
-import { MeetingParticipantTableHeader } from './table/meeting-participant-table-header';
-import { MeetingParticipantTableRow } from './table/meeting-participant-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

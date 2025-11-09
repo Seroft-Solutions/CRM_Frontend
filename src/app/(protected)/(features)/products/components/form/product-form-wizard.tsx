@@ -7,16 +7,15 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateProduct,
-  useUpdateProduct,
   useGetProduct,
+  useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { productToast, handleProductError } from '../product-toast';
+import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 

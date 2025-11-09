@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { userAvailabilityToast, handleUserAvailabilityError } from './user-availability-toast';
+import { handleUserAvailabilityError, userAvailabilityToast } from './user-availability-toast';
 import { UserAvailabilityDTOStatus } from '@/core/api/generated/spring/schemas/UserAvailabilityDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountUserAvailabilities,
+  useGetAllUserAvailabilities,
+  useSearchUserAvailabilities,
+  useUpdateUserAvailability,
+} from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
+
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { UserAvailabilityTableHeader } from './table/user-availability-table-header';
+import { UserAvailabilityTableRow } from './table/user-availability-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,23 +96,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllUserAvailabilities,
-  useDeleteUserAvailability,
-  useCountUserAvailabilities,
-  useUpdateUserAvailability,
-  usePartialUpdateUserAvailability,
-  useSearchUserAvailabilities,
-} from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
-
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
-import { UserAvailabilitySearchAndFilters } from './table/user-availability-search-filters';
-import { UserAvailabilityTableHeader } from './table/user-availability-table-header';
-import { UserAvailabilityTableRow } from './table/user-availability-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

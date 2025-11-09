@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Lock } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 import { BasicInfoUpdateForm } from './BasicInfoUpdateForm';
 import { PasswordUpdateForm } from './PasswordUpdateForm';
 

@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import {
-  Building2,
-  Database,
-  Settings,
-  CheckCircle,
-  Loader2,
   AlertCircle,
+  Building2,
+  CheckCircle,
+  Database,
+  Loader2,
+  Settings,
   Sparkles,
 } from 'lucide-react';
 import { useGetOrganizationSetupProgress } from '@/core/api/generated/spring';

@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Check, ChevronDown, MapPin, Search, X, Plus, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Check, ChevronDown, Loader2, MapPin, Plus, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
