@@ -77,14 +77,31 @@ export function ProductTableHeader({
             }}
           />
         </TableHead>
-        {visibleColumns.map((column, index) => (
+        {visibleColumns.map((column, index) => {
+          // Match column widths with table rows
+          const getHeaderClassName = () => {
+            if (column.id === 'image') {
+              return 'px-2 sm:px-3 py-2 w-[60px] whitespace-nowrap';
+            }
+            if (['description', 'remark'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 max-w-[200px] whitespace-nowrap';
+            }
+            if (column.id === 'name') {
+              return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap';
+            }
+            if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
+            }
+            if (column.id === 'id') {
+              return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
+            }
+            return 'px-2 sm:px-3 py-2 whitespace-nowrap';
+          };
+
+          return (
           <TableHead
             key={column.id}
-            className={`
-              px-2 sm:px-3 py-2 
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
-              whitespace-nowrap
-            `}
+            className={getHeaderClassName()}
           >
             {column.sortable ? (
               <Button
@@ -99,7 +116,8 @@ export function ProductTableHeader({
               <span className="font-medium text-gray-700 text-sm">{column.label}</span>
             )}
           </TableHead>
-        ))}
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-gray-50 px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           <div className="flex items-center justify-center gap-1 sm:gap-2 font-medium text-gray-700 text-xs sm:text-sm">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
@@ -113,13 +131,31 @@ export function ProductTableHeader({
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
-        {visibleColumns.map((column, index) => (
+        {visibleColumns.map((column, index) => {
+          // Match filter row widths with header and data rows
+          const getFilterClassName = () => {
+            if (column.id === 'image') {
+              return 'px-2 sm:px-3 py-2 w-[60px]';
+            }
+            if (['description', 'remark'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 max-w-[200px]';
+            }
+            if (column.id === 'name') {
+              return 'px-2 sm:px-3 py-2 max-w-[150px]';
+            }
+            if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2';
+            }
+            if (column.id === 'id') {
+              return 'px-2 sm:px-3 py-2 w-[80px]';
+            }
+            return 'px-2 sm:px-3 py-2';
+          };
+
+          return (
           <TableHead
             key={`filter-${column.id}`}
-            className={`
-              px-2 sm:px-3 py-2
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
-            `}
+            className={getFilterClassName()}
           >
             {column.type === 'field'
               ? (() => {
@@ -291,7 +327,8 @@ export function ProductTableHeader({
                   return null;
                 })()}
           </TableHead>
-        ))}
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
