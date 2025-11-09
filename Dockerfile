@@ -8,8 +8,7 @@ COPY package*.json ./
 
 RUN npm --version && \
     node --version && \
-    npm cache clean --force && \
-    npm ci --legacy-peer-deps --verbose || (cat /root/.npm/_logs/*-debug.log && exit 1)
+    npm ci || (cat /root/.npm/_logs/*-debug.log && exit 1)
 
 
 COPY . .
