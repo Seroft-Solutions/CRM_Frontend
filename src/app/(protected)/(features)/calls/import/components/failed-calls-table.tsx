@@ -1,42 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Upload } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-
-import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
-import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
-import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
-import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
+import { useCreateCall, usePartialUpdateCall, getAllCalls, useGetAllPriorities, useGetAllCallTypes, useGetAllSubCallTypes, useGetAllCustomers, useGetAllProducts, useGetAllCallStatuses } from '@/core/api/generated/spring';
 import {
   useCountImportHistories,
   useDeleteImportHistory,
   useGetAllImportHistories,
+  getAllImportHistories,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
-import { useCreateCall } from '@/core/api/generated/spring';
+import { useQueryClient } from '@tanstack/react-query';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 const tableScrollStyles = `
   .table-scroll::-webkit-scrollbar {
@@ -70,6 +52,7 @@ const HEADERS = [
 export function FailedCallsTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
   const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
+  const [isClearing, setIsClearing] = useState(false);
 
   const apiPage = Math.max(page - 1, 0);
 
@@ -80,7 +63,7 @@ export function FailedCallsTable() {
   } = useGetAllImportHistories({
     page: apiPage,
     size: pageSize,
-    sort: ['id,asc'],
+    sort: ['id,desc'],
   });
 
   const { data: totalCount = 0 } = useCountImportHistories({});
@@ -88,7 +71,7 @@ export function FailedCallsTable() {
 
   useEffect(() => {
     if (importHistoryData) {
-      setEditableData(importHistoryData);
+      setEditableData(importHistoryData.filter(item => item.issue && item.issue.trim() !== ''));
     }
   }, [importHistoryData]);
 
@@ -102,14 +85,127 @@ export function FailedCallsTable() {
   const { mutate: createCall, isPending: isCreating } = useCreateCall({
     mutation: {
       onError: (error) => {
+        toast.error('Failed to create call: ' + error.message);
+      },
+    },
+  });
+
+  const { mutate: partialUpdateCall, isPending: isUpdating } = usePartialUpdateCall({
+    mutation: {
+      onError: (error) => {
         toast.error('Failed to update call: ' + error.message);
       },
     },
   });
 
-  const { mutate: deleteImportHistory } = useDeleteImportHistory({});
+  const { mutate: deleteImportHistory } = useDeleteImportHistory({
+    mutation: {
+      onError: (error) => {
+        toast.error('Failed to delete import history entry: ' + error.message);
+      },
+    },
+  });
 
-  const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: any) => {
+  // Debounce utility function
+  const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return ((...args: Parameters<F>) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    }) as F;
+  };
+
+  const handleClearAllFailedEntries = async () => {
+    setIsClearing(true);
+    try {
+      // Fetch all import history entries
+      const allFailedEntries = await getAllImportHistories({ page: 0, size: 1000000 });
+
+      if (allFailedEntries && allFailedEntries.length > 0) {
+        // Delete each entry
+        for (const entry of allFailedEntries) {
+          if (entry.id) {
+            await deleteImportHistory({ id: entry.id });
+          }
+        }
+        toast.success('All failed import entries cleared successfully.');
+      } else {
+        toast.info('No failed import entries to clear.');
+      }
+      refetch(); // Refetch the list to update the table
+    } catch (error: any) {
+      toast.error('Failed to clear all failed import entries: ' + error.message);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const handleUpdateRow = useCallback(
+    async (item: ImportHistoryDTO) => {
+      if (!item?.id) return;
+
+      const callDTO = {
+        customer: customerOptions.find(
+          (c) => c.customerBusinessName === item.customerBusinessName
+        ),
+        product: productOptions.find((p) => p.name === item.productName),
+        callType: calltypeOptions.find((ct) => ct.name === item.callType),
+        subCallType: subcalltypeOptions.find((sct) => sct.name === item.subCallType),
+        priority: priorityOptions.find((p) => p.name === item.priority),
+        callStatus: callstatusOptions.find((cs) => cs.name === item.callStatus),
+        externalId: item.externalId,
+      };
+
+      try {
+        // Check if a Call with this externalId already exists
+        const existingCallsResponse = await getAllCalls({ 'externalId.equals': item.externalId });
+        const existingCall = existingCallsResponse?.[0];
+
+        if (existingCall && existingCall.id) {
+          // If Call exists, update it
+          await partialUpdateCall({ id: existingCall.id, data: callDTO });
+          toast.success(`Call with external ID ${item.externalId} updated.`);
+        } else {
+          // If Call does not exist, create a new one
+          await createCall({ data: callDTO });
+          toast.success(`Call created with external ID ${item.externalId}.`);
+        }
+
+        // On success, delete the import history entry
+        deleteImportHistory(
+          { id: item.id! },
+          {
+            onSuccess: () => {
+              refetch();
+            },
+          }
+        );
+      } catch (error: any) {
+        toast.error('Failed to process call: ' + (error.message || 'Unknown error'));
+      }
+    },
+    [
+      createCall,
+      partialUpdateCall,
+      deleteImportHistory,
+      refetch,
+      customerOptions,
+      productOptions,
+      calltypeOptions,
+      subcalltypeOptions,
+      priorityOptions,
+      callstatusOptions,
+    ]
+  );
+
+  const debouncedUpdateRow = useRef(debounce(handleUpdateRow, 500)).current;
+
+  const handleFieldChange = (
+    rowIndex: number,
+    fieldName: keyof ImportHistoryDTO,
+    value: any,
+    isSelect: boolean = false
+  ) => {
     const updatedData = [...editableData];
     const item = updatedData[rowIndex];
     if (item) {
@@ -119,42 +215,13 @@ export function FailedCallsTable() {
         item['subCallType'] = '';
       }
       setEditableData(updatedData);
-    }
-  };
 
-  const handleUpdateRow = (rowIndex: number) => {
-    const rowData = editableData[rowIndex];
-    if (!rowData?.id) return;
-
-    const callDTO = {
-      customer: customerOptions.find(
-        (c) => c.customerBusinessName === rowData.customerBusinessName
-      ),
-      product: productOptions.find((p) => p.name === rowData.productName),
-      callType: calltypeOptions.find((ct) => ct.name === rowData.callType),
-      subCallType: subcalltypeOptions.find((sct) => sct.name === rowData.subCallType),
-      priority: priorityOptions.find((p) => p.name === rowData.priority),
-      callStatus: callstatusOptions.find((cs) => cs.name === rowData.callStatus),
-      externalId: rowData.externalId,
-    };
-
-    // @ts-ignore
-    createCall(
-      { data: callDTO },
-      {
-        onSuccess: () => {
-          toast.success(`Row ${rowIndex + 1} updated and call created.`);
-          deleteImportHistory(
-            { id: rowData.id! },
-            {
-              onSuccess: () => {
-                refetch();
-              },
-            }
-          );
-        },
+      if (isSelect) {
+        handleUpdateRow(item);
+      } else {
+        debouncedUpdateRow(item);
       }
-    );
+    }
   };
 
   if (isLoading) {
@@ -207,12 +274,20 @@ export function FailedCallsTable() {
     <>
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <Card className="mt-6">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-500" />
             Failed Import Entries
             <Badge variant="destructive">{totalItems}</Badge>
           </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearAllFailedEntries}
+            disabled={isClearing || isLoading}
+          >
+            {isClearing ? 'Clearing...' : 'Clear All Failed Entries'}
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
@@ -228,9 +303,6 @@ export function FailedCallsTable() {
                         {header}
                       </TableHead>
                     ))}
-                    <TableHead className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm text-center">
-                      Actions
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -253,7 +325,7 @@ export function FailedCallsTable() {
                               <Select
                                 value={row[fieldName] || ''}
                                 onValueChange={(value) =>
-                                  handleFieldChange(rowIndex, fieldName, value)
+                                  handleFieldChange(rowIndex, fieldName, value, true)
                                 }
                               >
                                 <SelectTrigger>
@@ -271,7 +343,7 @@ export function FailedCallsTable() {
                               <Input
                                 value={row[fieldName] || ''}
                                 onChange={(e) =>
-                                  handleFieldChange(rowIndex, fieldName, e.target.value)
+                                  handleFieldChange(rowIndex, fieldName, e.target.value, false)
                                 }
                                 className="h-8 text-xs"
                               />
@@ -279,17 +351,6 @@ export function FailedCallsTable() {
                           </TableCell>
                         );
                       })}
-                      <TableCell className="px-2 sm:px-3 py-2 text-center align-middle">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleUpdateRow(rowIndex)}
-                          disabled={isCreating}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {isCreating ? 'Updating...' : 'Update'}
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
