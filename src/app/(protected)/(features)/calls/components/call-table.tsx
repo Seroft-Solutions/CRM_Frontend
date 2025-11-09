@@ -192,7 +192,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Sub Call Type',
     accessor: 'subCallType',
     type: 'relationship',
-    visible: true,
+    visible: false,
     sortable: false,
   },
 
@@ -201,7 +201,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Source',
     accessor: 'source',
     type: 'relationship',
-    visible: true,
+    visible: false,
     sortable: false,
   },
 
@@ -219,7 +219,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Product',
     accessor: 'product',
     type: 'relationship',
-    visible: true,
+    visible: false,
     sortable: false,
   },
 
@@ -228,7 +228,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Channel Type',
     accessor: 'channelType',
     type: 'relationship',
-    visible: true,
+    visible: false,
     sortable: false,
   },
 
@@ -237,7 +237,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Channel Parties',
     accessor: 'channelParties',
     type: 'relationship',
-    visible: true,
+    visible: false,
     sortable: false,
   },
 

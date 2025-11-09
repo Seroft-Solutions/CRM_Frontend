@@ -67,21 +67,21 @@ const HEADERS = [
   'Issue',
 ];
 
+
 export function FailedCallsTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
   const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
 
-  const {
-    data: importHistoryData,
-    isLoading,
-    refetch,
-  } = useGetAllImportHistories({
-    page: page - 1,
-    size: pageSize,
-    sort: ['id,asc'],
-  });
+    const apiPage = Math.max(page - 1, 0);
 
-  const { data: totalCount = 0 } = useCountImportHistories({});
+    const { data: importHistoryData, isLoading, refetch } = useGetAllImportHistories({
+        page: apiPage,
+        size: pageSize,
+        sort: ['id,asc']
+    });
+
+    const { data: totalCount = 0 } = useCountImportHistories({});
+    const totalItems = totalCount ?? 0;
 
   useEffect(() => {
     if (importHistoryData) {
@@ -200,108 +200,94 @@ export function FailedCallsTable() {
     Issue: 'issue',
   };
 
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            Failed Import Entries
-            <Badge variant="destructive">{totalCount}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
-            <div className="table-scroll overflow-x-auto">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow className="border-b border-gray-200 bg-gray-50">
-                    {HEADERS.map((header) => (
-                      <TableHead
-                        key={header}
-                        className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm"
-                      >
-                        {header}
-                      </TableHead>
-                    ))}
-                    <TableHead className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm text-center">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {editableData.map((row, rowIndex) => (
-                    <TableRow key={row.id} className="hover:bg-gray-50 transition-colors">
-                      {HEADERS.map((header, cellIndex) => {
-                        const fieldName = headerMapping[header];
-                        const options = getColumnOptions(header, row);
-                        const isIssueColumn = header.toLowerCase() === 'issue';
-                        return (
-                          <TableCell
-                            key={header}
-                            className={`px-2 sm:px-3 py-2 text-sm align-top ${cellIndex === HEADERS.length - 1 ? 'whitespace-nowrap min-w-[400px]' : 'min-w-[200px]'}`}
-                          >
-                            {isIssueColumn ? (
-                              <span className="text-red-600 font-medium whitespace-nowrap">
-                                {row[fieldName]}
-                              </span>
-                            ) : options ? (
-                              <Select
-                                value={row[fieldName] || ''}
-                                onValueChange={(value) =>
-                                  handleFieldChange(rowIndex, fieldName, value)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder={`Select ${header}`} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {options.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
-                                      {opt.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <Input
-                                value={row[fieldName] || ''}
-                                onChange={(e) =>
-                                  handleFieldChange(rowIndex, fieldName, e.target.value)
-                                }
-                                className="h-8 text-xs"
-                              />
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell className="px-2 sm:px-3 py-2 text-center align-middle">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleUpdateRow(rowIndex)}
-                          disabled={isCreating}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {isCreating ? 'Updating...' : 'Update'}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-          <AdvancedPagination
-            page={page}
-            pageSize={pageSize}
-            totalItems={totalCount}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </CardContent>
-      </Card>
-    </>
-  );
+    return (
+        <>
+            <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                        Failed Import Entries
+                        <Badge variant="destructive">{totalItems}</Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="table-container overflow-hidden rounded-md border bg-white shadow-sm">
+                        <div className="table-scroll overflow-x-auto">
+                            <Table className="w-full">
+                                <TableHeader>
+                                    <TableRow className="border-b border-gray-200 bg-gray-50">
+                                        {HEADERS.map((header) => (
+                                            <TableHead key={header} className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm">
+                                                {header}
+                                            </TableHead>
+                                        ))}
+                                        <TableHead className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm text-center">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {editableData.map((row, rowIndex) => (
+                                        <TableRow key={row.id} className="hover:bg-gray-50 transition-colors">
+                                            {HEADERS.map((header, cellIndex) => {
+                                                const fieldName = headerMapping[header];
+                                                const options = getColumnOptions(header, row);
+                                                const isIssueColumn = header.toLowerCase() === 'issue';
+                                                return (
+                                                    <TableCell
+                                                        key={header}
+                                                        className={`px-2 sm:px-3 py-2 text-sm align-top ${cellIndex === HEADERS.length - 1 ? 'whitespace-nowrap min-w-[400px]' : 'min-w-[200px]'}`}>
+                                                        {isIssueColumn ? (
+                                                            <span className='text-red-600 font-medium whitespace-nowrap'>{row[fieldName]}</span>
+                                                        ) : options ? (
+                                                            <Select
+                                                                value={row[fieldName] || ''}
+                                                                onValueChange={(value) => handleFieldChange(rowIndex, fieldName, value)}>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder={`Select ${header}`} />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {options.map(opt => (
+                                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                                            {opt.label}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        ) : (
+                                                            <Input
+                                                                value={row[fieldName] || ''}
+                                                                onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
+                                                                className="h-8 text-xs" />
+                                                        )}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                            <TableCell className="px-2 sm:px-3 py-2 text-center align-middle">
+                                                <Button variant="default" size="sm" onClick={() => handleUpdateRow(rowIndex)} disabled={isCreating}>
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                    {isCreating ? 'Updating...' : 'Update'}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                    <AdvancedPagination
+                        currentPage={page}
+                        pageSize={pageSize}
+                        totalItems={totalItems}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        showPageInput
+                        showItemsInfo
+                        showFirstLastButtons
+                        isLoading={isLoading}
+                    />
+                </CardContent>
+            </Card>
+        </>
+    );
 }
