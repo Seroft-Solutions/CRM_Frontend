@@ -12,7 +12,6 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -25,19 +24,13 @@ export async function POST(
       throw new Error('Realm configuration missing');
     }
 
-    // Parse request body for optional parameters
     const body = await request.json().catch(() => ({}));
-    const {
-      lifespan = 43200, // 12 hours default
-      redirectUri,
-    } = body;
+    const { lifespan = 43200, redirectUri } = body;
 
-    // Prepare the required actions - UPDATE_PASSWORD for password reset
     const requiredActions = ['UPDATE_PASSWORD'];
 
-    // Send the UPDATE_PASSWORD required action email using generated endpoint
     await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(realm, userId, requiredActions, {
-      client_id: 'web_app', // Using your specified client
+      client_id: 'web_app',
       lifespan,
       redirect_uri: redirectUri,
     });

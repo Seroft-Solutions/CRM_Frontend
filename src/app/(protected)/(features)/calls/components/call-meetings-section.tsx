@@ -1,36 +1,36 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import {
-  Plus,
   Calendar,
-  Video,
-  Phone,
-  MapPin,
-  User,
   Clock,
-  Search,
+  ExternalLink,
+  Eye,
   Filter,
+  MapPin,
+  MoreHorizontal,
+  Phone,
+  Plus,
+  Search,
   SortAsc,
   SortDesc,
-  MoreHorizontal,
-  Eye,
+  User,
+  Video,
   X,
-  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
   SortingState,
-  ColumnFiltersState,
+  useReactTable,
 } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
@@ -93,17 +93,14 @@ export function CallMeetingsSection({
 }: CallMeetingsSectionProps) {
   const router = useRouter();
 
-  // State management
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingDTO | null>(null);
 
-  // Table state
   const [sorting, setSorting] = useState<SortingState>([{ id: 'meetingDateTime', desc: false }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  // Fetch meetings for this specific call
   const {
     data: meetings = [],
     isLoading,
@@ -120,7 +117,6 @@ export function CallMeetingsSection({
     }
   );
 
-  // Cancel meeting mutation
   const { mutate: updateMeeting, isPending: isCancelling } = useUpdateMeeting({
     mutation: {
       onSuccess: () => {
@@ -135,7 +131,6 @@ export function CallMeetingsSection({
     },
   });
 
-  // Action handlers
   const handleScheduleNewMeeting = () => {
     const params = new URLSearchParams();
     if (customerId) params.set('customerId', customerId.toString());
@@ -196,7 +191,6 @@ export function CallMeetingsSection({
     }
   };
 
-  // Column definitions for the data table
   const columns = useMemo<ColumnDef<MeetingDTO>[]>(
     () => [
       {
@@ -358,7 +352,6 @@ export function CallMeetingsSection({
     []
   );
 
-  // Initialize the table
   const table = useReactTable({
     data: meetings,
     columns,

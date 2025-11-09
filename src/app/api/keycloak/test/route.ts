@@ -3,7 +3,6 @@ import { keycloakService } from '@/core/api/services/keycloak-service';
 
 export async function GET(request: NextRequest) {
   try {
-    // Test admin authentication
     const authTest = await keycloakService.testAdminAuth();
 
     if (!authTest.success) {
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Test permission verification
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json(

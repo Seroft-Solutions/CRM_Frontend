@@ -1,6 +1,6 @@
 'use client';
 
-import { Coffee, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';

@@ -18,10 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Mail, Users, Calendar, UserCheck, Filter } from 'lucide-react';
+import { Calendar, Mail, Search, UserCheck } from 'lucide-react';
 import { RefreshButton } from '@/features/user-management/components/LoadingButton';
-import { usePendingInvitations, useOrganizationContext } from '@/features/user-management/hooks';
-import type { InvitationFilters, PendingInvitation } from '../types';
+import { useOrganizationContext, usePendingInvitations } from '@/features/user-management/hooks';
+import type { InvitationFilters } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PendingInvitationsProps {
@@ -33,7 +33,6 @@ export function PendingInvitations({ className }: PendingInvitationsProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'expired'>('all');
 
-  // Build filters
   const filters: InvitationFilters = {
     search: searchTerm || undefined,
     status: statusFilter === 'all' ? undefined : [statusFilter as any],

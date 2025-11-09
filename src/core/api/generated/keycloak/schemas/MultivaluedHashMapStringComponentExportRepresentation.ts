@@ -5,6 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ComponentExportRepresentation } from './ComponentExportRepresentation';
+import type {ComponentExportRepresentation} from './ComponentExportRepresentation';
 
 export interface MultivaluedHashMapStringComponentExportRepresentation {[key: string]: ComponentExportRepresentation[]}

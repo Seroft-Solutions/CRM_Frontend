@@ -5,12 +5,12 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { EnforcementMode } from './EnforcementMode';
-import type { PathConfig } from './PathConfig';
-import type { PathCacheConfig } from './PathCacheConfig';
-import type { UserManagedAccessConfig } from './UserManagedAccessConfig';
-import type { PolicyEnforcerConfigClaimInformationPoint } from './PolicyEnforcerConfigClaimInformationPoint';
-import type { PolicyEnforcerConfigCredentials } from './PolicyEnforcerConfigCredentials';
+import type {EnforcementMode} from './EnforcementMode';
+import type {PathConfig} from './PathConfig';
+import type {PathCacheConfig} from './PathCacheConfig';
+import type {UserManagedAccessConfig} from './UserManagedAccessConfig';
+import type {PolicyEnforcerConfigClaimInformationPoint} from './PolicyEnforcerConfigClaimInformationPoint';
+import type {PolicyEnforcerConfigCredentials} from './PolicyEnforcerConfigCredentials';
 
 export interface PolicyEnforcerConfig {
   'enforcement-mode'?: EnforcementMode;

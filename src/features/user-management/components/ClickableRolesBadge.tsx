@@ -8,7 +8,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Shield, Loader2 } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserRoleGroupCounts } from '@/features/user-management/hooks';
 import type { RoleRepresentation } from '@/core/api/generated/keycloak';
@@ -35,7 +35,6 @@ export function ClickableRolesBadge({
   const router = useRouter();
   const hasInitialData = roles && Array.isArray(roles) && roles.length > 0;
 
-  // Only fetch additional data if we don't have initial data and progressive loading is enabled
   const {
     roleCount: fetchedRoleCount,
     roles: fetchedRoles,
@@ -43,7 +42,6 @@ export function ClickableRolesBadge({
     isLoading,
   } = useUserRoleGroupCounts(organizationId, userId, enableProgressiveLoading && !hasInitialData);
 
-  // Determine which data to use
   const finalRoles = hasInitialData ? roles : fetchedRoles || [];
   const finalRoleCount = hasInitialData ? roles.length : fetchedRoleCount;
   const hasAnyData = hasInitialData || hasFetchedData;
@@ -57,7 +55,6 @@ export function ClickableRolesBadge({
     router.push(`/user-management/users/${userId}?tab=roles`);
   };
 
-  // Show loading state
   if (enableProgressiveLoading && !hasInitialData && isLoading) {
     return (
       <TooltipProvider>
@@ -86,7 +83,6 @@ export function ClickableRolesBadge({
     );
   }
 
-  // When we don't have role data or it's empty
   if (!hasAnyData || finalRoleCount === 0) {
     return (
       <TooltipProvider>

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Source form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const sourceFormSchema = z.object(sourceFormSchemaFields);
 
 export type SourceFormValues = z.infer<typeof sourceFormSchema>;
 
-// Individual field schemas for granular validation
 export const sourceFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -43,7 +35,6 @@ export const sourceFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const sourceStepSchemas = {
   basic: z.object({
     name: sourceFieldSchemas.name,
@@ -59,7 +50,6 @@ export const sourceStepSchemas = {
   review: sourceFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = sourceStepSchemas[stepId as keyof typeof sourceStepSchemas];
   if (!schema) return { success: true, data };

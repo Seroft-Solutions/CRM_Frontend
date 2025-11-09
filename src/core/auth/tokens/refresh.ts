@@ -51,8 +51,7 @@ export async function refreshKeycloakToken(refreshToken: string): Promise<TokenR
 export async function refreshSession(): Promise<boolean> {
   try {
     const { useSession } = await import('next-auth/react');
-    // This function should be called from a component context where useSession is available
-    // For now, return true and handle actual refresh logic in the session monitor
+
     return true;
   } catch (error) {
     console.error('Session refresh error:', error);

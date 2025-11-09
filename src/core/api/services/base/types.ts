@@ -27,7 +27,6 @@ export interface ErrorResponse {
   path: string;
 }
 
-// Common service request config interface for Orval mutators
 export interface ServiceRequestConfig {
   url: string;
   method?: string;

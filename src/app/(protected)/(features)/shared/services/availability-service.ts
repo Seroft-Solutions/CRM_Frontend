@@ -4,15 +4,15 @@
  */
 
 import {
+  AvailableTimeSlotDTO,
   UserAvailabilityDTO,
   UserAvailabilityDTODayOfWeek,
-  AvailableTimeSlotDTO,
 } from '@/core/api/generated/spring/schemas';
 
 export interface DefaultAvailabilityConfig {
-  startTime: string; // "09:00"
-  endTime: string; // "19:00"
-  slotDurationMinutes: number; // 30
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
   workingDays: UserAvailabilityDTODayOfWeek[];
   timeZone?: string;
 }
@@ -52,8 +52,8 @@ export class AvailabilityService {
       startTime: config.startTime,
       endTime: config.endTime,
       isAvailable: true,
-      effectiveFrom: new Date().toISOString().split('T')[0], // Today
-      effectiveTo: undefined, // No end date (permanent)
+      effectiveFrom: new Date().toISOString().split('T')[0],
+      effectiveTo: undefined,
       timeZone: config.timeZone,
       user: { id: userId } as any,
       createdBy: 'system',
@@ -78,17 +78,54 @@ export class AvailabilityService {
     while (currentDate <= endDate) {
       const dayOfWeek = this.getDayOfWeekEnum(currentDate.getDay());
 
-      // Only generate slots for working days
       if (config.workingDays.includes(dayOfWeek)) {
         const daySlots = this.generateDaySlots(userId, currentDate, config);
         slots.push(...daySlots);
       }
 
-      // Move to next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return slots;
+  }
+
+  /**
+   * Generate complete availability setup (weekly + next 30 days of slots)
+   */
+  static generateCompleteAvailability(
+    userId: number | string,
+    config: DefaultAvailabilityConfig = DEFAULT_AVAILABILITY_CONFIG
+  ): GeneratedAvailability {
+    const userAvailabilities = this.generateWeeklyAvailability(userId, config);
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + 30);
+
+    const timeSlots = this.generateTimeSlots(userId, startDate, endDate, config);
+
+    return {
+      userAvailabilities,
+      timeSlots,
+    };
+  }
+
+  /**
+   * Check if user already has availability configured
+   */
+  static hasExistingAvailability(existingAvailabilities: UserAvailabilityDTO[]): boolean {
+    return existingAvailabilities && existingAvailabilities.length > 0;
+  }
+
+  /**
+   * Get summary of generated availability
+   */
+  static getAvailabilitySummary(generated: GeneratedAvailability): string {
+    const daysCount = generated.userAvailabilities.length;
+    const slotsCount = generated.timeSlots.length;
+    const config = DEFAULT_AVAILABILITY_CONFIG;
+
+    return `${daysCount} working days (${config.startTime}-${config.endTime}) with ${slotsCount} available time slots`;
   }
 
   /**
@@ -122,7 +159,6 @@ export class AvailabilityService {
         lastModifiedDate: new Date().toISOString(),
       });
 
-      // Move to next slot
       currentMin += config.slotDurationMinutes;
       if (currentMin >= 60) {
         currentMin = 0;
@@ -147,45 +183,5 @@ export class AvailabilityService {
       6: UserAvailabilityDTODayOfWeek.SATURDAY,
     };
     return mapping[jsDay as keyof typeof mapping];
-  }
-
-  /**
-   * Generate complete availability setup (weekly + next 30 days of slots)
-   */
-  static generateCompleteAvailability(
-    userId: number | string,
-    config: DefaultAvailabilityConfig = DEFAULT_AVAILABILITY_CONFIG
-  ): GeneratedAvailability {
-    const userAvailabilities = this.generateWeeklyAvailability(userId, config);
-
-    // Generate slots for next 30 days
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(startDate.getDate() + 30);
-
-    const timeSlots = this.generateTimeSlots(userId, startDate, endDate, config);
-
-    return {
-      userAvailabilities,
-      timeSlots,
-    };
-  }
-
-  /**
-   * Check if user already has availability configured
-   */
-  static hasExistingAvailability(existingAvailabilities: UserAvailabilityDTO[]): boolean {
-    return existingAvailabilities && existingAvailabilities.length > 0;
-  }
-
-  /**
-   * Get summary of generated availability
-   */
-  static getAvailabilitySummary(generated: GeneratedAvailability): string {
-    const daysCount = generated.userAvailabilities.length;
-    const slotsCount = generated.timeSlots.length;
-    const config = DEFAULT_AVAILABILITY_CONFIG;
-
-    return `${daysCount} working days (${config.startTime}-${config.endTime}) with ${slotsCount} available time slots`;
   }
 }

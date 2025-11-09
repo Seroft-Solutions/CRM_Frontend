@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * CallType form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const callTypeFormSchema = z.object(callTypeFormSchemaFields);
 
 export type CallTypeFormValues = z.infer<typeof callTypeFormSchema>;
 
-// Individual field schemas for granular validation
 export const callTypeFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -43,7 +35,6 @@ export const callTypeFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const callTypeStepSchemas = {
   basic: z.object({
     name: callTypeFieldSchemas.name,
@@ -59,7 +50,6 @@ export const callTypeStepSchemas = {
   review: callTypeFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = callTypeStepSchemas[stepId as keyof typeof callTypeStepSchemas];
   if (!schema) return { success: true, data };

@@ -14,18 +14,15 @@ export function AreaReviewStep({ form, config, actions, entity }: AreaReviewStep
   const nameValue = form.getValues('name');
   const pincodeValue = form.getValues('pincode');
 
-  // Get city details with hierarchy - handle both object and ID
   let cityDisplay = 'Not selected';
   if (cityValue) {
     if (typeof cityValue === 'object' && cityValue !== null) {
-      // It's a CityDTO object
       const parts = [];
       if (cityValue.district?.state?.name) parts.push(cityValue.district.state.name);
       if (cityValue.district?.name) parts.push(cityValue.district.name);
       if (cityValue.name) parts.push(cityValue.name);
       cityDisplay = parts.length > 0 ? parts.join(', ') : 'City selected';
     } else if (typeof cityValue === 'number') {
-      // It's just an ID
       cityDisplay = `City ID: ${cityValue}`;
     }
   }

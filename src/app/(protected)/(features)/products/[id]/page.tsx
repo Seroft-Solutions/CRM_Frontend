@@ -1,12 +1,6 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import { ProductDetails } from '../components/product-details';
 import { PermissionGuard } from '@/core/auth';
+import { ProductImagesManager } from '@/features/product-images/components/ProductImagesManager';
 
 interface ProductPageProps {
   params: Promise<{
@@ -74,6 +68,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <ProductDetails id={id} />
+        </div>
+
+        {/* ⚠️ MANUAL ADDITION: Product Images Management (Feature 001) ⚠️ */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Product Images</h2>
+                <p className="text-sm text-gray-500">Upload and manage product images</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6">
+            <ProductImagesManager productId={id} organizationId={1} />
+          </div>
         </div>
       </div>
     </PermissionGuard>

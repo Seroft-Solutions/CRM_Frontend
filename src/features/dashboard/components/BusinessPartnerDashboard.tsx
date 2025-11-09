@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Phone, Users, TrendingUp, UserCheck, Activity, Target } from 'lucide-react';
+import { Activity, Phone, TrendingUp, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { QuickActionTiles } from './QuickActionTiles';
 
@@ -30,7 +30,6 @@ export function BusinessPartnerDashboard() {
 
   const [tabValue, setTabValue] = useState('overview');
 
-  // Filter calls created by or assigned to current business partner
   const myCalls = allCalls.filter(
     (call) =>
       call.createdBy === session?.user?.email ||
@@ -38,12 +37,10 @@ export function BusinessPartnerDashboard() {
       call.assignedTo?.email === session?.user?.email
   );
 
-  // Filter customers created by current business partner
   const myCustomers = allCustomers.filter(
     (customer) => customer.createdBy === session?.user?.email
   );
 
-  // Call status distribution for my calls
   const myCallStatuses = myCalls.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
@@ -59,7 +56,6 @@ export function BusinessPartnerDashboard() {
     percentage: myCalls.length > 0 ? ((value / myCalls.length) * 100).toFixed(1) : '0',
   }));
 
-  // Call types distribution for my calls
   const myCallTypes = myCalls.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
@@ -74,7 +70,6 @@ export function BusinessPartnerDashboard() {
     value,
   }));
 
-  // Priority distribution for my calls
   const myPriorityData = myCalls.reduce(
     (acc, call) => {
       const priority = call.priority?.name || 'Normal';
@@ -89,7 +84,6 @@ export function BusinessPartnerDashboard() {
     value,
   }));
 
-  // Recent calls with proper date handling
   const myRecentCalls = myCalls
     .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
@@ -104,7 +98,6 @@ export function BusinessPartnerDashboard() {
       time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
 
-  // Calculate trends for my calls
   const myLast30Days = myCalls.filter((call) => {
     if (!call.callDateTime) return false;
     const callDate = new Date(call.callDateTime);

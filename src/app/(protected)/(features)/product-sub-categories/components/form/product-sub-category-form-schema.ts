@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * ProductSubCategory form validation schema with user-friendly messages
  */
@@ -35,7 +28,6 @@ export const productSubCategoryFormSchema = z.object(productSubCategoryFormSchem
 
 export type ProductSubCategoryFormValues = z.infer<typeof productSubCategoryFormSchema>;
 
-// Individual field schemas for granular validation
 export const productSubCategoryFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -57,7 +49,6 @@ export const productSubCategoryFieldSchemas = {
   category: z.number({ message: 'Please select category from the dropdown' }),
 };
 
-// Step-specific validation schemas
 export const productSubCategoryStepSchemas = {
   basic: z.object({
     name: productSubCategoryFieldSchemas.name,
@@ -74,7 +65,6 @@ export const productSubCategoryStepSchemas = {
   review: productSubCategoryFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema =
     productSubCategoryStepSchemas[stepId as keyof typeof productSubCategoryStepSchemas];

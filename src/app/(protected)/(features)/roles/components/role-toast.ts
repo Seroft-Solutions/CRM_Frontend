@@ -1,15 +1,6 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import { toast } from 'sonner';
 
-// Toast notification utilities for Role
 export const roleToast = {
-  // Success messages
   created: (entityName?: string) =>
     toast.success('✅ Success!', {
       description: `${entityName || 'Role'} created successfully`,
@@ -41,7 +32,7 @@ export const roleToast = {
   relationshipUpdated: (relationshipName: string) =>
     toast.success('🔗 Updated!', {
       description: `${relationshipName} updated successfully`,
-      duration: 2000, // Shorter duration for less interruption
+      duration: 2000,
     }),
 
   exported: (format: string) =>
@@ -54,7 +45,6 @@ export const roleToast = {
       description: `${count} roles imported successfully`,
     }),
 
-  // Error messages
   createError: (error?: string) =>
     toast.error('❌ Creation Failed', {
       description: error || `Failed to create role. Please try again.`,
@@ -104,7 +94,6 @@ export const roleToast = {
       },
     }),
 
-  // Warning messages
   unsavedChanges: () =>
     toast.warning('⚠️ Unsaved Changes', {
       description: 'You have unsaved changes. Save or they will be lost.',
@@ -121,7 +110,6 @@ export const roleToast = {
       description: `${field} already exists. Please use a different value.`,
     }),
 
-  // Info messages
   loading: (action: string) =>
     toast.loading(`${action}...`, {
       description: 'Please wait while we process your request.',
@@ -137,7 +125,6 @@ export const roleToast = {
       description: 'Updating data from server.',
     }),
 
-  // Custom actions
   custom: {
     success: (
       title: string,
@@ -154,7 +141,6 @@ export const roleToast = {
   },
 };
 
-// Helper function to handle API errors with toast
 export const handleRoleError = (error: any) => {
   const errorMessage =
     error?.response?.data?.message || error?.message || 'An unexpected error occurred';

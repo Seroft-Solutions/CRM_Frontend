@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createAvailableTimeSlot,
   updateAvailableTimeSlot,
@@ -19,10 +11,8 @@ import { availableTimeSlotToast } from '../components/available-time-slot-toast'
 
 export async function createAvailableTimeSlotAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createAvailableTimeSlot(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/available-time-slots');
     revalidatePath('/available-time-slots/new');
     availableTimeSlotToast.created();
@@ -37,10 +27,8 @@ export async function createAvailableTimeSlotAction(data: any) {
 
 export async function updateAvailableTimeSlotAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateAvailableTimeSlot(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/available-time-slots');
     revalidatePath(`/available-time-slots/${id}`);
     revalidatePath(`/available-time-slots/${id}/edit`);
@@ -128,7 +116,6 @@ export async function bulkArchiveAvailableTimeSlotAction(ids: number[], entities
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/available-time-slots');
 
     if (errorCount === 0) {
@@ -176,7 +163,6 @@ export async function bulkUpdateStatusAvailableTimeSlotAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/available-time-slots');
 
     if (errorCount === 0) {

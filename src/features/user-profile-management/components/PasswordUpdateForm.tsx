@@ -17,10 +17,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Loader2, Shield, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, Loader2, Shield } from 'lucide-react';
 import { useUserProfileUpdate } from '../hooks/useUserProfileUpdate';
 
-// Password validation schema
 const passwordSchema = z
   .object({
     currentPassword: z

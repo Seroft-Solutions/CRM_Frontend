@@ -19,7 +19,6 @@ export async function DELETE(
     const { organizationId, userId } = await params;
     const realm = keycloakService.getRealm();
 
-    // Remove user from organization
     await deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId(realm, organizationId, userId);
 
     return NextResponse.json({

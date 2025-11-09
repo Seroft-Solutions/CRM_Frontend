@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,6 @@ export function MeetingErrorDialog({
   const handleClose = () => {
     onOpenChange(false);
 
-    // Redirect to calls page when dialog closes
     if (redirectToCalls) {
       setTimeout(() => {
         router.push('/calls');

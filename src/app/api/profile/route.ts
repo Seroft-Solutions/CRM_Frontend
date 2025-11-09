@@ -6,11 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
-import {
-  getAdminRealmsRealmUsersUserId,
-  getAdminRealmsRealmUsers,
-} from '@/core/api/generated/keycloak';
 import type { UserRepresentation } from '@/core/api/generated/keycloak';
+import { getAdminRealmsRealmUsers, getAdminRealmsRealmUsersUserId, } from '@/core/api/generated/keycloak';
 import { SPRING_API_URL } from '@/core/api/config/constants';
 
 /**
@@ -18,13 +15,11 @@ import { SPRING_API_URL } from '@/core/api/config/constants';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get current session
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No authenticated user found' }, { status: 401 });
     }
 
-    // Verify admin permissions for Keycloak operations
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -35,13 +30,10 @@ export async function GET(request: NextRequest) {
       throw new Error('Realm configuration missing');
     }
 
-    // Get Keycloak user data
     let keycloakUser: UserRepresentation | null = null;
     try {
-      // First try to get by user ID if it's a Keycloak ID
       keycloakUser = await getAdminRealmsRealmUsersUserId(realm, session.user.id);
     } catch (error) {
-      // If that fails, search by email
       if (session.user.email) {
         const users = await getAdminRealmsRealmUsers(realm, {
           email: session.user.email,
@@ -51,7 +43,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get Spring backend user profile
     let springProfile = null;
     try {
       const accessToken = await keycloakService.getAccessToken();

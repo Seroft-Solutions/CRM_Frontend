@@ -22,12 +22,18 @@ export class TokenCache {
     return newToken;
   }
 
+  invalidate() {
+    this.token = null;
+    this.expiry = 0;
+    this.refreshPromise = null;
+  }
+
   private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
     try {
       const newToken = await refreshFn();
       if (newToken) {
         this.token = newToken;
-        this.expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+        this.expiry = Date.now() + 5 * 60 * 1000;
       }
       return newToken;
     } catch (error) {
@@ -37,13 +43,6 @@ export class TokenCache {
       return null;
     }
   }
-
-  invalidate() {
-    this.token = null;
-    this.expiry = 0;
-    this.refreshPromise = null;
-  }
 }
 
-// Export singleton instance
 export const tokenCache = new TokenCache();

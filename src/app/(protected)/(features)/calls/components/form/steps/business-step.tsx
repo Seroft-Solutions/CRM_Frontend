@@ -1,22 +1,15 @@
-// ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced business step with integrated call remarks functionality
-// - Allows adding remarks that are saved when call is created
-// - Added business partner filtering for customers by createdBy
-// ===============================================================
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React, { useEffect, useMemo, useState } from 'react';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RelationshipRenderer } from '../relationship-renderer';
 import { EnhancedCustomerRelationshipField } from '@/app/(protected)/(features)/customers/components/enhanced-customer-relationship-field';
 import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
-import {useEntityForm} from "@/app/(protected)/(features)/calls/components/form/call-form-provider";
-import {UserCheck} from "lucide-react";
-import {Textarea} from "@/components/ui/textarea";
-import {CallRemark} from "@/app/(protected)/(features)/calls/hooks/use-call-remarks";
+import { useAccount, useUserAuthorities } from '@/core/auth';
+import { useEntityForm } from '@/app/(protected)/(features)/calls/components/form/call-form-provider';
+import { UserCheck } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { CallRemark } from '@/app/(protected)/(features)/calls/hooks/use-call-remarks';
 
 interface CallBusinessStepProps {
   form: any;
@@ -29,132 +22,118 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
-    const [callType, setCallType] = useState('');
-    const { state, actions: formActions } = useEntityForm();
-    const [remarkText, setRemarkText] = useState('');
+  const [callType, setCallType] = useState('');
+  const { state, actions: formActions } = useEntityForm();
+  const [remarkText, setRemarkText] = useState('');
 
-    // Auto-enable business partner mode if user is a business partner
-    useEffect(() => {
-        if (isBusinessPartner) {
-            setCallType('business-partner');
-        }
-    }, [isBusinessPartner]);
+  useEffect(() => {
+    if (isBusinessPartner) {
+      setCallType('business-partner');
+    }
+  }, [isBusinessPartner]);
 
-    // Emit event when business partner state changes
-    useEffect(() => {
-        const event = new CustomEvent('businessPartnerToggle', {
-            detail: { enabled: callType === 'business-partner' }
-        });
-        window.dispatchEvent(event);
-    }, [callType]);
+  useEffect(() => {
+    const event = new CustomEvent('businessPartnerToggle', {
+      detail: { enabled: callType === 'business-partner' },
+    });
+    window.dispatchEvent(event);
+  }, [callType]);
 
-    // Initialize remark from form state on mount
-    useEffect(() => {
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        if (existingRemarks.length > 0) {
-            setRemarkText(existingRemarks[0].remark);
-        }
-    }, [form]);
+  useEffect(() => {
+    const existingRemarks = form.getValues('tempRemarks') || [];
+    if (existingRemarks.length > 0) {
+      setRemarkText(existingRemarks[0].remark);
+    }
+  }, [form]);
 
-    const saveRemark = () => {
-        const trimmedRemark = remarkText.trim();
-        if (!trimmedRemark) {
-            form.setValue('tempRemarks', [], {shouldDirty: true});
-            return;
-        }
+  const saveRemark = () => {
+    const trimmedRemark = remarkText.trim();
+    if (!trimmedRemark) {
+      form.setValue('tempRemarks', [], { shouldDirty: true });
+      return;
+    }
 
-        const existingRemarks = form.getValues('tempRemarks') || [];
-        const newRemarkObj: CallRemark = {
-            id: existingRemarks.length > 0 ? existingRemarks[0].id : Date.now().toString(),
-            remark: trimmedRemark,
-            dateTime: new Date(),
-        };
-
-        form.setValue('tempRemarks', [newRemarkObj], {shouldDirty: true});
+    const existingRemarks = form.getValues('tempRemarks') || [];
+    const newRemarkObj: CallRemark = {
+      id: existingRemarks.length > 0 ? existingRemarks[0].id : Date.now().toString(),
+      remark: trimmedRemark,
+      dateTime: new Date(),
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault(); // prevent new line
-            saveRemark();
+    form.setValue('tempRemarks', [newRemarkObj], { shouldDirty: true });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      saveRemark();
+    }
+  };
+
+  useEffect(() => {
+    if (callType !== 'business-partner') {
+      form.setValue('channelParties', undefined);
+      form.setValue('channelType', undefined);
+
+      form.clearErrors('channelParties');
+      form.clearErrors('channelType');
+
+      setTimeout(() => {
+        form.trigger(['channelParties', 'channelType']);
+      }, 100);
+    }
+  }, [callType, form]);
+
+  useEffect(() => {
+    const originalValidateStep = formActions.validateStep;
+
+    const customValidateStep = async (stepIndex?: number): Promise<boolean> => {
+      const currentStepIndex = stepIndex ?? state.currentStep;
+      const currentStepConfig = config.steps[currentStepIndex];
+
+      if (currentStepConfig?.id === 'business') {
+        if (callType === 'business-partner') {
+          const channelType = form.getValues('channelType');
+          if (!channelType) {
+            form.setError('channelType', {
+              type: 'required',
+              message: 'Please select channel type for business partner calls',
+            });
+            return false;
+          }
         }
+
+        return true;
+      }
+
+      return originalValidateStep(stepIndex);
     };
-    // Clear channel fields and errors when disabling business partner
-    useEffect(() => {
-        if (callType !== 'business-partner') {
-            // Clear channel fields completely
-            form.setValue('channelParties', undefined);
-            form.setValue('channelType', undefined);
 
-            // Clear any validation errors for these fields
-            form.clearErrors('channelParties');
-            form.clearErrors('channelType');
+    formActions.validateStep = customValidateStep;
 
-            // Trigger form validation to clear any remaining errors
-            setTimeout(() => {
-                form.trigger(['channelParties', 'channelType']);
-            }, 100);
-        }
-    }, [callType, form]);
+    return () => {
+      formActions.validateStep = originalValidateStep;
+    };
+  }, [callType, form, formActions, config, state.currentStep]);
 
-    // Override the validateStep function to handle conditional validation
-    useEffect(() => {
-        // Store original validateStep function
-        const originalValidateStep = formActions.validateStep;
-
-        // Create custom validation wrapper
-        const customValidateStep = async (stepIndex?: number): Promise<boolean> => {
-            const currentStepIndex = stepIndex ?? state.currentStep;
-            const currentStepConfig = config.steps[currentStepIndex];
-
-            // If this is the business step, apply custom validation
-            if (currentStepConfig?.id === 'business') {
-                // Business partner is optional, no validation needed for the toggle itself
-                // If business partner is enabled, validate channel type only
-                if (callType === 'business-partner') {
-                    const channelType = form.getValues('channelType');
-                    if (!channelType) {
-                        form.setError('channelType', {
-                            type: 'required',
-                            message: 'Please select channel type for business partner calls',
-                        });
-                        return false;
-                    }
-                }
-                // Always allow proceeding whether business partner is enabled or not
-                return true;
-            }
-
-            // For other steps, use original validation
-            return originalValidateStep(stepIndex);
-        };
-
-        // Replace the validateStep function
-        formActions.validateStep = customValidateStep;
-
-        // Cleanup function to restore original validation
-        return () => {
-            formActions.validateStep = originalValidateStep;
-        };
-    }, [callType, form, formActions, config, state.currentStep]);
-  // Create custom filters for customer relationship based on user group
   const customerCustomFilters = useMemo(() => {
     if (isBusinessPartner && accountData?.login) {
-      // For business partners, only show customers created by them
       return {
         'createdBy.equals': accountData.login,
       };
     }
-    // For non-business partners, show all customers
+
     return {};
   }, [isBusinessPartner, accountData?.login]);
   return (
     <div className="space-y-6">
       {/* First Row: Main Relationship Fields + Business Partner Toggle */}
       {/* Use 3-column layout for business partners, 4-column for others */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 ${
-        isBusinessPartner ? 'xl:grid-cols-3' : 'xl:grid-cols-4'
-      }`}>
+      <div
+        className={`grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 ${
+          isBusinessPartner ? 'xl:grid-cols-3' : 'xl:grid-cols-4'
+        }`}
+      >
         {/* Generated Form Fields */}
 
         {/* Generated Relationship Fields */}
@@ -212,9 +191,10 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   canCreate={true}
                   createPermission="customer:create:inline"
                   customFilters={customerCustomFilters}
-                  buttonClassName={callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''}
+                  buttonClassName={
+                    callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+                  }
                   onCustomerCreated={(customerId) => {
-                    // Optionally trigger any additional actions when customer is created
                     console.log('New customer created:', customerId);
                   }}
                 />
@@ -241,9 +221,10 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   placeholder="Select product"
                   canCreate={true}
                   createPermission="product:create:inline"
-                  buttonClassName={callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''}
+                  buttonClassName={
+                    callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+                  }
                   onProductCreated={(productId) => {
-                    // Optionally trigger any additional actions when product is created
                     console.log('New product created:', productId);
                   }}
                 />
@@ -265,28 +246,44 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
               }`}
               onClick={() => setCallType(callType === 'business-partner' ? '' : 'business-partner')}
             >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                callType === 'business-partner'
-                  ? 'bg-bp-primary border-bp-primary'
-                  : 'border-gray-300 bg-white'
-              }`}>
+              <div
+                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  callType === 'business-partner'
+                    ? 'bg-bp-primary border-bp-primary'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
                 {callType === 'business-partner' && (
                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <UserCheck className={`h-4 w-4 flex-shrink-0 ${
-                  callType === 'business-partner' ? 'text-bp-600' : 'text-gray-500'
-                }`} />
+                <UserCheck
+                  className={`h-4 w-4 flex-shrink-0 ${
+                    callType === 'business-partner' ? 'text-bp-600' : 'text-gray-500'
+                  }`}
+                />
                 <div className="min-w-0">
-                  <div className={`font-medium text-sm ${
-                    callType === 'business-partner' ? 'text-bp-900' : 'text-gray-900'
-                  }`}>Business Partner</div>
-                  <div className={`text-xs ${
-                    callType === 'business-partner' ? 'text-bp-700' : 'text-gray-500'
-                  }`}>Enable for external calls</div>
+                  <div
+                    className={`font-medium text-sm ${
+                      callType === 'business-partner' ? 'text-bp-900' : 'text-gray-900'
+                    }`}
+                  >
+                    Business Partner
+                  </div>
+                  <div
+                    className={`text-xs ${
+                      callType === 'business-partner' ? 'text-bp-700' : 'text-gray-500'
+                    }`}
+                  >
+                    Enable for external calls
+                  </div>
                 </div>
               </div>
             </div>
@@ -310,7 +307,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                     targetEntity: 'userProfile',
                     displayField: 'displayName',
                     primaryKey: 'id',
-                    required: false, // NOT REQUIRED
+                    required: false,
                     multiple: false,
                     customFilters: { 'channelTypeId.specified': true },
                     api: {
@@ -351,7 +348,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                     targetEntity: 'channelType',
                     displayField: 'name',
                     primaryKey: 'id',
-                    required: false, // We handle validation manually
+                    required: false,
                     multiple: false,
                     autoPopulate: {
                       sourceField: 'channelParties',

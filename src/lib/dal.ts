@@ -14,7 +14,6 @@ import {
   type UserOrganization,
 } from '@/services/organization/organization-api.service';
 
-// Server-side function to fetch user account data
 async function fetchUserAccount(): Promise<{ authorities?: string[] } | null> {
   try {
     const session = await getAuthSession();
@@ -22,7 +21,7 @@ async function fetchUserAccount(): Promise<{ authorities?: string[] } | null> {
       return null;
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://api.dev.crmcup.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https://localhost:8080';
     const response = await fetch(`${baseUrl}/api/account`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
@@ -42,7 +41,6 @@ async function fetchUserAccount(): Promise<{ authorities?: string[] } | null> {
   }
 }
 
-// Cached auth() call to avoid repeated session lookups within a request
 const getAuthSession = cache(async () => {
   return auth();
 });
@@ -59,7 +57,6 @@ const getUserRolesFromAPI = cache(async (): Promise<string[]> => {
       return [];
     }
 
-    // Normalize the authorities
     return accountData.authorities.map(normalizeRole);
   } catch (error) {
     console.error('Failed to fetch roles from API:', error);
@@ -80,7 +77,6 @@ export const verifySession = cache(async () => {
     redirect('/');
   }
 
-  // Get roles dynamically from backend API
   const roles = await getUserRolesFromAPI();
 
   return {
@@ -101,7 +97,6 @@ export const getSession = cache(async () => {
     return null;
   }
 
-  // Get roles dynamically from backend API
   const roles = await getUserRolesFromAPI();
 
   return {
@@ -119,7 +114,6 @@ export const hasRole = async (requiredRole: string): Promise<boolean> => {
   const session = await getSession();
   if (!session?.roles) return false;
 
-  // Normalize user roles and required role
   const normalizedUserRoles = session.roles.map(normalizeRole);
   const normalizedRequiredRole = normalizeRole(requiredRole);
 
@@ -133,7 +127,6 @@ export const hasAnyRole = async (requiredRoles: string[]): Promise<boolean> => {
   const session = await getSession();
   if (!session?.roles) return false;
 
-  // Normalize user roles and required roles
   const normalizedUserRoles = session.roles.map(normalizeRole);
   const normalizedRequiredRoles = requiredRoles.map(normalizeRole);
 

@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createCallStatus,
   updateCallStatus,
@@ -19,10 +11,8 @@ import { callStatusToast } from '../components/call-status-toast';
 
 export async function createCallStatusAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createCallStatus(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/call-statuses');
     revalidatePath('/call-statuses/new');
     callStatusToast.created();
@@ -37,10 +27,8 @@ export async function createCallStatusAction(data: any) {
 
 export async function updateCallStatusAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateCallStatus(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/call-statuses');
     revalidatePath(`/call-statuses/${id}`);
     revalidatePath(`/call-statuses/${id}/edit`);
@@ -120,7 +108,6 @@ export async function bulkArchiveCallStatusAction(ids: number[], entitiesData: a
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/call-statuses');
 
     if (errorCount === 0) {
@@ -167,7 +154,6 @@ export async function bulkUpdateStatusCallStatusAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/call-statuses');
 
     if (errorCount === 0) {

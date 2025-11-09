@@ -8,10 +8,8 @@ import { Loader2 } from 'lucide-react';
 export default function DashboardPage() {
   const { hasGroup, isLoading } = useUserAuthorities();
 
-  // Check if user is a business partner
   const isBusinessPartner = hasGroup('Business Partners');
 
-  // Show loading state while checking user group
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -20,11 +18,9 @@ export default function DashboardPage() {
     );
   }
 
-  // Show Business Partner Dashboard if user is in Business Partners group
   if (isBusinessPartner) {
     return <BusinessPartnerDashboard />;
   }
 
-  // Show regular dashboard for other users
   return <DashboardOverview />;
 }

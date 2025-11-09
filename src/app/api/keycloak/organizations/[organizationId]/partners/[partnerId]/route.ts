@@ -6,20 +6,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
   deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
-  getAdminRealmsRealmUsers,
   getAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserId,
   type UserRepresentation,
 } from '@/core/api/generated/keycloak';
-import {
-  getChannelType,
-  updateUserProfile,
-  UserProfileDTO,
-  deleteUserProfile,
-  searchUserProfiles,
-  getUserProfile,
-} from '@/core/api/generated/spring';
-import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
+import { getChannelType, updateUserProfile, UserProfileDTO } from '@/core/api/generated/spring';
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string; partnerId: string }> }
@@ -42,7 +34,6 @@ export async function DELETE(
       operation: 'DELETE',
     });
 
-    // Step 1: Remove partner from Keycloak organization
     try {
       console.log('Removing partner from Keycloak organization...');
       await deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId(
@@ -57,7 +48,6 @@ export async function DELETE(
       throw new Error(`Keycloak removal failed: ${keycloakError.message}`);
     }
 
-    // Success: Both removals completed
     console.log('Business partner removal completed successfully:', {
       partnerId,
       keycloakRemoval: 'succeeded',
@@ -81,7 +71,6 @@ export async function DELETE(
       partnerId: (await params).partnerId,
     });
 
-    // Handle specific error cases
     if (error.status === 404 || error.message?.includes('not found')) {
       return NextResponse.json(
         {
@@ -114,7 +103,6 @@ export async function PATCH(
   { params }: { params: Promise<{ organizationId: string; partnerId: string }> }
 ) {
   try {
-    // Log incoming request data
     const body = await request.json();
     const realm = keycloakService.getRealm();
     const { organizationId, partnerId } = await params;
@@ -126,7 +114,6 @@ export async function PATCH(
       headers: Object.fromEntries(request.headers.entries()),
     });
 
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     console.log('Permission check result:', {
       authorized: permissionCheck.authorized,
@@ -136,10 +123,8 @@ export async function PATCH(
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
-    // Log extracted parameters
     console.log('Extracted parameters:', { organizationId, partnerId });
 
-    // Validate input
     if (!body.email && !body.firstName && !body.lastName && !body.channelTypeId) {
       console.log('Validation failed: No fields provided for update');
       return NextResponse.json(
@@ -155,12 +140,11 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
       }
     }
-    // Get current user data by partnerId (user ID) directly
+
     console.log('Fetching current user data for partnerId:', partnerId);
     let currentUser: UserRepresentation;
 
     try {
-      // Get user directly by ID using the proper Keycloak endpoint
       currentUser = await getAdminRealmsRealmUsersUserId(realm, partnerId);
       console.log('Successfully retrieved user by ID:', {
         id: currentUser.id,
@@ -182,7 +166,6 @@ export async function PATCH(
       existingAttributes: currentUser.attributes,
     });
 
-    // Prepare updated user data
     const updatedUser: UserRepresentation = {
       ...currentUser,
       email: body.email || currentUser.email,
@@ -222,23 +205,21 @@ export async function PATCH(
       channelType: channel,
       keycloakId: partnerId,
     };
-    // Update user in Keycloak
+
     console.log('Updating user in Keycloak for partnerId:', partnerId);
     await putAdminRealmsRealmUsersUserId(realm, partnerId, updatedUser);
     console.log(`Successfully updated partner ${partnerId} in Keycloak`);
 
-    // Update user profile in Spring backend
     console.log('Updating user profile in Spring backend');
     try {
       await updateUserProfile(partnerId, updateProfile);
       console.log(`Successfully updated partner ${partnerId} profile in Spring`);
     } catch (springUpdateError: any) {
       console.error('Failed to update user profile in Spring:', springUpdateError);
-      // Continue with success since Keycloak update succeeded
-      // Spring update failure shouldn't block the entire operation
+
       console.warn('Spring profile update failed, but Keycloak update succeeded');
     }
-    // Prepare response
+
     const response = {
       success: true,
       message: 'Partner updated successfully',

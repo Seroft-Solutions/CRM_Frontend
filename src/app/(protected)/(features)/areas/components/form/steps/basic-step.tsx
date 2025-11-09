@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { IntelligentCityField } from '../../intelligent-city-field';
 
@@ -13,7 +13,6 @@ interface AreaBasicStepProps {
 }
 
 export function AreaBasicStep({ form, config, actions, entity }: AreaBasicStepProps) {
-  // Set default status to ACTIVE if not already set
   React.useEffect(() => {
     const currentStatus = form.getValues('status');
     if (!currentStatus) {

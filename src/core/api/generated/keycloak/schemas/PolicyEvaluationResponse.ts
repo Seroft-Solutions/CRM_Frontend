@@ -5,9 +5,9 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { EvaluationResultRepresentation } from './EvaluationResultRepresentation';
-import type { DecisionEffect } from './DecisionEffect';
-import type { AccessToken } from './AccessToken';
+import type {EvaluationResultRepresentation} from './EvaluationResultRepresentation';
+import type {DecisionEffect} from './DecisionEffect';
+import type {AccessToken} from './AccessToken';
 
 export interface PolicyEvaluationResponse {
   results?: EvaluationResultRepresentation[];

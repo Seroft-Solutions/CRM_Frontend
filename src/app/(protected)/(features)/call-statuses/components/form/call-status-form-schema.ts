@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * CallStatus form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const callStatusFormSchema = z.object(callStatusFormSchemaFields);
 
 export type CallStatusFormValues = z.infer<typeof callStatusFormSchema>;
 
-// Individual field schemas for granular validation
 export const callStatusFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -43,7 +35,6 @@ export const callStatusFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const callStatusStepSchemas = {
   basic: z.object({
     name: callStatusFieldSchemas.name,
@@ -59,7 +50,6 @@ export const callStatusStepSchemas = {
   review: callStatusFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = callStatusStepSchemas[stepId as keyof typeof callStatusStepSchemas];
   if (!schema) return { success: true, data };

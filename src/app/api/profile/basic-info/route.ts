@@ -6,12 +6,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { UserRepresentation } from '@/core/api/generated/keycloak';
 import {
+  getAdminRealmsRealmUsers,
   getAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserId,
-  getAdminRealmsRealmUsers,
 } from '@/core/api/generated/keycloak';
-import type { UserRepresentation } from '@/core/api/generated/keycloak';
 import type { UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import { SPRING_API_URL } from '@/core/api/config/constants';
 
@@ -27,13 +27,11 @@ export interface UpdateBasicInfoRequest {
  */
 export async function PUT(request: NextRequest) {
   try {
-    // Get current session
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No authenticated user found' }, { status: 401 });
     }
 
-    // Verify admin permissions for Keycloak operations
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -47,7 +45,6 @@ export async function PUT(request: NextRequest) {
     const updateData: UpdateBasicInfoRequest = await request.json();
     const { firstName, lastName, email, displayName } = updateData;
 
-    // Validate required fields
     if (!firstName || !lastName || !email) {
       return NextResponse.json(
         { error: 'First name, last name, and email are required' },
@@ -55,15 +52,12 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get current Keycloak user
     let keycloakUser: UserRepresentation | null = null;
     let userId = session.user.id;
 
     try {
-      // First try to get by user ID if it's a Keycloak ID
       keycloakUser = await getAdminRealmsRealmUsersUserId(realm, userId);
     } catch (error) {
-      // If that fails, search by email to get the actual Keycloak user ID
       if (session.user.email) {
         const users = await getAdminRealmsRealmUsers(realm, {
           email: session.user.email,
@@ -80,24 +74,21 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found in Keycloak' }, { status: 404 });
     }
 
-    // Update user in Keycloak
     const updatedKeycloakUser: UserRepresentation = {
       ...keycloakUser,
       firstName,
       lastName,
       email,
-      // Update username with email if it's different
+
       username: email !== keycloakUser.username ? email : keycloakUser.username,
     };
 
     await putAdminRealmsRealmUsersUserId(realm, userId, updatedKeycloakUser);
 
-    // Update user profile in Spring backend
     let springUpdateSuccess = false;
     try {
       const accessToken = await keycloakService.getAccessToken();
 
-      // Try to get existing user profile by keycloakId
       const springUserProfilesResponse = await fetch(
         `${SPRING_API_URL}/api/user-profiles/search?keycloakId=${userId}`,
         {
@@ -115,7 +106,6 @@ export async function PUT(request: NextRequest) {
         if (profiles && profiles.length > 0) {
           const existingProfile = profiles[0];
 
-          // Update existing profile
           const updatedProfile: Partial<UserProfileDTO> = {
             firstName,
             lastName,
@@ -137,7 +127,6 @@ export async function PUT(request: NextRequest) {
 
           springUpdateSuccess = updateResponse.ok;
         } else {
-          // Create new profile if none exists
           const newProfile: Partial<UserProfileDTO> = {
             keycloakId: userId,
             firstName,
@@ -164,7 +153,6 @@ export async function PUT(request: NextRequest) {
         'Failed to update Spring backend profile, but Keycloak update succeeded:',
         springError
       );
-      // Don't throw error here as Keycloak update was successful
     }
 
     return NextResponse.json({
@@ -176,7 +164,6 @@ export async function PUT(request: NextRequest) {
   } catch (error: any) {
     console.error('Profile basic info update API error:', error);
 
-    // Handle specific Keycloak errors
     if (error.status === 404) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }

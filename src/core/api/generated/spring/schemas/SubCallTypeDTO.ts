@@ -5,8 +5,8 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { SubCallTypeDTOStatus } from './SubCallTypeDTOStatus';
-import type { CallTypeDTO } from './CallTypeDTO';
+import type {SubCallTypeDTOStatus} from './SubCallTypeDTOStatus';
+import type {CallTypeDTO} from './CallTypeDTO';
 
 export interface SubCallTypeDTO {
   id?: number;

@@ -1,17 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Users,
-  Calendar,
-  BarChart,
-  Phone,
-  MessageSquare,
-  Target,
-  Coffee,
   Award,
+  BarChart,
+  Calendar,
+  Coffee,
+  MessageSquare,
+  Phone,
+  Target,
+  Users,
   Zap,
 } from 'lucide-react';
 
-// Map of icon names to actual icon components
 const iconMap = {
   Users,
   Calendar,
@@ -25,7 +24,7 @@ const iconMap = {
 };
 
 interface Feature {
-  icon: string; // The name of the icon from the iconMap
+  icon: string;
   title: string;
   description: string;
 }
@@ -34,7 +33,6 @@ interface FeatureSectionProps {
   features: Feature[];
 }
 
-// Feature Card Component
 function FeatureCard({ icon, title, description }: Feature) {
   const IconComponent = iconMap[icon as keyof typeof iconMap];
 

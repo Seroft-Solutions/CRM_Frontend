@@ -1,11 +1,5 @@
 'use client';
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
+
 import { CallDetails } from '../components/call-details';
 import { PermissionGuard } from '@/core/auth';
 import { CallRemarksSection } from '../components/call-remarks-section';
@@ -22,7 +16,7 @@ interface CallPageProps {
 export default function CallPage({ params }: CallPageProps) {
   const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
-  // Fetch call data to get customer and assigned user info
+
   const { data: callData } = useGetCall(id, {
     query: {
       enabled: !!id,
@@ -91,9 +85,9 @@ export default function CallPage({ params }: CallPageProps) {
         {/* Call Meetings Section */}
         <div>
           <CallMeetingsSection
-              callId={id}
-              customerId={callData?.customer?.id}
-              assignedUserId={callData?.assignedTo?.id}
+            callId={id}
+            customerId={callData?.customer?.id}
+            assignedUserId={callData?.assignedTo?.id}
           />
         </div>
       </div>

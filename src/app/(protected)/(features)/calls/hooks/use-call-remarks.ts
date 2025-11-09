@@ -12,14 +12,12 @@ export interface CallRemark {
   dateTime: Date;
 }
 
-// Direct API call function that uses the spring service mutator for proper auth
 export async function saveRemarksForCall(callId: number, remarks: CallRemark[]): Promise<void> {
   if (!remarks || remarks.length === 0) {
     return;
   }
 
   try {
-    // Save each remark using the spring service mutator
     const savePromises = remarks.map(async (remark) => {
       const callRemarkData: CallRemarkDTO = {
         remark: remark.remark,
@@ -39,6 +37,6 @@ export async function saveRemarksForCall(callId: number, remarks: CallRemark[]):
   } catch (error) {
     console.error('Failed to save remarks:', error);
     toast.error('Failed to save some remarks');
-    throw error; // Re-throw to let caller handle if needed
+    throw error;
   }
 }

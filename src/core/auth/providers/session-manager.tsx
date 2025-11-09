@@ -7,12 +7,12 @@
 
 import {
   createContext,
-  useContext,
-  useState,
-  useCallback,
   ReactNode,
+  useCallback,
+  useContext,
   useEffect,
   useRef,
+  useState,
 } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { SessionExpiredModal } from '@/core/auth/components/session-expired-modal';
@@ -35,8 +35,8 @@ const SessionManagerContext = createContext<SessionManagerContextType | undefine
 
 interface SessionManagerProviderProps {
   children: ReactNode;
-  idleTimeoutMinutes?: number; // Default to 10 minutes
-  warningBeforeLogoutMinutes?: number; // Default to 2 minutes warning
+  idleTimeoutMinutes?: number;
+  warningBeforeLogoutMinutes?: number;
 }
 
 export function SessionManagerProvider({
@@ -63,10 +63,8 @@ export function SessionManagerProvider({
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
   const activityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Session events for handling API 401 errors
   const { onSessionExpired } = useSessionEvents();
 
-  // Events to track for user activity
   const activityEvents = [
     'mousedown',
     'mousemove',
@@ -101,12 +99,11 @@ export function SessionManagerProvider({
   }, []);
 
   const hideSessionModal = useCallback(() => {
-    // Only allow hiding if it's a warning modal, not expired or idle
     setModalState((prev) => {
       if (prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
       }
-      return prev; // Don't hide expired or idle modals
+      return prev;
     });
   }, []);
 
@@ -116,7 +113,6 @@ export function SessionManagerProvider({
     setIsIdle(false);
     setMinutesIdle(0);
 
-    // Only hide the modal if it's a warning modal, not if it's expired or idle
     setModalState((prev) => {
       if (prev.isOpen && prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
@@ -124,23 +120,19 @@ export function SessionManagerProvider({
       return prev;
     });
 
-    // Clear existing timers
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
-    // Set warning timer (8 minutes for 10-minute timeout with 2-minute warning)
     const warningTime = (idleTimeoutMinutes - warningBeforeLogoutMinutes) * 60 * 1000;
     warningTimerRef.current = setTimeout(() => {
       setIsIdle(true);
       showSessionWarningModal(warningBeforeLogoutMinutes);
     }, warningTime);
 
-    // Set logout timer (full timeout duration)
     const logoutTime = idleTimeoutMinutes * 60 * 1000;
     logoutTimerRef.current = setTimeout(() => {
       showIdleTimeoutModal();
-      // Don't force logout - just show modal and let user decide
     }, logoutTime);
   }, [
     idleTimeoutMinutes,
@@ -151,7 +143,6 @@ export function SessionManagerProvider({
 
   const refreshSession = useCallback(async (): Promise<boolean> => {
     try {
-      // Force a session refresh by calling NextAuth's session endpoint
       const response = await fetch('/api/auth/session', {
         method: 'GET',
         credentials: 'include',
@@ -163,11 +154,9 @@ export function SessionManagerProvider({
       if (response.ok) {
         const session = await response.json();
         if (session?.user && !session.error) {
-          // Session is valid, reset activity and hide modal
           resetIdleTimer();
           hideSessionModal();
 
-          // Trigger token refreshed event for API layer
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('token-refreshed'));
           }
@@ -176,7 +165,6 @@ export function SessionManagerProvider({
         }
       }
 
-      // Session refresh failed
       console.error('Session refresh failed - invalid session');
       showSessionExpiredModal();
       return false;
@@ -189,7 +177,6 @@ export function SessionManagerProvider({
 
   const handleManualLogout = useCallback(async () => {
     try {
-      // Clear all auth storage before signing out
       clearAuthStorage();
 
       await signOut({
@@ -198,7 +185,7 @@ export function SessionManagerProvider({
       });
     } catch (error) {
       console.error('Logout failed:', error);
-      // Clear storage even on error and force redirect
+
       clearAuthStorage();
       window.location.href = '/';
     }
@@ -208,14 +195,13 @@ export function SessionManagerProvider({
     resetIdleTimer();
   }, [resetIdleTimer]);
 
-  // Update minutes idle counter
   useEffect(() => {
     if (!activityCheckIntervalRef.current) {
       activityCheckIntervalRef.current = setInterval(() => {
         const now = Date.now();
         const minutesSinceActivity = Math.floor((now - lastActivity) / 60000);
         setMinutesIdle(minutesSinceActivity);
-      }, 30000); // Update every 30 seconds
+      }, 30000);
     }
 
     return () => {
@@ -226,18 +212,16 @@ export function SessionManagerProvider({
     };
   }, [lastActivity]);
 
-  // Monitor session for errors from NextAuth
   useEffect(() => {
     if (session?.error === 'RefreshAccessTokenError') {
       console.log('Session refresh error detected from NextAuth');
-      // Only show modal if not already shown and not in a refresh loop
+
       if (!modalState.isOpen) {
         showSessionExpiredModal();
       }
     }
   }, [session?.error, showSessionExpiredModal, modalState.isOpen]);
 
-  // Set up session event listener for API 401 errors
   useEffect(() => {
     const unsubscribe = onSessionExpired((event) => {
       console.log('Session expired from API call:', event.message);
@@ -247,24 +231,19 @@ export function SessionManagerProvider({
     return unsubscribe;
   }, [onSessionExpired, showSessionExpiredModal]);
 
-  // Set up activity listeners
   useEffect(() => {
-    // Initialize timer
     resetIdleTimer();
 
-    // Add event listeners for activity tracking
     activityEvents.forEach((event) => {
       document.addEventListener(event, handleActivity, true);
     });
 
     return () => {
-      // Cleanup timers
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
       if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
       if (activityCheckIntervalRef.current) clearInterval(activityCheckIntervalRef.current);
 
-      // Remove event listeners
       activityEvents.forEach((event) => {
         document.removeEventListener(event, handleActivity, true);
       });

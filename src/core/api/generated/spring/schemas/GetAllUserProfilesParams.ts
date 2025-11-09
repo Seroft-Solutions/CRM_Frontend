@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllUserProfilesStatusEquals } from './GetAllUserProfilesStatusEquals';
-import type { GetAllUserProfilesStatusNotEquals } from './GetAllUserProfilesStatusNotEquals';
-import type { GetAllUserProfilesStatusInItem } from './GetAllUserProfilesStatusInItem';
-import type { GetAllUserProfilesStatusNotInItem } from './GetAllUserProfilesStatusNotInItem';
+import type {GetAllUserProfilesStatusEquals} from './GetAllUserProfilesStatusEquals';
+import type {GetAllUserProfilesStatusNotEquals} from './GetAllUserProfilesStatusNotEquals';
+import type {GetAllUserProfilesStatusInItem} from './GetAllUserProfilesStatusInItem';
+import type {GetAllUserProfilesStatusNotInItem} from './GetAllUserProfilesStatusNotInItem';
 
 export type GetAllUserProfilesParams = {
 'id.contains'?: string;

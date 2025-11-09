@@ -5,12 +5,12 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { UserProfileDTOStatus } from './UserProfileDTOStatus';
-import type { UserDTO } from './UserDTO';
-import type { OrganizationDTO } from './OrganizationDTO';
-import type { GroupDTO } from './GroupDTO';
-import type { RoleDTO } from './RoleDTO';
-import type { ChannelTypeDTO } from './ChannelTypeDTO';
+import type {UserProfileDTOStatus} from './UserProfileDTOStatus';
+import type {UserDTO} from './UserDTO';
+import type {OrganizationDTO} from './OrganizationDTO';
+import type {GroupDTO} from './GroupDTO';
+import type {RoleDTO} from './RoleDTO';
+import type {ChannelTypeDTO} from './ChannelTypeDTO';
 
 /**
  * Extended user profile linked to Keycloak.

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { useState } from 'react';
@@ -14,15 +7,14 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
-// Import generated step components (uncommented by step generator)
+
 import { stepComponents } from './steps';
 import {
   useCreateArea,
-  useUpdateArea,
   useGetArea,
+  useUpdateArea,
 } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { areaToast, handleAreaError } from '../area-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
@@ -38,7 +30,6 @@ function AreaFormContent({ id }: AreaFormProps) {
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
 
-  // Fetch entity for editing
   const { data: entity, isLoading: isLoadingEntity } = useGetArea(id || 0, {
     query: {
       enabled: !!id,
@@ -46,22 +37,18 @@ function AreaFormContent({ id }: AreaFormProps) {
     },
   });
 
-  // Update form values when entity data is loaded (for edit mode with generated steps)
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
 
-      // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
-          // Convert to datetime-local format for the input
           if (value) {
             try {
               const date = new Date(value);
               if (!isNaN(date.getTime())) {
-                // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
                 const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
@@ -81,7 +68,6 @@ function AreaFormContent({ id }: AreaFormProps) {
         }
       });
 
-      // Handle relationships
       config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
 
@@ -90,7 +76,6 @@ function AreaFormContent({ id }: AreaFormProps) {
             ? value.map((item: any) => item[relConfig.primaryKey])
             : [];
         } else {
-          // For city relationship, store the full object so IntelligentCityField can display it
           if (relConfig.name === 'city') {
             formValues[relConfig.name] = value || null;
           } else {
@@ -103,7 +88,6 @@ function AreaFormContent({ id }: AreaFormProps) {
     }
   }, [entity, config, form, state.isLoading]);
 
-  // Render generated step components based on current step
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
     if (!currentStepConfig) return null;
@@ -115,7 +99,6 @@ function AreaFormContent({ id }: AreaFormProps) {
       entity,
     };
 
-    // Use imported step components (requires manual import after generation)
     try {
       const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
       if (StepComponent) {
@@ -125,7 +108,6 @@ function AreaFormContent({ id }: AreaFormProps) {
       console.error('Error loading step component:', error);
     }
 
-    // Fallback message - replace with generated steps
     return (
       <div className="text-center p-8">
         <p className="text-muted-foreground">
@@ -140,17 +122,13 @@ function AreaFormContent({ id }: AreaFormProps) {
     );
   };
 
-  // Handle cancellation with cross-form navigation support
   const handleCancel = () => {
     if (hasReferrer()) {
-      // Navigate back to referrer without any created entity
       navigateBackToReferrer();
     } else {
-      // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
       const backRoute = returnUrl || '/areas';
 
-      // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
@@ -161,7 +139,6 @@ function AreaFormContent({ id }: AreaFormProps) {
     }
   };
 
-  // Loading state for edit mode
   if (id && isLoadingEntity) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -198,7 +175,6 @@ function AreaFormContent({ id }: AreaFormProps) {
 
       {/* Form Content */}
       {config?.behavior?.rendering?.useGeneratedSteps ? (
-        // Use generated step components
         <Form {...form}>
           <form className="space-y-6">
             <Card>
@@ -207,15 +183,14 @@ function AreaFormContent({ id }: AreaFormProps) {
           </form>
         </Form>
       ) : (
-        // Use dynamic step renderer (original approach)
         <FormStepRenderer entity={entity} />
       )}
 
       {/* Navigation */}
       <FormNavigation
         onCancel={handleCancel}
-        onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
+        onSubmit={async () => {}}
+        isSubmitting={false}
         isNew={isNew}
       />
 
@@ -232,13 +207,11 @@ export function AreaForm({ id }: AreaFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateArea({
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
 
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllAreas'],
           refetchType: 'active',
@@ -254,7 +227,6 @@ export function AreaForm({ id }: AreaFormProps) {
         });
 
         if (hasReferrer() && entityId) {
-          // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'Area');
         } else {
@@ -272,7 +244,6 @@ export function AreaForm({ id }: AreaFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateArea({
     mutation: {
       onSuccess: () => {
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllAreas'],
           refetchType: 'active',
@@ -297,7 +268,6 @@ export function AreaForm({ id }: AreaFormProps) {
     },
   });
 
-  // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -313,17 +283,15 @@ export function AreaForm({ id }: AreaFormProps) {
     <AreaFormProvider
       id={id}
       onSuccess={async (transformedData) => {
-        // This callback receives the properly transformed data from the form provider
         const { ...areaData } = transformedData as any;
         const priorityDataWithStatus = {
           ...areaData,
           status: 'ACTIVE',
         };
-        // Make the actual API call with the transformed data
+
         if (isNew) {
           createEntity({ data: priorityDataWithStatus as any });
         } else if (id) {
-          // Ensure the entity data includes the ID for updates
           const entityData = { ...priorityDataWithStatus, id };
           updateEntity({ id, data: entityData as any });
         }

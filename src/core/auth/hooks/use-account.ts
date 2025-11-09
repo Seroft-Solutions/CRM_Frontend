@@ -54,8 +54,8 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
     image: string;
     initials: string;
     role: string | null;
-    authorities: string[]; // Normalized authorities (without ROLE_/GROUP_ prefixes)
-    rawAuthorities: string[]; // Original authorities with prefixes
+    authorities: string[];
+    rawAuthorities: string[];
     activated: boolean | undefined;
     login: string | undefined;
   } | null;
@@ -77,7 +77,6 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
       refetchOnReconnect: true,
       refetchInterval: refetchInBackground ? AUTH_CACHE_CONFIG.account.refetchInterval : false,
       retry: (failureCount, error: any) => {
-        // Don't retry auth errors
         if (error?.status === 401 || error?.status === 403) {
           return false;
         }
@@ -92,7 +91,6 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
     },
   });
 
-  // Helper functions for user data
   const getInitials = (name: string) => {
     if (!name) return 'U';
     const parts = name.split(' ');
@@ -117,12 +115,11 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
 
   const getPrimaryRole = () => {
     if (queryResult.data?.authorities && queryResult.data.authorities.length > 0) {
-      // Find the first role (starts with ROLE_) and normalize it
       const firstRole = queryResult.data.authorities.find((auth) => auth.startsWith('ROLE_'));
       if (firstRole) {
         return firstRole.replace('ROLE_', '').toLowerCase();
       }
-      // Fallback: use first authority and normalize it
+
       return queryResult.data.authorities[0].replace(/^(ROLE_|GROUP_)/, '').toLowerCase();
     }
     return null;
@@ -143,7 +140,6 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
     return [];
   };
 
-  // Create user object with all necessary data
   const user =
     status === 'authenticated' && queryResult.data
       ? {
@@ -152,8 +148,8 @@ export function useAccount(options: UseAccountOptions = {}): UseQueryResult<
           image: getImageUrl(),
           initials: getInitials(getFullName()),
           role: getPrimaryRole(),
-          authorities: getNormalizedAuthorities(), // Now includes normalized roles and groups
-          rawAuthorities: queryResult.data?.authorities || [], // Keep original authorities for debugging
+          authorities: getNormalizedAuthorities(),
+          rawAuthorities: queryResult.data?.authorities || [],
           activated: queryResult.data?.activated,
           login: queryResult.data?.login,
         }

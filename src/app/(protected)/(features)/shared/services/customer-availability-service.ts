@@ -3,10 +3,7 @@
  * This creates actual database records for UserAvailability and AvailableTimeSlot
  */
 
-import {
-  AvailabilityService,
-  DEFAULT_AVAILABILITY_CONFIG,
-} from '@/app/(protected)/(features)/shared/services/availability-service';
+import { AvailabilityService } from '@/app/(protected)/(features)/shared/services/availability-service';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -14,7 +11,9 @@ import {
   useGetAllUserAvailabilities,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
-import { useCreateAvailableTimeSlot } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import {
+  useCreateAvailableTimeSlot
+} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 
 /**
  * React hook to handle real availability creation for specific users
@@ -26,8 +25,8 @@ export function useUserAvailabilityCreation() {
   const { data: existingAvailabilities, refetch: refetchAvailabilities } =
     useGetAllUserAvailabilities(undefined, {
       query: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        cacheTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         refetchInterval: false,
@@ -38,7 +37,6 @@ export function useUserAvailabilityCreation() {
     try {
       console.log('🔍 Checking availability for user:', userId);
 
-      // Check if this user already has availability
       const userExistingAvailability =
         existingAvailabilities?.filter(
           (avail) => avail.user?.id?.toString() === userId.toString()
@@ -55,9 +53,8 @@ export function useUserAvailabilityCreation() {
 
       console.log('🆕 Creating availability for user:', userId);
 
-      // Generate availability records for this specific user
       const generated = AvailabilityService.generateCompleteAvailability(
-        typeof userId === 'string' ? userId : userId // Handle both string and number IDs
+        typeof userId === 'string' ? userId : userId
       );
 
       console.log('📊 Creating records for user', userId, ':', {
@@ -65,7 +62,6 @@ export function useUserAvailabilityCreation() {
         timeSlots: generated.timeSlots.length,
       });
 
-      // Create UserAvailability records (weekly schedule)
       const availabilityPromises = generated.userAvailabilities.map(
         (availability) =>
           new Promise<void>((resolve, reject) => {
@@ -89,8 +85,7 @@ export function useUserAvailabilityCreation() {
       await Promise.all(availabilityPromises);
       console.log('✅ All UserAvailability records created for user:', userId);
 
-      // Create AvailableTimeSlot records (specific time slots)
-      const batchSize = 10; // Create in batches to avoid overwhelming the API
+      const batchSize = 10;
       for (let i = 0; i < generated.timeSlots.length; i += batchSize) {
         const batch = generated.timeSlots.slice(i, i + batchSize);
 
@@ -117,7 +112,6 @@ export function useUserAvailabilityCreation() {
         );
       }
 
-      // Invalidate related caches for immediate UI updates
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ['useGetAllUserAvailabilities'],

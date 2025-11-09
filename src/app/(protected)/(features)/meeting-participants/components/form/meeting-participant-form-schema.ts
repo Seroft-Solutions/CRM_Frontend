@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * MeetingParticipant form validation schema with user-friendly messages
  */
@@ -34,7 +27,6 @@ export const meetingParticipantFormSchema = z.object(meetingParticipantFormSchem
 
 export type MeetingParticipantFormValues = z.infer<typeof meetingParticipantFormSchema>;
 
-// Individual field schemas for granular validation
 export const meetingParticipantFieldSchemas = {
   email: z
     .string({ message: 'Please enter email' })
@@ -55,7 +47,6 @@ export const meetingParticipantFieldSchemas = {
   meeting: z.number().optional(),
 };
 
-// Step-specific validation schemas
 export const meetingParticipantStepSchemas = {
   basic: z.object({
     email: meetingParticipantFieldSchemas.email,
@@ -71,7 +62,6 @@ export const meetingParticipantStepSchemas = {
   review: meetingParticipantFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema =
     meetingParticipantStepSchemas[stepId as keyof typeof meetingParticipantStepSchemas];

@@ -1,14 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEntityForm } from './channel-type-form-provider';
 
@@ -45,7 +38,6 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
   };
 
   const handleSubmit = async () => {
-    // Use the form provider's submitForm method which includes transformation
     await actions.submitForm();
   };
 

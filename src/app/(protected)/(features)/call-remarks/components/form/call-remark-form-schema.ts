@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * CallRemark form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const callRemarkFormSchema = z.object(callRemarkFormSchemaFields);
 
 export type CallRemarkFormValues = z.infer<typeof callRemarkFormSchema>;
 
-// Individual field schemas for granular validation
 export const callRemarkFieldSchemas = {
   remark: z
     .string({ message: 'Please enter remark' })
@@ -43,7 +35,6 @@ export const callRemarkFieldSchemas = {
   call: z.number({ message: 'Please select call from the dropdown' }),
 };
 
-// Step-specific validation schemas
 export const callRemarkStepSchemas = {
   basic: z.object({
     remark: callRemarkFieldSchemas.remark,
@@ -58,7 +49,6 @@ export const callRemarkStepSchemas = {
   review: callRemarkFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = callRemarkStepSchemas[stepId as keyof typeof callRemarkStepSchemas];
   if (!schema) return { success: true, data };

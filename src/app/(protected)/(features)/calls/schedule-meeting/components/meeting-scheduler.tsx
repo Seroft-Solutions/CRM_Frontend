@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,17 +16,12 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import Calendar20 from '@/components/calendar-20';
-import {
-  Plus,
-  X,
-  Sparkles,
-} from 'lucide-react';
+import { Plus, Sparkles, X } from 'lucide-react';
 import { format } from 'date-fns';
 import './meeting-scheduler.css';
 import { MeetingErrorDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog';
 import { useUserAvailabilityCreation } from '@/app/(protected)/(features)/shared/services/customer-availability-service';
 
-// Backend imports
 import {
   useCreateMeeting,
   useGetAllMeetings,
@@ -39,13 +34,11 @@ import {
 } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
+import type { MeetingDTO } from '@/core/api/generated/spring/schemas';
 import {
-  MeetingDTOMeetingType,
   MeetingDTOMeetingStatus,
+  MeetingDTOMeetingType,
   MeetingReminderDTOReminderType,
-} from '@/core/api/generated/spring/schemas';
-import type {
-  MeetingDTO,
 } from '@/core/api/generated/spring/schemas';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
@@ -72,7 +65,7 @@ interface ReminderDetails {
 
 interface MeetingSchedulerProps {
   customerId?: number;
-  assignedUserId?: string; // Can be either number ID or string UUID
+  assignedUserId?: string;
   callId?: number;
   onMeetingScheduledAction: (meetingData: any) => void;
   onError?: (error: any) => void;
@@ -106,9 +99,8 @@ export function MeetingScheduler({
   ]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
-  const [bookedTimeSlots, setBookedTimeSlots] = useState<string[]>([]); // New state for booked time slots
+  const [bookedTimeSlots, setBookedTimeSlots] = useState<string[]>([]);
 
-  // Error handling state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
@@ -116,18 +108,15 @@ export function MeetingScheduler({
     query: { enabled: !!customerId },
   });
 
-  // Backend hooks
   const { mutate: createMeeting, isPending: isCreating } = useCreateMeeting({
     mutation: {
       onSuccess: async (meetingData) => {
         try {
-          // Mark the corresponding time slot as booked
           if (selectedDate && selectedTime && assignedUserId && timeSlots) {
             const meetingDateTime = new Date(selectedDate);
             const [hours, minutes] = selectedTime.split(':').map(Number);
             meetingDateTime.setHours(hours, minutes, 0, 0);
 
-            // Find the matching time slot
             const matchingSlot = timeSlots.find((slot) => {
               const slotDateTime = new Date(slot.slotDateTime);
               const userIdMatch = slot.user?.id?.toString() === assignedUserId?.toString();
@@ -135,7 +124,6 @@ export function MeetingScheduler({
             });
 
             if (matchingSlot) {
-              // Update the slot to mark it as booked
               updateAvailableTimeSlot({
                 id: matchingSlot.id!,
                 data: {
@@ -184,25 +172,23 @@ export function MeetingScheduler({
             );
           }
 
-          // Invalidate all related caches to show updated data immediately
           console.log('🔄 Invalidating caches to refresh data...');
           await Promise.all([
-            // Invalidate meetings cache
             queryClient.invalidateQueries({
               queryKey: ['useGetAllMeetings'],
               exact: false,
             }),
-            // Invalidate available time slots cache
+
             queryClient.invalidateQueries({
               queryKey: ['useGetAllAvailableTimeSlots'],
               exact: false,
             }),
-            // Invalidate user availabilities cache
+
             queryClient.invalidateQueries({
               queryKey: ['useGetAllUserAvailabilities'],
               exact: false,
             }),
-            // Invalidate calls cache (if user navigates back)
+
             queryClient.invalidateQueries({
               queryKey: ['useGetAllCalls'],
               exact: false,
@@ -212,7 +198,6 @@ export function MeetingScheduler({
 
           onMeetingScheduledAction(meetingData);
         } catch (error) {
-          // Handle errors in participant/reminder creation
           console.error('Error in post-meeting creation steps:', error);
           setErrorMessage(
             'Meeting was created but some participants or reminders could not be set up. Please check the meeting details.'
@@ -238,7 +223,6 @@ export function MeetingScheduler({
   const { mutate: updateAvailableTimeSlot } = useUpdateAvailableTimeSlot({
     mutation: {
       onSuccess: () => {
-        // Invalidate time slots cache when a slot is updated
         queryClient.invalidateQueries({
           queryKey: ['useGetAllAvailableTimeSlots'],
           exact: false,
@@ -248,7 +232,6 @@ export function MeetingScheduler({
     },
   });
 
-  // Get data from backend
   const { data: timeSlots } = useGetAllAvailableTimeSlots(
     assignedUserId
       ? { 'userId.equals': assignedUserId.toString(), 'isBooked.equals': false }
@@ -256,8 +239,8 @@ export function MeetingScheduler({
     {
       query: {
         enabled: !!assignedUserId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        cacheTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         refetchInterval: false,
@@ -270,8 +253,8 @@ export function MeetingScheduler({
     {
       query: {
         enabled: !!assignedUserId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        cacheTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         refetchInterval: false,
@@ -284,8 +267,8 @@ export function MeetingScheduler({
     {
       query: {
         enabled: !!assignedUserId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        cacheTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         refetchInterval: false,
@@ -293,7 +276,6 @@ export function MeetingScheduler({
     }
   );
 
-  // Initialize default participant
   useEffect(() => {
     if (customerData && participants.length === 0) {
       setParticipants([
@@ -313,7 +295,6 @@ export function MeetingScheduler({
     }
   }, [customerData, participants.length, meetingDetails.title]);
 
-  // Ensure assigned user has availability (memoized to prevent infinite calls)
   useEffect(() => {
     if (assignedUserId) {
       ensureUserHasAvailability(assignedUserId).then((success) => {
@@ -324,9 +305,8 @@ export function MeetingScheduler({
         }
       });
     }
-  }, [assignedUserId]); // Removed ensureUserHasAvailability from dependencies to prevent infinite loop
+  }, [assignedUserId]);
 
-  // Process available time slots
   useEffect(() => {
     const slots: string[] = [];
 
@@ -365,7 +345,6 @@ export function MeetingScheduler({
       });
     }
 
-    // Log what data sources we're using
     console.log('📊 Time slot sources:', {
       fromAvailableTimeSlots: timeSlots?.length || 0,
       fromUserAvailabilities: userAvailabilities?.length || 0,
@@ -373,7 +352,6 @@ export function MeetingScheduler({
       assignedUserId,
     });
 
-    // Only use default time slots if absolutely no data exists
     if (slots.length === 0) {
       console.warn('⚠️ No availability data found in database - using fallback slots');
       for (let hour = 9; hour <= 17; hour++) {
@@ -390,7 +368,6 @@ export function MeetingScheduler({
     setAvailableTimeSlots(slots.sort());
   }, [timeSlots, userAvailabilities]);
 
-  // Process booked dates
   useEffect(() => {
     if (existingMeetings) {
       const booked = existingMeetings
@@ -405,7 +382,6 @@ export function MeetingScheduler({
     }
   }, [existingMeetings]);
 
-  // Process booked time slots for the selected date
   useEffect(() => {
     if (existingMeetings && selectedDate) {
       const selectedDateStr = selectedDate.toDateString();
@@ -451,7 +427,7 @@ export function MeetingScheduler({
       assignedCustomer: customerId ? ({ id: customerId } as any) : undefined,
       call: { id: callId } as any,
       status: 'ACTIVE',
-      participants: participants.map(p => ({
+      participants: participants.map((p) => ({
         email: p.email,
         name: p.name,
         isRequired: p.isRequired,
@@ -503,22 +479,22 @@ export function MeetingScheduler({
                   <div className="space-y-2">
                     <Label htmlFor="title">Meeting Title *</Label>
                     <Input
-                        id="title"
-                        placeholder="Enter meeting title"
-                        value={meetingDetails.title}
-                        onChange={(e) =>
-                            setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
-                        }
+                      id="title"
+                      placeholder="Enter meeting title"
+                      value={meetingDetails.title}
+                      onChange={(e) =>
+                        setMeetingDetails((prev) => ({ ...prev, title: e.target.value }))
+                      }
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="duration">Duration</Label>
                     <Select
-                        value={meetingDetails.duration.toString()}
-                        onValueChange={(value) =>
-                            setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
-                        }
+                      value={meetingDetails.duration.toString()}
+                      onValueChange={(value) =>
+                        setMeetingDetails((prev) => ({ ...prev, duration: parseInt(value) }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -537,13 +513,13 @@ export function MeetingScheduler({
                 <div className="space-y-2">
                   <Label htmlFor="description">Description (Optional)</Label>
                   <Textarea
-                      id="description"
-                      placeholder="Add meeting agenda or notes..."
-                      value={meetingDetails.description}
-                      onChange={(e) =>
-                          setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
-                      }
-                      rows={3}
+                    id="description"
+                    placeholder="Add meeting agenda or notes..."
+                    value={meetingDetails.description}
+                    onChange={(e) =>
+                      setMeetingDetails((prev) => ({ ...prev, description: e.target.value }))
+                    }
+                    rows={3}
                   />
                 </div>
               </div>
@@ -563,10 +539,7 @@ export function MeetingScheduler({
 
               <div className="divide-y">
                 {participants.map((participant, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-12 gap-3 items-end p-3"
-                  >
+                  <div key={index} className="grid grid-cols-12 gap-3 items-end p-3">
                     <div className="col-span-5">
                       <Label>Email</Label>
                       <Input
@@ -606,7 +579,9 @@ export function MeetingScheduler({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setParticipants((prev) => prev.filter((_, i) => i !== index))}
+                        onClick={() =>
+                          setParticipants((prev) => prev.filter((_, i) => i !== index))
+                        }
                         disabled={index === 0 && customerData?.email === participant.email}
                       >
                         <X className="w-4 h-4" />

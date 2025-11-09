@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { InstallationAdapterConfigCredentials } from './InstallationAdapterConfigCredentials';
-import type { PolicyEnforcerConfig } from './PolicyEnforcerConfig';
+import type {InstallationAdapterConfigCredentials} from './InstallationAdapterConfigCredentials';
+import type {PolicyEnforcerConfig} from './PolicyEnforcerConfig';
 
 export interface InstallationAdapterConfig {
   realm?: string;

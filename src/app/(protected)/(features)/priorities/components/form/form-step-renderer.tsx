@@ -1,16 +1,15 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -23,7 +22,6 @@ import {
 import { useEntityForm } from './priority-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -38,9 +36,7 @@ interface FormStepRendererProps {
   entity?: any;
 }
 
-// Relationship value resolver component
 function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
-  // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
       default:
@@ -51,7 +47,6 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   return resolveRelationshipDisplay();
 }
 
-// Component to display relationship values
 function RelationshipDisplayValue({
   value,
   useGetAllHook,
@@ -67,13 +62,12 @@ function RelationshipDisplayValue({
   multiple: boolean;
   label: string;
 }) {
-  // Fetch all data to resolve display values
   const { data: allData } = useGetAllHook(
-    { page: 0, size: 1000 }, // Get enough data to resolve most relationships
+    { page: 0, size: 1000 },
     {
       query: {
-        enabled: !!value, // Only fetch if there's a value to resolve
-        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        enabled: !!value,
+        staleTime: 5 * 60 * 1000,
       },
     }
   );
@@ -86,7 +80,6 @@ function RelationshipDisplayValue({
     return <span className="text-muted-foreground italic">Loading...</span>;
   }
 
-  // Extract data array from response (handle both direct array and paginated response)
   const dataArray = Array.isArray(allData)
     ? allData
     : allData.content
@@ -109,7 +102,6 @@ function RelationshipDisplayValue({
     const displayValues = selectedItems.map((item: any) => item[displayField]);
     return displayValues.join(', ');
   } else {
-    // Single value
     const selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
 
     return selectedItem ? (
@@ -124,22 +116,18 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const { config, state, form, actions } = useEntityForm();
   const currentStepConfig = config.steps[state.currentStep];
 
-  // Update form values when entity data is loaded (for edit mode)
   useEffect(() => {
     if (entity && !state.isLoading) {
       const formValues: Record<string, any> = {};
 
-      // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
-          // Convert to datetime-local format for the input
           if (value) {
             try {
               const date = new Date(value);
               if (!isNaN(date.getTime())) {
-                // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
                 const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
@@ -159,7 +147,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         }
       });
 
-      // Handle relationships
       config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
 
@@ -327,7 +314,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const renderCurrentStep = () => {
     if (!currentStepConfig) return null;
 
-    // Special handling for review step
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
@@ -357,7 +343,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     if (!fieldConfig) return null;
                     const value = form.getValues(fieldName);
 
-                    // Format value for display
                     const displayValue = (() => {
                       if (!value)
                         return <span className="text-muted-foreground italic">Not set</span>;
@@ -424,7 +409,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
       );
     }
 
-    // Regular step rendering
     return (
       <div className="space-y-6">
         <div

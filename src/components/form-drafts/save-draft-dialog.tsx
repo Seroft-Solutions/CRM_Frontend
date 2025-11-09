@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Save, Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Save, Trash2 } from 'lucide-react';
 
 export interface DraftDialogProps {
   open: boolean;
@@ -19,7 +19,7 @@ export interface DraftDialogProps {
   onDiscardChanges: () => void;
   onCancel: () => void;
   isDirty: boolean;
-  formData?: Record<string, any>; // Add form data to show preview
+  formData?: Record<string, any>;
 }
 
 /**
@@ -91,50 +91,50 @@ export function SaveDraftDialog({
           </DialogDescription>
         </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="border rounded-lg p-3">
-              <Button
-                  onClick={handleSaveDraft}
-                  disabled={isSaving}
-                  className="w-full mb-1"
-                  variant="default"
-              >
-                {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving Draft...
-                    </>
-                ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save as Draft
-                    </>
-                )}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                You can continue editing this form later
-              </p>
-            </div>
-
-            <div className="border rounded-lg p-3">
-              <Button
-                  onClick={handleDiscardChanges}
-                  disabled={isSaving}
-                  className="w-full mb-1"
-                  variant="destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Discard Changes
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                All changes will be lost permanently
-              </p>
-            </div>
-            <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
-              Cancel
+        <div className="space-y-4 py-4">
+          <div className="border rounded-lg p-3">
+            <Button
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+              className="w-full mb-1"
+              variant="default"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving Draft...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save as Draft
+                </>
+              )}
             </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              You can continue editing this form later
+            </p>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <div className="border rounded-lg p-3">
+            <Button
+              onClick={handleDiscardChanges}
+              disabled={isSaving}
+              className="w-full mb-1"
+              variant="destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Discard Changes
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              All changes will be lost permanently
+            </p>
+          </div>
+          <Button onClick={handleCancel} disabled={isSaving} className="w-full" variant="outline">
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

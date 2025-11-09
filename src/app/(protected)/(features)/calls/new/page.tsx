@@ -1,16 +1,12 @@
-// ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced with dynamic header color based on Business Partner toggle
-// ===============================================================
 'use client';
 
 import { CallForm } from '../components/call-form';
-import {PermissionGuard, useAccount, useUserAuthorities} from '@/core/auth';
-import { useState, useEffect } from 'react';
+import { PermissionGuard, useAccount } from '@/core/auth';
+import { useEffect, useState } from 'react';
 
 export default function CreateCallPage() {
   const [isBusinessPartner, setIsBusinessPartner] = useState(false);
-  const { user} = useAccount();
+  const { user } = useAccount();
   console.log('Current User:', user?.name);
   useEffect(() => {
     const handleBusinessPartnerToggle = (event: CustomEvent) => {
@@ -20,7 +16,10 @@ export default function CreateCallPage() {
     window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
 
     return () => {
-      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+      window.removeEventListener(
+        'businessPartnerToggle',
+        handleBusinessPartnerToggle as EventListener
+      );
     };
   }, []);
 
@@ -32,11 +31,11 @@ export default function CreateCallPage() {
     >
       <div className="space-y-6">
         {/* Professional Header with Dotted Background - Dynamic Color */}
-        <div className={`rounded-lg p-6 shadow-lg relative overflow-hidden transition-colors duration-300 ${
-          isBusinessPartner
-            ? 'bg-bp-primary'
-            : 'bg-gradient-to-r from-blue-600 to-blue-700'
-        }`}>
+        <div
+          className={`rounded-lg p-6 shadow-lg relative overflow-hidden transition-colors duration-300 ${
+            isBusinessPartner ? 'bg-bp-primary' : 'bg-gradient-to-r from-blue-600 to-blue-700'
+          }`}
+        >
           {/* Dotted background pattern */}
           <div
             className="absolute inset-0 opacity-20"
@@ -64,8 +63,8 @@ export default function CreateCallPage() {
               <h1 className="text-2xl font-bold">Create Call</h1>
               <p className="text-white/90">
                 {isBusinessPartner
-                    ? `Enter the details below to create a new call for ${user?.name || ''}`
-                    : 'Enter the details below to create a new call'}
+                  ? `Enter the details below to create a new call for ${user?.name || ''}`
+                  : 'Enter the details below to create a new call'}
               </p>
             </div>
           </div>

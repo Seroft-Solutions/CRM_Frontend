@@ -43,16 +43,13 @@ class SessionEventEmitter {
     });
   }
 
-  // Clear all listeners (useful for testing)
   clear() {
     this.listeners = {};
   }
 }
 
-// Global singleton instance
 export const sessionEventEmitter = new SessionEventEmitter();
 
-// Hook for components to listen to session events
 export function useSessionEvents() {
   return {
     onSessionExpired: (callback: (event: SessionEvent) => void) => {

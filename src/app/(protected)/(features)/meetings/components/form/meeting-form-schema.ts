@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Meeting form validation schema with user-friendly messages
  */
@@ -69,7 +62,6 @@ export const meetingFormSchema = z.object(meetingFormSchemaFields);
 
 export type MeetingFormValues = z.infer<typeof meetingFormSchema>;
 
-// Individual field schemas for granular validation
 export const meetingFieldSchemas = {
   meetingDateTime: z
     .union([z.date(), z.string().transform((str) => new Date(str))])
@@ -125,7 +117,6 @@ export const meetingFieldSchemas = {
   call: z.number().optional(),
 };
 
-// Step-specific validation schemas
 export const meetingStepSchemas = {
   basic: z.object({
     meetingDateTime: meetingFieldSchemas.meetingDateTime,
@@ -150,7 +141,6 @@ export const meetingStepSchemas = {
   review: meetingFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = meetingStepSchemas[stepId as keyof typeof meetingStepSchemas];
   if (!schema) return { success: true, data };

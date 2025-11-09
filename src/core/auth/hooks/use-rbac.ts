@@ -23,35 +23,29 @@ export function useRBAC() {
   } = useUserAuthorities();
 
   return {
-    // Data
     roles,
     groups,
     authorities,
     isLoading,
 
-    // Single checks
     hasRole,
     hasGroup,
     hasAuthority,
-    hasPermission: hasAuthority, // Alias for consistency
+    hasPermission: hasAuthority,
 
-    // Multiple checks
     hasAnyRole,
     hasAnyGroup,
     hasAnyAuthority,
-    hasAnyPermission: hasAnyAuthority, // Alias for consistency
+    hasAnyPermission: hasAnyAuthority,
 
-    // Convenience methods
     hasAllRoles: (rolesToCheck: string[]) => rolesToCheck.every((role) => hasRole(role)),
     hasAllGroups: (groupsToCheck: string[]) => groupsToCheck.every((group) => hasGroup(group)),
     hasAllAuthorities: (authoritiesToCheck: string[]) =>
       authoritiesToCheck.every((auth) => hasAuthority(auth)),
 
-    // Admin checks
     isAdmin: () => hasAnyRole(['ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN']),
     isSuperAdmin: () => hasRole('SUPER_ADMIN'),
 
-    // Utility
     normalizeAuthority,
   };
 }

@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import {
-  Building2,
-  Database,
-  Settings,
-  CheckCircle,
-  Loader2,
   AlertCircle,
+  Building2,
+  CheckCircle,
+  Database,
+  Loader2,
+  Settings,
   Sparkles,
 } from 'lucide-react';
 import { useGetOrganizationSetupProgress } from '@/core/api/generated/spring';
@@ -49,10 +49,9 @@ export function OrganizationSetupProgress({
   const formatProgressMessage = (message: string | undefined): string => {
     if (!message) return '';
 
-    // If message contains changeset details, clean it up
     if (message.includes(' - ')) {
       const [mainPart, changesetPart] = message.split(' - ');
-      // Remove long changeset paths and just show a clean message
+
       if (changesetPart && changesetPart.length > 30) {
         return mainPart + ' • Processing database changes...';
       }
@@ -62,23 +61,21 @@ export function OrganizationSetupProgress({
     return message;
   };
 
-  // Poll for setup progress using the correct hook
   const {
     data: progressData,
     isError,
     error,
   } = useGetOrganizationSetupProgress(organizationName, {
     query: {
-      refetchInterval: 1000, // Poll every 1 second for more responsive updates
+      refetchInterval: 1000,
       refetchIntervalInBackground: true,
       retry: (failureCount, error: any) => {
-        // Retry up to 5 times for network errors, but not for 404s (organization not found)
         if (error?.response?.status === 404) {
-          return failureCount < 60; // Retry 404s for up to 1 minute (60 * 1s)
+          return failureCount < 60;
         }
         return failureCount < 5;
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     },
   });
 
@@ -90,7 +87,6 @@ export function OrganizationSetupProgress({
         return;
       }
 
-      // Find current step using simple keyword matching
       let stepIndex = -1;
 
       if (
@@ -105,11 +101,11 @@ export function OrganizationSetupProgress({
         progressData.includes('Running Changeset')
       ) {
         stepIndex = 1;
-        // Handle migration percentage updates - use actual percentage from backend
+
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(percentage); // Use actual percentage directly (backend sends 25-60%)
+          setProgress(percentage);
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -119,11 +115,11 @@ export function OrganizationSetupProgress({
         progressData.includes('Creating organization record')
       ) {
         stepIndex = 2;
-        // Handle data loading percentage updates - use actual percentage from backend
+
         const match = progressData.match(/(\d+)%/);
         if (match) {
           const percentage = parseInt(match[1]);
-          setProgress(percentage); // Use actual percentage directly (backend sends 60-95%)
+          setProgress(percentage);
         } else {
           setProgress(setupSteps[stepIndex].progress);
         }
@@ -140,18 +136,16 @@ export function OrganizationSetupProgress({
         }
       }
     } else {
-      // No progress data yet - show initial state
       setCurrentStep(0);
-      setProgress(10); // Show some initial progress
+      setProgress(10);
     }
   }, [progressData, onComplete, onError]);
 
   useEffect(() => {
     if (isError) {
-      // Don't immediately show error for 404s - backend might still be setting up
       if (error?.response?.status === 404 || error?.status === 404) {
         console.log('⚠️ Organization not found yet, backend may still be processing setup...');
-        return; // Don't set error state, keep polling
+        return;
       }
 
       setHasError(true);

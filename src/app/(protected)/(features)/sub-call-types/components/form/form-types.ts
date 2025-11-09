@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Type definitions for the entity form configuration system
  * This file is auto-generated. To modify types, update the generator templates.
@@ -209,7 +202,6 @@ export interface DraftsConfig {
 
 export type ValidationFunction = (value: any, allValues: Record<string, any>) => string | undefined;
 
-// Form state interfaces
 export interface FormState {
   currentStep: number;
   isLoading: boolean;
@@ -219,7 +211,7 @@ export interface FormState {
   values: Record<string, any>;
   touchedFields: Record<string, boolean>;
   isAutoPopulating: boolean;
-  // Draft-related state
+
   drafts: any[];
   isLoadingDrafts: boolean;
   isSavingDraft: boolean;
@@ -245,7 +237,7 @@ export interface FormActions {
     referrerSessionId: string;
     referrerField: string;
   };
-  // Draft-related actions
+
   saveDraft: () => Promise<boolean>;
   loadDraft: (draftId: number) => Promise<boolean>;
   deleteDraft: (draftId: number) => Promise<boolean>;
@@ -267,18 +259,16 @@ export interface FormContextValue {
   config: FormConfig;
   state: FormState;
   actions: FormActions;
-  form: any; // React Hook Form instance
+  form: any;
   navigation: NavigationInfo;
 }
 
-// Step component props
 export interface StepComponentProps {
   stepConfig: FormStep;
   isActive: boolean;
   isCompleted: boolean;
 }
 
-// Field component props
 export interface FieldComponentProps {
   fieldConfig: FieldConfig;
   value: any;
@@ -287,7 +277,6 @@ export interface FieldComponentProps {
   disabled?: boolean;
 }
 
-// Relationship component props
 export interface RelationshipComponentProps {
   relationshipConfig: RelationshipConfig;
   value: any;

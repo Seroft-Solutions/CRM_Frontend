@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllPrioritiesStatusEquals } from './GetAllPrioritiesStatusEquals';
-import type { GetAllPrioritiesStatusNotEquals } from './GetAllPrioritiesStatusNotEquals';
-import type { GetAllPrioritiesStatusInItem } from './GetAllPrioritiesStatusInItem';
-import type { GetAllPrioritiesStatusNotInItem } from './GetAllPrioritiesStatusNotInItem';
+import type {GetAllPrioritiesStatusEquals} from './GetAllPrioritiesStatusEquals';
+import type {GetAllPrioritiesStatusNotEquals} from './GetAllPrioritiesStatusNotEquals';
+import type {GetAllPrioritiesStatusInItem} from './GetAllPrioritiesStatusInItem';
+import type {GetAllPrioritiesStatusNotInItem} from './GetAllPrioritiesStatusNotInItem';
 
 export type GetAllPrioritiesParams = {
 'id.greaterThan'?: number;
