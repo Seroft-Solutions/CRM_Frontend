@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { AuthDetailsRepresentation } from './AuthDetailsRepresentation';
-import type { AdminEventRepresentationDetails } from './AdminEventRepresentationDetails';
+import type {AuthDetailsRepresentation} from './AuthDetailsRepresentation';
+import type {AdminEventRepresentationDetails} from './AdminEventRepresentationDetails';
 
 export interface AdminEventRepresentation {
   id?: string;

@@ -5,9 +5,9 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { GroupRepresentationAttributes } from './GroupRepresentationAttributes';
-import type { GroupRepresentationClientRoles } from './GroupRepresentationClientRoles';
-import type { GroupRepresentationAccess } from './GroupRepresentationAccess';
+import type {GroupRepresentationAttributes} from './GroupRepresentationAttributes';
+import type {GroupRepresentationClientRoles} from './GroupRepresentationClientRoles';
+import type {GroupRepresentationAccess} from './GroupRepresentationAccess';
 
 export interface GroupRepresentation {
   id?: string;

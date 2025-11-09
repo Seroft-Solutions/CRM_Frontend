@@ -5,18 +5,18 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CountMeetingsMeetingStatusEquals } from './CountMeetingsMeetingStatusEquals';
-import type { CountMeetingsMeetingStatusNotEquals } from './CountMeetingsMeetingStatusNotEquals';
-import type { CountMeetingsMeetingStatusInItem } from './CountMeetingsMeetingStatusInItem';
-import type { CountMeetingsMeetingStatusNotInItem } from './CountMeetingsMeetingStatusNotInItem';
-import type { CountMeetingsMeetingTypeEquals } from './CountMeetingsMeetingTypeEquals';
-import type { CountMeetingsMeetingTypeNotEquals } from './CountMeetingsMeetingTypeNotEquals';
-import type { CountMeetingsMeetingTypeInItem } from './CountMeetingsMeetingTypeInItem';
-import type { CountMeetingsMeetingTypeNotInItem } from './CountMeetingsMeetingTypeNotInItem';
-import type { CountMeetingsStatusEquals } from './CountMeetingsStatusEquals';
-import type { CountMeetingsStatusNotEquals } from './CountMeetingsStatusNotEquals';
-import type { CountMeetingsStatusInItem } from './CountMeetingsStatusInItem';
-import type { CountMeetingsStatusNotInItem } from './CountMeetingsStatusNotInItem';
+import type {CountMeetingsMeetingStatusEquals} from './CountMeetingsMeetingStatusEquals';
+import type {CountMeetingsMeetingStatusNotEquals} from './CountMeetingsMeetingStatusNotEquals';
+import type {CountMeetingsMeetingStatusInItem} from './CountMeetingsMeetingStatusInItem';
+import type {CountMeetingsMeetingStatusNotInItem} from './CountMeetingsMeetingStatusNotInItem';
+import type {CountMeetingsMeetingTypeEquals} from './CountMeetingsMeetingTypeEquals';
+import type {CountMeetingsMeetingTypeNotEquals} from './CountMeetingsMeetingTypeNotEquals';
+import type {CountMeetingsMeetingTypeInItem} from './CountMeetingsMeetingTypeInItem';
+import type {CountMeetingsMeetingTypeNotInItem} from './CountMeetingsMeetingTypeNotInItem';
+import type {CountMeetingsStatusEquals} from './CountMeetingsStatusEquals';
+import type {CountMeetingsStatusNotEquals} from './CountMeetingsStatusNotEquals';
+import type {CountMeetingsStatusInItem} from './CountMeetingsStatusInItem';
+import type {CountMeetingsStatusNotInItem} from './CountMeetingsStatusNotInItem';
 
 export type CountMeetingsParams = {
 'id.greaterThan'?: number;

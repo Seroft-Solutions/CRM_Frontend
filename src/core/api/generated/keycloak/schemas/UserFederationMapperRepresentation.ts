@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { UserFederationMapperRepresentationConfig } from './UserFederationMapperRepresentationConfig';
+import type {UserFederationMapperRepresentationConfig} from './UserFederationMapperRepresentationConfig';
 
 export interface UserFederationMapperRepresentation {
   id?: string;

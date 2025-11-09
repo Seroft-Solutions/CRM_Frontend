@@ -5,9 +5,9 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { RoleRepresentation } from './RoleRepresentation';
-import type { RolesRepresentationClient } from './RolesRepresentationClient';
-import type { RolesRepresentationApplication } from './RolesRepresentationApplication';
+import type {RoleRepresentation} from './RoleRepresentation';
+import type {RolesRepresentationClient} from './RolesRepresentationClient';
+import type {RolesRepresentationApplication} from './RolesRepresentationApplication';
 
 export interface RolesRepresentation {
   realm?: RoleRepresentation[];

@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { UPGroupAnnotations } from './UPGroupAnnotations';
+import type {UPGroupAnnotations} from './UPGroupAnnotations';
 
 export interface UPGroup {
   name?: string;

@@ -5,6 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ResourceType } from './ResourceType';
+import type {ResourceType} from './ResourceType';
 
 export type AuthorizationSchemaResourceTypes = {[key: string]: ResourceType};

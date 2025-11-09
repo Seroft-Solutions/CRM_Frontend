@@ -5,11 +5,11 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { UPAttributeValidations } from './UPAttributeValidations';
-import type { UPAttributeAnnotations } from './UPAttributeAnnotations';
-import type { UPAttributeRequired } from './UPAttributeRequired';
-import type { UPAttributePermissions } from './UPAttributePermissions';
-import type { UPAttributeSelector } from './UPAttributeSelector';
+import type {UPAttributeValidations} from './UPAttributeValidations';
+import type {UPAttributeAnnotations} from './UPAttributeAnnotations';
+import type {UPAttributeRequired} from './UPAttributeRequired';
+import type {UPAttributePermissions} from './UPAttributePermissions';
+import type {UPAttributeSelector} from './UPAttributeSelector';
 
 export interface UPAttribute {
   name?: string;

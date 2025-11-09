@@ -5,6 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { PropertyConfig } from './PropertyConfig';
+import type {PropertyConfig} from './PropertyConfig';
 
 export type ClientTypeRepresentationConfig = {[key: string]: PropertyConfig};

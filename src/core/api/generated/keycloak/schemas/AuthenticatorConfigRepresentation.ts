@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { AuthenticatorConfigRepresentationConfig } from './AuthenticatorConfigRepresentationConfig';
+import type {AuthenticatorConfigRepresentationConfig} from './AuthenticatorConfigRepresentationConfig';
 
 export interface AuthenticatorConfigRepresentation {
   id?: string;

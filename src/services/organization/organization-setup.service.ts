@@ -28,6 +28,22 @@ export class OrganizationSetupService {
   }
 
   /**
+   * Check if user has existing organization
+   * TODO: Implement proper organization checking logic
+   */
+  static hasOrganization(session: Session | null): boolean {
+    return false;
+  }
+
+  /**
+   * Get user's primary organization
+   * TODO: Implement proper organization retrieval logic
+   */
+  static getPrimaryOrganization(session: Session | null) {
+    return null;
+  }
+
+  /**
    * Complete organization setup flow
    */
   async setupOrganization(
@@ -210,21 +226,5 @@ export class OrganizationSetupService {
       console.error('❌ Organization creation failed:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to create organization');
     }
-  }
-
-  /**
-   * Check if user has existing organization
-   * TODO: Implement proper organization checking logic
-   */
-  static hasOrganization(session: Session | null): boolean {
-    return false;
-  }
-
-  /**
-   * Get user's primary organization
-   * TODO: Implement proper organization retrieval logic
-   */
-  static getPrimaryOrganization(session: Session | null) {
-    return null;
   }
 }

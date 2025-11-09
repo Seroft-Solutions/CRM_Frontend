@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllMeetingParticipantsStatusEquals } from './GetAllMeetingParticipantsStatusEquals';
-import type { GetAllMeetingParticipantsStatusNotEquals } from './GetAllMeetingParticipantsStatusNotEquals';
-import type { GetAllMeetingParticipantsStatusInItem } from './GetAllMeetingParticipantsStatusInItem';
-import type { GetAllMeetingParticipantsStatusNotInItem } from './GetAllMeetingParticipantsStatusNotInItem';
+import type {GetAllMeetingParticipantsStatusEquals} from './GetAllMeetingParticipantsStatusEquals';
+import type {GetAllMeetingParticipantsStatusNotEquals} from './GetAllMeetingParticipantsStatusNotEquals';
+import type {GetAllMeetingParticipantsStatusInItem} from './GetAllMeetingParticipantsStatusInItem';
+import type {GetAllMeetingParticipantsStatusNotInItem} from './GetAllMeetingParticipantsStatusNotInItem';
 
 export type GetAllMeetingParticipantsParams = {
 'id.greaterThan'?: number;

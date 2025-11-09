@@ -5,16 +5,16 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { MemberRepresentationAttributes } from './MemberRepresentationAttributes';
-import type { UserProfileMetadata } from './UserProfileMetadata';
-import type { CredentialRepresentation } from './CredentialRepresentation';
-import type { FederatedIdentityRepresentation } from './FederatedIdentityRepresentation';
-import type { MemberRepresentationClientRoles } from './MemberRepresentationClientRoles';
-import type { UserConsentRepresentation } from './UserConsentRepresentation';
-import type { MemberRepresentationApplicationRoles } from './MemberRepresentationApplicationRoles';
-import type { SocialLinkRepresentation } from './SocialLinkRepresentation';
-import type { MemberRepresentationAccess } from './MemberRepresentationAccess';
-import type { MembershipType } from './MembershipType';
+import type {MemberRepresentationAttributes} from './MemberRepresentationAttributes';
+import type {UserProfileMetadata} from './UserProfileMetadata';
+import type {CredentialRepresentation} from './CredentialRepresentation';
+import type {FederatedIdentityRepresentation} from './FederatedIdentityRepresentation';
+import type {MemberRepresentationClientRoles} from './MemberRepresentationClientRoles';
+import type {UserConsentRepresentation} from './UserConsentRepresentation';
+import type {MemberRepresentationApplicationRoles} from './MemberRepresentationApplicationRoles';
+import type {SocialLinkRepresentation} from './SocialLinkRepresentation';
+import type {MemberRepresentationAccess} from './MemberRepresentationAccess';
+import type {MembershipType} from './MembershipType';
 
 export interface MemberRepresentation {
   id?: string;

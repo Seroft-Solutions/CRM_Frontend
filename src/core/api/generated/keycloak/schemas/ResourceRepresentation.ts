@@ -5,9 +5,9 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ScopeRepresentation } from './ScopeRepresentation';
-import type { ResourceOwnerRepresentation } from './ResourceOwnerRepresentation';
-import type { ResourceRepresentationAttributes } from './ResourceRepresentationAttributes';
+import type {ScopeRepresentation} from './ScopeRepresentation';
+import type {ResourceOwnerRepresentation} from './ResourceOwnerRepresentation';
+import type {ResourceRepresentationAttributes} from './ResourceRepresentationAttributes';
 
 export interface ResourceRepresentation {
   _id?: string;

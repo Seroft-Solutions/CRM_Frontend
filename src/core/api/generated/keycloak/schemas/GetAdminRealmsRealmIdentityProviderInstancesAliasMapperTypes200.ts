@@ -5,6 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { IdentityProviderMapperTypeRepresentation } from './IdentityProviderMapperTypeRepresentation';
+import type {IdentityProviderMapperTypeRepresentation} from './IdentityProviderMapperTypeRepresentation';
 
 export type GetAdminRealmsRealmIdentityProviderInstancesAliasMapperTypes200 = {[key: string]: IdentityProviderMapperTypeRepresentation};
