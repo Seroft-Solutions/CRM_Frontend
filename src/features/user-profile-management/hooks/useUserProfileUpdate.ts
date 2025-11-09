@@ -98,10 +98,8 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
       try {
         await updateUserBasicInfo(data);
 
-        // Refresh the session to reflect updated user information
         await updateSession();
 
-        // Refresh profile data
         await refreshProfile();
 
         toast.success('Profile updated successfully');

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +19,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { CallTypeDTO } from '@/core/api/generated/spring/schemas/CallTypeDTO';
 import { CallTypeDTOStatus } from '@/core/api/generated/spring/schemas/CallTypeDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +82,11 @@ export function CallTypeTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: CallTypeTableRowProps) {
-  // Get current status display info
   const currentStatus = callType.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -127,8 +117,7 @@ export function CallTypeTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = callType[column.accessor as keyof typeof callType];
 
                 if (column.id === 'name') {
@@ -165,8 +154,7 @@ export function CallTypeTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 return null;
               })()}
         </TableCell>

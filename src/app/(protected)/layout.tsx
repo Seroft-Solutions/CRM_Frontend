@@ -28,7 +28,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
                   orientation="vertical"
                   className="mr-2 data-[orientation=vertical]:h-4"
                 />
-                  <DynamicBreadcrumbs />
+                <DynamicBreadcrumbs />
               </div>
               {/*<div className="flex-1 flex justify-center px-4">*/}
               {/*  <TenantHeader />*/}

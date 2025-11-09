@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * UserProfile form validation schema with user-friendly messages
  */
@@ -55,7 +48,6 @@ export const userProfileFormSchema = z.object(userProfileFormSchemaFields);
 
 export type UserProfileFormValues = z.infer<typeof userProfileFormSchema>;
 
-// Individual field schemas for granular validation
 export const userProfileFieldSchemas = {
   keycloakId: z
     .string()
@@ -97,7 +89,6 @@ export const userProfileFieldSchemas = {
   channelType: z.number().optional(),
 };
 
-// Step-specific validation schemas
 export const userProfileStepSchemas = {
   basic: z.object({
     keycloakId: userProfileFieldSchemas.keycloakId,
@@ -116,7 +107,6 @@ export const userProfileStepSchemas = {
   review: userProfileFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = userProfileStepSchemas[stepId as keyof typeof userProfileStepSchemas];
   if (!schema) return { success: true, data };

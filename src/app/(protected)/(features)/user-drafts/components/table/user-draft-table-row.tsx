@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -37,7 +30,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { UserDraftDTO } from '@/core/api/generated/spring/schemas/UserDraftDTO';
 import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
 
-// Entity route mapping for draft restoration
 const ENTITY_ROUTES: Record<string, string> = {
   Call: '/calls/new',
   Customer: '/customers/new',
@@ -50,10 +42,8 @@ const ENTITY_ROUTES: Record<string, string> = {
   CallStatus: '/call-statuses/new',
   ChannelType: '/channel-types/new',
   UserProfile: '/user-profiles/new',
-  // Add more entity types as needed
 };
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -119,13 +109,11 @@ export function UserDraftTableRow({
 }: UserDraftTableRowProps) {
   const router = useRouter();
 
-  // Get current status display info
   const currentStatus = userDraft.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Handle restore draft functionality
   const handleRestoreDraft = () => {
     if (!userDraft.type) {
       toast.error('Cannot restore draft: Entity type not found');
@@ -141,7 +129,6 @@ export function UserDraftTableRow({
     try {
       const payload = JSON.parse(userDraft.jsonPayload || '{}');
 
-      // Store draft restoration info for the target form
       const restorationData = {
         draftId: userDraft.id,
         entityType: userDraft.type,
@@ -152,7 +139,6 @@ export function UserDraftTableRow({
 
       sessionStorage.setItem('draftToRestore', JSON.stringify(restorationData));
 
-      // Navigate to the form
       router.push(route);
       toast.success(`Navigating to restore ${userDraft.type} draft...`);
     } catch (error) {
@@ -161,7 +147,6 @@ export function UserDraftTableRow({
     }
   };
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -192,8 +177,7 @@ export function UserDraftTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = userDraft[column.accessor as keyof typeof userDraft];
 
                 if (column.id === 'keycloakUserId') {
@@ -233,7 +217,6 @@ export function UserDraftTableRow({
                     const payload = JSON.parse(userDraft.jsonPayload || '{}');
                     const leadNo = payload.formData?.leadNo;
                     if (leadNo && typeof leadNo === 'string') {
-                      // Format leadNo for better display (ABC12345 -> ABC-12345)
                       if (leadNo.length === 8 && /^[A-Z]{3}\d{5}$/.test(leadNo)) {
                         return `${leadNo.substring(0, 3)}-${leadNo.substring(3)}`;
                       }
@@ -260,8 +243,7 @@ export function UserDraftTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 return null;
               })()}
         </TableCell>

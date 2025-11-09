@@ -1,9 +1,7 @@
-"use client";
-// Micro-component for displaying product image thumbnails in table views
-// Used in: Product table to show primary product image
+'use client';
 
-import Image from "next/image";
-import { ImageIcon } from "lucide-react";
+import Image from 'next/image';
+import { ImageIcon } from 'lucide-react';
 
 interface ProductImageThumbnailProps {
   /** CDN URL of the primary image */
@@ -33,9 +31,9 @@ interface ProductImageThumbnailProps {
  */
 export function ProductImageThumbnail({
   imageUrl,
-  productName = "Product",
+  productName = 'Product',
   size = 40,
-  className = "",
+  className = '',
 }: ProductImageThumbnailProps) {
   if (!imageUrl) {
     return (
@@ -60,7 +58,7 @@ export function ProductImageThumbnail({
         fill
         className="object-cover"
         sizes={`${size}px`}
-        unoptimized // Gumlet CDN already optimizes images
+        unoptimized
       />
     </div>
   );

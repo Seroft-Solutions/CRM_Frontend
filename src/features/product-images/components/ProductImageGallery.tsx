@@ -1,16 +1,10 @@
-"use client";
+'use client';
 
-import { ProductImageDTO } from "../hooks/useProductImages";
-import { Trash2, MoveUp, MoveDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ProductImageDTO } from '../hooks/useProductImages';
+import { Trash2, MoveUp, MoveDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface ProductImageGalleryProps {
   images: ProductImageDTO[];
@@ -33,18 +27,15 @@ export function ProductImageGallery({
     );
   }
 
-  const moveImage = (index: number, direction: "up" | "down") => {
+  const moveImage = (index: number, direction: 'up' | 'down') => {
     const newImages = [...images];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
     if (targetIndex < 0 || targetIndex >= newImages.length) return;
 
     [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
 
-    // Filter out undefined IDs and ensure type safety
-    const imageIds = newImages
-      .map((img) => img.id)
-      .filter((id): id is number => id !== undefined);
+    const imageIds = newImages.map((img) => img.id).filter((id): id is number => id !== undefined);
     onReorder?.(imageIds);
   };
 
@@ -56,7 +47,9 @@ export function ProductImageGallery({
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm truncate">{image.originalFilename}</CardTitle>
               {image.isPrimary && (
-                <Badge variant="default" className="ml-2">Primary</Badge>
+                <Badge variant="default" className="ml-2">
+                  Primary
+                </Badge>
               )}
             </div>
           </CardHeader>
@@ -80,7 +73,9 @@ export function ProductImageGallery({
               <p>{image.format?.toUpperCase()}</p>
               <p>{(image.fileSizeBytes / 1024).toFixed(1)} KB</p>
               {image.width && image.height && (
-                <p>{image.width} × {image.height}</p>
+                <p>
+                  {image.width} × {image.height}
+                </p>
               )}
             </div>
             <div className="flex gap-2 w-full">
@@ -89,7 +84,7 @@ export function ProductImageGallery({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => moveImage(index, "up")}
+                    onClick={() => moveImage(index, 'up')}
                     disabled={index === 0}
                     className="flex-1"
                   >
@@ -98,7 +93,7 @@ export function ProductImageGallery({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => moveImage(index, "down")}
+                    onClick={() => moveImage(index, 'down')}
                     disabled={index === images.length - 1}
                     className="flex-1"
                   >

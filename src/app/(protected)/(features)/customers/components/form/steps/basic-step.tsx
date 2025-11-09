@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React from 'react';
@@ -59,16 +52,13 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
           )}
         />
 
-
         {/* Email Field */}
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium">
-                Email
-              </FormLabel>
+              <FormLabel className="text-sm font-medium">Email</FormLabel>
               <FormControl>
                 <Input
                   type="email"

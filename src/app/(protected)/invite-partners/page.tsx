@@ -30,7 +30,6 @@ import { ChannelTypeSelector } from '@/features/user-profile-management/componen
 import { useUserProfilePersistence } from '@/features/user-profile-management/hooks/useUserProfilePersistence';
 import { PermissionGuard } from '@/core/auth';
 
-// Form validation schema
 const invitePartnerSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   firstName: z
@@ -71,7 +70,6 @@ export default function InvitePartnersPage() {
     failed: [],
   });
 
-  // Form setup with validation
   const form = useForm<InvitePartnerFormData>({
     resolver: zodResolver(invitePartnerSchema),
     defaultValues: {
@@ -80,10 +78,9 @@ export default function InvitePartnersPage() {
       lastName: '',
       channelTypeId: undefined,
     },
-    mode: 'onChange', // Enable real-time validation
+    mode: 'onChange',
   });
 
-  // Watch form values to enable/disable button
   const watchedValues = form.watch();
   const isFormValid =
     form.formState.isValid &&
@@ -122,7 +119,6 @@ export default function InvitePartnersPage() {
 
       const result = await response.json();
 
-      // Create user profile with channel type if invitation was successful
       if (result.userId) {
         await createProfileForPartner(
           result.userId,
@@ -133,7 +129,6 @@ export default function InvitePartnersPage() {
         );
       }
 
-      // Show appropriate success message based on email type
       const emailMessage =
         result.emailType === 'password_reset'
           ? 'Partner invited successfully. Password setup email sent.'
@@ -145,7 +140,6 @@ export default function InvitePartnersPage() {
 
       toast.success(`${emailMessage}${groupMessage}`);
 
-      // Clear form and update status
       form.reset();
       setInvitationStatus((prev) => ({
         ...prev,
@@ -194,12 +188,16 @@ export default function InvitePartnersPage() {
             {/* How it works info */}
             <Alert className="border-green-200 bg-green-50">
               <Building2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800 text-sm font-semibold">How Partner Invitations Work</AlertTitle>
+              <AlertTitle className="text-green-800 text-sm font-semibold">
+                How Partner Invitations Work
+              </AlertTitle>
               <AlertDescription className="text-green-700 text-xs">
                 <div className="space-y-1.5 mt-2">
                   <p>• Invited partner receives an email with account setup instructions</p>
                   <p>• They'll set their password and be assigned to the Business Partners group</p>
-                  <p>• Channel type information is stored for commission and relationship management</p>
+                  <p>
+                    • Channel type information is stored for commission and relationship management
+                  </p>
                   <p>• You can view all partners in the Business Partners page</p>
                 </div>
               </AlertDescription>
@@ -212,7 +210,9 @@ export default function InvitePartnersPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-base">Recent Invitations</CardTitle>
-                      <CardDescription className="text-xs">Status of your invitations</CardDescription>
+                      <CardDescription className="text-xs">
+                        Status of your invitations
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -232,9 +232,7 @@ export default function InvitePartnersPage() {
                             <p className="text-xs font-medium text-green-900 truncate">
                               {invitation.firstName} {invitation.lastName}
                             </p>
-                            <p className="text-xs text-green-700 truncate">
-                              {invitation.email}
-                            </p>
+                            <p className="text-xs text-green-700 truncate">{invitation.email}</p>
                           </div>
                           <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs ml-2 shrink-0">
                             Sent
@@ -256,9 +254,13 @@ export default function InvitePartnersPage() {
                             <span className="text-xs font-medium text-red-900 truncate">
                               {failure.invitation.firstName} {failure.invitation.lastName}
                             </span>
-                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">Failed</Badge>
+                            <Badge variant="destructive" className="text-xs ml-2 shrink-0">
+                              Failed
+                            </Badge>
                           </div>
-                          <p className="text-xs text-red-700 truncate">{failure.invitation.email}</p>
+                          <p className="text-xs text-red-700 truncate">
+                            {failure.invitation.email}
+                          </p>
                           <p className="text-xs text-red-600 mt-1">{failure.error}</p>
                         </div>
                       ))}
@@ -301,132 +303,132 @@ export default function InvitePartnersPage() {
                   Invite Business Partner
                 </CardTitle>
                 <CardDescription>
-                  Send an invitation to a business partner to join your organization. They'll receive an
-                  email with setup instructions.
+                  Send an invitation to a business partner to join your organization. They'll
+                  receive an email with setup instructions.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-w-2xl">
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name *</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="John"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Doe"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    {/* Name Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="John"
+                                disabled={isInviting || isCreatingProfile}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Doe"
+                                disabled={isInviting || isCreatingProfile}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                {/* Email and Channel Type in one row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address *</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="john.doe@example.com"
-                            disabled={isInviting || isCreatingProfile}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    {/* Email and Channel Type in one row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="john.doe@example.com"
+                                disabled={isInviting || isCreatingProfile}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="channelTypeId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Channel Type *</FormLabel>
-                        <FormControl>
-                          <ChannelTypeSelector
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={isInviting || isCreatingProfile}
-                            hideAddButton={true}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                      <FormField
+                        control={form.control}
+                        name="channelTypeId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Channel Type *</FormLabel>
+                            <FormControl>
+                              <ChannelTypeSelector
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={isInviting || isCreatingProfile}
+                                hideAddButton={true}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || isInviting || isCreatingProfile}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 gap-2"
-                  >
-                    {isInviting || isCreatingProfile ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Send Invitation
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClear}
-                    disabled={isInviting || isCreatingProfile}
-                  >
-                    Clear
-                  </Button>
-                </div>
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="submit"
+                        disabled={!isFormValid || isInviting || isCreatingProfile}
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 gap-2"
+                      >
+                        {isInviting || isCreatingProfile ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4" />
+                            Send Invitation
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleClear}
+                        disabled={isInviting || isCreatingProfile}
+                      >
+                        Clear
+                      </Button>
+                    </div>
 
-                {/* Helper text */}
-                <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
-                  <p className="text-blue-800">
-                    💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once all
-                    required fields (* fields) are properly filled.
-                  </p>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                    {/* Helper text */}
+                    <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <p className="text-blue-800">
+                        💡 <strong>Tip:</strong> The "Send Invitation" button will be enabled once
+                        all required fields (* fields) are properly filled.
+                      </p>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

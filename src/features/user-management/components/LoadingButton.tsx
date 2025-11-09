@@ -57,7 +57,6 @@ export function LoadingButton({
   );
 }
 
-// Predefined button variants for common actions
 export function SendInviteButton({
   isLoading,
   ...props

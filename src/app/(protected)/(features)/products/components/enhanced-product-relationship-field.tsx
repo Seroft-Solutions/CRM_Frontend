@@ -32,8 +32,8 @@ interface EnhancedProductRelationshipFieldProps {
   canCreate?: boolean;
   createPermission?: string;
   onProductCreated?: (productId: number) => void;
-  customFilters?: Record<string, any>; // Add support for custom filters
-  buttonClassName?: string; // Custom class for the + button
+  customFilters?: Record<string, any>;
+  buttonClassName?: string;
 }
 
 export function EnhancedProductRelationshipField({
@@ -53,10 +53,8 @@ export function EnhancedProductRelationshipField({
   const [searchQuery, setSearchQuery] = useState('');
   const [deferredSearchQuery, setDeferredSearchQuery] = useState('');
 
-  // Detect if Business Partner mode is active based on button className
   const isBusinessPartner = buttonClassName.includes('bp-primary');
 
-  // Debounced search query (300ms delay)
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
@@ -64,7 +62,6 @@ export function EnhancedProductRelationshipField({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch all products for initial load with custom filters and proper parameters
   const {
     data: productsResponse,
     isLoading: isLoadingProducts,
@@ -72,15 +69,11 @@ export function EnhancedProductRelationshipField({
   } = useGetAllProducts({
     page: 0,
     size: 50,
-    ...customFilters, // Apply custom filters
+    ...customFilters,
   });
 
-  // Search products when user types with custom filters and proper parameters
-  const {
-    data: searchResponse,
-    isLoading: isSearching,
-  } = useSearchProducts(
-    { 
+  const { data: searchResponse, isLoading: isSearching } = useSearchProducts(
+    {
       query: deferredSearchQuery,
       page: 0,
       size: 50,
@@ -93,7 +86,6 @@ export function EnhancedProductRelationshipField({
     }
   );
 
-  // Get available options (either all products or search results) from paginated responses
   const availableOptions: ProductDTO[] = React.useMemo(() => {
     if (deferredSearchQuery.length > 1 && searchResponse) {
       return searchResponse;
@@ -101,17 +93,15 @@ export function EnhancedProductRelationshipField({
     return productsResponse || [];
   }, [productsResponse, searchResponse, deferredSearchQuery]);
 
-  // Get selected options for display with proper typing - handle newly created items
   const getSelectedOptions = (): ProductDTO[] => {
     if (!multiple || !Array.isArray(value)) return [];
-    
+
     const selected: ProductDTO[] = [];
-    value.forEach(id => {
-      const option = availableOptions.find(opt => opt.id === id);
+    value.forEach((id) => {
+      const option = availableOptions.find((opt) => opt.id === id);
       if (option) {
         selected.push(option);
       } else {
-        // Handle newly created product that might not be in options yet
         selected.push({
           id: id,
           name: `Product #${id}`,
@@ -123,15 +113,13 @@ export function EnhancedProductRelationshipField({
     return selected;
   };
 
-  // Get single selected option for display with proper typing - handle newly created items  
   const getSelectedOption = (): ProductDTO | null => {
     if (multiple || Array.isArray(value)) return null;
-    
-    const option = availableOptions.find(opt => opt.id === value);
+
+    const option = availableOptions.find((opt) => opt.id === value);
     if (option) {
       return option;
     } else if (value) {
-      // Handle newly created product that might not be in options yet
       return {
         id: value,
         name: `Product #${value}`,
@@ -142,16 +130,13 @@ export function EnhancedProductRelationshipField({
     return null;
   };
 
-  // Handle option selection
   const handleSelect = (optionId: number) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
       if (currentValues.includes(optionId)) {
-        // Remove from selection
         const newValues = currentValues.filter((id) => id !== optionId);
         onValueChange(newValues.length > 0 ? newValues : undefined);
       } else {
-        // Add to selection
         onValueChange([...currentValues, optionId]);
       }
     } else {
@@ -160,7 +145,6 @@ export function EnhancedProductRelationshipField({
     }
   };
 
-  // Handle removing selected option
   const handleRemove = (optionId: number) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
@@ -171,34 +155,26 @@ export function EnhancedProductRelationshipField({
     }
   };
 
-  // Handle successful product creation with proper typing
   const handleProductCreated = useCallback(
     (product: ProductDTO) => {
       const productId = product.id!;
-      
-      // Immediately update the available options with the new product
-      // This ensures the new product appears in the list before refetch completes
-      
-      // Auto-select the newly created product
+
       if (multiple) {
         const currentValues = Array.isArray(value) ? value : [];
         onValueChange([...currentValues, productId]);
       } else {
         onValueChange(productId);
       }
-      
-      // Refetch products to include the new one (this will update the full list)
+
       setTimeout(() => {
         refetchProducts();
       }, 100);
-      
-      // Call the optional callback
+
       onProductCreated?.(productId);
     },
     [value, multiple, onValueChange, onProductCreated, refetchProducts]
   );
 
-  // Get display text with loading state feedback
   const getDisplayText = () => {
     if (multiple) {
       const selected = getSelectedOptions();
@@ -326,14 +302,15 @@ export function EnhancedProductRelationshipField({
               isBusinessPartner={isBusinessPartner}
               trigger={
                 <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(
-                      "shrink-0",
-                      buttonClassName || "bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
-                    )}
-                    title="Create new product"
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    'shrink-0',
+                    buttonClassName ||
+                      'bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500'
+                  )}
+                  title="Create new product"
                 >
                   <Plus className="h-4 w-4 text-white" />
                 </Button>

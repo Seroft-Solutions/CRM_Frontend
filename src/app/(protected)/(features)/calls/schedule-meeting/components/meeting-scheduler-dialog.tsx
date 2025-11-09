@@ -20,7 +20,7 @@ interface MeetingSchedulerDialogProps {
   open: boolean;
   onOpenChangeAction: (open: boolean) => void;
   customerId?: number;
-  assignedUserId?: number | string; // Can be either number ID or string UUID
+  assignedUserId?: number | string;
   callId?: number;
   onMeetingScheduledAction?: (meetingData: any) => void;
   onError?: (error: any) => void;
@@ -56,7 +56,6 @@ export function MeetingSchedulerDialog({
     const url = `/calls/schedule-meeting?${params.toString()}`;
     console.log('Navigating to:', url);
 
-    // Navigate after a brief delay to show loading state
     setTimeout(() => {
       router.push(url);
     }, 500);

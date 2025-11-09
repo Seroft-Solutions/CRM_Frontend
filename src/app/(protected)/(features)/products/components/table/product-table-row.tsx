@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
@@ -27,7 +20,6 @@ import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO'
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -91,13 +83,11 @@ export function ProductTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
-  // Get current status display info
   const currentStatus = product.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -116,175 +106,172 @@ export function ProductTableRow({
         <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
       </TableCell>
       {visibleColumns.map((column, index) => {
-        // Determine column-specific styling
         const getColumnClassName = () => {
-          // Special handling for image column
           if (column.id === 'image') {
             return 'px-2 sm:px-3 py-2 w-[60px]';
           }
-          // Special handling for long text columns
+
           if (['description', 'remark'].includes(column.id)) {
             return 'px-2 sm:px-3 py-2 max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis';
           }
-          // Special handling for name column
+
           if (column.id === 'name') {
             return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
           }
-          // Special handling for numeric columns
+
           if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
             return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
           }
-          // Special handling for ID
+
           if (column.id === 'id') {
             return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
           }
-          // Default: auto-width with no wrapping
+
           return 'px-2 sm:px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis';
         };
 
         return (
-        <TableCell
-          key={column.id}
-          className={getColumnClassName()}
-          title={column.type === 'field' && ['description', 'remark', 'name'].includes(column.id)
-            ? String(product[column.accessor as keyof typeof product] || '')
-            : undefined}
-        >
-          {column.type === 'field'
-            ? // Render field column
-              (() => {
-                const field = product[column.accessor as keyof typeof product];
+          <TableCell
+            key={column.id}
+            className={getColumnClassName()}
+            title={
+              column.type === 'field' && ['description', 'remark', 'name'].includes(column.id)
+                ? String(product[column.accessor as keyof typeof product] || '')
+                : undefined
+            }
+          >
+            {column.type === 'field'
+              ? (() => {
+                  const field = product[column.accessor as keyof typeof product];
 
-                if (column.id === 'name') {
+                  if (column.id === 'name') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'code') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'description') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'basePrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'minPrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'maxPrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'remark') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'status') {
+                    return getStatusBadge(field as string);
+                  }
+
+                  if (column.id === 'createdBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'createdDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'lastModifiedBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'lastModifiedDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'image') {
+                    const images = (product as any).images as any[] | undefined;
+                    const primaryImageUrl =
+                      images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
+                      images?.[0]?.cdnUrl ||
+                      null;
+
+                    return (
+                      <ProductImageThumbnail
+                        imageUrl={primaryImageUrl}
+                        productName={product.name || 'Product'}
+                        size={40}
+                      />
+                    );
+                  }
+
                   return field?.toString() || '';
-                }
+                })()
+              : (() => {
+                  if (column.id === 'category') {
+                    const cellKey = `${product.id}-category`;
+                    return (
+                      <RelationshipCell
+                        entityId={product.id || 0}
+                        relationshipName="category"
+                        currentValue={product.category}
+                        options={
+                          relationshipConfigs.find((config) => config.name === 'category')
+                            ?.options || []
+                        }
+                        displayField="name"
+                        onUpdate={(entityId, relationshipName, newValue) =>
+                          onRelationshipUpdate
+                            ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                            : Promise.resolve()
+                        }
+                        isEditable={
+                          relationshipConfigs.find((config) => config.name === 'category')
+                            ?.isEditable || false
+                        }
+                        isLoading={updatingCells.has(cellKey)}
+                        className="min-w-[150px]"
+                        relatedEntityRoute="product-categories"
+                        showNavigationIcon={true}
+                      />
+                    );
+                  }
 
-                if (column.id === 'code') {
-                  return field?.toString() || '';
-                }
+                  if (column.id === 'subCategory') {
+                    const cellKey = `${product.id}-subCategory`;
+                    return (
+                      <RelationshipCell
+                        entityId={product.id || 0}
+                        relationshipName="subCategory"
+                        currentValue={product.subCategory}
+                        options={
+                          relationshipConfigs.find((config) => config.name === 'subCategory')
+                            ?.options || []
+                        }
+                        displayField="name"
+                        onUpdate={(entityId, relationshipName, newValue) =>
+                          onRelationshipUpdate
+                            ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                            : Promise.resolve()
+                        }
+                        isEditable={
+                          relationshipConfigs.find((config) => config.name === 'subCategory')
+                            ?.isEditable || false
+                        }
+                        isLoading={updatingCells.has(cellKey)}
+                        className="min-w-[150px]"
+                        relatedEntityRoute="product-sub-categories"
+                        showNavigationIcon={true}
+                      />
+                    );
+                  }
 
-                if (column.id === 'description') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'basePrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'minPrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'maxPrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'remark') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'status') {
-                  return getStatusBadge(field as string);
-                }
-
-                if (column.id === 'createdBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'lastModifiedBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'image') {
-                  // ProductDTO may not have images field in generated types yet
-                  // Access it as optional property until backend regenerates OpenAPI spec
-                  const images = (product as any).images as any[] | undefined;
-                  const primaryImageUrl = images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
-                                          images?.[0]?.cdnUrl ||
-                                          null;
-
-                  return (
-                    <ProductImageThumbnail
-                      imageUrl={primaryImageUrl}
-                      productName={product.name || 'Product'}
-                      size={40}
-                    />
-                  );
-                }
-
-                return field?.toString() || '';
-              })()
-            : // Render relationship column
-              (() => {
-                if (column.id === 'category') {
-                  const cellKey = `${product.id}-category`;
-                  return (
-                    <RelationshipCell
-                      entityId={product.id || 0}
-                      relationshipName="category"
-                      currentValue={product.category}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'category')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'category')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="product-categories"
-                      showNavigationIcon={true}
-                    />
-                  );
-                }
-
-                if (column.id === 'subCategory') {
-                  const cellKey = `${product.id}-subCategory`;
-                  return (
-                    <RelationshipCell
-                      entityId={product.id || 0}
-                      relationshipName="subCategory"
-                      currentValue={product.subCategory}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'subCategory')
-                          ?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'subCategory')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="product-sub-categories"
-                      showNavigationIcon={true}
-                    />
-                  );
-                }
-
-                return null;
-              })()}
-        </TableCell>
+                  return null;
+                })()}
+          </TableCell>
         );
       })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">

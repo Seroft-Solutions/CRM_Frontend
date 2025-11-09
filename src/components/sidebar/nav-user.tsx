@@ -29,19 +29,17 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const { status } = useSession();
 
-  // Use the enhanced account hook with optimized caching and error handling
   const { user, isLoading, error } = useAccount({
-    refetchInBackground: true, // Keep user data fresh in background
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchInBackground: true,
+    refetchOnWindowFocus: true,
   });
 
-  // Handle logout with proper cleanup
   const handleLogout = async () => {
     try {
       await logoutWithCleanup();
     } catch (error) {
       console.error('Logout failed:', error);
-      // Fallback to server action if client-side logout fails
+
       const form = document.createElement('form');
       form.action = '/api/auth/signout';
       form.method = 'POST';
@@ -67,12 +65,10 @@ export function NavUser() {
     );
   }
 
-  // Handle account API error gracefully
   if (error) {
     console.warn('Failed to fetch account data:', error);
   }
 
-  // Fallback user data if account API fails but session exists
   const displayUser = user || {
     name: 'User',
     email: '',

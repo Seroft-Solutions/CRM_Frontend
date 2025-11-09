@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import { useState } from 'react';
@@ -62,35 +55,29 @@ export function StateSearchAndFilters({
 }: StateSearchAndFiltersProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  // Count active filters for badge
   const activeFiltersCount =
     Object.values(filters).filter((v) => v !== undefined && v !== '').length +
     (searchTerm ? 1 : 0) +
     (dateRange.from || dateRange.to ? 1 : 0);
 
-  // Remove specific filter
   const removeFilter = (filterKey: string) => {
     const newFilters = { ...filters };
     delete newFilters[filterKey];
     onFilterChange(filterKey, undefined);
   };
 
-  // Get filter display value
   const getFilterDisplayValue = (key: string, value: any) => {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (value instanceof Date) return format(value, 'MMM dd, yyyy');
     return String(value);
   };
 
-  // Get filter display name
   const getFilterDisplayName = (key: string) => {
-    // Handle relationship filters
     if (key.includes('.')) {
       const [relationName] = key.split('.');
       return relationName;
     }
 
-    // Handle regular field filters
     if (key === 'createdDate') {
       return 'createdDate';
     }

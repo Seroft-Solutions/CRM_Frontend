@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React from 'react';
@@ -62,9 +55,7 @@ interface CallReviewStepProps {
   entity?: any;
 }
 
-// Relationship value resolver component
 function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
-  // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
       case 'priority':
@@ -195,7 +186,6 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   return resolveRelationshipDisplay();
 }
 
-// Component to display relationship values
 function RelationshipDisplayValue({
   value,
   useGetAllHook,
@@ -211,17 +201,16 @@ function RelationshipDisplayValue({
   multiple: boolean;
   label: string;
 }) {
-  // Fetch all data to resolve display values
   const { data: allData } = useGetAllHook(
     {
       page: 0,
-      size: 20, // Use backend's default page size
-      sort: [`${displayField},asc`], // Sort by display field in ascending order
+      size: 20,
+      sort: [`${displayField},asc`],
     },
     {
       query: {
-        enabled: !!value, // Only fetch if there's a value to resolve
-        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        enabled: !!value,
+        staleTime: 5 * 60 * 1000,
       },
     }
   );
@@ -234,7 +223,6 @@ function RelationshipDisplayValue({
     return <span className="text-muted-foreground italic">Loading...</span>;
   }
 
-  // Extract data array from response (handle both direct array and paginated response)
   const dataArray = Array.isArray(allData)
     ? allData
     : allData.content
@@ -257,7 +245,6 @@ function RelationshipDisplayValue({
     const displayValues = selectedItems.map((item: any) => item[displayField]);
     return displayValues.join(', ');
   } else {
-    // Single value
     const selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
 
     return selectedItem ? (
@@ -299,7 +286,6 @@ export function CallReviewStep({ form, config, actions, entity }: CallReviewStep
                 if (!fieldConfig) return null;
                 const value = form.getValues(fieldName);
 
-                // Format value for display
                 const displayValue = (() => {
                   if (!value) return <span className="text-muted-foreground italic">Not set</span>;
 

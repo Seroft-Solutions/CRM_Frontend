@@ -39,12 +39,10 @@ import type {
   OrganizationWithInvitations,
 } from '@/features/user-management/types';
 
-// Helper function to generate invitation ID
 function generateInvitationId(): string {
   return `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Helper function to store invitation metadata in user attributes
 function createInvitationUserAttributes(invitation: PendingInvitation) {
   return {
     invitation_id: invitation.id,
@@ -58,7 +56,6 @@ function createInvitationUserAttributes(invitation: PendingInvitation) {
   };
 }
 
-// Helper function to ensure Users group assignment and remove Admins group if present
 async function ensureProperGroupAssignment(
   realm: string,
   userId: string
@@ -70,22 +67,18 @@ async function ensureProperGroupAssignment(
   let adminsGroupRemoved = false;
 
   try {
-    // Get all groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
     const usersGroup = allGroups.find((g) => g.name === 'Users');
     const adminsGroup = allGroups.find((g) => g.name === 'Admins');
 
-    // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
 
-    // Assign Users group if not already assigned
     if (usersGroup && !userGroups.some((g) => g.id === usersGroup.id)) {
       await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, usersGroup.id!);
       usersGroupAssigned = true;
       console.log('Assigned Users group to user:', userId);
     }
 
-    // Remove Admins group if present
     if (adminsGroup && userGroups.some((g) => g.id === adminsGroup.id)) {
       await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
       adminsGroupRemoved = true;
@@ -98,7 +91,6 @@ async function ensureProperGroupAssignment(
   return { usersGroupAssigned, adminsGroupRemoved };
 }
 
-// Helper function to ensure organization owner gets both Users and Admins group assignment
 async function ensureOrganizationOwnerGroupAssignment(
   realm: string,
   userId: string
@@ -110,22 +102,18 @@ async function ensureOrganizationOwnerGroupAssignment(
   let adminsGroupAssigned = false;
 
   try {
-    // Get all groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
     const usersGroup = allGroups.find((g) => g.name === 'Users');
     const adminsGroup = allGroups.find((g) => g.name === 'Admins');
 
-    // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
 
-    // Assign Users group if not already assigned
     if (usersGroup && !userGroups.some((g) => g.id === usersGroup.id)) {
       await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, usersGroup.id!);
       usersGroupAssigned = true;
       console.log('Assigned Users group to organization owner:', userId);
     }
 
-    // Assign Admins group if not already assigned (this is the key difference)
     if (adminsGroup && !userGroups.some((g) => g.id === adminsGroup.id)) {
       await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
       adminsGroupAssigned = true;
@@ -138,7 +126,6 @@ async function ensureOrganizationOwnerGroupAssignment(
   return { usersGroupAssigned, adminsGroupAssigned };
 }
 
-// Helper function to parse invitation metadata from user attributes
 function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInvitation | null {
   const attributes = user.attributes;
   if (!attributes?.invitation_id?.[0]) return null;
@@ -157,7 +144,7 @@ function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInv
       expiresAt: attributes.invitation_expires_at?.[0]
         ? parseInt(attributes.invitation_expires_at[0])
         : undefined,
-      selectedGroups: selectedGroupIds.map((id: string) => ({ id, name: '', path: '' })), // Will be populated later
+      selectedGroups: selectedGroupIds.map((id: string) => ({ id, name: '', path: '' })),
       invitationNote: attributes.invitation_note?.[0] || '',
     };
   } catch (error) {
@@ -166,12 +153,11 @@ function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInv
   }
 }
 
-// Helper function to set default password for newly created users
 async function setDefaultPassword(realm: string, userId: string, password: string = 'temp#123') {
   const credential: CredentialRepresentation = {
     type: 'password',
     value: password,
-    temporary: true, // User will be required to change password
+    temporary: true,
   };
 
   try {
@@ -189,18 +175,15 @@ export async function GET(
   { params }: { params: Promise<{ organizationId: string }> }
 ) {
   try {
-    // Verify permissions using the unified service
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
-    // Await params in Next.js 15+
     const { organizationId } = await params;
     const { searchParams } = new URL(request.url);
     const realm = keycloakService.getRealm();
 
-    // Extract and type-safe query parameters
     const queryParams: GetAdminRealmsRealmOrganizationsOrgIdMembersParams = {};
 
     if (searchParams.has('search')) {
@@ -213,20 +196,17 @@ export async function GET(
       queryParams.max = parseInt(searchParams.get('max') || '20', 10);
     }
 
-    // Get organization members using generated endpoint
     const members: MemberRepresentation[] = await getAdminRealmsRealmOrganizationsOrgIdMembers(
       realm,
       organizationId,
       queryParams
     );
 
-    // ENHANCED: Parallel processing to fetch groups and roles for all members
     const enhancedMembers = await Promise.all(
       members.map(async (member) => {
         try {
           if (!member.id) return member;
 
-          // Fetch groups and roles in parallel for each member
           const [memberGroups, memberRoles] = await Promise.all([
             getAdminRealmsRealmUsersUserIdGroups(realm, member.id).catch((error) => {
               console.warn(`Failed to fetch groups for user ${member.id}:`, error);
@@ -238,13 +218,12 @@ export async function GET(
             }),
           ]);
 
-          // Add groups and roles to member object
           return {
             ...member,
-            groups: memberGroups.map((g) => g.name).filter(Boolean), // Array of group names
-            groupDetails: memberGroups, // Full group objects
-            realmRoles: memberRoles.map((r) => r.name).filter(Boolean), // Array of role names
-            roleDetails: memberRoles, // Full role objects
+            groups: memberGroups.map((g) => g.name).filter(Boolean),
+            groupDetails: memberGroups,
+            realmRoles: memberRoles.map((r) => r.name).filter(Boolean),
+            roleDetails: memberRoles,
           };
         } catch (error) {
           console.warn(`Failed to enhance member data for ${member.id}:`, error);
@@ -253,12 +232,10 @@ export async function GET(
       })
     );
 
-    // FILTER: Exclude business partner users
     const filteredMembers = enhancedMembers.filter((member) => {
       const memberGroups = member.groups || [];
       const memberRoles = member.realmRoles || [];
 
-      // Check for business partner indicators
       const hasBusinessPartnerGroup = memberGroups.some((groupName) => {
         const groupLower = groupName?.toLowerCase() || '';
         return (
@@ -300,7 +277,6 @@ export async function GET(
   } catch (error: any) {
     console.error('Organization members API error:', error);
 
-    // Enhanced error handling with proper status codes
     if (error.status === 404) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
@@ -324,29 +300,24 @@ export async function POST(
   { params }: { params: Promise<{ organizationId: string }> }
 ) {
   try {
-    // Verify permissions using the unified service
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
-    // Await params in Next.js 15+
     const { organizationId } = await params;
     const body = await request.json();
     const realm = keycloakService.getRealm();
-console.log("Route Checking avdul,",body);
-    // Check if this is a simple member addition (for organization setup)
+    console.log('Route Checking avdul,', body);
+
     if (body.userId && !body.email) {
       console.log('Simple member addition:', { organizationId, userId: body.userId });
 
-      // Add existing user to organization using generated endpoint
       await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, body.userId);
 
-      // Check if this is organization owner setup (indicated by isOrganizationOwner flag)
       if (body.isOrganizationOwner) {
         console.log('Setting up organization owner with admin privileges:', body.userId);
 
-        // Use the organization owner group assignment function
         const ownerGroupResult = await ensureOrganizationOwnerGroupAssignment(realm, body.userId);
 
         return NextResponse.json({
@@ -372,7 +343,6 @@ console.log("Route Checking avdul,",body);
       });
     }
 
-    // Full invitation flow (existing functionality)
     const inviteData: UserInvitationWithGroups = {
       email: body.email,
       firstName: body.firstName,
@@ -383,57 +353,47 @@ console.log("Route Checking avdul,",body);
       invitationNote: body.invitationNote,
       redirectUri: body.redirectUri,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
-      sendPasswordReset: body.sendPasswordReset !== false, // Only send password reset if explicitly requested
+      sendPasswordReset: body.sendPasswordReset !== false,
     };
 
-    // Validate required fields
     if (!inviteData.email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteData.email)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    // Fetch organization details for multi-tenant email templates
     const organization = await getAdminRealmsRealmOrganizationsOrgId(realm, organizationId);
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
-    // CLEAR SCENARIO-BASED FLOW
     let userId: string;
     let invitationId: string;
     let groupManagement = { usersGroupAssigned: false, adminsGroupRemoved: false };
 
     try {
-      // Check if user exists
       const existingUsers = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
         exact: true,
       });
 
       if (existingUsers.length > 0) {
-        // SCENARIO 2: User exists - add to org then invite
         userId = existingUsers[0].id!;
         console.log('Found existing user:', userId);
 
-        // First add user to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing user to organization');
 
-        // Ensure proper group assignment for existing user too
         const groupResult = await ensureProperGroupAssignment(realm, userId);
         groupManagement.usersGroupAssigned =
           groupResult.usersGroupAssigned || groupManagement.usersGroupAssigned;
         groupManagement.adminsGroupRemoved =
           groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // Send appropriate email - prioritize invitation over password reset
         if (inviteData.sendPasswordReset !== false) {
-          // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -441,7 +401,7 @@ console.log("Route Checking avdul,",body);
               ['UPDATE_PASSWORD'],
               {
                 client_id: 'web_app',
-                lifespan: 43200, // 12 hours
+                lifespan: 43200,
                 redirect_uri: inviteData.redirectUri,
               }
             );
@@ -450,7 +410,6 @@ console.log("Route Checking avdul,",body);
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
           }
         } else {
-          // Default: Send organization invitation email
           const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -464,9 +423,6 @@ console.log("Route Checking avdul,",body);
           console.log('Sent organization invitation email to existing user');
         }
       } else {
-        // SCENARIO 1: User doesn't exist - create then invite
-
-        // 1. Create User first
         const newUser: UserRepresentation = {
           username: inviteData.email,
           email: inviteData.email,
@@ -476,21 +432,20 @@ console.log("Route Checking avdul,",body);
           emailVerified: false,
           attributes: {
             organization: [organizationId],
-            // Organization details for multi-tenant email templates
+
             organization_id: [organizationId],
             organization_name: [organization.name || 'Organization'],
             organization_display_name: [
               organization.displayName || organization.name || 'Organization',
             ],
-            // User type classification
-            user_type: ['user'], // Set user_type for regular users
+
+            user_type: ['user'],
           },
         };
 
         await postAdminRealmsRealmUsers(realm, newUser);
         console.log('Created new user');
 
-        // Get created user ID
         const createdUsers = await getAdminRealmsRealmUsers(realm, {
           email: inviteData.email,
           exact: true,
@@ -503,26 +458,21 @@ console.log("Route Checking avdul,",body);
         userId = createdUsers[0].id!;
         console.log('Found created user ID:', userId);
 
-        // 2. Set default password for the new user
         const passwordSet = await setDefaultPassword(realm, userId);
         if (!passwordSet) {
           console.warn('Failed to set default password, but continuing with user creation');
         }
 
-        // 3. Ensure proper group assignment (Users group + remove Admins if present)
         const groupResult1 = await ensureProperGroupAssignment(realm, userId);
         groupManagement.usersGroupAssigned =
           groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
         groupManagement.adminsGroupRemoved =
           groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // 4. Add User to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added user to organization');
 
-        // 5. Send appropriate email - prioritize invitation over password reset
         if (inviteData.sendPasswordReset !== false) {
-          // Only send UPDATE_PASSWORD email if explicitly requested
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -530,17 +480,15 @@ console.log("Route Checking avdul,",body);
               ['UPDATE_PASSWORD'],
               {
                 client_id: 'web_app',
-                lifespan: 43200, // 12 hours
-                redirect_uri: body.redirectUri, // Optional redirect after password setup
+                lifespan: 43200,
+                redirect_uri: body.redirectUri,
               }
             );
             console.log('Sent UPDATE_PASSWORD email to new user (explicitly requested)');
           } catch (emailError) {
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
-            // Continue with invitation flow even if email fails
           }
         } else if (inviteData.sendWelcomeEmail !== false) {
-          // Default: Send organization invitation email
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -555,7 +503,6 @@ console.log("Route Checking avdul,",body);
         }
       }
 
-      // Common: Assign selected groups
       if (inviteData.selectedGroups && inviteData.selectedGroups.length > 0) {
         for (const group of inviteData.selectedGroups) {
           try {
@@ -566,8 +513,6 @@ console.log("Route Checking avdul,",body);
           }
         }
 
-        // After assigning selected groups, ensure Users group is still present
-        // and remove Admins group if it was accidentally selected
         const groupResult2 = await ensureProperGroupAssignment(realm, userId);
         groupManagement.usersGroupAssigned =
           groupResult2.usersGroupAssigned || groupManagement.usersGroupAssigned;
@@ -575,7 +520,6 @@ console.log("Route Checking avdul,",body);
           groupResult2.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
       }
 
-      // Add invitation metadata for tracking
       const invitationId = generateInvitationId();
       const pendingInvitation: PendingInvitation = {
         id: invitationId,
@@ -593,7 +537,6 @@ console.log("Route Checking avdul,",body);
 
       const invitationAttributes = createInvitationUserAttributes(pendingInvitation);
 
-      // Update user with invitation metadata
       const currentUser = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
         exact: true,
@@ -654,7 +597,6 @@ console.log("Route Checking avdul,",body);
         : null,
     });
 
-    // Enhanced error handling with specific status codes
     if (error.status === 404) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }

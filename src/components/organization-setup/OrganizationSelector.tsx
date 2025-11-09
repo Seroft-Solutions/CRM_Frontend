@@ -20,11 +20,9 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
     if (selectedOrgId) {
       const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
 
-      // Update localStorage
       localStorage.setItem('selectedOrganizationId', selectedOrgId);
       localStorage.setItem('selectedOrganizationName', selectedOrg?.name || '');
 
-      // Update cookies for SSR consistency
       document.cookie = `selectedOrganizationId=${selectedOrgId}; path=/; max-age=31536000; SameSite=Lax`;
       document.cookie = `selectedOrganizationName=${encodeURIComponent(selectedOrg?.name || '')}; path=/; max-age=31536000; SameSite=Lax`;
 

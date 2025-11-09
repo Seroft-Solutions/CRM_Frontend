@@ -32,8 +32,8 @@ interface EnhancedCustomerRelationshipFieldProps {
   canCreate?: boolean;
   createPermission?: string;
   onCustomerCreated?: (customerId: number) => void;
-  customFilters?: Record<string, any>; // Add support for custom filters
-  buttonClassName?: string; // Custom class for the + button
+  customFilters?: Record<string, any>;
+  buttonClassName?: string;
 }
 
 export function EnhancedCustomerRelationshipField({
@@ -54,10 +54,8 @@ export function EnhancedCustomerRelationshipField({
   const [deferredSearchQuery, setDeferredSearchQuery] = useState('');
   const [createdCustomers, setCreatedCustomers] = useState<CustomerDTO[]>([]);
 
-  // Detect if Business Partner mode is active based on button className
   const isBusinessPartner = buttonClassName.includes('bp-primary');
 
-  // Debounced search query (300ms delay)
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
@@ -65,7 +63,6 @@ export function EnhancedCustomerRelationshipField({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch all customers for initial load with custom filters and proper parameters
   const {
     data: customersResponse,
     isLoading: isLoadingCustomers,
@@ -73,15 +70,11 @@ export function EnhancedCustomerRelationshipField({
   } = useGetAllCustomers({
     page: 0,
     size: 50,
-    ...customFilters, // Apply custom filters
+    ...customFilters,
   });
 
-  // Search customers when user types with custom filters and proper parameters
-  const {
-    data: searchResponse,
-    isLoading: isSearching,
-  } = useSearchCustomers(
-    { 
+  const { data: searchResponse, isLoading: isSearching } = useSearchCustomers(
+    {
       query: deferredSearchQuery,
       page: 0,
       size: 50,
@@ -94,7 +87,6 @@ export function EnhancedCustomerRelationshipField({
     }
   );
 
-  // Get available options (either all customers or search results) from paginated responses
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
     const baseOptions =
       deferredSearchQuery.length > 1 && searchResponse ? searchResponse : customersResponse || [];
@@ -110,17 +102,15 @@ export function EnhancedCustomerRelationshipField({
     return merged;
   }, [customersResponse, searchResponse, deferredSearchQuery, createdCustomers]);
 
-  // Get selected options for display with proper typing - handle newly created items
   const getSelectedOptions = (): CustomerDTO[] => {
     if (!multiple || !Array.isArray(value)) return [];
-    
+
     const selected: CustomerDTO[] = [];
-    value.forEach(id => {
-      const option = availableOptions.find(opt => opt.id === id);
+    value.forEach((id) => {
+      const option = availableOptions.find((opt) => opt.id === id);
       if (option) {
         selected.push(option);
       } else {
-        // Handle newly created customer that might not be in options yet
         selected.push({
           id: id,
           customerBusinessName: `Customer #${id}`,
@@ -136,15 +126,13 @@ export function EnhancedCustomerRelationshipField({
     return selected;
   };
 
-  // Get single selected option for display with proper typing - handle newly created items  
   const getSelectedOption = (): CustomerDTO | null => {
     if (multiple || Array.isArray(value)) return null;
-    
-    const option = availableOptions.find(opt => opt.id === value);
+
+    const option = availableOptions.find((opt) => opt.id === value);
     if (option) {
       return option;
     } else if (value) {
-      // Handle newly created customer that might not be in options yet
       return {
         id: value,
         customerBusinessName: `Customer #${value}`,
@@ -159,16 +147,13 @@ export function EnhancedCustomerRelationshipField({
     return null;
   };
 
-  // Handle option selection
   const handleSelect = (optionId: number) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
       if (currentValues.includes(optionId)) {
-        // Remove from selection
         const newValues = currentValues.filter((id) => id !== optionId);
         onValueChange(newValues.length > 0 ? newValues : undefined);
       } else {
-        // Add to selection
         onValueChange([...currentValues, optionId]);
       }
     } else {
@@ -177,7 +162,6 @@ export function EnhancedCustomerRelationshipField({
     }
   };
 
-  // Handle removing selected option
   const handleRemove = (optionId: number) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
@@ -188,7 +172,6 @@ export function EnhancedCustomerRelationshipField({
     }
   };
 
-  // Handle successful customer creation with proper typing
   const handleCustomerCreated = useCallback(
     (customer: CustomerDTO) => {
       const customerId = customer.id!;
@@ -200,7 +183,6 @@ export function EnhancedCustomerRelationshipField({
         return [customer, ...prev];
       });
 
-      // Auto-select the newly created customer
       if (multiple) {
         const currentValues = Array.isArray(value) ? value : [];
         onValueChange([...currentValues, customerId]);
@@ -209,7 +191,6 @@ export function EnhancedCustomerRelationshipField({
         setOpen(false);
       }
 
-      // Refetch customers to include the new one (this will update the full list)
       setTimeout(() => {
         refetchCustomers();
       }, 100);
@@ -217,13 +198,11 @@ export function EnhancedCustomerRelationshipField({
       setSearchQuery('');
       setDeferredSearchQuery('');
 
-      // Call the optional callback
       onCustomerCreated?.(customerId);
     },
     [value, multiple, onValueChange, onCustomerCreated, refetchCustomers]
   );
 
-  // Get display text with loading state feedback
   const getDisplayText = () => {
     if (multiple) {
       const selected = getSelectedOptions();
@@ -348,14 +327,15 @@ export function EnhancedCustomerRelationshipField({
               isBusinessPartner={isBusinessPartner}
               trigger={
                 <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(
-                      "shrink-0",
-                      buttonClassName || "bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500"
-                    )}
-                    title="Create new customer"
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    'shrink-0',
+                    buttonClassName ||
+                      'bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500'
+                  )}
+                  title="Create new customer"
                 >
                   <Plus className="h-4 w-4 text-white" />
                 </Button>

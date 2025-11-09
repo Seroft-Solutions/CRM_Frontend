@@ -1,11 +1,18 @@
 import { useState, useMemo } from 'react';
-import { useGetAllImportHistories, useCountImportHistories } from '../api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
+import {
+  useGetAllImportHistories,
+  useCountImportHistories,
+} from '../api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 
 export const useImportHistoryPagination = () => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: importHistories, isLoading, isError } = useGetAllImportHistories({
+  const {
+    data: importHistories,
+    isLoading,
+    isError,
+  } = useGetAllImportHistories({
     page,
     size: pageSize,
   });

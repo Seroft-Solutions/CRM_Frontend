@@ -21,11 +21,10 @@ export class KeycloakService extends BaseService {
   private adminTokenExpiry: number = 0;
   private adminTokenRefreshPromise: Promise<string | null> | null = null;
 
-  // FIXED: Add circuit breaker and retry control
   private failureCount: number = 0;
   private lastFailureTime: number = 0;
   private maxFailures: number = 3;
-  private circuitOpenDuration: number = 30000; // 30 seconds
+  private circuitOpenDuration: number = 30000;
   private requestAttempts: Map<string, number> = new Map();
   private maxRetryAttempts: number = 3;
 
@@ -38,21 +37,18 @@ export class KeycloakService extends BaseService {
    * FIXED: Get admin access token with circuit breaker and retry limits
    */
   private async getAdminAccessToken(): Promise<string | null> {
-    // FIXED: Check circuit breaker
     if (this.isCircuitOpen()) {
       throw new Error('Authentication service temporarily unavailable due to repeated failures');
     }
 
-    // Return cached token if still valid (with 30s buffer)
     if (this.adminAccessToken && Date.now() < this.adminTokenExpiry - 30000) {
       if (KEYCLOAK_DEBUG.enabled) {
         console.log('Using cached admin token');
       }
-      this.resetFailureCount(); // Reset on success
+      this.resetFailureCount();
       return this.adminAccessToken;
     }
 
-    // If there's already a refresh in progress, wait for it
     if (this.adminTokenRefreshPromise) {
       if (KEYCLOAK_DEBUG.enabled) {
         console.log('Waiting for existing admin token refresh');
@@ -60,12 +56,11 @@ export class KeycloakService extends BaseService {
       return this.adminTokenRefreshPromise;
     }
 
-    // Start a new token refresh with retry logic
     this.adminTokenRefreshPromise = this.refreshAdminTokenWithRetry();
     try {
       const token = await this.adminTokenRefreshPromise;
       this.adminTokenRefreshPromise = null;
-      this.resetFailureCount(); // Reset on success
+      this.resetFailureCount();
       return token;
     } catch (error) {
       this.adminTokenRefreshPromise = null;
@@ -83,7 +78,6 @@ export class KeycloakService extends BaseService {
       if (timeSinceLastFailure < this.circuitOpenDuration) {
         return true;
       } else {
-        // Try to close circuit after timeout
         this.resetFailureCount();
       }
     }
@@ -120,15 +114,13 @@ export class KeycloakService extends BaseService {
           );
         }
 
-        // Don't retry on certain errors
         if (error.status === 401 || error.status === 403 || error.message.includes('credentials')) {
           console.error('Authentication credentials invalid, not retrying');
           throw error;
         }
 
-        // Exponential backoff for retries
         if (attempt < this.maxRetryAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10s delay
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
@@ -148,7 +140,6 @@ export class KeycloakService extends BaseService {
       throw new Error('Admin credentials not configured');
     }
 
-    // Try admin-cli client first
     try {
       return await this.tryAdminAuth('admin-cli', null, credentials);
     } catch (adminCliError) {
@@ -156,7 +147,6 @@ export class KeycloakService extends BaseService {
         console.warn('admin-cli authentication failed, trying fallback client:', adminCliError);
       }
 
-      // Try fallback client
       try {
         return await this.tryAdminAuth(
           credentials.fallbackClientId,
@@ -199,14 +189,12 @@ export class KeycloakService extends BaseService {
       password: credentials.adminPassword,
     });
 
-    // Add client secret if available
     if (clientSecret) {
       body.append('client_secret', clientSecret);
     }
 
-    // FIXED: Add timeout and abort controller
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
       const response = await fetch(tokenUrl, {
@@ -303,12 +291,10 @@ export class KeycloakService extends BaseService {
    * FIXED: Override the base auth token method with request deduplication
    */
   protected async getAuthTokenFromSession(): Promise<string | null> {
-    // For admin operations, use admin token
     if (this.isAdminOperation()) {
       return this.getAdminAccessToken();
     }
 
-    // For regular operations, use base implementation
     return super.getAuthTokenFromSession();
   }
 
@@ -329,10 +315,9 @@ export class KeycloakService extends BaseService {
 
     try {
       const result = await operation();
-      this.requestAttempts.delete(requestKey); // Clear on success
+      this.requestAttempts.delete(requestKey);
       return result;
     } catch (error) {
-      // Clear attempts on certain errors to prevent permanent blocks
       if ((error as any).status === 401 || (error as any).status === 403) {
         this.requestAttempts.delete(requestKey);
       }
@@ -429,7 +414,6 @@ export class KeycloakService extends BaseService {
    */
   async verifyAdminPermissions(): Promise<{ authorized: boolean; error?: string }> {
     try {
-      // In a server environment, we can access the session
       if (typeof window === 'undefined') {
         const { auth } = await import('@/auth');
         const session = await auth();
@@ -440,7 +424,6 @@ export class KeycloakService extends BaseService {
 
         return { authorized: true };
       } else {
-        // Client-side - redirect to proper auth check
         return { authorized: false, error: 'Admin verification must be done server-side' };
       }
     } catch (error) {
@@ -456,9 +439,9 @@ export class KeycloakService extends BaseService {
     this.adminAccessToken = null;
     this.adminTokenExpiry = 0;
     this.adminTokenRefreshPromise = null;
-    this.requestAttempts.clear(); // Clear retry attempts
-    this.resetFailureCount(); // Reset circuit breaker
-    this.invalidateTokenCache(); // Also invalidate base token cache
+    this.requestAttempts.clear();
+    this.resetFailureCount();
+    this.invalidateTokenCache();
   }
 
   /**
@@ -466,7 +449,6 @@ export class KeycloakService extends BaseService {
    */
   async checkAdminConnectivity(): Promise<boolean> {
     try {
-      // Try to get realm info as a simple connectivity test
       await this.adminGet('/');
       return true;
     } catch (error) {
@@ -518,8 +500,6 @@ export class KeycloakService extends BaseService {
   }
 }
 
-// Export singleton instance
 export const keycloakService = new KeycloakService();
 
-// Export types for better TypeScript support
 export type { KeycloakService };

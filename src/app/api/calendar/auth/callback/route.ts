@@ -16,18 +16,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // In a real implementation, this would:
-    // 1. Exchange the authorization code for access and refresh tokens
-    // 2. Store the tokens in the database associated with the user
-    // 3. Verify the state parameter for security
-
     console.log('Processing calendar auth callback:', {
       userEmail,
       state,
       codeLength: code.length,
     });
 
-    // Mock successful response
     const result = {
       success: true,
       message: `Calendar access authorized for ${userEmail}`,

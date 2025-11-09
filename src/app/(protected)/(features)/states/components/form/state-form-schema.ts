@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * State form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const stateFormSchema = z.object(stateFormSchemaFields);
 
 export type StateFormValues = z.infer<typeof stateFormSchema>;
 
-// Individual field schemas for granular validation
 export const stateFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -43,7 +35,6 @@ export const stateFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const stateStepSchemas = {
   basic: z.object({
     name: stateFieldSchemas.name,
@@ -58,7 +49,6 @@ export const stateStepSchemas = {
   review: stateFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = stateStepSchemas[stepId as keyof typeof stateStepSchemas];
   if (!schema) return { success: true, data };

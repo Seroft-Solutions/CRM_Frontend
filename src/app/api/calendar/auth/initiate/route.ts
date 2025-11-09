@@ -13,13 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email is required' }, { status: 400 });
     }
 
-    // Generate a state parameter for security
     const state = `${userEmail}-${organizationId || 'no-org'}-${Date.now()}`;
 
-    // In a real implementation, this would generate the actual Google OAuth URL
-    // For now, return a mock URL
     const authUrl =
-      `https://accounts.google.com/oauth2/auth?` +
+      `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=your-client-id&` +
       `redirect_uri=${encodeURIComponent('http://localhost:3000/api/calendar/auth/callback')}&` +
       `response_type=code&` +

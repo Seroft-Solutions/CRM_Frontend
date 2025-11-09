@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React from 'react';
@@ -34,5 +27,4 @@ export function SourceFormWrapper({ id }: SourceFormProps) {
   return <SourceForm id={id} />;
 }
 
-// Export with original name for backward compatibility
 export { SourceFormWrapper as SourceForm };

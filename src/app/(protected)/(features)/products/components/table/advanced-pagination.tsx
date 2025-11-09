@@ -1,11 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-
 'use client';
 
 import React from 'react';
@@ -27,16 +19,13 @@ import {
 import { Input } from '@/components/ui/input';
 
 interface AdvancedPaginationProps {
-  // Current pagination state
   currentPage: number;
   pageSize: number;
   totalItems: number;
 
-  // Pagination controls
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
 
-  // Customization options
   pageSizeOptions?: number[];
   showPageSizeSelector?: boolean;
   showPageInput?: boolean;
@@ -44,10 +33,8 @@ interface AdvancedPaginationProps {
   showFirstLastButtons?: boolean;
   maxPageButtons?: number;
 
-  // Loading states
   isLoading?: boolean;
 
-  // Responsive settings
   compact?: boolean;
 }
 
@@ -70,7 +57,6 @@ export function AdvancedPagination({
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
-  // Calculate which page numbers to show
   const getPageNumbers = () => {
     if (totalPages <= maxPageButtons) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -80,14 +66,12 @@ export function AdvancedPagination({
     let start = Math.max(1, currentPage - halfWindow);
     let end = Math.min(totalPages, start + maxPageButtons - 1);
 
-    // Adjust start if we're near the end
     if (end - start + 1 < maxPageButtons) {
       start = Math.max(1, end - maxPageButtons + 1);
     }
 
     const pages = [];
 
-    // Always show first page
     if (start > 1) {
       pages.push(1);
       if (start > 2) {
@@ -95,12 +79,10 @@ export function AdvancedPagination({
       }
     }
 
-    // Show middle pages
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    // Always show last page
     if (end < totalPages) {
       if (end < totalPages - 1) {
         pages.push('ellipsis-end');
@@ -320,7 +302,6 @@ export function AdvancedPagination({
   );
 }
 
-// Export a hook for easy pagination state management
 export function usePaginationState(initialPage: number = 1, initialPageSize: number = 10) {
   const [page, setPage] = React.useState(initialPage);
   const [pageSize, setPageSize] = React.useState(initialPageSize);
@@ -331,7 +312,7 @@ export function usePaginationState(initialPage: number = 1, initialPageSize: num
 
   const handlePageSizeChange = React.useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
-    setPage(1); // Reset to first page when page size changes
+    setPage(1);
   }, []);
 
   const resetPagination = React.useCallback(() => {
