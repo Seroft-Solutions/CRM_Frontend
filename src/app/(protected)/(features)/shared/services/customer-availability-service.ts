@@ -3,7 +3,7 @@
  * This creates actual database records for UserAvailability and AvailableTimeSlot
  */
 
-import { AvailabilityService, } from '@/app/(protected)/(features)/shared/services/availability-service';
+import { AvailabilityService } from '@/app/(protected)/(features)/shared/services/availability-service';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
