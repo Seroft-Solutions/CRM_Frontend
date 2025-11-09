@@ -1,25 +1,27 @@
 import {
-  ArrowDownToLine,
-  Box,
-  Briefcase,
   LayoutDashboard,
-  type LucideIcon,
-  PhoneCall,
-  Settings,
   Users,
+  Briefcase,
+  Settings,
+  PhoneCall,
+  Box,
+  ArrowDownToLine,
 } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
+// Define the type for sidebar items
 export type SidebarItem = {
   key: string;
   label: string;
   path?: string;
   icon?: LucideIcon;
   isActive?: boolean;
-  expandable?: boolean;
-  requiredPermission?: string;
+  expandable?: boolean; // Controls if section is expanded by default
+  requiredPermission?: string; // Permission required to view this item
   children?: SidebarItem[];
 };
 
+// Main sidebar items
 export const sidebarItems: SidebarItem[] = [
   {
     key: 'dashboard',
@@ -53,36 +55,30 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Track Lead',
         path: '/calls',
         requiredPermission: 'call:sidebar',
-        children: [
-          {
-            key: 'addCallTracking',
-            label: 'Add Lead',
-            path: '/calls/new',
-            requiredPermission: 'call:create',
-          },
-          {
-            key: 'callTracking',
-            label: 'Track Lead',
-            path: '/calls',
-            requiredPermission: 'call:sidebar',
-          },
-          {
-            key: 'callImport',
-            label: 'Import Leads',
-            path: '/calls/import',
-          },
-          {
-            key: 'callImportHistory',
-            label: 'Import History',
-            path: '/calls/import/results',
-          },
-        ],
       },
       {
-        key: 'userManagement',
-        label: 'My Staff',
-        icon: Users,
-        expandable: false,
+        key: 'callImport',
+        label: 'Import Leads',
+        path: '/calls/import',
+      },
+      {
+        key: 'callImportHistory',
+        label: 'Import History',
+        path: '/calls/import/results',
+      },
+    ],
+  },
+  {
+    key: 'userManagement',
+    label: 'My Staff',
+    icon: Users,
+    expandable: false,
+    requiredPermission: 'manage:users',
+    children: [
+      {
+        key: 'organizationUsers',
+        label: 'Organization Users',
+        path: '/user-management/organization-users',
         requiredPermission: 'manage:users',
       },
       {
@@ -111,20 +107,6 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Manage Partners',
         path: '/business-partners',
         requiredPermission: 'partner:read',
-        children: [
-          {
-            key: 'invitePartner',
-            label: 'Invite Partner',
-            path: '/invite-partners',
-            requiredPermission: 'partner:create',
-          },
-          {
-            key: 'managePartner',
-            label: 'Manage Partners',
-            path: '/business-partners',
-            requiredPermission: 'partner:read',
-          },
-        ],
       },
     ],
   },
