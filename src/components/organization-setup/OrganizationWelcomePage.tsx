@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import { Coffee, CheckCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle, Coffee, Sparkles } from 'lucide-react';
 
 const MotionContainer = dynamic(
   () => import('@/features/home/components/motion-components').then((mod) => mod.MotionContainer),

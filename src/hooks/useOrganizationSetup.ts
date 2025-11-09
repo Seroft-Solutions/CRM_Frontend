@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
-  OrganizationSetupService,
   type OrganizationSetupRequest,
   type OrganizationSetupResult,
+  OrganizationSetupService,
 } from '@/services/organization/organization-setup.service';
 import { OrganizationSyncService } from '@/services/organization/organization-sync.service';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';

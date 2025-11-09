@@ -1,4 +1,4 @@
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig } from './form-types';
 
 /**
  * Configuration for ChannelType form

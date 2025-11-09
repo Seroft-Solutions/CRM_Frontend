@@ -1,13 +1,13 @@
 import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Settings,
-  PhoneCall,
-  Box,
   ArrowDownToLine,
+  Box,
+  Briefcase,
+  LayoutDashboard,
+  type LucideIcon,
+  PhoneCall,
+  Settings,
+  Users,
 } from 'lucide-react';
-import { type LucideIcon } from 'lucide-react';
 
 export type SidebarItem = {
   key: string;

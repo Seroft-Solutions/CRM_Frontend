@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Phone, Users, TrendingUp, UserCheck, Activity, Target } from 'lucide-react';
+import { Activity, Phone, TrendingUp, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { QuickActionTiles } from './QuickActionTiles';
 

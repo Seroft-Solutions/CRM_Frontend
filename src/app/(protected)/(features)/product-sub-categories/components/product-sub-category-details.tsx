@@ -4,11 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import {
-  productSubCategoryToast,
   handleProductSubCategoryError,
+  productSubCategoryToast,
 } from './product-sub-category-toast';
 import { productSubCategoryFormConfig } from './form/product-sub-category-form-config';
 import { Button } from '@/components/ui/button';
@@ -24,8 +23,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetProductSubCategory,
   useDeleteProductSubCategory,
+  useGetProductSubCategory,
 } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';

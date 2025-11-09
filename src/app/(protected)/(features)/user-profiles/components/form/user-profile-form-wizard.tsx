@@ -2,21 +2,20 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfileFormProvider, useEntityForm } from './user-profile-form-provider';
+import { useEntityForm, UserProfileFormProvider } from './user-profile-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateUserProfile,
-  useUpdateUserProfile,
   useGetUserProfile,
+  useUpdateUserProfile,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-import { userProfileToast, handleUserProfileError } from '../user-profile-toast';
+import { handleUserProfileError, userProfileToast } from '../user-profile-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 

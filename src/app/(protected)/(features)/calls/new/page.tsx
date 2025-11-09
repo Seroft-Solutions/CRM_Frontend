@@ -1,8 +1,8 @@
 'use client';
 
 import { CallForm } from '../components/call-form';
-import { PermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
-import { useState, useEffect } from 'react';
+import { PermissionGuard, useAccount } from '@/core/auth';
+import { useEffect, useState } from 'react';
 
 export default function CreateCallPage() {
   const [isBusinessPartner, setIsBusinessPartner] = useState(false);

@@ -5,13 +5,13 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
+  useBulkUserOperations,
+  useOrganizationContext,
   useOrganizationUsers,
   useRemoveUser,
-  useOrganizationContext,
-  useBulkUserOperations,
   useUserManagementRefresh,
 } from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
@@ -34,10 +34,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   Dialog,
@@ -68,31 +64,27 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Users,
-  Plus,
-  Search,
-  MoreHorizontal,
-  UserX,
-  Settings,
-  Mail,
-  Shield,
-  UserCheck,
-  Filter,
   AlertCircle,
   Building2,
-  RefreshCw,
-  X,
   CheckCircle,
-  XCircle,
   Clock,
+  Mail,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
   SlidersHorizontal,
+  Users,
+  UserX,
+  X,
+  XCircle,
 } from 'lucide-react';
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
 import { ClickableRolesBadge } from '@/features/user-management/components/ClickableRolesBadge';
 import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
-import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
   className?: string;

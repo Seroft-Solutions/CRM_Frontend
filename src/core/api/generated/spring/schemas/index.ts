@@ -6,8 +6,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-import {ImportCallsFromExcelBody} from "@/core/api/generated/spring";
-
 export * from './AdminUserDTO';
 export * from './ApiStatus200';
 export * from './AreaDTO';

@@ -9,7 +9,6 @@ import { CallBasicStep } from './basic-step';
 import { CallClassificationStep } from './classification-step';
 import { CallBusinessStep } from './business-step';
 import { CallChannelStep } from './channel-step';
-import { CallAssignmentStep } from './assignment-step';
 import { CallRemarksStep } from './remarks-step';
 import { CallReviewStep } from './review-step';
 

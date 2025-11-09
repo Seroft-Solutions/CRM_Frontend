@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { productToast, handleProductError } from './product-toast';
+import { Pencil } from 'lucide-react';
+import { handleProductError, productToast } from './product-toast';
 import { productFormConfig } from './form/product-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetProduct,
   useDeleteProduct,
+  useGetProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';

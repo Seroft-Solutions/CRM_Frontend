@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { userAvailabilityToast, handleUserAvailabilityError } from './user-availability-toast';
+import { Pencil, Trash2 } from 'lucide-react';
+import { handleUserAvailabilityError, userAvailabilityToast } from './user-availability-toast';
 import { userAvailabilityFormConfig } from './form/user-availability-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetUserAvailability,
   useDeleteUserAvailability,
+  useGetUserAvailability,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
 import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';

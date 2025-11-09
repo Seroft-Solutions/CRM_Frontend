@@ -2,8 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './user-availability-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -25,12 +32,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllUserProfiles,
-  useSearchUserProfiles,
-  useCountUserProfiles,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

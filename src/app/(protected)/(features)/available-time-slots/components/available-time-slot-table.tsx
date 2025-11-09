@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { availableTimeSlotToast, handleAvailableTimeSlotError } from './available-time-slot-toast';
 import { AvailableTimeSlotDTOStatus } from '@/core/api/generated/spring/schemas/AvailableTimeSlotDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountAvailableTimeSlots,
+  useGetAllAvailableTimeSlots,
+  useSearchAvailableTimeSlots,
+  useUpdateAvailableTimeSlot,
+} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { AvailableTimeSlotTableHeader } from './table/available-time-slot-table-header';
+import { AvailableTimeSlotTableRow } from './table/available-time-slot-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,23 +96,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllAvailableTimeSlots,
-  useDeleteAvailableTimeSlot,
-  useCountAvailableTimeSlots,
-  useUpdateAvailableTimeSlot,
-  usePartialUpdateAvailableTimeSlot,
-  useSearchAvailableTimeSlots,
-} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
-
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-
-import { AvailableTimeSlotSearchAndFilters } from './table/available-time-slot-search-filters';
-import { AvailableTimeSlotTableHeader } from './table/available-time-slot-table-header';
-import { AvailableTimeSlotTableRow } from './table/available-time-slot-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

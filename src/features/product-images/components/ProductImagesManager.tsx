@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import {
-  ProductImageUploader,
   ProductImageGallery,
-  useProductImages,
+  ProductImageUploader,
   useDeleteImage,
+  useProductImages,
   useReorderImages,
 } from '@/features/product-images';
 import { Button } from '@/components/ui/button';

@@ -4,9 +4,7 @@ import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 import { UserDraftTable } from './components/user-draft-table';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
   title: 'UserDrafts',

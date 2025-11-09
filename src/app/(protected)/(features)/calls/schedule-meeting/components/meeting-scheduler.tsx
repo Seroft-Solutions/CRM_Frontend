@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import Calendar20 from '@/components/calendar-20';
-import { Plus, X, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, X } from 'lucide-react';
 import { format } from 'date-fns';
 import './meeting-scheduler.css';
 import { MeetingErrorDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-error-dialog';
@@ -34,12 +34,12 @@ import {
 } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 import { useGetAllUserAvailabilities } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
+import type { MeetingDTO } from '@/core/api/generated/spring/schemas';
 import {
-  MeetingDTOMeetingType,
   MeetingDTOMeetingStatus,
+  MeetingDTOMeetingType,
   MeetingReminderDTOReminderType,
 } from '@/core/api/generated/spring/schemas';
-import type { MeetingDTO } from '@/core/api/generated/spring/schemas';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingDetails {

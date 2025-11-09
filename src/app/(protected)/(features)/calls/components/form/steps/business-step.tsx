@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RelationshipRenderer } from '../relationship-renderer';
 import { EnhancedCustomerRelationshipField } from '@/app/(protected)/(features)/customers/components/enhanced-customer-relationship-field';
 import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
-import { useUserAuthorities } from '@/core/auth';
-import { useAccount } from '@/core/auth';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 import { useEntityForm } from '@/app/(protected)/(features)/calls/components/form/call-form-provider';
 import { UserCheck } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';

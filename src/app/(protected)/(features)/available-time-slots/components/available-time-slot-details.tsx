@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil, Trash2 } from 'lucide-react';
 import { availableTimeSlotToast, handleAvailableTimeSlotError } from './available-time-slot-toast';
 import { availableTimeSlotFormConfig } from './form/available-time-slot-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetAvailableTimeSlot,
   useDeleteAvailableTimeSlot,
+  useGetAvailableTimeSlot,
 } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 
 import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';

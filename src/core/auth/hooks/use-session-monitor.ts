@@ -6,7 +6,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useActivityTracker } from '@/core/auth/hooks/use-activity-tracker';
 import { AUTH_CACHE_CONFIG } from '@/core/auth/config/cache-config';
 import type { SessionMonitorOptions } from '../types';

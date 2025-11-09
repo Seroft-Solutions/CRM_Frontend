@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { sourceToast, handleSourceError } from './source-toast';
+import { Pencil } from 'lucide-react';
+import { handleSourceError, sourceToast } from './source-toast';
 import { sourceFormConfig } from './form/source-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetSource,
   useDeleteSource,
+  useGetSource,
 } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
 
 interface SourceDetailsProps {

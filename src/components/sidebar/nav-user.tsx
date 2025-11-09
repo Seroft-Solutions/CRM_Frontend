@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { BadgeCheck, Bell, Building, ChevronsUpDown, LogOut, User, Shield } from 'lucide-react';
+import { Bell, ChevronsUpDown, LogOut, Shield, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { logoutAction } from '@/core/auth';
 import { logoutWithCleanup } from '@/core/auth';
 import { useAccount } from '@/core/auth/hooks/use-account';
 
@@ -23,7 +22,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
 
 export function NavUser() {
   const { isMobile } = useSidebar();

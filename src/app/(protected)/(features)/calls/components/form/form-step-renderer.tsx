@@ -2,8 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +21,15 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './call-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
+import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
+import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
+import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
+import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -25,52 +40,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllPriorities,
-  useSearchPriorities,
-  useCountPriorities,
-} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
-import {
-  useGetAllCallTypes,
-  useSearchCallTypes,
-  useCountCallTypes,
-} from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
-import {
-  useGetAllSubCallTypes,
-  useSearchSubCallTypes,
-  useCountSubCallTypes,
-} from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
-import {
-  useGetAllSources,
-  useSearchSources,
-  useCountSources,
-} from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
-import {
-  useGetAllCustomers,
-  useSearchCustomers,
-  useCountCustomers,
-} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import {
-  useGetAllProducts,
-  useSearchProducts,
-  useCountProducts,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import {
-  useGetAllChannelTypes,
-  useSearchChannelTypes,
-  useCountChannelTypes,
-} from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
-import {
-  useGetAllUserProfiles,
-  useSearchUserProfiles,
-  useCountUserProfiles,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-import {
-  useGetAllCallStatuses,
-  useSearchCallStatuses,
-  useCountCallStatuses,
-} from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

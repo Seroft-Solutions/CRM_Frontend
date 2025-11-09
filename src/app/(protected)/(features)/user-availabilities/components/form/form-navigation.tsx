@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEntityForm } from './user-availability-form-provider';
 

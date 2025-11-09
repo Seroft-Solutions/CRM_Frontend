@@ -1,29 +1,29 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import {
-  Plus,
   Edit2,
-  Trash2,
-  MessageSquare,
-  Search,
   Filter,
+  MessageSquare,
+  MoreHorizontal,
+  Plus,
+  Search,
   SortAsc,
   SortDesc,
-  MoreHorizontal,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
   SortingState,
-  ColumnFiltersState,
+  useReactTable,
 } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
@@ -65,13 +65,12 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 
 import {
-  useGetAllCallRemarks,
   useCreateCallRemark,
-  useUpdateCallRemark,
   useDeleteCallRemark,
+  useGetAllCallRemarks,
+  useUpdateCallRemark,
 } from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
 import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRemarkDTO';
 

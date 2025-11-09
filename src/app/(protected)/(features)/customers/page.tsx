@@ -3,10 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 
 import { CustomerTable } from './components/customer-table';
-import { CustomerCreateSheet } from './components/customer-create-sheet';
-import { PageHeader } from '@/components/page-header';
-import { PageTitle } from '@/components/page-title';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 import Link from 'next/link';
 
 export const metadata = {

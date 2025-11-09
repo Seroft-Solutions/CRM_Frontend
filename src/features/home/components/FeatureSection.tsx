@@ -1,13 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Users,
-  Calendar,
-  BarChart,
-  Phone,
-  MessageSquare,
-  Target,
-  Coffee,
   Award,
+  BarChart,
+  Calendar,
+  Coffee,
+  MessageSquare,
+  Phone,
+  Target,
+  Users,
   Zap,
 } from 'lucide-react';
 

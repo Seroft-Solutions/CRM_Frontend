@@ -11,7 +11,6 @@ import {
   getAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
   getAdminRealmsRealmUsers,
 } from '@/core/api/generated/keycloak';
-import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {

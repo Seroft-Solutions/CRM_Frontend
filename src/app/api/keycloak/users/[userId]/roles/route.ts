@@ -5,12 +5,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { RoleRepresentation } from '@/core/api/generated/keycloak';
 import {
+  deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
   postAdminRealmsRealmUsersUserIdRoleMappingsRealm,
-  deleteAdminRealmsRealmUsersUserIdRoleMappingsRealm,
 } from '@/core/api/generated/keycloak';
-import type { RoleRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(
   request: NextRequest,

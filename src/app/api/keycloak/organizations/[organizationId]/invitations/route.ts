@@ -5,18 +5,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 import {
-  getAdminRealmsRealmUsers,
   getAdminRealmsRealmGroups,
+  getAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
 } from '@/core/api/generated/keycloak';
-import type { UserRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 import type {
-  PendingInvitation,
-  InvitationListResponse,
   InvitationFilters,
+  InvitationListResponse,
   InvitationStatus,
+  PendingInvitation,
 } from '@/features/user-management/types';
 
 function parseInvitationFromUserAttributes(

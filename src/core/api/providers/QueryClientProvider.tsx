@@ -1,12 +1,12 @@
 'use client';
 
 import {
+  MutationCache,
+  QueryCache,
   QueryClient,
   QueryClientProvider as TanstackQueryClientProvider,
-  QueryCache,
-  MutationCache,
 } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 interface QueryClientProviderProps {
   children: ReactNode;

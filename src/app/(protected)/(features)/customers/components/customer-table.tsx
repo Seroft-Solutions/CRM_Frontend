@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountCustomers,
+  useGetAllCustomers,
+  useSearchCustomers,
+  useUpdateCustomer,
+} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+
+import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { CustomerTableHeader } from './table/customer-table-header';
+import { CustomerTableRow } from './table/customer-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -93,24 +102,6 @@ const tableScrollStyles = `
     word-break: break-word;
   }
 `;
-
-import {
-  useGetAllCustomers,
-  useDeleteCustomer,
-  useCountCustomers,
-  useUpdateCustomer,
-  usePartialUpdateCustomer,
-  useSearchCustomers,
-} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-
-import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
-
-import { CustomerSearchAndFilters } from './table/customer-search-filters';
-import { CustomerTableHeader } from './table/customer-table-header';
-import { CustomerTableRow } from './table/customer-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
-import { useAccount, useUserAuthorities } from '@/core/auth';
 
 const ASC = 'asc';
 const DESC = 'desc';

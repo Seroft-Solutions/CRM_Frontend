@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil, Trash2 } from 'lucide-react';
 import { callRemarkToast, handleCallRemarkError } from './call-remark-toast';
 import { callRemarkFormConfig } from './form/call-remark-form-config';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetCallRemark,
   useDeleteCallRemark,
+  useGetCallRemark,
 } from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
 
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';

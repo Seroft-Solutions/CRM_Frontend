@@ -24,7 +24,9 @@ import type { UserFederationMapperRepresentation } from './UserFederationMapperR
 import type { IdentityProviderRepresentation } from './IdentityProviderRepresentation';
 import type { IdentityProviderMapperRepresentation } from './IdentityProviderMapperRepresentation';
 import type { ProtocolMapperRepresentation } from './ProtocolMapperRepresentation';
-import type { MultivaluedHashMapStringComponentExportRepresentation } from './MultivaluedHashMapStringComponentExportRepresentation';
+import type {
+  MultivaluedHashMapStringComponentExportRepresentation
+} from './MultivaluedHashMapStringComponentExportRepresentation';
 import type { AuthenticationFlowRepresentation } from './AuthenticationFlowRepresentation';
 import type { AuthenticatorConfigRepresentation } from './AuthenticatorConfigRepresentation';
 import type { RequiredActionProviderRepresentation } from './RequiredActionProviderRepresentation';

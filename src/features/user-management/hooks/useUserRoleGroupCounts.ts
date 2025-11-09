@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { userManagementService } from '@/features/user-management/services/user-management.service';
-import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
+import type { GroupRepresentation, RoleRepresentation } from '@/core/api/generated/keycloak';
 
 interface UserRoleGroupCounts {
   userId: string;

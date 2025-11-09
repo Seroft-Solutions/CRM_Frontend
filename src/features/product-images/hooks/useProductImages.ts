@@ -11,15 +11,14 @@
  */
 
 import {
-  useGetAllProductImagesByProduct,
-  useUploadProductImage,
-  useUploadProductImages,
-  useDeleteProductImage,
-  useReorderProductImages,
-  useCountProductImages,
-  getGetAllProductImagesByProductQueryKey,
   type UploadProductImageMutationResult,
   type UploadProductImagesMutationResult,
+  useCountProductImages,
+  useDeleteProductImage,
+  useGetAllProductImagesByProduct,
+  useReorderProductImages,
+  useUploadProductImage,
+  useUploadProductImages,
 } from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 

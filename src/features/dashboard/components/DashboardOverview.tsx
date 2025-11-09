@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   Cell,
@@ -22,20 +20,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {
-  Building,
-  Phone,
-  ShoppingCart,
-  Users,
-  TrendingUp,
-  Calendar,
-  MapPin,
-  UserCheck,
-  Activity,
-  Target,
-  Clock,
-  PhoneCall,
-} from 'lucide-react';
+import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { useGetAllCustomers } from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
 

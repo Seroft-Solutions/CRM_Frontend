@@ -6,13 +6,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
-  getAdminRealmsRealmUsersUserIdGroups,
-  putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserId,
+  getAdminRealmsRealmUsersUserIdGroups,
+  putAdminRealmsRealmUsersUserIdGroupsGroupId,
 } from '@/core/api/generated/keycloak';
-import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(
   request: NextRequest,

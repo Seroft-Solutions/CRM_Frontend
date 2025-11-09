@@ -9,8 +9,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -22,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './district-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
 // Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
@@ -33,12 +40,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllStates,
-  useSearchStates,
-  useCountStates,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

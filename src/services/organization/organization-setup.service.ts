@@ -1,8 +1,6 @@
 'use client';
 
 import { Session } from 'next-auth';
-
-import type { OrganizationRepresentation } from '@/core/api/generated/keycloak/schemas';
 import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
 import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 

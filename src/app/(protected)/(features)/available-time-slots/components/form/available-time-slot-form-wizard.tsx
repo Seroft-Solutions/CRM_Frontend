@@ -7,14 +7,13 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateAvailableTimeSlot,
-  useUpdateAvailableTimeSlot,
   useGetAvailableTimeSlot,
+  useUpdateAvailableTimeSlot,
 } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 import { availableTimeSlotToast, handleAvailableTimeSlotError } from '../available-time-slot-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';

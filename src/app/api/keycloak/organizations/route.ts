@@ -5,12 +5,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 import {
   getAdminRealmsRealmOrganizations,
   OrganizationRepresentationAttributes,
   postAdminRealmsRealmOrganizations,
 } from '@/core/api/generated/keycloak';
-import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(request: NextRequest) {
   try {

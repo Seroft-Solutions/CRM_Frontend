@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cityToast, handleCityError } from './city-toast';
 import { CityDTOStatus } from '@/core/api/generated/spring/schemas/CityDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountCities,
+  useGetAllCities,
+  useSearchCities,
+  useUpdateCity,
+} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+
+import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+import { CityTableHeader } from './table/city-table-header';
+import { CityTableRow } from './table/city-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,23 +96,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllCities,
-  useDeleteCity,
-  useCountCities,
-  useUpdateCity,
-  usePartialUpdateCity,
-  useSearchCities,
-} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-
-import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-
-import { CitySearchAndFilters } from './table/city-search-filters';
-import { CityTableHeader } from './table/city-table-header';
-import { CityTableRow } from './table/city-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

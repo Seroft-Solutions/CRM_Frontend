@@ -5,15 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 import {
   getAdminRealmsRealmUsersUserId,
   getAdminRealmsRealmUsersUserIdGroups,
   getAdminRealmsRealmUsersUserIdRoleMappingsRealm,
-} from '@/core/api/generated/keycloak';
-import type {
-  UserRepresentation,
-  GroupRepresentation,
-  RoleRepresentation,
 } from '@/core/api/generated/keycloak';
 
 export async function GET(

@@ -2,8 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +21,8 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './product-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -25,17 +33,6 @@ function transformEnumValue(enumValue: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-import {
-  useGetAllProductCategories,
-  useSearchProductCategories,
-  useCountProductCategories,
-} from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
-import {
-  useGetAllProductSubCategories,
-  useSearchProductSubCategories,
-  useCountProductSubCategories,
-} from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
 interface FormStepRendererProps {
   entity?: any;

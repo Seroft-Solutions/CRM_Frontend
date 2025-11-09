@@ -11,9 +11,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
+  useAvailableGroups,
   useInviteUserWithGroups,
   useOrganizationContext,
-  useAvailableGroups,
   useUserManagementRefresh,
 } from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, Mail, ArrowLeft, Send, Users, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle, Mail, Send, UserPlus, Users, X } from 'lucide-react';
 import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 import { useUserProfilePersistence } from '@/features/user-profile-management';

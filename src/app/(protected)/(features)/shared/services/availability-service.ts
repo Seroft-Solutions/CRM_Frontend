@@ -4,9 +4,9 @@
  */
 
 import {
+  AvailableTimeSlotDTO,
   UserAvailabilityDTO,
   UserAvailabilityDTODayOfWeek,
-  AvailableTimeSlotDTO,
 } from '@/core/api/generated/spring/schemas';
 
 export interface DefaultAvailabilityConfig {

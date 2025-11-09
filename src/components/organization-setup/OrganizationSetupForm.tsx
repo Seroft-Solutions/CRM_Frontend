@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Loader2, User, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { AlertCircle, Building2, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
 import type { OrganizationSetupRequest } from '@/services/organization/organization-setup.service';
 
 interface OrganizationSetupFormProps {

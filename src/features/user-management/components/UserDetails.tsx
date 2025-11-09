@@ -5,15 +5,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  useUserDetails,
-  useRoleAssignment,
+  useAvailableGroups,
+  useAvailableRoles,
   useGroupAssignment,
   useOrganizationContext,
-  useAvailableRoles,
-  useAvailableGroups,
+  useRoleAssignment,
+  useUserDetails,
 } from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,20 +49,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import {
-  ArrowLeft,
-  User,
-  Mail,
-  Calendar,
-  Shield,
-  Users,
-  Plus,
-  Minus,
-  Search,
-  UserCheck,
-  Settings,
-} from 'lucide-react';
-import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
+import { ArrowLeft, Calendar, Mail, Minus, Plus, Search, Shield, User, Users } from 'lucide-react';
+import type { GroupRepresentation, RoleRepresentation } from '@/core/api/generated/keycloak';
 
 interface UserDetailsProps {
   userId: string;

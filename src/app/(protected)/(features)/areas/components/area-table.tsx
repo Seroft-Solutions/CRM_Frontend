@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { areaToast, handleAreaError } from './area-toast';
 import { AreaDTOStatus } from '@/core/api/generated/spring/schemas/AreaDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountAreas,
+  useSearchGeography,
+  useUpdateArea,
+} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+
+import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+import { AreaTableHeader } from './table/area-table-header';
+import { AreaTableRow } from './table/area-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -88,24 +95,6 @@ const tableScrollStyles = `
     }
   }
 `;
-
-import {
-  useGetAllAreas,
-  useDeleteArea,
-  useCountAreas,
-  useUpdateArea,
-  usePartialUpdateArea,
-  useSearchAreas,
-  useSearchGeography,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
-
-import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-
-import { AreaSearchAndFilters } from './table/area-search-filters';
-import { AreaTableHeader } from './table/area-table-header';
-import { AreaTableRow } from './table/area-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Building2, Mail, ArrowLeft, Send, CheckCircle, AlertCircle, X, Users } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Building2, CheckCircle, Send, Users, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';

@@ -4,27 +4,21 @@
  */
 
 import type {
+  EnhancedMemberRepresentation,
+  GroupAssignment,
+  InvitationActionResult,
+  InvitationFilters,
+  InvitationListResponse,
   OrganizationUser,
+  RoleAssignment,
+  UserDetailData,
+  UserFilters,
   UserInvitation,
   UserInvitationWithGroups,
-  PendingInvitation,
-  InvitationListResponse,
-  InvitationFilters,
-  InvitationActionResult,
-  RoleAssignment,
-  GroupAssignment,
-  UserFilters,
   UserListResponse,
-  UserDetailData,
-  EnhancedMemberRepresentation,
 } from '../types';
 
-import type {
-  RoleRepresentation,
-  GroupRepresentation,
-  MemberRepresentation,
-  UserRepresentation,
-} from '@/core/api/generated/keycloak';
+import type { GroupRepresentation, RoleRepresentation, UserRepresentation, } from '@/core/api/generated/keycloak';
 
 /**
  * Unified User Management Service

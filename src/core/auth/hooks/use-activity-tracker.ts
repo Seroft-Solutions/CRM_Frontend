@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AUTH_CACHE_CONFIG } from '@/core/auth/config/cache-config';
 import type { ActivityTrackerOptions } from '../types';
 

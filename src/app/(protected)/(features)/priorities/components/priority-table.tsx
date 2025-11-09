@@ -1,30 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { priorityToast, handlePriorityError } from './priority-toast';
+import { handlePriorityError, priorityToast } from './priority-toast';
 import { PriorityDTOStatus } from '@/core/api/generated/spring/schemas/PriorityDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Search,
-  X,
+  AlertTriangle,
+  Archive,
   Download,
-  Settings2,
   Eye,
   EyeOff,
   RefreshCw,
-  Archive,
   RotateCcw,
-  Trash2,
-  AlertTriangle,
+  Settings2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,8 +43,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useCountPriorities,
+  useGetAllPriorities,
+  useSearchPriorities,
+  useUpdatePriority,
+} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
+import { PriorityTableHeader } from './table/priority-table-header';
+import { PriorityTableRow } from './table/priority-table-row';
+import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -93,21 +99,6 @@ const tableScrollStyles = `
     word-break: break-word;
   }
 `;
-
-import {
-  useGetAllPriorities,
-  useDeletePriority,
-  useCountPriorities,
-  useUpdatePriority,
-  usePartialUpdatePriority,
-  useSearchPriorities,
-} from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
-
-import { PrioritySearchAndFilters } from './table/priority-search-filters';
-import { PriorityTableHeader } from './table/priority-table-header';
-import { PriorityTableRow } from './table/priority-table-row';
-import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
-import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const ASC = 'asc';
 const DESC = 'desc';

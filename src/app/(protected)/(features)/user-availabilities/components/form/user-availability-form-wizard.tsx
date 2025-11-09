@@ -2,21 +2,20 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserAvailabilityFormProvider, useEntityForm } from './user-availability-form-provider';
+import { useEntityForm, UserAvailabilityFormProvider } from './user-availability-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateUserAvailability,
-  useUpdateUserAvailability,
   useGetUserAvailability,
+  useUpdateUserAvailability,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
-import { userAvailabilityToast, handleUserAvailabilityError } from '../user-availability-toast';
+import { handleUserAvailabilityError, userAvailabilityToast } from '../user-availability-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 

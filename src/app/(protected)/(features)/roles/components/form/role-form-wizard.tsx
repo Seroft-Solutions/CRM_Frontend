@@ -7,16 +7,15 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateRole,
-  useUpdateRole,
   useGetRole,
+  useUpdateRole,
 } from '@/core/api/generated/spring/endpoints/role-resource/role-resource.gen';
-import { roleToast, handleRoleError } from '../role-toast';
+import { handleRoleError, roleToast } from '../role-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 

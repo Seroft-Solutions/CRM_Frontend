@@ -3,26 +3,20 @@
  * Custom hooks for user management functionality with state management
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { userManagementService } from '@/features/user-management/services/user-management.service';
 import type {
-  OrganizationUser,
+  GroupAssignment,
+  InvitationFilters,
+  LoadingStates,
+  RoleAssignment,
+  UserFilters,
   UserInvitation,
   UserInvitationWithGroups,
-  PendingInvitation,
-  InvitationListResponse,
-  InvitationFilters,
-  RoleAssignment,
-  GroupAssignment,
-  UserFilters,
-  UserListResponse,
-  UserDetailData,
-  LoadingStates,
 } from '../types';
-import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 import { toast } from 'sonner';
 
 export { useUserRoleGroupCounts, useBatchUserRoleGroupCounts } from './useUserRoleGroupCounts';

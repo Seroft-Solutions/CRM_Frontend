@@ -6,20 +6,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
   deleteAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
-  getAdminRealmsRealmUsers,
   getAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserId,
   type UserRepresentation,
 } from '@/core/api/generated/keycloak';
-import {
-  getChannelType,
-  updateUserProfile,
-  UserProfileDTO,
-  deleteUserProfile,
-  searchUserProfiles,
-  getUserProfile,
-} from '@/core/api/generated/spring';
-import { postAdminRealmsRealmOrganizationsOrgIdMembers } from '@/core/api/generated/keycloak';
+import { getChannelType, updateUserProfile, UserProfileDTO } from '@/core/api/generated/spring';
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string; partnerId: string }> }

@@ -8,7 +8,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Users, Loader2 } from 'lucide-react';
+import { Loader2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserRoleGroupCounts } from '@/features/user-management/hooks';
 import type { GroupRepresentation } from '@/core/api/generated/keycloak';
