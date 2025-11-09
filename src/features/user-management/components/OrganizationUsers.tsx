@@ -5,13 +5,13 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
+  useBulkUserOperations,
+  useOrganizationContext,
   useOrganizationUsers,
   useRemoveUser,
-  useOrganizationContext,
-  useBulkUserOperations,
   useUserManagementRefresh,
 } from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
@@ -34,10 +34,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   Dialog,
@@ -68,37 +64,32 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Users,
-  Plus,
-  Search,
-  MoreHorizontal,
-  UserX,
-  Settings,
-  Mail,
-  Shield,
-  UserCheck,
-  Filter,
   AlertCircle,
   Building2,
-  RefreshCw,
-  X,
   CheckCircle,
-  XCircle,
   Clock,
+  Mail,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
   SlidersHorizontal,
+  Users,
+  UserX,
+  X,
+  XCircle,
 } from 'lucide-react';
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
 import { ClickableRolesBadge } from '@/features/user-management/components/ClickableRolesBadge';
 import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
-import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
   className?: string;
 }
 
-// Inner component that contains permission-required hooks
 function OrganizationUsersContent({
   className,
   organizationId,
@@ -125,7 +116,6 @@ function OrganizationUsersContent({
     selectedCount,
   } = useBulkUserOperations();
 
-  // Local state
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
     page: 1,
@@ -135,45 +125,39 @@ function OrganizationUsersContent({
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Debounced search effect
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       setFilters((prev) => ({
         ...prev,
         search: searchTerm,
-        page: 1, // Reset to first page when searching
+        page: 1,
       }));
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  // Fetch organization users - now safe inside permission guard
   const { users, totalCount, isLoading, error, refetch } = useOrganizationUsers(
     organizationId,
     filters
   );
 
-  // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchTerm('');
   };
 
-  // Handle filter changes
   const handleFilterChange = useCallback((key: keyof UserFilters, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: 1, // Reset to first page when filtering
+      page: 1,
     }));
   }, []);
 
-  // Clear all filters
   const handleClearFilters = () => {
     setFilters({
       search: '',
@@ -183,11 +167,9 @@ function OrganizationUsersContent({
     setSearchTerm('');
   };
 
-  // Check if any filters are active
   const hasActiveFilters =
     filters.search || filters.enabled !== undefined || filters.emailVerified !== undefined;
 
-  // Handle user selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       selectAllUsers(users.map((user) => user.id!));
@@ -200,12 +182,10 @@ function OrganizationUsersContent({
     toggleUserSelection(userId);
   };
 
-  // Navigate to user details
   const handleUserDetails = (userId: string) => {
     router.push(`/user-management/users/${userId}`);
   };
 
-  // Handle user removal
   const handleRemoveUser = (user: OrganizationUser) => {
     setUserToRemove(user);
   };
@@ -220,17 +200,14 @@ function OrganizationUsersContent({
     }
   };
 
-  // Navigate to invite users
   const handleInviteUsers = () => {
     router.push('/user-management/invite-users');
   };
 
-  // Handle manual refresh
   const handleRefresh = async () => {
     await refreshOrganizationUsers(organizationId);
   };
 
-  // Format date
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleDateString();
@@ -667,7 +644,6 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
     switchOrganization,
   } = useOrganizationContext();
 
-  // Loading state for organization context
   if (isLoadingOrg) {
     return (
       <Card className={className}>
@@ -683,7 +659,6 @@ export function OrganizationUsers({ className }: OrganizationUsersProps) {
     );
   }
 
-  // No organization available
   if (!organizationId) {
     return (
       <Card className={className}>

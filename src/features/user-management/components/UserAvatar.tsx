@@ -31,7 +31,9 @@ export function UserAvatar({ user, size = 'md', className }: UserAvatarProps) {
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
       <AvatarImage
-        src={user.email ? `https://avatar.vercel.sh/${user.email}` : undefined}
+        src={
+          user.email ? `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}` : undefined
+        }
         alt={`${user.firstName} ${user.lastName}`}
       />
       <AvatarFallback className="text-xs font-medium">

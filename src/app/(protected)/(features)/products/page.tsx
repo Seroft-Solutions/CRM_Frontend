@@ -1,17 +1,10 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 
 import { ProductTable } from './components/product-table';
-import { PermissionGuard, InlinePermissionGuard } from '@/core/auth';
-import Link from "next/link";
+import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Products',
@@ -71,18 +64,18 @@ export default function ProductPage() {
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
-                <InlinePermissionGuard requiredPermission="product:create">
-                    <Button
-                        asChild
-                        size="sm"
-                        className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
-                    >
-                        <Link href="/products/new">
-                            <Plus className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Create</span>
-                        </Link>
-                    </Button>
-                </InlinePermissionGuard>
+              <InlinePermissionGuard requiredPermission="product:create">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
+                >
+                  <Link href="/products/new">
+                    <Plus className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Create</span>
+                  </Link>
+                </Button>
+              </InlinePermissionGuard>
             </div>
           </div>
         </div>

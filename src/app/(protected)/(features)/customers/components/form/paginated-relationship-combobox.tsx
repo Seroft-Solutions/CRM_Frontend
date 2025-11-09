@@ -1,14 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronsUpDown, X, Loader2, Plus } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,7 +38,7 @@ interface PaginatedRelationshipComboboxProps {
   parentField?: string;
   customFilters?: Record<string, any>;
   onDataLoaded?: (data: any[]) => void;
-  // Cross-form navigation props
+
   referrerForm?: string;
   referrerSessionId?: string;
   referrerField?: string;
@@ -84,10 +77,8 @@ export function PaginatedRelationshipCombobox({
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const pageSize = 20;
 
-  // Cross-form navigation hook
   const { navigateWithDraftCheck } = useCrossFormNavigation();
 
-  // Debounced search query (300ms delay)
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
@@ -95,14 +86,12 @@ export function PaginatedRelationshipCombobox({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Determine if query should be enabled
   const isQueryEnabled = React.useMemo(() => {
     if (disabled) return false;
     if (parentField && !parentFilter) return false;
     return true;
   }, [disabled, parentField, parentFilter]);
 
-  // Build filter parameters for queries
   const buildFilterParams = React.useCallback(
     (pageParam: number, searchTerm: string) => {
       const params: any = {
@@ -111,17 +100,14 @@ export function PaginatedRelationshipCombobox({
         sort: [`${displayField},asc`],
       };
 
-      // Apply parent filter if both parentField and parentFilter are provided
       if (parentFilter && parentField) {
         params[`${parentField}Id.equals`] = parentFilter;
       }
 
-      // Add search filter using field contains
       if (searchTerm && searchTerm.trim() !== '') {
         params[`${searchField}.contains`] = searchTerm;
       }
 
-      // Add custom filters if provided
       if (customFilters) {
         Object.keys(customFilters).forEach((key) => {
           params[key] = customFilters[key];
@@ -133,10 +119,8 @@ export function PaginatedRelationshipCombobox({
     [displayField, parentFilter, parentField, searchField, pageSize, customFilters]
   );
 
-  // Get current query parameters
   const currentParams = buildFilterParams(currentPage, deferredSearchQuery);
 
-  // Always use getAll hook with field filters
   const {
     data: currentData,
     isLoading,
@@ -148,17 +132,14 @@ export function PaginatedRelationshipCombobox({
     },
   });
 
-  // Reset data when search or parent filter changes
   React.useEffect(() => {
     setCurrentPage(0);
     setAllLoadedData([]);
     setHasMorePages(true);
   }, [deferredSearchQuery, parentFilter]);
 
-  // Handle data loading and pagination
   React.useEffect(() => {
     if (currentData && !isLoading && isQueryEnabled) {
-      // Extract data array from response (handle both direct array and paginated response)
       const dataArray = Array.isArray(currentData)
         ? currentData
         : currentData.content
@@ -168,41 +149,35 @@ export function PaginatedRelationshipCombobox({
             : [];
 
       if (currentPage === 0) {
-        // First page - replace all data
         setAllLoadedData(dataArray);
       } else {
-        // Additional page - append unique items
         setAllLoadedData((prev) => {
           const existingIds = new Set(prev.map((item) => item.id));
           const newItems = dataArray.filter((item: any) => !existingIds.has(item.id));
           return [...prev, ...newItems];
         });
-      } // Check if there are more pages
+      }
       setHasMorePages(dataArray.length === pageSize);
     }
   }, [currentData, isLoading, currentPage, isQueryEnabled]);
 
-  // Notify parent component when data is loaded (for auto-population)
   React.useEffect(() => {
     if (onDataLoaded && allLoadedData.length > 0) {
       onDataLoaded(allLoadedData);
     }
   }, [allLoadedData, onDataLoaded]);
 
-  // Load next page
   const loadNextPage = React.useCallback(() => {
     if (hasMorePages && !isLoading && isQueryEnabled) {
       setCurrentPage((prev) => prev + 1);
     }
   }, [hasMorePages, isLoading, isQueryEnabled]);
 
-  // Scroll handler for infinite loading
   const handleScroll = React.useCallback(
     (e: React.UIEvent) => {
       const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
       const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
 
-      // Load more when 80% scrolled and has more data
       if (scrollPercentage > 0.8 && hasMorePages && !isLoading) {
         loadNextPage();
       }
@@ -253,7 +228,6 @@ export function PaginatedRelationshipCombobox({
   };
   const handleCreateNew = () => {
     if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
-      // Use the new draft-aware cross-form navigation system
       navigateWithDraftCheck({
         entityPath: createEntityPath,
         referrerForm,
@@ -262,13 +236,11 @@ export function PaginatedRelationshipCombobox({
         referrerUrl: window.location.href,
       });
     } else {
-      // Fallback to old behavior if navigation props are not provided
       console.warn('Cross-form navigation props not provided, falling back to old navigation');
 
       const currentUrl = window.location.href;
       const currentPath = window.location.pathname;
 
-      // Extract origin context dynamically
       const pathParts = currentPath.split('/').filter(Boolean);
       let originEntityName = 'Previous Page';
       let sourceEntityType = '';
@@ -294,7 +266,6 @@ export function PaginatedRelationshipCombobox({
         }
       }
 
-      // Convert sourceEntityType to proper entity class name (e.g., 'calls' -> 'Call')
       const sourceEntityClass = sourceEntityType
         .replace(/s$/, '')
         .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -333,7 +304,6 @@ export function PaginatedRelationshipCombobox({
   };
 
   React.useEffect(() => {
-    // Only run in browser environment
     if (typeof window === 'undefined') return;
 
     const newEntityId = sessionStorage.getItem('newlyCreatedEntityId');
@@ -343,7 +313,6 @@ export function PaginatedRelationshipCombobox({
       try {
         const info = JSON.parse(relationshipInfo);
         if (info.entityName === entityName) {
-          // Handle both string (UUID) and number IDs
           const entityId = isNaN(Number(newEntityId)) ? newEntityId : parseInt(newEntityId);
           onEntityCreated(entityId);
           sessionStorage.removeItem('newlyCreatedEntityId');
@@ -356,7 +325,6 @@ export function PaginatedRelationshipCombobox({
     }
   }, [entityName, onEntityCreated]);
 
-  // Show disabled state message when parent filter is required but missing
   const getDisabledMessage = () => {
     if (parentField && !parentFilter) {
       return `Select ${parentField} first`;

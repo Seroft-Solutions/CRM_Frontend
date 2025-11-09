@@ -1,14 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -25,8 +18,8 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +83,11 @@ export function ProductTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
-  // Get current status display info
   const currentStatus = product.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -114,134 +105,175 @@ export function ProductTableRow({
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
         <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
       </TableCell>
-      {visibleColumns.map((column, index) => (
-        <TableCell
-          key={column.id}
-          className={`
-            px-2 sm:px-3 py-2 
-            ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
-            whitespace-nowrap overflow-hidden text-ellipsis
-          `}
-        >
-          {column.type === 'field'
-            ? // Render field column
-              (() => {
-                const field = product[column.accessor as keyof typeof product];
+      {visibleColumns.map((column, index) => {
+        const getColumnClassName = () => {
+          if (column.id === 'image') {
+            return 'px-2 sm:px-3 py-2 w-[60px]';
+          }
 
-                if (column.id === 'name') {
+          if (['description', 'remark'].includes(column.id)) {
+            return 'px-2 sm:px-3 py-2 max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis';
+          }
+
+          if (column.id === 'name') {
+            return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
+          }
+
+          if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+            return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
+          }
+
+          if (column.id === 'id') {
+            return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
+          }
+
+          return 'px-2 sm:px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis';
+        };
+
+        return (
+          <TableCell
+            key={column.id}
+            className={getColumnClassName()}
+            title={
+              column.type === 'field' && ['description', 'remark', 'name'].includes(column.id)
+                ? String(product[column.accessor as keyof typeof product] || '')
+                : undefined
+            }
+          >
+            {column.type === 'field'
+              ? (() => {
+                  const field = product[column.accessor as keyof typeof product];
+
+                  if (column.id === 'name') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'code') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'description') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'basePrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'minPrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'maxPrice') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'remark') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'status') {
+                    return getStatusBadge(field as string);
+                  }
+
+                  if (column.id === 'createdBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'createdDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'lastModifiedBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'lastModifiedDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'image') {
+                    const images = (product as any).images as any[] | undefined;
+                    const primaryImageUrl =
+                      images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
+                      images?.[0]?.cdnUrl ||
+                      null;
+
+                    return (
+                      <ProductImageThumbnail
+                        imageUrl={primaryImageUrl}
+                        productName={product.name || 'Product'}
+                        size={40}
+                      />
+                    );
+                  }
+
                   return field?.toString() || '';
-                }
+                })()
+              : (() => {
+                  if (column.id === 'category') {
+                    const cellKey = `${product.id}-category`;
+                    return (
+                      <RelationshipCell
+                        entityId={product.id || 0}
+                        relationshipName="category"
+                        currentValue={product.category}
+                        options={
+                          relationshipConfigs.find((config) => config.name === 'category')
+                            ?.options || []
+                        }
+                        displayField="name"
+                        onUpdate={(entityId, relationshipName, newValue) =>
+                          onRelationshipUpdate
+                            ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                            : Promise.resolve()
+                        }
+                        isEditable={
+                          relationshipConfigs.find((config) => config.name === 'category')
+                            ?.isEditable || false
+                        }
+                        isLoading={updatingCells.has(cellKey)}
+                        className="min-w-[150px]"
+                        relatedEntityRoute="product-categories"
+                        showNavigationIcon={true}
+                      />
+                    );
+                  }
 
-                if (column.id === 'code') {
-                  return field?.toString() || '';
-                }
+                  if (column.id === 'subCategory') {
+                    const cellKey = `${product.id}-subCategory`;
+                    return (
+                      <RelationshipCell
+                        entityId={product.id || 0}
+                        relationshipName="subCategory"
+                        currentValue={product.subCategory}
+                        options={
+                          relationshipConfigs.find((config) => config.name === 'subCategory')
+                            ?.options || []
+                        }
+                        displayField="name"
+                        onUpdate={(entityId, relationshipName, newValue) =>
+                          onRelationshipUpdate
+                            ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                            : Promise.resolve()
+                        }
+                        isEditable={
+                          relationshipConfigs.find((config) => config.name === 'subCategory')
+                            ?.isEditable || false
+                        }
+                        isLoading={updatingCells.has(cellKey)}
+                        className="min-w-[150px]"
+                        relatedEntityRoute="product-sub-categories"
+                        showNavigationIcon={true}
+                      />
+                    );
+                  }
 
-                if (column.id === 'description') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'basePrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'minPrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'maxPrice') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'remark') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'status') {
-                  return getStatusBadge(field as string);
-                }
-
-                if (column.id === 'createdBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'lastModifiedBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                return field?.toString() || '';
-              })()
-            : // Render relationship column
-              (() => {
-                if (column.id === 'category') {
-                  const cellKey = `${product.id}-category`;
-                  return (
-                    <RelationshipCell
-                      entityId={product.id || 0}
-                      relationshipName="category"
-                      currentValue={product.category}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'category')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'category')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="product-categories"
-                      showNavigationIcon={true}
-                    />
-                  );
-                }
-
-                if (column.id === 'subCategory') {
-                  const cellKey = `${product.id}-subCategory`;
-                  return (
-                    <RelationshipCell
-                      entityId={product.id || 0}
-                      relationshipName="subCategory"
-                      currentValue={product.subCategory}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'subCategory')
-                          ?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'subCategory')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="product-sub-categories"
-                      showNavigationIcon={true}
-                    />
-                  );
-                }
-
-                return null;
-              })()}
-        </TableCell>
-      ))}
+                  return null;
+                })()}
+          </TableCell>
+        );
+      })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="product:read">

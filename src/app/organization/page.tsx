@@ -16,14 +16,12 @@ export default function OrganizationPage() {
   const { hasGroup } = useUserAuthorities();
   const isBusinessPartner = hasGroup('Business Partners');
 
-  // Clear organization storage on mount (but keep session data)
   useEffect(() => {
     localStorage.removeItem('selectedOrganizationId');
     localStorage.removeItem('selectedOrganizationName');
     persistentLog('OrganizationPage: Cleared organization from localStorage');
   }, []);
 
-  // Handle unauthenticated state - only redirect if truly unauthenticated (not during loading)
   useEffect(() => {
     if (status === 'unauthenticated') {
       persistentLog('OrganizationPage: No session, cleaning up and redirecting to home');
@@ -33,11 +31,7 @@ export default function OrganizationPage() {
     }
   }, [status, router]);
 
-  // Session error is handled by SessionManager modal - no need to redirect here
-  // The SessionExpiredModal will show and handle cleanup/re-authentication
-
   useEffect(() => {
-    // Handle error state
     if (isError) {
       persistentLog('OrganizationPage: Error loading organizations, redirecting to auth');
       router.replace('/auth/signin');
@@ -61,7 +55,6 @@ export default function OrganizationPage() {
         localStorage.setItem('selectedOrganizationId', organizations[0].id);
         localStorage.setItem('selectedOrganizationName', organizations[0].name);
 
-        // Also set cookies for SSR access
         document.cookie = `selectedOrganizationId=${organizations[0].id}; path=/; max-age=31536000; SameSite=Lax`;
         document.cookie = `selectedOrganizationName=${encodeURIComponent(organizations[0].name)}; path=/; max-age=31536000; SameSite=Lax`;
         if (isBusinessPartner) {

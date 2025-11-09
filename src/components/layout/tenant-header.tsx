@@ -1,12 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { InlinePermissionGuard, PermissionGuard, useAuth } from '@/core/auth';
+import { useAuth } from '@/core/auth';
 import { useUserAuthorities } from '@/core/auth/hooks';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { Briefcase } from 'lucide-react';
 
-// Custom Coffee/Tea Cup Icon Component (same as organization-switcher)
 const CupIcon = ({ className = 'size-4' }: { className?: string }) => (
   <svg
     className={className}
@@ -34,10 +33,8 @@ export function TenantHeader() {
   const { hasGroup } = useUserAuthorities();
   const { data: organizations } = useUserOrganizations();
 
-  // State for selected organization
   const [selectedOrganization, setSelectedOrganization] = React.useState<string>('');
 
-  // Get selected organization from localStorage
   const getSelectedOrganization = React.useCallback(() => {
     if (!organizations?.length) return '';
 
@@ -53,17 +50,14 @@ export function TenantHeader() {
       if (selectedOrg) return selectedOrg.name;
     }
 
-    // Fallback to first organization
     return organizations[0]?.name || '';
   }, [organizations]);
 
-  // Update organization when organizations data changes
   React.useEffect(() => {
     const orgName = getSelectedOrganization();
     setSelectedOrganization(orgName);
   }, [getSelectedOrganization]);
 
-  // Listen for localStorage changes (when organization is switched)
   React.useEffect(() => {
     const handleStorageChange = () => {
       const orgName = getSelectedOrganization();
@@ -72,7 +66,6 @@ export function TenantHeader() {
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Also listen for manual localStorage updates within the same tab
     const originalSetItem = localStorage.setItem;
     localStorage.setItem = function (key, value) {
       originalSetItem.apply(this, [key, value]);
@@ -86,7 +79,7 @@ export function TenantHeader() {
       localStorage.setItem = originalSetItem;
     };
   }, [getSelectedOrganization]);
-  // Don't render if user doesn't have Business Partners group
+
   if (!hasGroup('Business Partners')) {
     return null;
   }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Loader2, Package } from 'lucide-react';
+import { Loader2, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -26,39 +26,40 @@ import { Textarea } from '@/components/ui/textarea';
 import { IntelligentCategoryField } from './intelligent-category-field';
 import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { productFormSchemaBase } from './form/product-form-schema';
-import { productToast, handleProductError } from './product-toast';
+import { handleProductError, productToast } from './product-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
-import { z } from 'zod';
 
-// Create simplified form schema for product creation with price validation
-const productCreationSchema = productFormSchemaBase.omit({
-  status: true,
-}).extend({
-  categoryHierarchy: productFormSchemaBase.pick({
-    category: true,
-    subCategory: true,
-  }).partial(),
-}).refine(
-  (data) => {
-    // Skip validation if either minPrice or maxPrice is empty
-    if (!data.minPrice || !data.maxPrice) {
-      return true;
+const productCreationSchema = productFormSchemaBase
+  .omit({
+    status: true,
+  })
+  .extend({
+    categoryHierarchy: productFormSchemaBase
+      .pick({
+        category: true,
+        subCategory: true,
+      })
+      .partial(),
+  })
+  .refine(
+    (data) => {
+      if (!data.minPrice || !data.maxPrice) {
+        return true;
+      }
+
+      const minPrice = Number(data.minPrice);
+      const maxPrice = Number(data.maxPrice);
+
+      return maxPrice > minPrice;
+    },
+    {
+      message: 'Maximum price must be greater than minimum price',
+      path: ['maxPrice'],
     }
-    
-    const minPrice = Number(data.minPrice);
-    const maxPrice = Number(data.maxPrice);
-    
-    // Ensure maxPrice is greater than minPrice
-    return maxPrice > minPrice;
-  },
-  {
-    message: "Maximum price must be greater than minimum price",
-    path: ["maxPrice"], // This will show the error on the maxPrice field
-  }
-);
+  );
 
 type ProductCreationFormData = {
   name: string;
@@ -80,7 +81,11 @@ interface ProductCreateSheetProps {
   isBusinessPartner?: boolean;
 }
 
-export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = false }: ProductCreateSheetProps) {
+export function ProductCreateSheet({
+  onSuccess,
+  trigger,
+  isBusinessPartner = false,
+}: ProductCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -104,7 +109,6 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
   const { mutate: createProduct, isPending } = useCreateProduct({
     mutation: {
       onSuccess: (data) => {
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllProducts'],
           refetchType: 'active',
@@ -118,15 +122,11 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
           refetchType: 'active',
         });
 
-        // Show success toast
         productToast.created();
-        
-        // Close sheet and reset form
+
         setIsOpen(false);
         form.reset();
-        
-        // Call the success callback with the created product
-        // This will trigger auto-selection in the parent field
+
         onSuccess?.(data);
       },
       onError: (error) => {
@@ -136,7 +136,6 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
   });
 
   const onSubmit = (data: ProductCreationFormData) => {
-    // Transform the data to match the exact API format (ProductDTO)
     const productData: Partial<ProductDTO> = {
       name: data.name,
       code: data.code,
@@ -145,20 +144,24 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
       minPrice: data.minPrice ? Number(data.minPrice) : undefined,
       maxPrice: data.maxPrice ? Number(data.maxPrice) : undefined,
       remark: data.remark || undefined,
-      // Create proper nested objects for category entities as required by generated schema
-      category: data.categoryHierarchy?.category ? { 
-        id: data.categoryHierarchy.category,
-        name: '', // Will be populated by backend
-        code: '', // Will be populated by backend
-        status: ProductDTOStatus.ACTIVE
-      } : undefined,
-      subCategory: data.categoryHierarchy?.subCategory ? { 
-        id: data.categoryHierarchy.subCategory,
-        name: '', // Will be populated by backend
-        code: '', // Will be populated by backend
-        status: ProductDTOStatus.ACTIVE,
-        category: { id: data.categoryHierarchy.category } as any
-      } : undefined,
+
+      category: data.categoryHierarchy?.category
+        ? {
+            id: data.categoryHierarchy.category,
+            name: '',
+            code: '',
+            status: ProductDTOStatus.ACTIVE,
+          }
+        : undefined,
+      subCategory: data.categoryHierarchy?.subCategory
+        ? {
+            id: data.categoryHierarchy.subCategory,
+            name: '',
+            code: '',
+            status: ProductDTOStatus.ACTIVE,
+            category: { id: data.categoryHierarchy.category } as any,
+          }
+        : undefined,
       status: ProductDTOStatus.ACTIVE,
     };
 
@@ -177,8 +180,8 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
       <SheetTrigger asChild>
         {trigger || (
           <InlinePermissionGuard requiredPermission="product:create">
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -187,23 +190,22 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
           </InlinePermissionGuard>
         )}
       </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-xl overflow-y-auto p-0 bg-slate-50"
-      >
-        <div className={`sticky top-0 z-10 text-white shadow-sm ${
-          isBusinessPartner
-            ? 'bg-bp-primary'
-            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
-        }`}>
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0 bg-slate-50">
+        <div
+          className={`sticky top-0 z-10 text-white shadow-sm ${
+            isBusinessPartner
+              ? 'bg-bp-primary'
+              : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+          }`}
+        >
           <SheetHeader className="px-6 py-5 space-y-1">
             <SheetTitle className="flex items-center gap-2 text-lg font-semibold leading-tight text-white">
               <Package className="h-5 w-5" />
               Create New Product
             </SheetTitle>
-            <SheetDescription className={`text-sm ${
-              isBusinessPartner ? 'text-white/90' : 'text-blue-100'
-            }`}>
+            <SheetDescription
+              className={`text-sm ${isBusinessPartner ? 'text-white/90' : 'text-blue-100'}`}
+            >
               Capture catalog information and map the product to the correct category.
             </SheetDescription>
           </SheetHeader>
@@ -211,142 +213,44 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
 
         <div className="px-6 py-5">
           <Form {...form}>
-            <form 
+            <form
               id="product-creation-form"
-              onSubmit={form.handleSubmit(onSubmit)} 
+              onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-5"
             >
-            {/* Basic Information Section */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
-                <p className="text-xs text-slate-500">Define how the product should appear across the catalog.</p>
-              </div>
-
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700">
-                      Product Name
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter product name"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          // Auto-generate code from name if code is empty
-                          const currentCode = form.getValues('code');
-                          if (!currentCode && e.target.value) {
-                            const generatedCode = e.target.value
-                              .replace(/[^a-zA-Z0-9\s]/g, '')
-                              .replace(/\s+/g, '_')
-                              .toUpperCase()
-                              .substring(0, 20);
-                            form.setValue('code', generatedCode);
-                          }
-                        }}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700">
-                      Product Code
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter product code (auto-generated from name)"
-                        {...field}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700">Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter product description"
-                        className="min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Pricing Information Section */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-slate-900">Pricing Information</h3>
-                <p className="text-xs text-slate-500">Set indicative prices to guide sales and margin checks.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="basePrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">Base Price</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          min="0"
-                          max="999999"
-                          step="0.01"
-                          {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Basic Information Section */}
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
+                  <p className="text-xs text-slate-500">
+                    Define how the product should appear across the catalog.
+                  </p>
+                </div>
 
                 <FormField
                   control={form.control}
-                  name="minPrice"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">Min Price</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Product Name
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          placeholder="0.00"
-                          min="0"
-                          max="999999"
-                          step="0.01"
+                          placeholder="Enter product name"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
-                            // Trigger validation when minPrice changes
-                            const maxPrice = form.getValues('maxPrice');
-                            if (maxPrice) {
-                              form.trigger('maxPrice');
+
+                            const currentCode = form.getValues('code');
+                            if (!currentCode && e.target.value) {
+                              const generatedCode = e.target.value
+                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/\s+/g, '_')
+                                .toUpperCase()
+                                .substring(0, 20);
+                              form.setValue('code', generatedCode);
                             }
                           }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
@@ -359,27 +263,38 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
 
                 <FormField
                   control={form.control}
-                  name="maxPrice"
+                  name="code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">Max Price</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Product Code
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          placeholder="0.00"
-                          min="0"
-                          max="999999"
-                          step="0.01"
+                          placeholder="Enter product code (auto-generated from name)"
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            // Trigger validation when maxPrice changes
-                            const minPrice = form.getValues('minPrice');
-                            if (minPrice) {
-                              form.trigger('maxPrice');
-                            }
-                          }}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Description
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter product description"
+                          className="min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -387,63 +302,172 @@ export function ProductCreateSheet({ onSuccess, trigger, isBusinessPartner = fal
                   )}
                 />
               </div>
-            </div>
 
-            {/* Category Information Section */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-slate-900">Category Classification</h3>
-                <p className="text-xs text-slate-500">Associate the product with the correct category hierarchy.</p>
+              {/* Pricing Information Section */}
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">Pricing Information</h3>
+                  <p className="text-xs text-slate-500">
+                    Set indicative prices to guide sales and margin checks.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="basePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Base Price
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            min="0"
+                            max="999999"
+                            step="0.01"
+                            {...field}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="minPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Min Price
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            min="0"
+                            max="999999"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+
+                              const maxPrice = form.getValues('maxPrice');
+                              if (maxPrice) {
+                                form.trigger('maxPrice');
+                              }
+                            }}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="maxPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Max Price
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            min="0"
+                            max="999999"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+
+                              const minPrice = form.getValues('minPrice');
+                              if (minPrice) {
+                                form.trigger('maxPrice');
+                              }
+                            }}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="categoryHierarchy"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700">Category & Subcategory</FormLabel>
-                    <FormControl>
-                      <IntelligentCategoryField
-                        value={field.value}
-                        onChange={field.onChange}
-                        onError={(error) => {
-                          form.setError('categoryHierarchy', { message: error });
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              {/* Category Information Section */}
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">
+                    Category Classification
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Associate the product with the correct category hierarchy.
+                  </p>
+                </div>
 
-            {/* Additional Information Section */}
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-slate-900">Additional Information</h3>
-                <p className="text-xs text-slate-500">Add optional remarks that help teams position the product.</p>
+                <FormField
+                  control={form.control}
+                  name="categoryHierarchy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Category & Subcategory
+                      </FormLabel>
+                      <FormControl>
+                        <IntelligentCategoryField
+                          value={field.value}
+                          onChange={field.onChange}
+                          onError={(error) => {
+                            form.setError('categoryHierarchy', { message: error });
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <FormField
-                control={form.control}
-                name="remark"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700">Remarks</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter any additional remarks or notes"
-                        className="min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </form>
-        </Form>
+              {/* Additional Information Section */}
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-900">Additional Information</h3>
+                  <p className="text-xs text-slate-500">
+                    Add optional remarks that help teams position the product.
+                  </p>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="remark"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Remarks
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter any additional remarks or notes"
+                          className="min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
         </div>
 
         <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">

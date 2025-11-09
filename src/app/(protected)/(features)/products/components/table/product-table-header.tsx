@@ -1,23 +1,9 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
-import { ChevronDown, ChevronUp, ChevronsUpDown, Filter } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronUp, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface FilterState {
@@ -77,29 +63,43 @@ export function ProductTableHeader({
             }}
           />
         </TableHead>
-        {visibleColumns.map((column, index) => (
-          <TableHead
-            key={column.id}
-            className={`
-              px-2 sm:px-3 py-2 
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
-              whitespace-nowrap
-            `}
-          >
-            {column.sortable ? (
-              <Button
-                variant="ghost"
-                onClick={() => onSort(column.accessor)}
-                className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
-              >
-                {column.label}
-                <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
-              </Button>
-            ) : (
-              <span className="font-medium text-gray-700 text-sm">{column.label}</span>
-            )}
-          </TableHead>
-        ))}
+        {visibleColumns.map((column, index) => {
+          const getHeaderClassName = () => {
+            if (column.id === 'image') {
+              return 'px-2 sm:px-3 py-2 w-[60px] whitespace-nowrap';
+            }
+            if (['description', 'remark'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 max-w-[200px] whitespace-nowrap';
+            }
+            if (column.id === 'name') {
+              return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap';
+            }
+            if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
+            }
+            if (column.id === 'id') {
+              return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
+            }
+            return 'px-2 sm:px-3 py-2 whitespace-nowrap';
+          };
+
+          return (
+            <TableHead key={column.id} className={getHeaderClassName()}>
+              {column.sortable ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => onSort(column.accessor)}
+                  className="flex items-center gap-1.5 h-auto px-2 py-1 font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded text-sm transition-colors"
+                >
+                  {column.label}
+                  <div className="text-gray-400">{renderSortIcon(column.accessor)}</div>
+                </Button>
+              ) : (
+                <span className="font-medium text-gray-700 text-sm">{column.label}</span>
+              )}
+            </TableHead>
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-gray-50 px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           <div className="flex items-center justify-center gap-1 sm:gap-2 font-medium text-gray-700 text-xs sm:text-sm">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
@@ -113,185 +113,204 @@ export function ProductTableHeader({
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
-        {visibleColumns.map((column, index) => (
-          <TableHead
-            key={`filter-${column.id}`}
-            className={`
-              px-2 sm:px-3 py-2
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
-            `}
-          >
-            {column.type === 'field'
-              ? (() => {
-                  if (column.accessor === 'name') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['name'] as string) || ''}
-                        onChange={(e) => onFilterChange('name', e.target.value || undefined)}
-                      />
-                    );
-                  }
+        {visibleColumns.map((column, index) => {
+          const getFilterClassName = () => {
+            if (column.id === 'image') {
+              return 'px-2 sm:px-3 py-2 w-[60px]';
+            }
+            if (['description', 'remark'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2 max-w-[200px]';
+            }
+            if (column.id === 'name') {
+              return 'px-2 sm:px-3 py-2 max-w-[150px]';
+            }
+            if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+              return 'px-2 sm:px-3 py-2';
+            }
+            if (column.id === 'id') {
+              return 'px-2 sm:px-3 py-2 w-[80px]';
+            }
+            return 'px-2 sm:px-3 py-2';
+          };
 
-                  if (column.accessor === 'code') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['code'] as string) || ''}
-                        onChange={(e) => onFilterChange('code', e.target.value || undefined)}
-                      />
-                    );
-                  }
+          return (
+            <TableHead key={`filter-${column.id}`} className={getFilterClassName()}>
+              {column.type === 'field'
+                ? (() => {
+                    if (column.accessor === 'name') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['name'] as string) || ''}
+                          onChange={(e) => onFilterChange('name', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'description') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['description'] as string) || ''}
-                        onChange={(e) => onFilterChange('description', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'code') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['code'] as string) || ''}
+                          onChange={(e) => onFilterChange('code', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'basePrice') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['basePrice'] as string) || ''}
-                        onChange={(e) => onFilterChange('basePrice', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'description') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['description'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('description', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'minPrice') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['minPrice'] as string) || ''}
-                        onChange={(e) => onFilterChange('minPrice', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'basePrice') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['basePrice'] as string) || ''}
+                          onChange={(e) => onFilterChange('basePrice', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'maxPrice') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['maxPrice'] as string) || ''}
-                        onChange={(e) => onFilterChange('maxPrice', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'minPrice') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['minPrice'] as string) || ''}
+                          onChange={(e) => onFilterChange('minPrice', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'remark') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['remark'] as string) || ''}
-                        onChange={(e) => onFilterChange('remark', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'maxPrice') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['maxPrice'] as string) || ''}
+                          onChange={(e) => onFilterChange('maxPrice', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'status') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['status'] as string) || ''}
-                        onChange={(e) => onFilterChange('status', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'remark') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['remark'] as string) || ''}
+                          onChange={(e) => onFilterChange('remark', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'createdBy') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['createdBy'] as string) || ''}
-                        onChange={(e) => onFilterChange('createdBy', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'status') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['status'] as string) || ''}
+                          onChange={(e) => onFilterChange('status', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'createdDate') {
-                    return (
-                      <Input
-                        type="date"
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        value={(filters['createdDate'] as string) || ''}
-                        onChange={(e) => onFilterChange('createdDate', e.target.value || undefined)}
-                      />
-                    );
-                  }
+                    if (column.accessor === 'createdBy') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['createdBy'] as string) || ''}
+                          onChange={(e) => onFilterChange('createdBy', e.target.value || undefined)}
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'lastModifiedBy') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['lastModifiedBy'] as string) || ''}
-                        onChange={(e) =>
-                          onFilterChange('lastModifiedBy', e.target.value || undefined)
-                        }
-                      />
-                    );
-                  }
+                    if (column.accessor === 'createdDate') {
+                      return (
+                        <Input
+                          type="date"
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          value={(filters['createdDate'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('createdDate', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'lastModifiedDate') {
-                    return (
-                      <Input
-                        type="date"
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        value={(filters['lastModifiedDate'] as string) || ''}
-                        onChange={(e) =>
-                          onFilterChange('lastModifiedDate', e.target.value || undefined)
-                        }
-                      />
-                    );
-                  }
+                    if (column.accessor === 'lastModifiedBy') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['lastModifiedBy'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('lastModifiedBy', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
 
-                  return null;
-                })()
-              : (() => {
-                  if (column.accessor === 'category') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['category.name'] as string) || ''}
-                        onChange={(e) =>
-                          onFilterChange('category.name', e.target.value || undefined)
-                        }
-                      />
-                    );
-                  }
+                    if (column.accessor === 'lastModifiedDate') {
+                      return (
+                        <Input
+                          type="date"
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          value={(filters['lastModifiedDate'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('lastModifiedDate', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
 
-                  if (column.accessor === 'subCategory') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['subCategory.name'] as string) || ''}
-                        onChange={(e) =>
-                          onFilterChange('subCategory.name', e.target.value || undefined)
-                        }
-                      />
-                    );
-                  }
+                    return null;
+                  })()
+                : (() => {
+                    if (column.accessor === 'category') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['category.name'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('category.name', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
 
-                  return null;
-                })()}
-          </TableHead>
-        ))}
+                    if (column.accessor === 'subCategory') {
+                      return (
+                        <Input
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['subCategory.name'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('subCategory.name', e.target.value || undefined)
+                          }
+                        />
+                      );
+                    }
+
+                    return null;
+                  })()}
+            </TableHead>
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />

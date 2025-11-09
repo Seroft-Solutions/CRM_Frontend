@@ -1,34 +1,11 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React from 'react';
 
-import {
-  useGetAllStates,
-  useSearchStates,
-  useCountStates,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-import {
-  useGetAllDistricts,
-  useSearchDistricts,
-  useCountDistricts,
-} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import {
-  useGetAllCities,
-  useSearchCities,
-  useCountCities,
-} from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-import {
-  useGetAllAreas,
-  useSearchAreas,
-  useCountAreas,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
+import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 interface CustomerReviewStepProps {
   form: any;
@@ -37,9 +14,7 @@ interface CustomerReviewStepProps {
   entity?: any;
 }
 
-// Relationship value resolver component
 function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
-  // Use hooks based on relationship configuration
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
       case 'state':
@@ -98,7 +73,6 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
   return resolveRelationshipDisplay();
 }
 
-// Component to display relationship values
 function RelationshipDisplayValue({
   value,
   useGetAllHook,
@@ -114,17 +88,16 @@ function RelationshipDisplayValue({
   multiple: boolean;
   label: string;
 }) {
-  // Fetch all data to resolve display values
   const { data: allData } = useGetAllHook(
     {
       page: 0,
-      size: 20, // Use backend's default page size
-      sort: [`${displayField},asc`], // Sort by display field in ascending order
+      size: 20,
+      sort: [`${displayField},asc`],
     },
     {
       query: {
-        enabled: !!value, // Only fetch if there's a value to resolve
-        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        enabled: !!value,
+        staleTime: 5 * 60 * 1000,
       },
     }
   );
@@ -137,7 +110,6 @@ function RelationshipDisplayValue({
     return <span className="text-muted-foreground italic">Loading...</span>;
   }
 
-  // Extract data array from response (handle both direct array and paginated response)
   const dataArray = Array.isArray(allData)
     ? allData
     : allData.content
@@ -160,33 +132,32 @@ function RelationshipDisplayValue({
     const displayValues = selectedItems.map((item: any) => item[displayField]);
     return <span>{displayValues.join(', ')}</span>;
   } else {
-    // Single value - handle both object and ID
     let selectedItem;
-    
-    // If value is an object, use it directly
+
     if (typeof value === 'object' && value !== null) {
       selectedItem = value;
     } else {
-      // If value is an ID, find the item in the data array
       selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
     }
 
     if (!selectedItem) {
       return (
-        <span className="text-muted-foreground italic">Selected (ID: {typeof value === 'object' ? JSON.stringify(value) : value})</span>
+        <span className="text-muted-foreground italic">
+          Selected (ID: {typeof value === 'object' ? JSON.stringify(value) : value})
+        </span>
       );
     }
 
-    // For area relationship, display full hierarchy
     if (label === 'Areas') {
       const parts = [];
-      
-      if (selectedItem.city?.district?.state?.name) parts.push(selectedItem.city.district.state.name);
+
+      if (selectedItem.city?.district?.state?.name)
+        parts.push(selectedItem.city.district.state.name);
       if (selectedItem.city?.district?.name) parts.push(selectedItem.city.district.name);
       if (selectedItem.city?.name) parts.push(selectedItem.city.name);
       if (selectedItem.name) parts.push(selectedItem.name);
       if (selectedItem.pincode) parts.push(selectedItem.pincode);
-      
+
       return parts.length > 0 ? (
         <span>{parts.join(', ')}</span>
       ) : (
@@ -194,7 +165,6 @@ function RelationshipDisplayValue({
       );
     }
 
-    // For other relationships, just display the display field
     return <span>{selectedItem[displayField]}</span>;
   }
 }
@@ -230,7 +200,6 @@ export function CustomerReviewStep({ form, config, actions, entity }: CustomerRe
                 if (!fieldConfig) return null;
                 const value = form.getValues(fieldName);
 
-                // Format value for display
                 const displayValue = (() => {
                   if (!value) return <span className="text-muted-foreground italic">Not set</span>;
 

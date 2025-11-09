@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
+  AlertCircle,
+  ArrowRight,
   Building2,
   CheckCircle,
-  AlertCircle,
-  Loader2,
   Coffee,
-  ArrowRight,
   Database,
+  Loader2,
   LogOut,
 } from 'lucide-react';
 import { OrganizationSetupForm } from '@/components/organization-setup/OrganizationSetupForm';
@@ -34,7 +34,6 @@ export function OrganizationSetupWizard() {
     }
   }, [state.isSetupRequired, state.isSetupInProgress, state.isSetupCompleted]);
 
-  // Redirect to organization-select if user has organizations (but not during setup)
   useEffect(() => {
     if (
       !isLoading &&
@@ -55,7 +54,6 @@ export function OrganizationSetupWizard() {
     state.showWelcome,
   ]);
 
-  // Header with logout button
   const Header = () => (
     <div className="absolute top-4 right-4 z-10">
       <form action={logoutAction}>
@@ -67,12 +65,10 @@ export function OrganizationSetupWizard() {
     </div>
   );
 
-  // Show welcome page after successful setup
   if (state.showWelcome) {
     return <OrganizationWelcomePage onFinish={actions.finishWelcome} />;
   }
 
-  // Loading state
   if (!state.isSetupRequired && !state.isSetupCompleted && !state.error) {
     return (
       <div className="relative flex items-center justify-center min-h-screen">
@@ -93,7 +89,6 @@ export function OrganizationSetupWizard() {
     );
   }
 
-  // Setup completed
   if (state.isSetupCompleted && !state.isSetupRequired) {
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
@@ -117,11 +112,9 @@ export function OrganizationSetupWizard() {
     );
   }
 
-  // Setup/Sync in progress
   if (state.isSetupInProgress || state.isSyncInProgress) {
     const isSync = state.isSyncInProgress;
 
-    // If we have an organization name, show the modern progress component
     if (state.organizationName) {
       return (
         <div className="relative container mx-auto py-8">
@@ -140,7 +133,6 @@ export function OrganizationSetupWizard() {
       );
     }
 
-    // Fallback to original progress display
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
         <Header />
@@ -208,7 +200,6 @@ export function OrganizationSetupWizard() {
     );
   }
 
-  // Error state
   if (state.error) {
     return (
       <div className="relative container mx-auto max-w-2xl py-8">
@@ -239,7 +230,6 @@ export function OrganizationSetupWizard() {
     );
   }
 
-  // Setup/Sync form
   if (showForm) {
     return (
       <div className="relative container mx-auto py-8">
@@ -306,7 +296,6 @@ export function OrganizationSetupWizard() {
     );
   }
 
-  // Welcome screen
   return (
     <div className="relative container mx-auto max-w-2xl py-8">
       <Header />

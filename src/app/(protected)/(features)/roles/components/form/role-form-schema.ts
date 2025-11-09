@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Role form validation schema with user-friendly messages
  */
@@ -35,7 +28,6 @@ export const roleFormSchema = z.object(roleFormSchemaFields);
 
 export type RoleFormValues = z.infer<typeof roleFormSchema>;
 
-// Individual field schemas for granular validation
 export const roleFieldSchemas = {
   keycloakRoleId: z
     .string({ message: 'Please enter keycloakroleid' })
@@ -57,7 +49,6 @@ export const roleFieldSchemas = {
   users: z.string().optional(),
 };
 
-// Step-specific validation schemas
 export const roleStepSchemas = {
   basic: z.object({
     keycloakRoleId: roleFieldSchemas.keycloakRoleId,
@@ -73,7 +64,6 @@ export const roleStepSchemas = {
   review: roleFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = roleStepSchemas[stepId as keyof typeof roleStepSchemas];
   if (!schema) return { success: true, data };

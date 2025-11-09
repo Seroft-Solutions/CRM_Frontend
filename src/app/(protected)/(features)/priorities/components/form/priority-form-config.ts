@@ -1,11 +1,4 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type { FormConfig } from './form-types';
 
 /**
  * Configuration for Priority form
@@ -14,7 +7,6 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const priorityFormConfig: FormConfig = {
   entity: 'Priority',
 
-  // Form steps configuration
   steps: [
     {
       id: 'basic',
@@ -40,7 +32,6 @@ export const priorityFormConfig: FormConfig = {
     },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'name',
@@ -81,10 +72,8 @@ export const priorityFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
   relationships: [],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -130,20 +119,19 @@ export const priorityFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
       showRestorationDialog: true,
     },
   },
 };
 
-// Export utility functions for external use
 export const priorityFormHelpers = {
   getStepById: (stepId: string) => priorityFormConfig.steps.find((step) => step.id === stepId),
   getFieldConfig: (fieldName: string) =>

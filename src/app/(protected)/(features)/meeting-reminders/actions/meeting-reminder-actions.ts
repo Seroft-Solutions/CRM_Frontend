@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createMeetingReminder,
   updateMeetingReminder,
@@ -19,10 +11,8 @@ import { meetingReminderToast } from '../components/meeting-reminder-toast';
 
 export async function createMeetingReminderAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createMeetingReminder(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/meeting-reminders');
     revalidatePath('/meeting-reminders/new');
     meetingReminderToast.created();
@@ -37,10 +27,8 @@ export async function createMeetingReminderAction(data: any) {
 
 export async function updateMeetingReminderAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateMeetingReminder(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/meeting-reminders');
     revalidatePath(`/meeting-reminders/${id}`);
     revalidatePath(`/meeting-reminders/${id}/edit`);
@@ -128,7 +116,6 @@ export async function bulkArchiveMeetingReminderAction(ids: number[], entitiesDa
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/meeting-reminders');
 
     if (errorCount === 0) {
@@ -176,7 +163,6 @@ export async function bulkUpdateStatusMeetingReminderAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/meeting-reminders');
 
     if (errorCount === 0) {

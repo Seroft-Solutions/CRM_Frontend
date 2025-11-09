@@ -1,14 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -26,7 +19,6 @@ import { RelationshipCell } from './relationship-cell';
 import type { SubCallTypeDTO } from '@/core/api/generated/spring/schemas/SubCallTypeDTO';
 import { SubCallTypeDTOStatus } from '@/core/api/generated/spring/schemas/SubCallTypeDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +82,11 @@ export function SubCallTypeTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: SubCallTypeTableRowProps) {
-  // Get current status display info
   const currentStatus = subCallType.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -127,8 +117,7 @@ export function SubCallTypeTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = subCallType[column.accessor as keyof typeof subCallType];
 
                 if (column.id === 'name') {
@@ -165,8 +154,7 @@ export function SubCallTypeTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 if (column.id === 'callType') {
                   const cellKey = `${subCallType.id}-callType`;
                   return (

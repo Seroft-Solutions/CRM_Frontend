@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createProduct,
   updateProduct,
@@ -19,10 +11,8 @@ import { productToast } from '../components/product-toast';
 
 export async function createProductAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createProduct(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/products');
     revalidatePath('/products/new');
     productToast.created();
@@ -37,10 +27,8 @@ export async function createProductAction(data: any) {
 
 export async function updateProductAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateProduct(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/products');
     revalidatePath(`/products/${id}`);
     revalidatePath(`/products/${id}/edit`);
@@ -117,7 +105,6 @@ export async function bulkArchiveProductAction(ids: number[], entitiesData: any[
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/products');
 
     if (errorCount === 0) {
@@ -161,7 +148,6 @@ export async function bulkUpdateStatusProductAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/products');
 
     if (errorCount === 0) {

@@ -5,15 +5,15 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { UserRepresentationAttributes } from './UserRepresentationAttributes';
-import type { UserProfileMetadata } from './UserProfileMetadata';
-import type { CredentialRepresentation } from './CredentialRepresentation';
-import type { FederatedIdentityRepresentation } from './FederatedIdentityRepresentation';
-import type { UserRepresentationClientRoles } from './UserRepresentationClientRoles';
-import type { UserConsentRepresentation } from './UserConsentRepresentation';
-import type { UserRepresentationApplicationRoles } from './UserRepresentationApplicationRoles';
-import type { SocialLinkRepresentation } from './SocialLinkRepresentation';
-import type { UserRepresentationAccess } from './UserRepresentationAccess';
+import type {UserRepresentationAttributes} from './UserRepresentationAttributes';
+import type {UserProfileMetadata} from './UserProfileMetadata';
+import type {CredentialRepresentation} from './CredentialRepresentation';
+import type {FederatedIdentityRepresentation} from './FederatedIdentityRepresentation';
+import type {UserRepresentationClientRoles} from './UserRepresentationClientRoles';
+import type {UserConsentRepresentation} from './UserConsentRepresentation';
+import type {UserRepresentationApplicationRoles} from './UserRepresentationApplicationRoles';
+import type {SocialLinkRepresentation} from './SocialLinkRepresentation';
+import type {UserRepresentationAccess} from './UserRepresentationAccess';
 
 export interface UserRepresentation {
   id?: string;

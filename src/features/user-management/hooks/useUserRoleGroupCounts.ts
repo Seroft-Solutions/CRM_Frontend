@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { userManagementService } from '@/features/user-management/services/user-management.service';
-import type { RoleRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
+import type { GroupRepresentation, RoleRepresentation } from '@/core/api/generated/keycloak';
 
 interface UserRoleGroupCounts {
   userId: string;
@@ -17,7 +17,6 @@ interface UserRoleGroupCounts {
   hasData: boolean;
 }
 
-// Hook to fetch role and group counts for a specific user
 export function useUserRoleGroupCounts(organizationId: string, userId: string, enabled = true) {
   const {
     data: userDetails,
@@ -27,8 +26,8 @@ export function useUserRoleGroupCounts(organizationId: string, userId: string, e
     queryKey: ['userRoleGroupCounts', organizationId, userId],
     queryFn: () => userManagementService.getUserDetails(organizationId, userId),
     enabled: !!organizationId && !!userId && enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    // Only retry once for this lightweight query
+    staleTime: 5 * 60 * 1000,
+
     retry: 1,
   });
 
@@ -48,13 +47,11 @@ export function useUserRoleGroupCounts(organizationId: string, userId: string, e
   };
 }
 
-// Hook to fetch counts for multiple users (batched)
 export function useBatchUserRoleGroupCounts(
   organizationId: string,
   userIds: string[],
   enabled = true
 ) {
-  // Create individual queries for each user but with shared cache
   const queries = userIds.map((userId) => ({
     queryKey: ['userRoleGroupCounts', organizationId, userId],
     queryFn: () => userManagementService.getUserDetails(organizationId, userId),
@@ -63,8 +60,6 @@ export function useBatchUserRoleGroupCounts(
     retry: 1,
   }));
 
-  // For now, we'll use individual queries
-  // In the future, this could be optimized with a batch API endpoint
   const results = userIds.map((userId) => useUserRoleGroupCounts(organizationId, userId, enabled));
 
   const isLoading = results.some((result) => result.isLoading);

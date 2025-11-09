@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { KeysMetadataRepresentationActive } from './KeysMetadataRepresentationActive';
-import type { KeyMetadataRepresentation } from './KeyMetadataRepresentation';
+import type {KeysMetadataRepresentationActive} from './KeysMetadataRepresentationActive';
+import type {KeyMetadataRepresentation} from './KeyMetadataRepresentation';
 
 export interface KeysMetadataRepresentation {
   active?: KeysMetadataRepresentationActive;

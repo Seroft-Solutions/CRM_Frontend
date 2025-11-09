@@ -1,15 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createSource,
   updateSource,
@@ -19,10 +11,8 @@ import { sourceToast } from '../components/source-toast';
 
 export async function createSourceAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createSource(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/sources');
     revalidatePath('/sources/new');
     sourceToast.created();
@@ -37,10 +27,8 @@ export async function createSourceAction(data: any) {
 
 export async function updateSourceAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateSource(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/sources');
     revalidatePath(`/sources/${id}`);
     revalidatePath(`/sources/${id}/edit`);
@@ -117,7 +105,6 @@ export async function bulkArchiveSourceAction(ids: number[], entitiesData: any[]
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/sources');
 
     if (errorCount === 0) {
@@ -161,7 +148,6 @@ export async function bulkUpdateStatusSourceAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/sources');
 
     if (errorCount === 0) {

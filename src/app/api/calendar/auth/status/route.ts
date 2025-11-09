@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email is required' }, { status: 400 });
     }
 
-    // For now, return a mock response indicating authentication is required
-    // In a real implementation, this would check the database for stored OAuth tokens
     const authStatus = {
       isAuthenticated: false,
       userEmail,

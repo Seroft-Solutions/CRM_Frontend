@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,53 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
-import {
-  Search,
-  Trash2,
-  FileText,
-  Calendar,
-  RefreshCw,
-  Loader2,
-  Archive,
-  RotateCcw,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-  Download,
-  X,
-  Settings2,
-  Eye,
-  EyeOff
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Calendar, FileText, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useEntityDrafts, type DraftItem, type DraftData } from '@/core/hooks/use-entity-drafts';
+import { type DraftData, type DraftItem } from '@/core/hooks/use-entity-drafts';
 import {
-  useGetAllUserDrafts,
   useDeleteUserDraft,
-  useCountUserDrafts,
+  useGetAllUserDrafts,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
-import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Entity route mapping for draft restoration
 const ENTITY_ROUTES: Record<string, string> = {
   Call: '/calls/new',
   Customer: '/customers/new',
@@ -75,10 +38,8 @@ const ENTITY_ROUTES: Record<string, string> = {
   CallStatus: '/call-statuses/new',
   ChannelType: '/channel-types/new',
   UserProfile: '/user-profiles/new',
-  // Add more entity types as needed
 };
 
-// Column configuration for the drafts table
 interface ColumnConfig {
   id: string;
   label: string;
@@ -92,18 +53,21 @@ const ALL_COLUMNS: ColumnConfig[] = [
   { id: 'entityType', label: 'Entity Type', accessor: 'entityType', visible: true, sortable: true },
   { id: 'leadNo', label: 'Lead No', accessor: 'leadNo', visible: true, sortable: false },
   { id: 'step', label: 'Step', accessor: 'currentStep', visible: true, sortable: true },
-  { id: 'lastModified', label: 'Last Modified', accessor: 'lastModifiedDate', visible: true, sortable: true },
+  {
+    id: 'lastModified',
+    label: 'Last Modified',
+    accessor: 'lastModifiedDate',
+    visible: true,
+    sortable: true,
+  },
   { id: 'created', label: 'Created', accessor: 'createdDate', visible: false, sortable: true },
 ];
 
-// Local storage key for column visibility
 const COLUMN_VISIBILITY_KEY = 'drafts-table-columns';
 
-// Define sort ordering constants
 const ASC = 'asc';
 const DESC = 'desc';
 
-// Helper function to get leadNo from draft data
 const getLeadNoFromDraft = (draft: DraftItem & { entityType: string }): string | null => {
   if (draft.entityType.toLowerCase() === 'call' && draft.data.formData?.leadNo) {
     return draft.data.formData.leadNo;
@@ -111,7 +75,6 @@ const getLeadNoFromDraft = (draft: DraftItem & { entityType: string }): string |
   return null;
 };
 
-// Helper function to format leadNo for display
 const formatLeadNoDisplay = (leadNo: string): string => {
   if (leadNo && leadNo.length === 8 && /^[A-Z]{3}\d{5}$/.test(leadNo)) {
     return `${leadNo.substring(0, 3)}-${leadNo.substring(3)}`;
@@ -125,19 +88,22 @@ export default function DraftsManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [draftToDelete, setDraftToDelete] = useState<(DraftItem & { entityType: string }) | null>(null);
+  const [draftToDelete, setDraftToDelete] = useState<(DraftItem & { entityType: string }) | null>(
+    null
+  );
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [sort, setSort] = useState('lastModifiedDate');
   const [order, setOrder] = useState(DESC);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-        return saved ? JSON.parse(saved) : ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
+        return saved
+          ? JSON.parse(saved)
+          : ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
       } catch {
         return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
       }
@@ -145,7 +111,6 @@ export default function DraftsManagementPage() {
     return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.id]: col.visible }), {});
   });
 
-  // Save column visibility to localStorage
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -156,12 +121,10 @@ export default function DraftsManagementPage() {
     }
   }, [columnVisibility]);
 
-  // Get visible columns
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
-  // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
@@ -169,27 +132,24 @@ export default function DraftsManagementPage() {
     }));
   };
 
-  // Get all drafts without entity type filter first to see what types exist
   const {
     data: allDraftsResponse,
     isLoading: isLoadingAllDrafts,
     error: allDraftsError,
   } = useGetAllUserDrafts(
     {
-      // No filters to get all drafts - use empty object
-      size: 100, // Get more drafts for management page
-      sort: ['lastModifiedDate,desc'], // Sort by most recent first
+      size: 100,
+      sort: ['lastModifiedDate,desc'],
     },
     {
       query: {
         enabled: true,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
       },
     }
   );
 
-  // Delete draft mutation
   const deleteDraftMutation = useDeleteUserDraft({
     mutation: {
       onSuccess: () => {
@@ -200,10 +160,10 @@ export default function DraftsManagementPage() {
       },
       onError: (error: any) => {
         console.error('Failed to delete draft:', error);
-        // Handle 409 conflicts gracefully
+
         if (error?.response?.status === 409 || error?.status === 409) {
           toast.success('Draft was already deleted');
-          // Refresh the list to sync with server state
+
           queryClient.invalidateQueries({
             queryKey: ['/api/user-drafts'],
           });
@@ -214,7 +174,6 @@ export default function DraftsManagementPage() {
     },
   });
 
-  // Transform response to DraftItem[] with entity type
   const allDrafts: (DraftItem & { entityType: string })[] = allDraftsResponse
     ? allDraftsResponse.map((draft) => {
         const draftData = JSON.parse(draft.jsonPayload) as DraftData;
@@ -230,7 +189,6 @@ export default function DraftsManagementPage() {
 
   const isLoadingAny = isLoadingAllDrafts;
 
-  // Filter drafts based on search and entity type
   const filteredDrafts = allDrafts.filter((draft) => {
     const matchesSearch =
       draft.data.entityType.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -240,7 +198,6 @@ export default function DraftsManagementPage() {
     return matchesSearch && matchesEntityType;
   });
 
-  // Sort drafts by most recent first
   const sortedDrafts = filteredDrafts.sort(
     (a, b) =>
       new Date(b.lastModifiedDate || b.createdDate || '').getTime() -
@@ -254,7 +211,6 @@ export default function DraftsManagementPage() {
       return;
     }
 
-    // Store draft restoration info for the target form
     const restorationData = {
       draftId: draft.id,
       entityType: draft.entityType,
@@ -265,7 +221,6 @@ export default function DraftsManagementPage() {
 
     sessionStorage.setItem('draftToRestore', JSON.stringify(restorationData));
 
-    // Navigate to the form
     router.push(route);
     toast.success(`Navigating to restore ${draft.entityType} draft...`);
   };
@@ -280,9 +235,7 @@ export default function DraftsManagementPage() {
 
     try {
       await deleteDraftMutation.mutateAsync({ id: draftToDelete.id });
-    } catch (error) {
-      // Error handling is done in the mutation
-    }
+    } catch (error) {}
 
     setDeleteDialogOpen(false);
     setDraftToDelete(null);
@@ -319,7 +272,6 @@ export default function DraftsManagementPage() {
     return colors[entityType] || 'bg-gray-100 text-gray-800';
   };
 
-  // Get unique entity types from actual drafts for filter
   const availableEntityTypes = [...new Set(allDrafts.map((draft) => draft.entityType))].sort();
 
   return (

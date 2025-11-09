@@ -1,4 +1,4 @@
-import {OrganizationRepresentation} from "@/core/api/generated/keycloak";
+import { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 
 export interface UserOrganization {
   id: string;
@@ -71,5 +71,4 @@ export class OrganizationApiService {
   }
 }
 
-// Export singleton instance
 export const organizationApiService = new OrganizationApiService();

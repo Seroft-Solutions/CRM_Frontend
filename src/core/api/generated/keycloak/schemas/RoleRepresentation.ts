@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { Composites } from './Composites';
-import type { RoleRepresentationAttributes } from './RoleRepresentationAttributes';
+import type {Composites} from './Composites';
+import type {RoleRepresentationAttributes} from './RoleRepresentationAttributes';
 
 export interface RoleRepresentation {
   id?: string;

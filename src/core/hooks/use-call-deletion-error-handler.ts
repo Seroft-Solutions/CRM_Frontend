@@ -5,7 +5,7 @@
  * and gives users clear guidance on how to resolve them.
  */
 
-import { toast } from 'sonner';
+import {toast} from 'sonner';
 
 export interface ConstraintViolationError {
   type: 'constraint_violation';
@@ -31,11 +31,9 @@ export class CallDeletionErrorHandler {
    * Parse error response and determine if it's a constraint violation
    */
   static parseError(error: any): ConstraintViolationError | Error {
-    // Check if it's a 500 error with constraint violation indicators
     if (error.status === 500 && error.response?.data?.detail) {
       const detail = error.response.data.detail;
 
-      // Check for common constraint violation patterns
       if (detail.includes('Failure during data access')) {
         return {
           type: 'constraint_violation',
@@ -53,7 +51,6 @@ export class CallDeletionErrorHandler {
       }
     }
 
-    // Check for specific constraint violation keywords
     if (error.message && typeof error.message === 'string') {
       const message = error.message.toLowerCase();
 
@@ -85,7 +82,6 @@ export class CallDeletionErrorHandler {
       }
     }
 
-    // Return as generic error if not a constraint violation
     return error;
   }
 
@@ -107,7 +103,6 @@ export class CallDeletionErrorHandler {
       const parsedError = this.parseError(error);
 
       if (parsedError.type === 'constraint_violation') {
-        // Show detailed error message for constraint violations
         toast.error(parsedError.userMessage, {
           description: 'Please see suggested actions below',
           duration: 8000,
@@ -123,7 +118,6 @@ export class CallDeletionErrorHandler {
           message: parsedError.userMessage,
         };
       } else {
-        // Handle generic errors
         const errorMessage = error.message || 'Failed to delete call';
         toast.error('Delete Operation Failed', {
           description: errorMessage,
@@ -137,6 +131,72 @@ export class CallDeletionErrorHandler {
         };
       }
     }
+  }
+
+  /**
+   * Check if a call can be deleted by validating related data
+   */
+  static async validateCallDeletion(callId: string | number): Promise<{
+    canDelete: boolean;
+    blockers: string[];
+    suggestions: string[];
+  }> {
+    try {
+      const response = await fetch(`/api/calls/${callId}/validation`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        return await response.json();
+      } else {
+        return {
+          canDelete: true,
+          blockers: [],
+          suggestions: [],
+        };
+      }
+    } catch (error) {
+      console.warn('Call deletion validation failed:', error);
+
+      return {
+        canDelete: true,
+        blockers: [],
+        suggestions: ['Deletion validation unavailable - proceed with caution'],
+      };
+    }
+  }
+
+  /**
+   * Safe delete with pre-validation
+   */
+  static async safeDeleteCall(
+    callId: string | number,
+    deleteOperation: () => Promise<void>
+  ): Promise<DeleteOperationResult> {
+    const validation = await this.validateCallDeletion(callId);
+
+    if (!validation.canDelete) {
+      toast.warning('Cannot Delete Call', {
+        description: `Blocked by: ${validation.blockers.join(', ')}`,
+        duration: 8000,
+        action: {
+          label: 'Show Solutions',
+          onClick: () => {
+            toast.info('Suggested Solutions', {
+              description: validation.suggestions.join('\n• '),
+              duration: 10000,
+            });
+          },
+        },
+      });
+
+      return {
+        success: false,
+        message: `Cannot delete: ${validation.blockers.join(', ')}`,
+      };
+    }
+
+    return this.handleCallDeletion(callId, deleteOperation);
   }
 
   /**
@@ -161,76 +221,6 @@ export class CallDeletionErrorHandler {
       duration: 15000,
     });
   }
-
-  /**
-   * Check if a call can be deleted by validating related data
-   */
-  static async validateCallDeletion(callId: string | number): Promise<{
-    canDelete: boolean;
-    blockers: string[];
-    suggestions: string[];
-  }> {
-    try {
-      // Check for call remarks
-      const response = await fetch(`/api/calls/${callId}/validation`, {
-        method: 'GET',
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        // If validation endpoint doesn't exist, assume deletion is allowed
-        return {
-          canDelete: true,
-          blockers: [],
-          suggestions: [],
-        };
-      }
-    } catch (error) {
-      console.warn('Call deletion validation failed:', error);
-      // If validation fails, allow deletion but warn user
-      return {
-        canDelete: true,
-        blockers: [],
-        suggestions: ['Deletion validation unavailable - proceed with caution'],
-      };
-    }
-  }
-
-  /**
-   * Safe delete with pre-validation
-   */
-  static async safeDeleteCall(
-    callId: string | number,
-    deleteOperation: () => Promise<void>
-  ): Promise<DeleteOperationResult> {
-    // First validate if deletion is possible
-    const validation = await this.validateCallDeletion(callId);
-
-    if (!validation.canDelete) {
-      toast.warning('Cannot Delete Call', {
-        description: `Blocked by: ${validation.blockers.join(', ')}`,
-        duration: 8000,
-        action: {
-          label: 'Show Solutions',
-          onClick: () => {
-            toast.info('Suggested Solutions', {
-              description: validation.suggestions.join('\n• '),
-              duration: 10000,
-            });
-          },
-        },
-      });
-
-      return {
-        success: false,
-        message: `Cannot delete: ${validation.blockers.join(', ')}`,
-      };
-    }
-
-    // Proceed with deletion if validation passes
-    return this.handleCallDeletion(callId, deleteOperation);
-  }
 }
 
 /**
@@ -247,7 +237,6 @@ export function useCallDeletion() {
   ): Promise<DeleteOperationResult> => {
     const { showConfirmation = true, validateBeforeDelete = true } = options;
 
-    // Show confirmation dialog if requested
     if (showConfirmation) {
       const confirmed = window.confirm(
         'Are you sure you want to delete this call? This action cannot be undone.'
@@ -261,7 +250,6 @@ export function useCallDeletion() {
       }
     }
 
-    // Use safe delete with validation if requested
     if (validateBeforeDelete) {
       return CallDeletionErrorHandler.safeDeleteCall(callId, deleteOperation);
     } else {
@@ -273,7 +261,6 @@ export function useCallDeletion() {
     callId: string | number,
     deleteOperation: () => Promise<void>
   ): Promise<DeleteOperationResult> => {
-    // Special handling for calls with remarks
     const confirmed = window.confirm(
       'This call has remarks or other related data. Are you sure you want to delete it? ' +
         'Consider archiving instead of deleting to preserve data relationships.'
@@ -332,7 +319,6 @@ export function useConstraintViolationHandler() {
       };
     }
 
-    // Handle as generic error
     const errorMessage = error.message || `Failed to delete ${entityType.toLowerCase()}`;
     toast.error('Delete Operation Failed', {
       description: errorMessage,

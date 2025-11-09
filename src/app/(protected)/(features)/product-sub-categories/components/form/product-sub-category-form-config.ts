@@ -1,11 +1,4 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './form-types';
+import type {FormConfig} from './form-types';
 
 /**
  * Configuration for ProductSubCategory form
@@ -14,7 +7,6 @@ import type { FormConfig, FormStep, FieldConfig, RelationshipConfig } from './fo
 export const productSubCategoryFormConfig: FormConfig = {
   entity: 'ProductSubCategory',
 
-  // Form steps configuration
   steps: [
     {
       id: 'basic',
@@ -51,7 +43,6 @@ export const productSubCategoryFormConfig: FormConfig = {
     },
   ],
 
-  // Field definitions
   fields: [
     {
       name: 'name',
@@ -106,7 +97,6 @@ export const productSubCategoryFormConfig: FormConfig = {
     },
   ],
 
-  // Relationship definitions
   relationships: [
     {
       name: 'category',
@@ -136,7 +126,6 @@ export const productSubCategoryFormConfig: FormConfig = {
     },
   ],
 
-  // Global form configuration
   validation: {
     mode: 'onBlur',
     revalidateMode: 'onBlur',
@@ -182,20 +171,19 @@ export const productSubCategoryFormConfig: FormConfig = {
       newEntityIdKey: 'newlyCreatedEntityId',
     },
     rendering: {
-      useGeneratedSteps: false, // true = use generated step files, false = use dynamic renderer
+      useGeneratedSteps: false,
     },
     drafts: {
       enabled: true,
-      saveBehavior: 'onNavigation', // 'onNavigation' | 'onUnload' | 'both'
+      saveBehavior: 'onNavigation',
       confirmDialog: true,
       autoSave: false,
-      maxDrafts: 5, // limit number of drafts per entity type per user
+      maxDrafts: 5,
       showRestorationDialog: true,
     },
   },
 };
 
-// Export utility functions for external use
 export const productSubCategoryFormHelpers = {
   getStepById: (stepId: string) =>
     productSubCategoryFormConfig.steps.find((step) => step.id === stepId),

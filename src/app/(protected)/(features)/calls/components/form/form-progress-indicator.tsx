@@ -1,10 +1,6 @@
-// ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced with dynamic colors based on Business Partner toggle
-// ===============================================================
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -24,7 +20,10 @@ export function FormProgressIndicator() {
     window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
 
     return () => {
-      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+      window.removeEventListener(
+        'businessPartnerToggle',
+        handleBusinessPartnerToggle as EventListener
+      );
     };
   }, []);
 
@@ -48,7 +47,10 @@ export function FormProgressIndicator() {
               </span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`} />
+            <Progress
+              value={progress}
+              className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`}
+            />
           </div>
 
           {/* Step Indicators */}
@@ -71,7 +73,9 @@ export function FormProgressIndicator() {
                             ? 'border-primary text-primary bg-primary/10'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        (isBusinessPartner ? 'cursor-pointer hover:border-bp-primary' : 'cursor-pointer hover:border-primary')
+                        (isBusinessPartner
+                          ? 'cursor-pointer hover:border-bp-primary'
+                          : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >
@@ -117,7 +121,10 @@ export function FormProgressIndicator() {
               </div>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`} />
+            <Progress
+              value={progress}
+              className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`}
+            />
           </div>
 
           {/* Step Indicators */}
@@ -140,7 +147,9 @@ export function FormProgressIndicator() {
                             ? 'border-primary text-primary bg-primary/10'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        (isBusinessPartner ? 'cursor-pointer hover:border-bp-primary' : 'cursor-pointer hover:border-primary')
+                        (isBusinessPartner
+                          ? 'cursor-pointer hover:border-bp-primary'
+                          : 'cursor-pointer hover:border-primary')
                     )}
                     onClick={() => handleStepClick(index)}
                   >

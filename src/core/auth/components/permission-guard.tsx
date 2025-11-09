@@ -5,12 +5,12 @@
 
 'use client';
 
-import { ReactNode } from 'react';
-import { useAuth } from '@/core/auth/providers/session-provider';
-import { useUserRoles } from '@/core/auth/hooks/use-user-roles';
-import { UnauthorizedPage } from '@/core/auth/components/unauthorized-page';
-import { normalizeRole } from '@/core/auth/utils';
-import type { PermissionGuardProps } from '../types';
+import {ReactNode} from 'react';
+import {useAuth} from '@/core/auth/providers/session-provider';
+import {useUserRoles} from '@/core/auth/hooks/use-user-roles';
+import {UnauthorizedPage} from '@/core/auth/components/unauthorized-page';
+import {normalizeRole} from '@/core/auth/utils';
+import type {PermissionGuardProps} from '../types';
 
 /**
  * Permission Guard Component
@@ -35,7 +35,6 @@ export function PermissionGuard({
   const { session, status, isLoading } = useAuth();
   const { roles: userRoles, isLoading: rolesLoading } = useUserRoles();
 
-  // Loading state
   if (isLoading || rolesLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -44,7 +43,6 @@ export function PermissionGuard({
     );
   }
 
-  // Not authenticated
   if (!session?.user) {
     if (showUnauthorizedPage) {
       return (
@@ -58,8 +56,6 @@ export function PermissionGuard({
     return <>{fallback}</>;
   }
 
-  // Check if user has the required permission
-  // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedRequiredPermission = normalizeRole(requiredPermission);
   const hasPermission = userRoles.includes(normalizedRequiredPermission);
 
@@ -117,12 +113,10 @@ export function usePermission(permission: string): boolean {
     return false;
   }
 
-  // If no permission is required, always return true
   if (!permission || permission === '') {
     return true;
   }
 
-  // Roles from useUserRoles are already normalized
   const normalizedPermission = normalizeRole(permission);
   return userRoles.includes(normalizedPermission);
 }
@@ -138,7 +132,6 @@ export function useAnyPermission(roles: string[]): boolean {
     return false;
   }
 
-  // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedRequiredRoles = roles.map(normalizeRole);
 
   return normalizedRequiredRoles.some((permission) => userRoles.includes(permission));
@@ -155,7 +148,6 @@ export function useAllRoles(roles: string[]): boolean {
     return false;
   }
 
-  // Roles from useUserRoles are already normalized, don't normalize again
   const normalizedRequiredRoles = roles.map(normalizeRole);
 
   return normalizedRequiredRoles.every((permission) => userRoles.includes(permission));

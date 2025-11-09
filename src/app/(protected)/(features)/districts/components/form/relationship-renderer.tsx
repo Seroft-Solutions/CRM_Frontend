@@ -7,16 +7,15 @@
 // ===============================================================
 'use client';
 
-import React, { useCallback } from 'react';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React from 'react';
+import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 
 // Import all hooks statically for the specific entity
-
 import {
+  useCountStates,
   useGetAllStates,
   useSearchStates,
-  useCountStates,
 } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 
 import type { RelationshipConfig } from './form-types';

@@ -1,50 +1,67 @@
-name: 🎯 Frontend Release (Docker Build Only)
+name: 🚀 Release
 
 permissions:
   contents: write
 
 on:
-  repository_dispatch:
-    types: [coordinated_release]
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Release version (e.g., 1.4.0)"
+        description: "Release version (e.g., 1.6.0)"
         required: true
         type: string
+      deploy_to:
+        description: 'Deploy to which server?'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+          - skip
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  setup_release:
-    name: 🏷️ Setup Frontend Release
+  validate_version:
+    name: 🏷️ Validate Version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag_name: ${{ steps.version.outputs.tag_name }}
-      triggered_by_backend: ${{ steps.version.outputs.triggered_by_backend }}
+      version: ${{ steps.validate.outputs.version }}
+      tag_name: ${{ steps.validate.outputs.tag_name }}
     steps:
-      - name: Determine version and source
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            VERSION="${{ github.event.client_payload.version }}"
-            TAG_NAME="${{ github.event.client_payload.tag_name }}"
-            TRIGGERED_BY_BACKEND="true"
-            echo "🎯 Release triggered by backend: $VERSION"
-          else
-            VERSION="${{ inputs.release_version }}"
-            TAG_NAME="v${VERSION}"
-            TRIGGERED_BY_BACKEND="false"
-            echo "👤 Manual release triggered: $VERSION"
-          fi
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Validate version
+        id: validate
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Use semantic versioning: X.Y.Z (e.g., 1.6.0)"
+            exit 1
+          fi
+          
+          TAG_NAME="v${VERSION}"
+          
+          if git tag -l | grep -q "^${TAG_NAME}$"; then
+            echo "❌ Tag already exists: $TAG_NAME"
+            exit 1
+          fi
+          
+          echo "✅ Version valid: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "triggered_by_backend=$TRIGGERED_BY_BACKEND" >> $GITHUB_OUTPUT
 
-  create_frontend_tag:
-    name: 🏷️ Create Frontend Tag
+  create_tag:
+    name: 🏷️ Create Tag
     runs-on: ubuntu-latest
-    needs: [setup_release]
+    needs: [validate_version]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,32 +71,32 @@ jobs:
 
       - name: Create and push tag
         run: |
-          TAG_NAME="${{ needs.setup_release.outputs.tag_name }}"
-
-          if git tag -l | grep -q "^${TAG_NAME}$"; then
-            echo "⚠️ Tag ${TAG_NAME} already exists, skipping"
-            exit 0
-          fi
+          TAG_NAME="${{ needs.validate_version.outputs.tag_name }}"
+          VERSION="${{ needs.validate_version.outputs.version }}"
 
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git tag -a "$TAG_NAME" -m "Frontend Release $TAG_NAME"
+          git tag -a "$TAG_NAME" -m "Release v$VERSION"
           git push origin "$TAG_NAME"
+          
+          echo "✅ Created tag: $TAG_NAME"
 
-  build_frontend_docker:
-    name: 🐳 Build Frontend Docker Image
+  build_docker:
+    name: 🐳 Build Docker Image
     runs-on: ubuntu-latest
-    needs: [setup_release, create_frontend_tag]
+    needs: [validate_version, create_tag]
+    env:
+      NODE_VERSION: "20"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.setup_release.outputs.tag_name }}
+          ref: ${{ needs.validate_version.outputs.tag_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Setup Docker Buildx
@@ -97,28 +114,94 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}
+            ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.validate_version.outputs.tag_name }}
             ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+            NODE_ENV=production
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.setup_release.outputs.tag_name }}
-          name: Frontend ${{ needs.setup_release.outputs.tag_name }}
+          tag_name: ${{ needs.validate_version.outputs.tag_name }}
+          name: Release v${{ needs.validate_version.outputs.version }}
           body: |
-            ## 🎯 Frontend Release ${{ needs.setup_release.outputs.tag_name }}
+            ## 🚀 Release v${{ needs.validate_version.outputs.version }}
 
-            **Docker Image:** `${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}`
+            ### 📦 Docker Image
 
-            📝 **Note:** Deployment is handled by the backend repository.
+            ```bash
+            docker pull ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.validate_version.outputs.tag_name }}
+            ```
+
+            **Tags**: `${{ needs.validate_version.outputs.tag_name }}`, `latest`
+
+            ### 📋 Changes
+
+            See commit history for detailed changes.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         run: |
-          echo "✅ Frontend Docker image built and pushed"
-          echo "🐳 ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.setup_release.outputs.tag_name }}"
-          echo "📝 Deployment will be handled by backend repository"
+          echo "✅ Release v${{ needs.validate_version.outputs.version }} complete"
+          echo "🐳 Docker: ${{ secrets.DOCKER_USERNAME }}/crm-frontend:${{ needs.validate_version.outputs.tag_name }}"
+
+  deploy:
+    name: 🚀 Deploy to Server
+    runs-on: ubuntu-latest
+    needs: [validate_version, create_tag, build_docker]
+    if: inputs.deploy_to != 'skip'
+    environment: ${{ inputs.deploy_to == 'prod' && 'production' || 'development' }}
+    steps:
+      - name: Checkout backend repo for deployment scripts
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/CRM_Backend
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: backend
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          SERVER_HOST="${{ inputs.deploy_to == 'prod' && secrets.PROD_SERVER_HOST || secrets.DEV_SERVER_HOST }}"
+          ssh-keyscan -p 50489 $SERVER_HOST >> ~/.ssh/known_hosts
+
+      - name: Copy deployment files
+        env:
+          SERVER_HOST: ${{ inputs.deploy_to == 'prod' && secrets.PROD_SERVER_HOST || secrets.DEV_SERVER_HOST }}
+          SERVER_USER: ${{ inputs.deploy_to == 'prod' && secrets.PROD_SERVER_USER || secrets.DEV_SERVER_USER }}
+        run: |
+          ssh -p 50489 $SERVER_USER@$SERVER_HOST "mkdir -p ~/crm-deployment"
+          scp -P 50489 -r backend/src/main/docker $SERVER_USER@$SERVER_HOST:~/crm-deployment/
+          ssh -p 50489 $SERVER_USER@$SERVER_HOST "chmod +x ~/crm-deployment/docker/deploy.sh"
+
+      - name: Deploy to ${{ inputs.deploy_to }}
+        env:
+          TAG: ${{ needs.validate_version.outputs.tag_name }}
+          SERVER_HOST: ${{ inputs.deploy_to == 'prod' && secrets.PROD_SERVER_HOST || secrets.DEV_SERVER_HOST }}
+          SERVER_USER: ${{ inputs.deploy_to == 'prod' && secrets.PROD_SERVER_USER || secrets.DEV_SERVER_USER }}
+          ENVIRONMENT: ${{ inputs.deploy_to }}
+        run: |
+          echo "🚀 Deploying release $TAG to $ENVIRONMENT server"
+          echo "📍 Server: $SERVER_HOST"
+          
+          ssh -p 50489 $SERVER_USER@$SERVER_HOST \
+            "export BACKEND_TAG='latest' && \
+             export FRONTEND_TAG='$TAG' && \
+             cd ~/crm-deployment/docker && \
+             ./deploy.sh $ENVIRONMENT"
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Deployed to ${{ inputs.deploy_to }} server"
+          echo "🐳 Backend: latest (independent, not updated by this release)"
+          echo "🐳 Frontend: ${{ needs.validate_version.outputs.tag_name }}"

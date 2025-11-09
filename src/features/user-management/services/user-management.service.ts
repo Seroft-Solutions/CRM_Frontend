@@ -4,27 +4,21 @@
  */
 
 import type {
+  EnhancedMemberRepresentation,
+  GroupAssignment,
+  InvitationActionResult,
+  InvitationFilters,
+  InvitationListResponse,
   OrganizationUser,
+  RoleAssignment,
+  UserDetailData,
+  UserFilters,
   UserInvitation,
   UserInvitationWithGroups,
-  PendingInvitation,
-  InvitationListResponse,
-  InvitationFilters,
-  InvitationActionResult,
-  RoleAssignment,
-  GroupAssignment,
-  UserFilters,
   UserListResponse,
-  UserDetailData,
-  EnhancedMemberRepresentation,
 } from '../types';
 
-import type {
-  RoleRepresentation,
-  GroupRepresentation,
-  MemberRepresentation,
-  UserRepresentation,
-} from '@/core/api/generated/keycloak';
+import type { GroupRepresentation, RoleRepresentation, UserRepresentation, } from '@/core/api/generated/keycloak';
 
 /**
  * Unified User Management Service
@@ -40,7 +34,6 @@ export class UserManagementService {
     this.baseUrl = '/api/keycloak';
   }
 
-  // Organization Users Management
   async getOrganizationUsers(
     organizationId: string,
     filters?: UserFilters
@@ -52,7 +45,6 @@ export class UserManagementService {
       if (filters?.page) params.append('first', String((filters.page - 1) * (filters.size || 20)));
       if (filters?.size) params.append('max', String(filters.size));
 
-      // Add status filters
       if (filters?.enabled !== undefined) params.append('enabled', String(filters.enabled));
       if (filters?.emailVerified !== undefined)
         params.append('emailVerified', String(filters.emailVerified));
@@ -68,8 +60,6 @@ export class UserManagementService {
 
       const members: EnhancedMemberRepresentation[] = await response.json();
 
-      // Transform enhanced MemberRepresentation to OrganizationUser
-      // Backend now includes groups, roles, and filters out business partners
       let users: OrganizationUser[] = members.map((member) => ({
         id: member.id,
         username: member.username,
@@ -80,19 +70,18 @@ export class UserManagementService {
         emailVerified: member.emailVerified,
         createdTimestamp: member.createdTimestamp,
         organizationId,
-        // Enhanced: Use groups and roles from backend response
+
         assignedRoles: member.roleDetails || [],
         assignedGroups: member.groupDetails || [],
         attributes: member.attributes,
         access: member.access,
-        // Map member-specific fields
+
         membershipType: member.membershipType,
         roles: member.roles,
         applicationRoles: member.applicationRoles,
         clientRoles: member.clientRoles,
       }));
 
-      // Apply client-side filtering if backend doesn't support it
       if (filters?.search) {
         const searchTerm = filters.search.toLowerCase();
         users = users.filter(
@@ -112,13 +101,11 @@ export class UserManagementService {
         users = users.filter((user) => user.emailVerified === filters.emailVerified);
       }
 
-      // Calculate pagination
       const totalCount = users.length;
       const pageSize = filters?.size || 20;
       const currentPage = filters?.page || 1;
       const totalPages = Math.ceil(totalCount / pageSize);
 
-      // Apply pagination
       const startIndex = (currentPage - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedUsers = users.slice(startIndex, endIndex);
@@ -139,7 +126,6 @@ export class UserManagementService {
 
   async getUserDetails(organizationId: string, userId: string): Promise<UserDetailData> {
     try {
-      // Get user details from our API route (which uses generated endpoints)
       const response = await fetch(`${this.baseUrl}/users/${userId}`);
 
       if (!response.ok) {
@@ -149,13 +135,11 @@ export class UserManagementService {
 
       const data = await response.json();
 
-      // Get available roles and groups
       const [availableRoles, availableGroups] = await Promise.all([
         this.getAvailableRealmRoles(),
         this.getAvailableGroups(),
       ]);
 
-      // Transform UserRepresentation to OrganizationUser
       const organizationUser: OrganizationUser = {
         ...data.user,
         organizationId,
@@ -178,7 +162,6 @@ export class UserManagementService {
     }
   }
 
-  // ENHANCED: User Invitation with Groups
   async inviteUserWithGroups(
     invitation: UserInvitationWithGroups
   ): Promise<InvitationActionResult> {
@@ -227,7 +210,6 @@ export class UserManagementService {
     }
   }
 
-  // ENHANCED: Get Pending Invitations
   async getPendingInvitations(
     organizationId: string,
     filters?: InvitationFilters
@@ -256,7 +238,6 @@ export class UserManagementService {
     }
   }
 
-  // ENHANCED: Assign Groups from Invitation
   async assignGroupsFromInvitation(
     organizationId: string,
     userId: string
@@ -293,7 +274,6 @@ export class UserManagementService {
     }
   }
 
-  // User Invitation (backward compatibility)
   async inviteUser(invitation: UserInvitation): Promise<void> {
     try {
       const response = await fetch(
@@ -321,7 +301,6 @@ export class UserManagementService {
     }
   }
 
-  // Role Management
   async assignRealmRoles(assignment: RoleAssignment): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/users/${assignment.userId}/roles`, {
@@ -345,10 +324,8 @@ export class UserManagementService {
     }
   }
 
-  // Group Management
   async assignGroups(assignment: GroupAssignment): Promise<void> {
     try {
-      // Extract group IDs from GroupRepresentation objects
       const groupIds = assignment.groups.map((group) => group.id).filter(Boolean) as string[];
 
       const response = await fetch(`${this.baseUrl}/users/${assignment.userId}/groups`, {
@@ -372,7 +349,6 @@ export class UserManagementService {
     }
   }
 
-  // Available Options with Type Safety
   async getAvailableRealmRoles(): Promise<RoleRepresentation[]> {
     try {
       const response = await fetch(`${this.baseUrl}/roles`);
@@ -407,7 +383,6 @@ export class UserManagementService {
     }
   }
 
-  // Enhanced methods with better error handling and type safety
   async updateUser(userId: string, userData: Partial<UserRepresentation>): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/users/${userId}`, {
@@ -444,7 +419,6 @@ export class UserManagementService {
     }
   }
 
-  // ENHANCED: User-Group Assignment
   async getUserGroups(userId: string): Promise<{
     user: UserRepresentation;
     assignedGroups: GroupRepresentation[];
@@ -502,7 +476,6 @@ export class UserManagementService {
     }
   }
 
-  // Enhanced method for invitation follow-up
   async assignGroupsToInvitedUser(
     organizationId: string,
     userId: string
@@ -535,13 +508,10 @@ export class UserManagementService {
     roles: RoleRepresentation[],
     action: 'assign' | 'unassign'
   ): Promise<void> {
-    // TODO: Implement when client role endpoints are added to API routes
     throw new Error('Client role assignment not implemented yet');
   }
 
   async getUserAvailableRealmRoles(userId: string): Promise<RoleRepresentation[]> {
-    // TODO: Implement to get roles not assigned to user
-    // For now, return all roles minus assigned ones
     return this.getAvailableRealmRoles();
   }
 
@@ -549,10 +519,8 @@ export class UserManagementService {
     userId: string,
     clientId: string
   ): Promise<RoleRepresentation[]> {
-    // TODO: Implement when client role endpoints are available
     return [];
   }
 }
 
-// Default service instance
 export const userManagementService = new UserManagementService();

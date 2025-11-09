@@ -5,12 +5,12 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { PolicyEnforcementMode } from './PolicyEnforcementMode';
-import type { ResourceRepresentation } from './ResourceRepresentation';
-import type { PolicyRepresentation } from './PolicyRepresentation';
-import type { ScopeRepresentation } from './ScopeRepresentation';
-import type { DecisionStrategy } from './DecisionStrategy';
-import type { AuthorizationSchema } from './AuthorizationSchema';
+import type {PolicyEnforcementMode} from './PolicyEnforcementMode';
+import type {ResourceRepresentation} from './ResourceRepresentation';
+import type {PolicyRepresentation} from './PolicyRepresentation';
+import type {ScopeRepresentation} from './ScopeRepresentation';
+import type {DecisionStrategy} from './DecisionStrategy';
+import type {AuthorizationSchema} from './AuthorizationSchema';
 
 export interface ResourceServerRepresentation {
   id?: string;

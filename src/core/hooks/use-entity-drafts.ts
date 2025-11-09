@@ -1,13 +1,12 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useCreateUserDraft,
-  useUpdateUserDraft,
   useDeleteUserDraft,
   useGetAllUserDrafts,
   type UserDraftDTO,
+  useUpdateUserDraft,
 } from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
 
 export interface DraftData {
@@ -28,7 +27,7 @@ export interface UseDraftsOptions {
 export interface DraftItem {
   id: number;
   data: DraftData;
-  rawData: any; // Original draft object from API
+  rawData: any;
   createdDate?: string;
   lastModifiedDate?: string;
 }
@@ -40,7 +39,6 @@ export interface DraftItem {
 export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: UseDraftsOptions) {
   const queryClient = useQueryClient();
 
-  // Get all drafts for this entity type
   const {
     data: draftsResponse,
     isLoading: isLoadingDrafts,
@@ -52,67 +50,57 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     {
       query: {
         enabled: enabled,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
       },
     }
   );
 
-  // Transform response to DraftItem[]
   const drafts: DraftItem[] = draftsResponse
     ? draftsResponse.map((draft) => ({
         id: draft.id!,
         data: JSON.parse(draft.jsonPayload) as DraftData,
-        rawData: draft, // Store original draft object
+        rawData: draft,
         createdDate: draft.createdDate,
         lastModifiedDate: draft.lastModifiedDate,
       }))
     : [];
 
-  // Create draft mutation
   const createDraftMutation = useCreateUserDraft({
     mutation: {
       onSuccess: (data) => {
         queryClient.invalidateQueries({
           queryKey: ['/api/user-drafts'],
         });
-        // Removed toast from here - let the caller handle success messages
       },
       onError: (error) => {
         console.error('Failed to create draft:', error);
-        // Removed toast from here - let the caller handle error messages
       },
     },
   });
 
-  // Update draft mutation
   const updateDraftMutation = useUpdateUserDraft({
     mutation: {
       onSuccess: (data) => {
         queryClient.invalidateQueries({
           queryKey: ['/api/user-drafts'],
         });
-        // Removed toast from here - let the caller handle success messages
       },
       onError: (error) => {
         console.error('Failed to update draft:', error);
-        // Removed toast from here - let the caller handle error messages
       },
     },
   });
 
-  // Delete draft mutation
   const deleteDraftMutation = useDeleteUserDraft({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ['/api/user-drafts'],
         });
-        // Removed toast from here - let the caller handle success messages
       },
       onError: (error: any) => {
         console.error('Failed to delete draft:', error);
-        // Removed toast from here - let the caller handle error messages
       },
     },
   });
@@ -150,7 +138,6 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
           data: userDraftDTO,
         });
       } else {
-        // Check if we need to clean up old drafts before creating new one
         if (drafts.length >= maxDrafts) {
           const oldestDraft = drafts.sort(
             (a, b) =>
@@ -190,10 +177,8 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     const draft = drafts.find((d) => d.id === draftId);
     if (!draft) return null;
 
-    // Return the data immediately - restoration should always succeed if we have local data
     const draftData = draft.data;
 
-    // Attempt to archive the draft in background - don't let failure affect restoration
     setTimeout(async () => {
       try {
         const draftToArchive = draft.rawData;
@@ -205,10 +190,9 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
           },
         });
       } catch (error: any) {
-        // Handle 409 conflicts gracefully - draft was already modified elsewhere
         if (error?.response?.status === 409 || error?.status === 409) {
           console.log(`Draft ${draftId} was already modified, updating local state`);
-          // Refresh the drafts list to sync with server state
+
           queryClient.invalidateQueries({
             queryKey: ['/api/user-drafts'],
           });
@@ -229,14 +213,13 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
       await deleteDraftMutation.mutateAsync({ id: draftId });
       return true;
     } catch (error: any) {
-      // Handle 409 conflicts gracefully - draft was already deleted elsewhere
       if (error?.response?.status === 409 || error?.status === 409) {
         console.log(`Draft ${draftId} was already deleted, updating local state`);
-        // Refresh the drafts list to sync with server state
+
         queryClient.invalidateQueries({
           queryKey: ['/api/user-drafts'],
         });
-        return true; // Treat as success since the draft is gone anyway
+        return true;
       } else {
         console.error('Failed to delete draft:', error);
         return false;
@@ -275,12 +258,10 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
   };
 
   return {
-    // Data
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
     draftsError,
 
-    // Actions
     saveDraft,
     loadDraft,
     restoreDraft,
@@ -288,7 +269,6 @@ export function useEntityDrafts({ entityType, enabled = true, maxDrafts = 5 }: U
     getLatestDraft,
     cleanupOldDrafts,
 
-    // State
     isSaving: createDraftMutation.isPending || updateDraftMutation.isPending,
     isDeleting: deleteDraftMutation.isPending,
   };

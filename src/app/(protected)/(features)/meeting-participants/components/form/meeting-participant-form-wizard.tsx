@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { useState } from 'react';
@@ -14,19 +7,17 @@ import { FormProgressIndicator } from './form-progress-indicator';
 import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
-// Import generated step components (uncommented by step generator)
-// import { stepComponents } from './steps';
+
 import {
   useCreateMeetingParticipant,
-  useUpdateMeetingParticipant,
   useGetMeetingParticipant,
+  useUpdateMeetingParticipant,
 } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 import {
-  meetingParticipantToast,
   handleMeetingParticipantError,
+  meetingParticipantToast,
 } from '../meeting-participant-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -41,7 +32,6 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
 
-  // Fetch entity for editing
   const { data: entity, isLoading: isLoadingEntity } = useGetMeetingParticipant(id || 0, {
     query: {
       enabled: !!id,
@@ -49,22 +39,18 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
     },
   });
 
-  // Update form values when entity data is loaded (for edit mode with generated steps)
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
 
-      // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
-          // Convert to datetime-local format for the input
           if (value) {
             try {
               const date = new Date(value);
               if (!isNaN(date.getTime())) {
-                // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
                 const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
@@ -84,7 +70,6 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
         }
       });
 
-      // Handle relationships
       config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
 
@@ -101,7 +86,6 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
     }
   }, [entity, config, form, state.isLoading]);
 
-  // Render generated step components based on current step
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
     if (!currentStepConfig) return null;
@@ -113,19 +97,9 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
       entity,
     };
 
-    // Use imported step components (requires manual import after generation)
     try {
-      // STEP_GENERATOR_START
-      // const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
-      // if (StepComponent) {
-      //   return <StepComponent {...stepProps} />;
-      // }
-      // STEP_GENERATOR_END
-    } catch (error) {
-      // Steps not imported yet
-    }
+    } catch (error) {}
 
-    // Fallback message - replace with generated steps
     return (
       <div className="text-center p-8">
         <p className="text-muted-foreground">
@@ -140,17 +114,13 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
     );
   };
 
-  // Handle cancellation with cross-form navigation support
   const handleCancel = () => {
     if (hasReferrer()) {
-      // Navigate back to referrer without any created entity
       navigateBackToReferrer();
     } else {
-      // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
       const backRoute = returnUrl || '/meeting-participants';
 
-      // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
@@ -161,7 +131,6 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
     }
   };
 
-  // Loading state for edit mode
   if (id && isLoadingEntity) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -202,7 +171,6 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
 
       {/* Form Content */}
       {config?.behavior?.rendering?.useGeneratedSteps ? (
-        // Use generated step components
         <Form {...form}>
           <form className="space-y-6">
             <Card>
@@ -211,15 +179,14 @@ function MeetingParticipantFormContent({ id }: MeetingParticipantFormProps) {
           </form>
         </Form>
       ) : (
-        // Use dynamic step renderer (original approach)
         <FormStepRenderer entity={entity} />
       )}
 
       {/* Navigation */}
       <FormNavigation
         onCancel={handleCancel}
-        onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
+        onSubmit={async () => {}}
+        isSubmitting={false}
         isNew={isNew}
       />
 
@@ -236,13 +203,11 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateMeetingParticipant({
     mutation: {
       onSuccess: (data) => {
         const entityId = data?.id || data?.id;
 
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
           refetchType: 'active',
@@ -258,7 +223,6 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
         });
 
         if (hasReferrer() && entityId) {
-          // Don't show toast here - success will be shown on the referring form
           setIsRedirecting(true);
           navigateBackToReferrer(entityId, 'MeetingParticipant');
         } else {
@@ -276,7 +240,6 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateMeetingParticipant({
     mutation: {
       onSuccess: () => {
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
           refetchType: 'active',
@@ -301,7 +264,6 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
     },
   });
 
-  // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -317,13 +279,9 @@ export function MeetingParticipantForm({ id }: MeetingParticipantFormProps) {
     <MeetingParticipantFormProvider
       id={id}
       onSuccess={async (transformedData) => {
-        // This callback receives the properly transformed data from the form provider
-
-        // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: transformedData as any });
         } else if (id) {
-          // Ensure the entity data includes the ID for updates
           const entityData = { ...transformedData, id };
           updateEntity({ id, data: entityData as any });
         }

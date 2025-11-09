@@ -1,14 +1,7 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import Link from 'next/link';
-import { Eye, Pencil, Trash2, Archive, MoreVertical, RotateCcw, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -22,11 +15,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import { RelationshipCell } from './relationship-cell';
 import type { StateDTO } from '@/core/api/generated/spring/schemas/StateDTO';
 import { StateDTOStatus } from '@/core/api/generated/spring/schemas/StateDTOStatus';
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -90,13 +81,11 @@ export function StateTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: StateTableRowProps) {
-  // Get current status display info
   const currentStatus = state.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
 
-  // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
@@ -124,8 +113,7 @@ export function StateTableRow({
           `}
         >
           {column.type === 'field'
-            ? // Render field column
-              (() => {
+            ? (() => {
                 const field = state[column.accessor as keyof typeof state];
 
                 if (column.id === 'name') {
@@ -158,8 +146,7 @@ export function StateTableRow({
 
                 return field?.toString() || '';
               })()
-            : // Render relationship column
-              (() => {
+            : (() => {
                 return null;
               })()}
         </TableCell>

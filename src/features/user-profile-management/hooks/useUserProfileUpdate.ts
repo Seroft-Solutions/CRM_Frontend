@@ -3,16 +3,15 @@
  * Custom hook for managing user profile updates with state management
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import {
-  updateUserBasicInfo,
-  updateUserPassword,
   getUserProfileData,
   type UpdateBasicInfoRequest,
   type UpdatePasswordRequest,
-  type UserProfileData,
+  updateUserBasicInfo,
+  updateUserPassword,
 } from '../services/user-profile-update.service';
 import type { UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import type { UserRepresentation } from '@/core/api/generated/keycloak/schemas';
@@ -98,10 +97,8 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
       try {
         await updateUserBasicInfo(data);
 
-        // Refresh the session to reflect updated user information
         await updateSession();
 
-        // Refresh profile data
         await refreshProfile();
 
         toast.success('Profile updated successfully');

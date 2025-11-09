@@ -40,7 +40,6 @@ export class AuthErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Authentication Error Boundary caught an error:', error, errorInfo);
 
-    // Log authentication-specific errors
     if (
       error.message?.includes('RefreshAccessTokenError') ||
       error.message?.includes('session') ||
@@ -69,7 +68,6 @@ export class AuthErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
@@ -131,7 +129,6 @@ export class AuthErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Hook version for functional components
 export function useAuthErrorHandler() {
   const handleAuthError = (error: Error) => {
     console.error('Authentication error handled by hook:', error);
@@ -141,7 +138,6 @@ export function useAuthErrorHandler() {
       error.message?.includes('session') ||
       error.message?.includes('token')
     ) {
-      // Redirect to sign in for auth-related errors
       signIn('keycloak');
     }
   };

@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { memo, useCallback, useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { ArrowLeft, Save, Loader2, Edit, AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Edit, Loader2, Save } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useOrganizationContext } from '@/features/user-management/hooks';
@@ -30,7 +30,6 @@ import { useBusinessPartnersDataMutation } from '@/core/hooks/use-data-mutation-
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { ChannelTypeSelector } from '@/features/user-profile-management/components/ChannelTypeSelector';
 
-// Form validation schema
 const updatePartnerSchema = z.object({
   firstName: z
     .string()
@@ -67,13 +66,10 @@ function EditPartnerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Fetch channel types for selector
   const { data: channelTypes } = useGetAllChannelTypes();
 
-  // FIXED: Use enhanced data mutation hook for proper cache invalidation
   const { updatePartner } = useBusinessPartnersDataMutation();
 
-  // Form setup
   const form = useForm<UpdatePartnerFormData>({
     resolver: zodResolver(updatePartnerSchema),
     defaultValues: {
@@ -85,10 +81,9 @@ function EditPartnerPage() {
     mode: 'onChange',
   });
 
-  // Get partner ID from URL params and clean it
   const rawPartnerId = params.id as string;
-  const partnerId = rawPartnerId?.split(':')[0]; // Remove any extra characters after :
-  // Helper function to get channel type info from attributes - memoized
+  const partnerId = rawPartnerId?.split(':')[0];
+
   const getChannelTypeInfo = useCallback(
     (partner: BusinessPartner) => {
       const channelTypeId = partner.attributes?.channel_type_id?.[0];
@@ -106,13 +101,11 @@ function EditPartnerPage() {
     [channelTypes]
   );
 
-  // Fetch partner details from all partners - memoized to prevent infinite re-renders
   const fetchPartner = useCallback(async () => {
     if (!organizationId || !partnerId) return;
 
     setIsLoading(true);
     try {
-      // Fetch all partners since individual partner endpoint doesn't exist
       const response = await fetch(`/api/keycloak/organizations/${organizationId}/partners`);
       if (!response.ok) {
         throw new Error('Failed to fetch partners');
@@ -127,7 +120,6 @@ function EditPartnerPage() {
 
       setPartner(foundPartner);
 
-      // Populate form with partner data
       const channelTypeId = getChannelTypeInfo(foundPartner);
       form.reset({
         firstName: foundPartner.firstName || '',
@@ -144,7 +136,6 @@ function EditPartnerPage() {
     }
   }, [organizationId, partnerId, form, router, getChannelTypeInfo]);
 
-  // FIXED: Update partner with enhanced error handling and cache invalidation
   const handleUpdatePartner = async (data: UpdatePartnerFormData) => {
     if (!partner || !organizationId) return;
 
@@ -193,11 +184,9 @@ function EditPartnerPage() {
         }
       });
 
-      // Success - the updatePartner hook will handle success toast and cache invalidation
       router.push('/business-partners');
     } catch (error) {
       console.error('Failed to update partner:', error);
-      // Error handling is done by the updatePartner hook
     } finally {
       setIsUpdating(false);
     }

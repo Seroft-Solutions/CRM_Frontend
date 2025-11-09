@@ -6,17 +6,17 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  GetAdminRealmsRealmClientsClientUuidScopeMappingsClientsClientCompositeParams,
+  GetAdminRealmsRealmClientsClientUuidScopeMappingsRealmCompositeParams,
   GetAdminRealmsRealmClientScopesClientScopeIdScopeMappingsClientsClientCompositeParams,
   GetAdminRealmsRealmClientScopesClientScopeIdScopeMappingsRealmCompositeParams,
   GetAdminRealmsRealmClientTemplatesClientScopeIdScopeMappingsClientsClientCompositeParams,
   GetAdminRealmsRealmClientTemplatesClientScopeIdScopeMappingsRealmCompositeParams,
-  GetAdminRealmsRealmClientsClientUuidScopeMappingsClientsClientCompositeParams,
-  GetAdminRealmsRealmClientsClientUuidScopeMappingsRealmCompositeParams,
   MappingsRepresentation,
   RoleRepresentation
 } from '../../schemas';
 
-import { keycloakServiceMutator } from "@/core/api/services/keycloak-service/service-mutator";
+import { keycloakServiceMutator } from '@/core/api/services/keycloak-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

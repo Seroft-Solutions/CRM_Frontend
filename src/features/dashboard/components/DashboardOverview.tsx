@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   Cell,
@@ -22,20 +20,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {
-  Building,
-  Phone,
-  ShoppingCart,
-  Users,
-  TrendingUp,
-  Calendar,
-  MapPin,
-  UserCheck,
-  Activity,
-  Target,
-  Clock,
-  PhoneCall,
-} from 'lucide-react';
+import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { useGetAllCustomers } from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
 
@@ -46,7 +31,6 @@ export function DashboardOverview() {
 
   const [tabValue, setTabValue] = useState('overview');
 
-  // **FIX: Proper call status handling**
   const callStatuses = calls.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
@@ -62,7 +46,6 @@ export function DashboardOverview() {
     percentage: ((value / calls.length) * 100).toFixed(1),
   }));
 
-  // Call categories distribution
   const callCategories = calls.reduce(
     (acc, call) => {
       const category = call.callCategory?.name || 'Uncategorized';
@@ -77,7 +60,6 @@ export function DashboardOverview() {
     value,
   }));
 
-  // Call types distribution
   const callTypes = calls.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
@@ -92,7 +74,6 @@ export function DashboardOverview() {
     value,
   }));
 
-  // Priority distribution
   const priorityData = calls.reduce(
     (acc, call) => {
       const priority = call.priority?.name || 'Normal';
@@ -107,7 +88,6 @@ export function DashboardOverview() {
     value,
   }));
 
-  // Channel distribution
   const channelData = calls.reduce(
     (acc, call) => {
       const channel = call.channelType?.name || 'Unknown';
@@ -122,7 +102,6 @@ export function DashboardOverview() {
     value,
   }));
 
-  // Geographic distribution
   const geoData = calls.reduce(
     (acc, call) => {
       const state = call.state?.name || 'Unknown';
@@ -137,7 +116,6 @@ export function DashboardOverview() {
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
-  // Agent/User performance
   const agentPerformance = calls.reduce(
     (acc, call) => {
       const agent =
@@ -155,7 +133,6 @@ export function DashboardOverview() {
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
-  // Recent calls with proper date handling
   const recentCalls = calls
     .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
@@ -174,7 +151,6 @@ export function DashboardOverview() {
       time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
 
-  // Calculate trends
   const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
     const callDate = new Date(call.callDateTime);
@@ -619,7 +595,10 @@ export function DashboardOverview() {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-6">
                 {callStatusData.map((status, index) => (
-                  <div key={status.name} className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-slate-50">
+                  <div
+                    key={status.name}
+                    className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-slate-50"
+                  >
                     <div className="flex items-center space-x-2 mb-2">
                       <div
                         className="w-3 h-3 rounded-full"

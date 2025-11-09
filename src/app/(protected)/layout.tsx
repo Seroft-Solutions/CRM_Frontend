@@ -2,11 +2,9 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import { DynamicBreadcrumbs } from '@/components/breadcrumbs/dynamic-breadcrumbs';
-import { TenantHeader } from '@/components/layout/tenant-header';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SessionManagerProvider } from '@/core/auth';
-import { hasOrganization } from '@/lib/organization-utils';
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -28,7 +26,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
                   orientation="vertical"
                   className="mr-2 data-[orientation=vertical]:h-4"
                 />
-                  <DynamicBreadcrumbs />
+                <DynamicBreadcrumbs />
               </div>
               {/*<div className="flex-1 flex justify-center px-4">*/}
               {/*  <TenantHeader />*/}

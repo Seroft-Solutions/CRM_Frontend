@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { KeyUse } from './KeyUse';
+import type {KeyUse} from './KeyUse';
 
 export interface KeyMetadataRepresentation {
   providerId?: string;

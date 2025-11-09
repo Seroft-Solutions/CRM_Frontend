@@ -6,13 +6,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import {
-  getAdminRealmsRealmUsersUserIdGroups,
-  putAdminRealmsRealmUsersUserIdGroupsGroupId,
   deleteAdminRealmsRealmUsersUserIdGroupsGroupId,
   getAdminRealmsRealmGroups,
   getAdminRealmsRealmUsersUserId,
+  getAdminRealmsRealmUsersUserIdGroups,
+  putAdminRealmsRealmUsersUserIdGroupsGroupId,
 } from '@/core/api/generated/keycloak';
-import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 
 export async function GET(
   request: NextRequest,
@@ -27,13 +26,10 @@ export async function GET(
     const { userId } = await params;
     const realm = keycloakService.getRealm();
 
-    // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
 
-    // Get all available groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
 
-    // Get user details
     const user = await getAdminRealmsRealmUsersUserId(realm, userId);
 
     return NextResponse.json({

@@ -11,12 +11,10 @@ import {
   getAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
   getAdminRealmsRealmUsers,
 } from '@/core/api/generated/keycloak';
-import type { OrganizationRepresentation } from '@/core/api/generated/keycloak';
 import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get current user from session
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -32,7 +30,6 @@ export async function GET(request: NextRequest) {
     console.log('Session User Email:', session.user.email);
     console.log('Realm:', realm);
 
-    // Step 1: Get correct Keycloak user ID by email
     let keycloakUserId = session.user.id;
 
     if (session.user.email) {
@@ -54,7 +51,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Step 2: Try the user-specific organizations endpoint
     try {
       const organizations = await getAdminRealmsRealmOrganizationsMembersMemberIdOrganizations(
         realm,
@@ -92,14 +88,12 @@ export async function GET(request: NextRequest) {
       console.log('User-specific endpoint failed:', error.message);
       console.log('Trying alternative approach: check membership across all organizations');
 
-      // Alternative approach: Get all organizations and check membership
       try {
         const allOrganizations = await getAdminRealmsRealmOrganizations(realm);
         console.log('All organizations:', allOrganizations?.length || 0);
 
         const userOrganizations = [];
 
-        // Check each organization to see if user is a member
         for (const org of allOrganizations || []) {
           if (!org.id) continue;
 
@@ -110,7 +104,6 @@ export async function GET(request: NextRequest) {
               keycloakUserId
             );
 
-            // If no error, user is a member
             userOrganizations.push({
               id: org.id,
               name: org.name || org.alias || 'Unknown Organization',
@@ -121,7 +114,6 @@ export async function GET(request: NextRequest) {
 
             console.log(`User is member of: ${org.name} (${org.id})`);
           } catch (memberError: any) {
-            // 404 means user is not a member of this organization
             if (memberError.status === 404) {
               console.log(`User is NOT member of: ${org.name} (${org.id})`);
             }

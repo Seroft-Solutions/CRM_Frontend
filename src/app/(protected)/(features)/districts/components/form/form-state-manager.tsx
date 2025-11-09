@@ -7,7 +7,7 @@
 // ===============================================================
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEntityForm } from './district-form-provider';
 
 interface FormStateManagerProps {

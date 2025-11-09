@@ -11,7 +11,6 @@
  * - SessionStorage (temporary auth data)
  */
 export function clearAuthStorage() {
-  // Clear localStorage
   const keysToRemove = [
     'selectedOrganizationId',
     'selectedOrganizationName',
@@ -28,7 +27,6 @@ export function clearAuthStorage() {
     }
   });
 
-  // Clear all draft-related localStorage items
   try {
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('draft_') || key.startsWith('formDraft_')) {
@@ -39,14 +37,12 @@ export function clearAuthStorage() {
     console.error('Failed to clear draft items from localStorage', error);
   }
 
-  // Clear sessionStorage
   try {
     sessionStorage.clear();
   } catch (error) {
     console.error('Failed to clear sessionStorage', error);
   }
 
-  // Clear cookies
   const cookiesToClear = [
     'selectedOrganizationId',
     'selectedOrganizationName',
@@ -59,7 +55,6 @@ export function clearAuthStorage() {
 
   cookiesToClear.forEach((cookieName) => {
     try {
-      // Clear with different path variations to ensure removal
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
@@ -76,7 +71,6 @@ export function clearAuthStorage() {
  * Useful when switching organizations without full logout
  */
 export function clearOrganizationStorage() {
-  // Clear organization from localStorage
   try {
     localStorage.removeItem('selectedOrganizationId');
     localStorage.removeItem('selectedOrganizationName');
@@ -84,7 +78,6 @@ export function clearOrganizationStorage() {
     console.error('Failed to clear organization from localStorage', error);
   }
 
-  // Clear organization cookies
   const orgCookies = ['selectedOrganizationId', 'selectedOrganizationName'];
   orgCookies.forEach((cookieName) => {
     try {
@@ -103,7 +96,6 @@ export function clearOrganizationStorage() {
  */
 export function hasStaleAuthData(): boolean {
   try {
-    // Check for organization data in storage
     const hasOrgInStorage =
       !!localStorage.getItem('selectedOrganizationId') ||
       document.cookie.includes('selectedOrganizationId');

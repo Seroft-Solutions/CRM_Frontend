@@ -11,16 +11,16 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   email: z
-      .string()
-      .max(254, { message: 'Please enter no more than 254 characters' })
-      .transform((val) => (val === '' ? undefined : val)) // Treat empty string as unset
-      .pipe(
-          z
-              .string()
-              .email({ message: 'Please enter a valid email address (example: name@company.com)' })
-              .optional() // Now optional after transform
-      )
-      .optional(), // Top-level optional for omission/undefined/null
+    .string()
+    .max(254, { message: 'Please enter no more than 254 characters' })
+    .transform((val) => (val === '' ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .email({ message: 'Please enter a valid email address (example: name@company.com)' })
+        .optional()
+    )
+    .optional(),
   mobile: z
     .string({ message: 'Please enter mobile' })
     .min(1, { message: 'Please enter mobile' })
@@ -38,18 +38,20 @@ export const customerFormSchemaFields = {
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
   status: z.string().optional(),
-  area: z.custom<AreaDTO>((val) => {
-    return val && typeof val === 'object' && 'id' in val && 'name' in val;
-  }, {
-    message: 'Please select a location',
-  }),
+  area: z.custom<AreaDTO>(
+    (val) => {
+      return val && typeof val === 'object' && 'id' in val && 'name' in val;
+    },
+    {
+      message: 'Please select a location',
+    }
+  ),
 };
 
 export const customerFormSchema = z.object(customerFormSchemaFields);
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
-// Individual field schemas for granular validation
 export const customerFieldSchemas = {
   customerBusinessName: z
     .string({ message: 'Please enter customerbusinessname' })
@@ -57,16 +59,16 @@ export const customerFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   email: z
-      .string()
-      .max(254, { message: 'Please enter no more than 254 characters' })
-      .transform((val) => (val === '' ? undefined : val)) // Treat empty string as unset
-      .pipe(
-          z
-              .string()
-              .email({ message: 'Please enter a valid email address (example: name@company.com)' })
-              .optional() // Now optional after transform
-      )
-      .optional(), // Top-level optional for omission/undefined/null
+    .string()
+    .max(254, { message: 'Please enter no more than 254 characters' })
+    .transform((val) => (val === '' ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .email({ message: 'Please enter a valid email address (example: name@company.com)' })
+        .optional()
+    )
+    .optional(),
   mobile: z
     .string({ message: 'Please enter mobile' })
     .min(1, { message: 'Please enter mobile' })
@@ -84,14 +86,16 @@ export const customerFieldSchemas = {
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
-  area: z.custom<AreaDTO>((val) => {
-    return val && typeof val === 'object' && 'id' in val && 'name' in val;
-  }, {
-    message: 'Please select a location',
-  }),
+  area: z.custom<AreaDTO>(
+    (val) => {
+      return val && typeof val === 'object' && 'id' in val && 'name' in val;
+    },
+    {
+      message: 'Please select a location',
+    }
+  ),
 };
 
-// Step-specific validation schemas
 export const customerStepSchemas = {
   basic: z.object({
     customerBusinessName: customerFieldSchemas.customerBusinessName,
@@ -107,7 +111,6 @@ export const customerStepSchemas = {
   review: customerFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = customerStepSchemas[stepId as keyof typeof customerStepSchemas];
   if (!schema) return { success: true, data };

@@ -9,13 +9,11 @@ import { getAdminRealmsRealmUsers } from '@/core/api/generated/keycloak';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get current session
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'No authenticated user found' }, { status: 401 });
     }
 
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
@@ -26,7 +24,6 @@ export async function GET(request: NextRequest) {
       throw new Error('Realm configuration missing');
     }
 
-    // Search for user by email in Keycloak
     const users = await getAdminRealmsRealmUsers(realm, {
       email: session.user.email,
       exact: true,

@@ -1,19 +1,11 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
-import { subCallTypeToast, handleSubCallTypeError } from './sub-call-type-toast';
+import { Pencil } from 'lucide-react';
+import { handleSubCallTypeError, subCallTypeToast } from './sub-call-type-toast';
 import { subCallTypeFormConfig } from './form/sub-call-type-form-config';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +20,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetSubCallType,
   useDeleteSubCallType,
+  useGetSubCallType,
 } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
@@ -38,9 +30,7 @@ interface SubCallTypeDetailsProps {
   id: number;
 }
 
-// Component to display relationship values by fetching related entity data
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
-  // Get the appropriate hook for this relationship
   const { data: callTypeData } =
     relConfig.name === 'callType'
       ? useGetAllCallTypes(
@@ -62,14 +52,12 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
-  // Get the appropriate data for this relationship
   let allData = null;
   if (relConfig.name === 'callType') {
     allData = callTypeData;
   }
 
   if (!allData) {
-    // Fallback: try to use the existing data structure
     if (relConfig.multiple && Array.isArray(value)) {
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">None selected</span>;
@@ -84,7 +72,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     }
   }
 
-  // Extract data array from response (handle both direct array and paginated response)
   const dataArray = Array.isArray(allData)
     ? allData
     : allData.content
@@ -112,7 +99,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     const displayValues = selectedItems.map((item: any) => item[relConfig.displayField]);
     return <span>{displayValues.join(', ')}</span>;
   } else {
-    // Single value
     const valueId = typeof value === 'object' ? value[relConfig.primaryKey] : value;
     const selectedItem = dataArray.find((item: any) => item[relConfig.primaryKey] === valueId);
 
@@ -128,17 +114,14 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Get form config for step organization
   const formConfig = subCallTypeFormConfig;
 
-  // Fetch entity details
   const { data: entity, isLoading } = useGetSubCallType(id, {
     query: {
       enabled: !!id,
     },
   });
 
-  // Delete mutation
   const { mutate: deleteEntity } = useDeleteSubCallType({
     mutation: {
       onSuccess: () => {
@@ -156,7 +139,6 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
     setShowDeleteDialog(false);
   };
 
-  // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
       return value ? 'Yes' : 'No';
@@ -182,11 +164,9 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
       return value || <span className="text-muted-foreground italic">Not set</span>;
     }
 
-    // Default text/number fields
     return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
-  // Render relationship value using the enhanced display component
   const renderRelationshipValue = (relConfig: any, value: any) => {
     return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
@@ -207,7 +187,6 @@ export function SubCallTypeDetails({ id }: SubCallTypeDetailsProps) {
     );
   }
 
-  // Filter out review step and empty steps
   const displaySteps = formConfig.steps.filter(
     (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * AvailableTimeSlot form validation schema with user-friendly messages
  */
@@ -36,7 +29,6 @@ export const availableTimeSlotFormSchema = z.object(availableTimeSlotFormSchemaF
 
 export type AvailableTimeSlotFormValues = z.infer<typeof availableTimeSlotFormSchema>;
 
-// Individual field schemas for granular validation
 export const availableTimeSlotFieldSchemas = {
   slotDateTime: z
     .union([z.date(), z.string().transform((str) => new Date(str))])
@@ -59,7 +51,6 @@ export const availableTimeSlotFieldSchemas = {
   user: z.string().optional(),
 };
 
-// Step-specific validation schemas
 export const availableTimeSlotStepSchemas = {
   basic: z.object({
     slotDateTime: availableTimeSlotFieldSchemas.slotDateTime,
@@ -75,7 +66,6 @@ export const availableTimeSlotStepSchemas = {
   review: availableTimeSlotFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = availableTimeSlotStepSchemas[stepId as keyof typeof availableTimeSlotStepSchemas];
   if (!schema) return { success: true, data };

@@ -5,14 +5,14 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllUserAvailabilitiesDayOfWeekEquals } from './GetAllUserAvailabilitiesDayOfWeekEquals';
-import type { GetAllUserAvailabilitiesDayOfWeekNotEquals } from './GetAllUserAvailabilitiesDayOfWeekNotEquals';
-import type { GetAllUserAvailabilitiesDayOfWeekInItem } from './GetAllUserAvailabilitiesDayOfWeekInItem';
-import type { GetAllUserAvailabilitiesDayOfWeekNotInItem } from './GetAllUserAvailabilitiesDayOfWeekNotInItem';
-import type { GetAllUserAvailabilitiesStatusEquals } from './GetAllUserAvailabilitiesStatusEquals';
-import type { GetAllUserAvailabilitiesStatusNotEquals } from './GetAllUserAvailabilitiesStatusNotEquals';
-import type { GetAllUserAvailabilitiesStatusInItem } from './GetAllUserAvailabilitiesStatusInItem';
-import type { GetAllUserAvailabilitiesStatusNotInItem } from './GetAllUserAvailabilitiesStatusNotInItem';
+import type {GetAllUserAvailabilitiesDayOfWeekEquals} from './GetAllUserAvailabilitiesDayOfWeekEquals';
+import type {GetAllUserAvailabilitiesDayOfWeekNotEquals} from './GetAllUserAvailabilitiesDayOfWeekNotEquals';
+import type {GetAllUserAvailabilitiesDayOfWeekInItem} from './GetAllUserAvailabilitiesDayOfWeekInItem';
+import type {GetAllUserAvailabilitiesDayOfWeekNotInItem} from './GetAllUserAvailabilitiesDayOfWeekNotInItem';
+import type {GetAllUserAvailabilitiesStatusEquals} from './GetAllUserAvailabilitiesStatusEquals';
+import type {GetAllUserAvailabilitiesStatusNotEquals} from './GetAllUserAvailabilitiesStatusNotEquals';
+import type {GetAllUserAvailabilitiesStatusInItem} from './GetAllUserAvailabilitiesStatusInItem';
+import type {GetAllUserAvailabilitiesStatusNotInItem} from './GetAllUserAvailabilitiesStatusNotInItem';
 
 export type GetAllUserAvailabilitiesParams = {
 'id.greaterThan'?: number;

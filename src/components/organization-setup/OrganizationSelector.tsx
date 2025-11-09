@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, ArrowRight, LogOut } from 'lucide-react';
+import { ArrowRight, Building2, LogOut } from 'lucide-react';
 import type { UserOrganization } from '@/services/organization/organization-api.service';
 import { logoutAction } from '@/core/auth';
 
@@ -20,11 +20,9 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
     if (selectedOrgId) {
       const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
 
-      // Update localStorage
       localStorage.setItem('selectedOrganizationId', selectedOrgId);
       localStorage.setItem('selectedOrganizationName', selectedOrg?.name || '');
 
-      // Update cookies for SSR consistency
       document.cookie = `selectedOrganizationId=${selectedOrgId}; path=/; max-age=31536000; SameSite=Lax`;
       document.cookie = `selectedOrganizationName=${encodeURIComponent(selectedOrg?.name || '')}; path=/; max-age=31536000; SameSite=Lax`;
 

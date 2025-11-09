@@ -5,21 +5,20 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { keycloakService } from '@/core/api/services/keycloak-service';
+import type { GroupRepresentation, UserRepresentation } from '@/core/api/generated/keycloak';
 import {
-  getAdminRealmsRealmUsers,
   getAdminRealmsRealmGroups,
+  getAdminRealmsRealmUsers,
   putAdminRealmsRealmUsersUserId,
   putAdminRealmsRealmUsersUserIdGroupsGroupId,
 } from '@/core/api/generated/keycloak';
-import type { UserRepresentation, GroupRepresentation } from '@/core/api/generated/keycloak';
 import type {
-  PendingInvitation,
-  InvitationListResponse,
   InvitationFilters,
+  InvitationListResponse,
   InvitationStatus,
+  PendingInvitation,
 } from '@/features/user-management/types';
 
-// Helper function to parse invitation metadata from user attributes
 function parseInvitationFromUserAttributes(
   user: UserRepresentation,
   groups: GroupRepresentation[]
@@ -66,7 +65,6 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const realm = keycloakService.getRealm();
 
-    // Parse query parameters
     const filters: InvitationFilters = {
       status: (searchParams.get('status')?.split(',') as InvitationStatus[]) || ['pending'],
       search: searchParams.get('search') || undefined,
@@ -74,7 +72,6 @@ export async function GET(
       size: parseInt(searchParams.get('size') || '20'),
     };
 
-    // Get all users with invitation metadata from Keycloak
     const allUsers = await getAdminRealmsRealmUsers(realm, {
       first: 0,
       max: 1000,
@@ -82,10 +79,8 @@ export async function GET(
 
     console.log(`Found ${allUsers.length} total users`);
 
-    // Get all groups for mapping
     const allGroups = await getAdminRealmsRealmGroups(realm);
 
-    // Filter users with invitation metadata for this organization
     const pendingInvitations: PendingInvitation[] = allUsers
       .map((user) => {
         const invitation = parseInvitationFromUserAttributes(user, allGroups);
@@ -107,7 +102,6 @@ export async function GET(
 
     console.log(`Found ${pendingInvitations.length} pending invitations for org ${organizationId}`);
 
-    // Apply search filter
     const filteredInvitations = filters.search
       ? pendingInvitations.filter(
           (inv) =>
@@ -116,7 +110,6 @@ export async function GET(
         )
       : pendingInvitations;
 
-    // Apply pagination
     const totalCount = filteredInvitations.length;
     const totalPages = Math.ceil(totalCount / filters.size!);
     const startIndex = (filters.page! - 1) * filters.size!;
@@ -139,7 +132,6 @@ export async function GET(
   }
 }
 
-// Handle group assignment when user accepts invitation
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string }> }
@@ -157,7 +149,6 @@ export async function POST(
     const { userId, action } = body;
 
     if (action === 'assign-groups' && userId) {
-      // Find user and their invitation metadata
       const user = await getAdminRealmsRealmUsers(realm, {
         search: userId,
         exact: true,
@@ -177,7 +168,6 @@ export async function POST(
         );
       }
 
-      // Assign groups from invitation
       for (const group of invitation.selectedGroups) {
         try {
           await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, group.id!);
@@ -186,7 +176,6 @@ export async function POST(
         }
       }
 
-      // Update invitation status to accepted
       const updatedAttributes = {
         ...userData.attributes,
         invitation_status: ['accepted'],

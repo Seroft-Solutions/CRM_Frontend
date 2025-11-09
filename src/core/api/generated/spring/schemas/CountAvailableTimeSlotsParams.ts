@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CountAvailableTimeSlotsStatusEquals } from './CountAvailableTimeSlotsStatusEquals';
-import type { CountAvailableTimeSlotsStatusNotEquals } from './CountAvailableTimeSlotsStatusNotEquals';
-import type { CountAvailableTimeSlotsStatusInItem } from './CountAvailableTimeSlotsStatusInItem';
-import type { CountAvailableTimeSlotsStatusNotInItem } from './CountAvailableTimeSlotsStatusNotInItem';
+import type {CountAvailableTimeSlotsStatusEquals} from './CountAvailableTimeSlotsStatusEquals';
+import type {CountAvailableTimeSlotsStatusNotEquals} from './CountAvailableTimeSlotsStatusNotEquals';
+import type {CountAvailableTimeSlotsStatusInItem} from './CountAvailableTimeSlotsStatusInItem';
+import type {CountAvailableTimeSlotsStatusNotInItem} from './CountAvailableTimeSlotsStatusNotInItem';
 
 export type CountAvailableTimeSlotsParams = {
 'id.greaterThan'?: number;

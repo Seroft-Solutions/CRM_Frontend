@@ -62,7 +62,6 @@ class EnhancedEmailService {
 
     let lastError: Error | null = null;
 
-    // Try different email delivery methods in order of preference
     const deliveryMethods = this.getAvailableDeliveryMethods();
 
     for (const method of deliveryMethods) {
@@ -81,12 +80,10 @@ class EnhancedEmailService {
         console.warn(`Email delivery via ${method} failed:`, error.message);
         lastError = error;
 
-        // Add delay before trying next method
         await this.delay(this.config.retryDelayMs);
       }
     }
 
-    // All methods failed
     const failureStatus: EmailDeliveryStatus = {
       sent: false,
       error: lastError?.message || 'All email delivery methods failed',
@@ -96,10 +93,113 @@ class EnhancedEmailService {
 
     this.deliveryStatus.set(emailKey, failureStatus);
 
-    // Schedule for manual notification as fallback
     await this.scheduleManualNotification(emailData, failureStatus.error!);
 
     return failureStatus;
+  }
+
+  /**
+   * Check email delivery status
+   */
+  async checkDeliveryStatus(recipientEmail: string): Promise<EmailDeliveryStatus | null> {
+    for (const [key, status] of this.deliveryStatus.entries()) {
+      if (key.includes(recipientEmail)) {
+        return status;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Retry failed email delivery
+   */
+  async retryEmailDelivery(
+    recipientEmail: string,
+    organizationId?: string
+  ): Promise<EmailDeliveryStatus> {
+    const queuedEmail = Array.from(this.emailQueue.entries()).find(([key, _]) =>
+      key.includes(recipientEmail)
+    );
+
+    if (!queuedEmail) {
+      throw new Error(`No queued email found for ${recipientEmail}`);
+    }
+
+    const [key, emailData] = queuedEmail;
+    this.emailQueue.delete(key);
+
+    return this.sendInvitationEmail(emailData, organizationId);
+  }
+
+  /**
+   * Test email service configuration
+   */
+  async testEmailService(): Promise<{
+    keycloak: boolean;
+    smtp: boolean;
+    sendgrid: boolean;
+    errors: string[];
+  }> {
+    const results = {
+      keycloak: false,
+      smtp: false,
+      sendgrid: false,
+      errors: [] as string[],
+    };
+
+    try {
+      const response = await fetch('/api/keycloak/test-email', { method: 'POST' });
+      results.keycloak = response.ok;
+      if (!response.ok) {
+        results.errors.push(`Keycloak: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      results.errors.push(`Keycloak: ${error.message}`);
+    }
+
+    try {
+      const response = await fetch('/api/email/test', { method: 'POST' });
+      results.smtp = response.ok;
+      if (!response.ok) {
+        results.errors.push(`SMTP: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      results.errors.push(`SMTP: ${error.message}`);
+    }
+
+    try {
+      const response = await fetch('/api/email/sendgrid/test', { method: 'POST' });
+      results.sendgrid = response.ok;
+      if (!response.ok) {
+        results.errors.push(`SendGrid: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      results.errors.push(`SendGrid: ${error.message}`);
+    }
+
+    return results;
+  }
+
+  /**
+   * Update service configuration
+   */
+  updateConfig(newConfig: Partial<EmailServiceConfig>): void {
+    this.config = { ...this.config, ...newConfig };
+  }
+
+  /**
+   * Get current service configuration
+   */
+  getConfig(): EmailServiceConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Clear delivery status cache
+   */
+  clearDeliveryStatus(): void {
+    this.deliveryStatus.clear();
   }
 
   /**
@@ -371,7 +471,6 @@ If you didn't expect this invitation, you can safely ignore this email.
     error: string
   ): Promise<void> {
     try {
-      // Create a notification for administrators
       await fetch('/api/notifications/manual-invitation', {
         method: 'POST',
         headers: {
@@ -392,114 +491,6 @@ If you didn't expect this invitation, you can safely ignore this email.
     } catch (notificationError) {
       console.error('Failed to schedule manual notification:', notificationError);
     }
-  }
-
-  /**
-   * Check email delivery status
-   */
-  async checkDeliveryStatus(recipientEmail: string): Promise<EmailDeliveryStatus | null> {
-    // Look for the most recent delivery status for this email
-    for (const [key, status] of this.deliveryStatus.entries()) {
-      if (key.includes(recipientEmail)) {
-        return status;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Retry failed email delivery
-   */
-  async retryEmailDelivery(
-    recipientEmail: string,
-    organizationId?: string
-  ): Promise<EmailDeliveryStatus> {
-    const queuedEmail = Array.from(this.emailQueue.entries()).find(([key, _]) =>
-      key.includes(recipientEmail)
-    );
-
-    if (!queuedEmail) {
-      throw new Error(`No queued email found for ${recipientEmail}`);
-    }
-
-    const [key, emailData] = queuedEmail;
-    this.emailQueue.delete(key);
-
-    return this.sendInvitationEmail(emailData, organizationId);
-  }
-
-  /**
-   * Test email service configuration
-   */
-  async testEmailService(): Promise<{
-    keycloak: boolean;
-    smtp: boolean;
-    sendgrid: boolean;
-    errors: string[];
-  }> {
-    const results = {
-      keycloak: false,
-      smtp: false,
-      sendgrid: false,
-      errors: [] as string[],
-    };
-
-    // Test Keycloak email capability
-    try {
-      const response = await fetch('/api/keycloak/test-email', { method: 'POST' });
-      results.keycloak = response.ok;
-      if (!response.ok) {
-        results.errors.push(`Keycloak: ${response.statusText}`);
-      }
-    } catch (error: any) {
-      results.errors.push(`Keycloak: ${error.message}`);
-    }
-
-    // Test SMTP
-    try {
-      const response = await fetch('/api/email/test', { method: 'POST' });
-      results.smtp = response.ok;
-      if (!response.ok) {
-        results.errors.push(`SMTP: ${response.statusText}`);
-      }
-    } catch (error: any) {
-      results.errors.push(`SMTP: ${error.message}`);
-    }
-
-    // Test SendGrid
-    try {
-      const response = await fetch('/api/email/sendgrid/test', { method: 'POST' });
-      results.sendgrid = response.ok;
-      if (!response.ok) {
-        results.errors.push(`SendGrid: ${response.statusText}`);
-      }
-    } catch (error: any) {
-      results.errors.push(`SendGrid: ${error.message}`);
-    }
-
-    return results;
-  }
-
-  /**
-   * Update service configuration
-   */
-  updateConfig(newConfig: Partial<EmailServiceConfig>): void {
-    this.config = { ...this.config, ...newConfig };
-  }
-
-  /**
-   * Get current service configuration
-   */
-  getConfig(): EmailServiceConfig {
-    return { ...this.config };
-  }
-
-  /**
-   * Clear delivery status cache
-   */
-  clearDeliveryStatus(): void {
-    this.deliveryStatus.clear();
   }
 
   /**

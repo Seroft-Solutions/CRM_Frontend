@@ -3,14 +3,14 @@
  */
 import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/calls/components/form/paginated-relationship-combobox';
 import {
-  useGetAllChannelTypes,
   useCountChannelTypes,
+  useGetAllChannelTypes,
 } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import {
-  useGetAllUserProfiles,
   useCountUserProfiles,
+  useGetAllUserProfiles,
 } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 interface ChannelTypeSelectorProps {
   value?: number;
@@ -114,7 +114,7 @@ export function CascadingChannelSelectors({
                 value={field.value}
                 onValueChange={(value) => {
                   field.onChange(value);
-                  // Clear channel party when channel type changes
+
                   form.setValue(channelPartyFieldName, undefined);
                 }}
                 displayField="name"

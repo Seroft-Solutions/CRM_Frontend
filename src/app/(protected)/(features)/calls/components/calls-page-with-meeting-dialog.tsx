@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ export function CallsPageWithMeetingDialog() {
     assignedUserId?: string;
   }>({});
 
-  // Check for URL parameters that indicate a call was just created
   useEffect(() => {
     const created = searchParams.get('created');
     const callId = searchParams.get('callId');
@@ -29,24 +28,20 @@ export function CallsPageWithMeetingDialog() {
     const assignedUserId = searchParams.get('assignedUserId');
 
     if (created === 'true' && callId) {
-      // Set up meeting dialog data
       setMeetingDialogData({
         callId: parseInt(callId, 10),
         customerId: customerId ? parseInt(customerId, 10) : undefined,
         assignedUserId: assignedUserId ? assignedUserId : undefined,
       });
 
-      // Show the meeting dialog
       setShowMeetingDialog(true);
 
-      // Clean up URL parameters
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('created');
       newUrl.searchParams.delete('callId');
       newUrl.searchParams.delete('customerId');
       newUrl.searchParams.delete('assignedUserId');
 
-      // Replace the URL without refreshing the page
       window.history.replaceState({}, '', newUrl.toString());
     }
   }, [searchParams]);
@@ -57,7 +52,6 @@ export function CallsPageWithMeetingDialog() {
   };
 
   const handleMeetingScheduled = (meetingData: any) => {
-    // Handle successful meeting scheduling
     console.log('Meeting scheduled:', meetingData);
     handleCloseMeetingDialog();
   };

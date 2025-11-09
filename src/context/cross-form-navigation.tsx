@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface NavigationState {
@@ -31,7 +31,7 @@ interface NavigationContextType {
   navigateBackToReferrer: (createdEntityId?: number, createdEntityType?: string) => void;
   clearNavigation: () => void;
   hasReferrer: () => boolean;
-  // Draft-related methods
+
   registerDraftCheck: (handler: DraftCheckHandler) => void;
   unregisterDraftCheck: (formId: string) => void;
   navigateWithDraftCheck: (params: {
@@ -74,11 +74,9 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
       referrerField: string;
       referrerUrl: string;
     }) => {
-      // Save current form state before navigating
       const saveEvent = new CustomEvent('saveFormState');
       window.dispatchEvent(saveEvent);
 
-      // Update navigation state
       setNavigationState({
         referrerForm: params.referrerForm,
         referrerSessionId: params.referrerSessionId,
@@ -86,7 +84,6 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
         referrerUrl: params.referrerUrl,
       });
 
-      // Store navigation state in localStorage for persistence across reloads
       localStorage.setItem(
         'crossFormNavigation',
         JSON.stringify({
@@ -98,7 +95,6 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
         })
       );
 
-      // Navigate with query parameters
       const url = new URL(params.entityPath, window.location.origin);
       url.searchParams.set('ref', params.referrerForm);
       url.searchParams.set('sessionId', params.referrerSessionId);
@@ -118,17 +114,13 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
       referrerField: string;
       referrerUrl: string;
     }) => {
-      // Check if there's an active draft handler for the current form
       const handler = draftHandlers.get(params.referrerForm);
 
       if (handler) {
-        // Let the form handle the draft check
         handler.checkDrafts(() => {
-          // Proceed with navigation after draft check
           navigateToCreateEntity(params);
         });
       } else {
-        // No draft handler, proceed with normal navigation
         navigateToCreateEntity(params);
       }
     },
@@ -143,10 +135,8 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
       console.log('Navigation state:', navState);
 
       if (navState.referrerUrl) {
-        // Set redirecting state immediately
         setNavigationState((prev) => ({ ...prev, isRedirecting: true }));
 
-        // Store created entity info for auto-population
         if (createdEntityId) {
           const entityInfo = {
             entityId: createdEntityId,
@@ -160,13 +150,10 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
           localStorage.setItem('createdEntityInfo', JSON.stringify(entityInfo));
         }
 
-        // Clear navigation state
         localStorage.removeItem('crossFormNavigation');
 
-        // Navigate back to referrer immediately
         router.push(navState.referrerUrl);
 
-        // Clear redirect state after navigation
         setTimeout(() => {
           setNavigationState({});
         }, 100);
@@ -186,13 +173,12 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
     return !!(storedNavigation || navigationState.referrerUrl);
   }, [navigationState]);
 
-  // Initialize navigation state from localStorage on mount
   React.useEffect(() => {
     const storedNavigation = localStorage.getItem('crossFormNavigation');
     if (storedNavigation) {
       try {
         const parsed = JSON.parse(storedNavigation);
-        // Check if the stored navigation is not too old (24 hours)
+
         if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
           setNavigationState(parsed);
         } else {
@@ -214,7 +200,7 @@ export function CrossFormNavigationProvider({ children }: { children: ReactNode 
         navigateBackToReferrer,
         clearNavigation,
         hasReferrer,
-        // Draft-related methods
+
         registerDraftCheck,
         unregisterDraftCheck,
         navigateWithDraftCheck,

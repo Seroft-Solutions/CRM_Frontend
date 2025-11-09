@@ -1,18 +1,10 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Trash2, ArrowLeft, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { customerFormConfig } from './form/customer-form-config';
 import { Button } from '@/components/ui/button';
@@ -28,15 +20,14 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import {
-  useGetCustomer,
   useDeleteCustomer,
+  useGetCustomer,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
 interface CustomerDetailsProps {
   id: number;
 }
 
-// Component to display relationship values
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   if (!value) {
     return (
@@ -46,7 +37,6 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
-  // For area relationship, display full hierarchy
   if (relConfig.name === 'area' && typeof value === 'object') {
     const parts = [];
 
@@ -63,14 +53,11 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
-  // Generic fallback for other relationships
   if (relConfig.multiple && Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground italic">None selected</span>;
     }
-    const displayValues = value.map(
-      (item: any) => item[relConfig.displayField] || item.id || item
-    );
+    const displayValues = value.map((item: any) => item[relConfig.displayField] || item.id || item);
     return <span>{displayValues.join(', ')}</span>;
   } else {
     const displayValue = value[relConfig.displayField] || value.id || value;
@@ -82,17 +69,14 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Get form config for step organization
   const formConfig = customerFormConfig;
 
-  // Fetch entity details
   const { data: entity, isLoading } = useGetCustomer(id, {
     query: {
       enabled: !!id,
     },
   });
 
-  // Delete mutation
   const { mutate: deleteEntity } = useDeleteCustomer({
     mutation: {
       onSuccess: () => {
@@ -110,7 +94,6 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
     setShowDeleteDialog(false);
   };
 
-  // Render field value with simple, readable styling
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.type === 'boolean') {
       return value ? 'Yes' : 'No';
@@ -136,11 +119,9 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
       return value || <span className="text-muted-foreground italic">Not set</span>;
     }
 
-    // Default text/number fields
     return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
-  // Render relationship value using the enhanced display component
   const renderRelationshipValue = (relConfig: any, value: any) => {
     return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
@@ -161,7 +142,6 @@ export function CustomerDetails({ id }: CustomerDetailsProps) {
     );
   }
 
-  // Filter out review step and empty steps
   const displaySteps = formConfig.steps.filter(
     (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
   );

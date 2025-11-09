@@ -1,26 +1,22 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Check, ChevronDown, MapPin, Search, X, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Check, ChevronDown, Loader2, MapPin, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { useSearchCitiesWithHierarchy } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import type { CityDTO } from '@/core/api/generated/spring/schemas';
 import { cn } from '@/lib/utils';
 
-// Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -49,7 +45,7 @@ export function IntelligentCityField({
   value,
   onChange,
   onError,
-  placeholder = "Search for city...",
+  placeholder = 'Search for city...',
   disabled = false,
 }: IntelligentCityFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,11 +54,13 @@ export function IntelligentCityField({
   const [allCities, setAllCities] = useState<CityDTO[]>([]);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Debounce search query to reduce API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  // Fetch city search results with pagination
-  const { data: searchResults, isLoading: isSearching, isFetching } = useSearchCitiesWithHierarchy(
+  const {
+    data: searchResults,
+    isLoading: isSearching,
+    isFetching,
+  } = useSearchCitiesWithHierarchy(
     {
       term: debouncedSearchQuery,
       page: page,
@@ -78,7 +76,6 @@ export function IntelligentCityField({
     }
   );
 
-  // Accumulate results for infinite scroll
   useEffect(() => {
     if (searchResults) {
       if (page === 0) {
@@ -89,13 +86,11 @@ export function IntelligentCityField({
     }
   }, [searchResults, page]);
 
-  // Reset on search query change
   useEffect(() => {
     setPage(0);
     setAllCities([]);
   }, [debouncedSearchQuery]);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (!observerTarget.current || !isOpen) return;
 
@@ -143,12 +138,11 @@ export function IntelligentCityField({
     }
   };
 
-  // Build display text with full hierarchy
   const getDisplayText = (city: CityDTO | null | undefined) => {
     if (!city) return '';
 
     const parts: string[] = [];
-    // Show State, District, City in that order
+
     if (city.district?.state?.name) {
       parts.push(city.district.state.name);
     }
@@ -172,8 +166,8 @@ export function IntelligentCityField({
           role="combobox"
           aria-expanded={isOpen}
           className={cn(
-            "w-full justify-between text-left font-normal h-10 px-3",
-            !value && "text-muted-foreground"
+            'w-full justify-between text-left font-normal h-10 px-3',
+            !value && 'text-muted-foreground'
           )}
           disabled={disabled}
         >
@@ -231,7 +225,9 @@ export function IntelligentCityField({
               </CommandEmpty>
             ) : (
               <>
-                <CommandGroup heading={`${allCities.length} cit${allCities.length !== 1 ? 'ies' : 'y'} found`}>
+                <CommandGroup
+                  heading={`${allCities.length} cit${allCities.length !== 1 ? 'ies' : 'y'} found`}
+                >
                   {allCities.map((city) => (
                     <CommandItem
                       key={city.id}
@@ -241,8 +237,8 @@ export function IntelligentCityField({
                     >
                       <Check
                         className={cn(
-                          "mt-1 h-4 w-4 flex-shrink-0",
-                          value?.id === city.id ? "opacity-100" : "opacity-0"
+                          'mt-1 h-4 w-4 flex-shrink-0',
+                          value?.id === city.id ? 'opacity-100' : 'opacity-0'
                         )}
                       />
                       <div className="flex-1 space-y-1 min-w-0">

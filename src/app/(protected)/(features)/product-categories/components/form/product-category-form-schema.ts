@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * ProductCategory form validation schema with user-friendly messages
  */
@@ -34,7 +27,6 @@ export const productCategoryFormSchema = z.object(productCategoryFormSchemaField
 
 export type ProductCategoryFormValues = z.infer<typeof productCategoryFormSchema>;
 
-// Individual field schemas for granular validation
 export const productCategoryFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -55,7 +47,6 @@ export const productCategoryFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const productCategoryStepSchemas = {
   basic: z.object({
     name: productCategoryFieldSchemas.name,
@@ -72,7 +63,6 @@ export const productCategoryStepSchemas = {
   review: productCategoryFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = productCategoryStepSchemas[stepId as keyof typeof productCategoryStepSchemas];
   if (!schema) return { success: true, data };

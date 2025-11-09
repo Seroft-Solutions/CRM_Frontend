@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ProtocolMapperRepresentationConfig } from './ProtocolMapperRepresentationConfig';
+import type {ProtocolMapperRepresentationConfig} from './ProtocolMapperRepresentationConfig';
 
 export interface ProtocolMapperRepresentation {
   id?: string;
