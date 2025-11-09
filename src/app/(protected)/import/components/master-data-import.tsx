@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
@@ -12,76 +12,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useImportMasterDataFromFile } from '@/core/api/generated/spring/endpoints/import-master-data-controller/import-master-data-controller.gen';
+import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useRouter } from 'next/navigation';
+import { masterDataImportConfig } from '../constants';
 
 interface MasterDataImportProps {}
-
-interface ImportResponse {
-  success: boolean;
-  successCount: number;
-  skippedCount: number;
-  totalRows: number;
-  message: string;
-  errorCount: number;
-  errors: string[];
-}
-
-const importConfig = {
-  instructions: [
-    'Fill in the data starting from row 2 (row 1 contains headers)',
-    'Each column represents a different master data type; provide names only',
-    'Other fields (e.g., description, status) will default to standard values',
-    'Maximum 500 data rows (excluding header)',
-    'Empty cells or rows will be skipped',
-    'Duplicate names (already existing) will be skipped',
-    'Save the file as .xlsx, .xls, or .csv format',
-  ],
-  filename: 'master_data_import_template.xlsx',
-  columns: [
-    {
-      header: 'Call Type',
-      column: 'A',
-      example: 'Customer Support',
-      description: 'Call Type name (2-50 characters)',
-    },
-    {
-      header: 'Sub Call Type',
-      column: 'B',
-      example: 'Technical Issue',
-      description: 'Sub Call Type name (2-50 characters)',
-    },
-    {
-      header: 'Call Status',
-      column: 'C',
-      example: 'Open',
-      description: 'Call Status name (2-50 characters)',
-    },
-    {
-      header: 'Priority',
-      column: 'D',
-      example: 'High',
-      description: 'Priority name (2-50 characters)',
-    },
-    {
-      header: 'Source',
-      column: 'E',
-      example: 'Email',
-      description: 'Source name (2-50 characters)',
-    },
-  ],
-};
 
 export function MasterDataImport({}: MasterDataImportProps) {
   const form = useForm({
@@ -89,9 +27,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
       importFile: null,
     },
   });
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+  const router = useRouter();
 
   const {
     mutate: importMasterData,
@@ -100,10 +36,8 @@ export function MasterDataImport({}: MasterDataImportProps) {
   } = useImportMasterDataFromFile({
     mutation: {
       onSuccess: (data) => {
-        console.log('Import successful:', data);
-        setResponseData(data);
-        setIsOpen(true);
-
+        sessionStorage.setItem('masterImportResponse', JSON.stringify(data));
+        router.push('/import/results');
         form.reset();
       },
       onError: (err) => {
@@ -124,8 +58,8 @@ export function MasterDataImport({}: MasterDataImportProps) {
 
   const handleDownloadTemplate = () => {
     const wsData = [
-      importConfig.columns.map((c) => c.header),
-      importConfig.columns.map((c) => c.example),
+      masterDataImportConfig.columns.map((c) => c.header),
+      masterDataImportConfig.columns.map((c) => c.example),
     ];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
@@ -137,7 +71,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = importConfig.filename;
+    link.download = masterDataImportConfig.filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -155,7 +89,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
               <div>
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">Instructions:</h5>
                 <ul className="list-disc pl-5 text-sm text-foreground">
-                  {importConfig.instructions.map((instruction, index) => (
+                  {masterDataImportConfig.instructions.map((instruction, index) => (
                     <li key={index}>{instruction}</li>
                   ))}
                 </ul>
@@ -165,7 +99,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">
                   Template Filename:
                 </h5>
-                <p className="text-sm text-foreground">{importConfig.filename}</p>
+                <p className="text-sm text-foreground">{masterDataImportConfig.filename}</p>
                 {/* Download Template Button */}
                 <div className="mt-3">
                   <Button
@@ -201,7 +135,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {importConfig.columns.map((column, index) => (
+                  {masterDataImportConfig.columns.map((column, index) => (
                         <tr key={index} className="even:bg-muted/50">
                           <td className="border border-border p-2 text-sm">{column.column}</td>
                           <td className="border border-border p-2 text-sm">{column.header}</td>
@@ -254,66 +188,6 @@ export function MasterDataImport({}: MasterDataImportProps) {
             )}
           </CardContent>
         </Card>
-
-        {/* Import Results Dialog */}
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                Import Results
-              </DialogTitle>
-              <DialogDescription>
-                Your import has been processed. Here's a summary:
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground">Total Rows Processed</span>
-                  <span className="font-semibold">{responseData?.totalRows || 0}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground">Successfully Imported</span>
-                  <Badge variant="default" className="mt-1 bg-green-100 text-green-800">
-                    {responseData?.successCount || 0}
-                  </Badge>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground">Skipped (Duplicates)</span>
-                  <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800">
-                    {responseData?.skippedCount || 0}
-                  </Badge>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-muted-foreground">Failed</span>
-                  <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800">
-                    {responseData?.errorCount || 0}
-                  </Badge>
-                </div>
-              </div>
-              <div className="border-t pt-4">
-                <p className="text-sm text-muted-foreground mb-2">Summary:</p>
-                <p className="text-sm">{responseData?.message}</p>
-              </div>
-              {responseData?.errors && responseData.errors.length > 0 && (
-                <div className="border rounded-md p-3 bg-red-50">
-                  <p className="text-sm font-medium text-red-800 mb-2">Errors:</p>
-                  <ul className="list-disc pl-5 text-sm text-red-700 space-y-1">
-                    {responseData.errors.map((err, index) => (
-                      <li key={index}>{err}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button onClick={() => setIsOpen(false)} variant="outline">
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </form>
     </Form>
   );

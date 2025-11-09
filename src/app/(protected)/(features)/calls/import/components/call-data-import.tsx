@@ -20,16 +20,29 @@ import * as XLSX from 'xlsx';
 
 interface CallDataImportProps {}
 
+type RowStatus = 'SUCCESS' | 'DUPLICATE' | 'VALIDATION_FAILED' | 'MASTER_DATA_MISSING' | 'SYSTEM_ERROR';
+
+interface ImportSummary {
+  totalRows: number;
+  successCount: number;
+  duplicateCount: number;
+  failedCount: number;
+  validationErrorCount: number;
+  masterMissingCount: number;
+  systemErrorCount: number;
+}
+
+interface RowResult {
+  rowNumber: number;
+  data: string[];
+  status: RowStatus;
+  message: string;
+}
+
 interface ImportResponse {
   success: boolean;
-  totalRows: number;
-  successfulRows: number;
-  skippedRows: number;
-  failedRows: number;
-  skippedErrors: string[];
-  failedErrors: string[];
-  skippedReportCsv: string;
-  errorReportCsv: string;
+  summary: ImportSummary;
+  rows: RowResult[];
   message: string;
 }
 
