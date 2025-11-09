@@ -4,9 +4,7 @@ import {
     Briefcase,
     Settings,
     PhoneCall,
-    Map,
-    FileText,
-    Box,
+    Box, ArrowDownToLine,
 } from 'lucide-react';
 import {type LucideIcon} from 'lucide-react';
 
@@ -56,6 +54,16 @@ export const sidebarItems: SidebarItem[] = [
                 label: 'Track Lead',
                 path: '/calls',
                 requiredPermission: 'call:sidebar',
+            },
+            {
+                key: 'callImport',
+                label: 'Import Leads',
+                path: '/calls/import',
+            },
+            {
+                key: 'callImportHistory',
+                label: 'Import History',
+                path: '/calls/import/results',
             },
         ],
     },
@@ -178,4 +186,10 @@ export const sidebarItems: SidebarItem[] = [
             },
         ],
     },
+    {
+        key: 'import',
+        label: 'Bulk Import',
+        path: '/import',
+        icon: ArrowDownToLine,
+    }
 ];

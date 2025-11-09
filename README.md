@@ -63,6 +63,110 @@ npm run start
 - **Call Management**: Call tracking with remarks and meetings
 - **Geographic Hierarchy**: Cascading state/district/city filters
 - **Draft System**: Form data persistence across sessions
+- **Product Image Management**: Upload, view, and manage product images with Gumlet CDN integration
+
+## 📸 Product Image Management
+
+The application includes a comprehensive product image management system with Gumlet CDN integration.
+
+### Features
+
+- **Image Upload**: Drag-and-drop or file picker with client-side validation
+- **Format Support**: JPEG, PNG, WEBP (up to 5MB per file)
+- **Image Gallery**: View all product images with lazy loading
+- **Image Management**: Delete, reorder, and set primary images
+- **Preview System**: Preview images before upload with metadata display
+- **CDN Integration**: Automatic optimization and global delivery via Gumlet
+- **Responsive Images**: Automatic format conversion and compression
+
+### Setup
+
+1. **Configure Gumlet Domain** (`.env.local`):
+   ```env
+   NEXT_PUBLIC_GUMLET_DOMAIN=example.gumlet.io
+   ```
+
+2. **Regenerate API Clients** (after backend changes):
+   ```bash
+   npm run openapi:fetch && npm run openapi:generate
+   ```
+
+### Usage Examples
+
+#### Upload Images
+
+```typescript
+import { useUploadProductImage } from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
+
+function MyComponent() {
+  const uploadMutation = useUploadProductImage();
+
+  const handleUpload = (file: File, productId: number) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('productId', String(productId));
+
+    uploadMutation.mutate({ data: formData });
+  };
+}
+```
+
+#### Display Images
+
+```typescript
+import { useGetProductImages } from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
+import { getGumletThumbnailUrl } from '@/lib/utils/gumlet-url';
+
+function ProductGallery({ productId }: { productId: number }) {
+  const { data: images } = useGetProductImages({ productId });
+
+  return images?.map((image) => (
+    <img
+      key={image.id}
+      src={getGumletThumbnailUrl(image.sourceUrl, 60, 60)}
+      alt={image.altText || 'Product image'}
+    />
+  ));
+}
+```
+
+#### Delete Images
+
+```typescript
+import { useDeleteProductImage } from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
+
+function DeleteButton({ imageId }: { imageId: number }) {
+  const deleteMutation = useDeleteProductImage();
+
+  const handleDelete = () => {
+    deleteMutation.mutate({ imageId });
+  };
+}
+```
+
+### Image URL Utilities
+
+The project includes utility functions for Gumlet URL transformations:
+
+```typescript
+// Thumbnail generation (60x60px, cropped, optimized)
+getGumletThumbnailUrl(baseUrl, 60, 60)
+
+// Responsive images (auto format, compress)
+getGumletResponsiveUrl(baseUrl, 800)
+```
+
+### Components
+
+- **ProductImageUploader**: Client component for file upload with preview
+- **ProductImageGallery**: Display grid with move up/down controls
+- **ProductImagesManager**: Tab-based interface for upload and gallery
+- **ImagePreviewGrid**: Preview selected images before upload
+- **ImageDropZone**: Drag-and-drop upload zone
+
+For detailed guides, see:
+- **[Gumlet Setup Guide](/specs/001-product-image-management/GUMLET_SETUP.md)** - Complete Gumlet configuration and troubleshooting
+- **[Product Image Quickstart](/specs/001-product-image-management/quickstart.md)** - Implementation guide and usage examples
 
 ## 🔧 Development Workflow
 
