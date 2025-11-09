@@ -254,7 +254,7 @@ export default function ImportResultsPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
