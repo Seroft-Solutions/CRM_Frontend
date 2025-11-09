@@ -9,8 +9,8 @@
     "build:docker": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_TELEMETRY_DISABLED=1 next build",
     "build:test": "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=4096' next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint -c .eslintrc.cjs .",
+    "lint:fix": "eslint -c .eslintrc.cjs . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:src": "prettier --write \"src/**/*.{js,ts,tsx,json,css,md}\"",
@@ -96,7 +96,7 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.0.0",
+    "@eslint/eslintrc": "^2.1.4",
     "@playwright/test": "^1.55.0",
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
@@ -106,7 +106,7 @@
     "@types/react-dom": "^19.0.0",
     "@types/yargs": "^17.0.33",
     "change-case": "^5.4.4",
-    "eslint": "^9.0.0",
+    "eslint": "^8.57.0",
     "eslint-config-next": "15.5.6",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
@@ -124,8 +124,5 @@
     "tw-animate-css": "^1.2.9",
     "typescript": "^5.0.0",
     "yargs": "^17.7.2"
-  },
-  "overrides": {
-    "ajv": "8.12.0"
   }
 }

@@ -21,9 +21,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useImportMasterDataFromFile } from '@/core/api/generated/spring/endpoints/import-master-data-controller/import-master-data-controller.gen';
+import * as XLSX from 'xlsx';
 
 interface MasterDataImportProps {}
 
@@ -121,6 +122,28 @@ export function MasterDataImport({}: MasterDataImportProps) {
     importMasterData({ data: { file: data.importFile } });
   };
 
+  const handleDownloadTemplate = () => {
+    const wsData = [
+      importConfig.columns.map((c) => c.header),
+      importConfig.columns.map((c) => c.example),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Master Data');
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = importConfig.filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -143,6 +166,18 @@ export function MasterDataImport({}: MasterDataImportProps) {
                   Template Filename:
                 </h5>
                 <p className="text-sm text-foreground">{importConfig.filename}</p>
+                {/* Download Template Button */}
+                <div className="mt-3">
+                  <Button
+                    onClick={handleDownloadTemplate}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    type="button"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Template (.xlsx)
+                  </Button>
+                </div>
               </div>
               {/* Columns Table */}
               <div>
@@ -184,14 +219,15 @@ export function MasterDataImport({}: MasterDataImportProps) {
               control={form.control}
               name="importFile"
               render={({ field }) => (
-                <FormItem className="mt-6">
-                  <FormLabel className="text-sm font-medium">
+                <FormItem className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 border-dashed rounded-lg">
+                  <FormLabel className="text-sm font-medium text-blue-800">
                     Upload File <span className="text-red-500 ml-1">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="file"
                       accept=".xlsx,.xls,.csv"
+                      className="border-blue-300 bg-white"
                       onChange={(e) => {
                         field.onChange(e.target.files ? e.target.files[0] : null);
                         form.trigger('importFile');
