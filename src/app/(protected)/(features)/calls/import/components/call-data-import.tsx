@@ -37,7 +37,9 @@ const importConfig = {
   instructions: [
     'Fill in the data starting from row 2 (row 1 contains headers)',
     'Maximum 500 data rows per upload',
-    'All fields are required except External ID and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)',
+    'If a Customer or Product does not exist, it will be automatically created.',
+    'For new customers, Zip Code is required to determine the area.',
+    'All other fields are required except External ID and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)',
     'Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped',
     'Download error report CSV from response for failed rows details',
     'Save the file as .xlsx or .xls format',
@@ -53,19 +55,19 @@ const importConfig = {
     {
       column: 'B',
       header: 'Customer name',
-      description: 'Customer business name (Required) - must match existing customer exactly',
+      description: 'Customer business name (Required) - If the customer does not exist, it will be created.',
       example: 'ABC Enterprises',
     },
     {
       column: 'C',
       header: 'Zip code',
-      description: 'Zip code (Required)',
+      description: 'Zip code (Required for new customers)',
       example: '12345',
     },
     {
       column: 'D',
       header: 'Product Name',
-      description: 'Product name (Required) - must match existing product exactly',
+      description: 'Product name (Required) - If the product does not exist, it will be created.',
       example: 'Software XYZ',
     },
     {
@@ -206,6 +208,18 @@ export function CallDataImport({}: CallDataImportProps) {
                   Template Filename:
                 </h5>
                 <p className="text-sm text-foreground">{importConfig.filename}</p>
+                {/* Download Template Button */}
+                <div className="mt-3">
+                  <Button
+                    onClick={handleDownloadTemplate}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    type="button"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Template (.xlsx)
+                  </Button>
+                </div>
               </div>
               {/* Columns Table */}
               <div>
@@ -241,31 +255,21 @@ export function CallDataImport({}: CallDataImportProps) {
                   </table>
                 </div>
               </div>
-              {/* Download Template Button */}
-              <div className="pt-4">
-                <Button
-                  onClick={handleDownloadTemplate}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Template (.xlsx)
-                </Button>
-              </div>
             </div>
             {/* File Input Field */}
             <FormField
               control={form.control}
               name="importFile"
               render={({ field }) => (
-                <FormItem className="mt-6">
-                  <FormLabel className="text-sm font-medium">
+                <FormItem className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 border-dashed rounded-lg">
+                  <FormLabel className="text-sm font-medium text-blue-800">
                     Upload File <span className="text-red-500 ml-1">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="file"
                       accept=".xlsx,.xls"
+                      className="border-blue-300 bg-white"
                       onChange={(e) => {
                         field.onChange(e.target.files ? e.target.files[0] : null);
                         form.trigger('importFile');
