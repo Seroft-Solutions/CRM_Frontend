@@ -49,6 +49,7 @@ import {
   Users,
   AlertCircle,
   Edit,
+  Send,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
@@ -86,6 +87,7 @@ export default function BusinessPartnersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [partnerToRemove, setPartnerToRemove] = useState<BusinessPartner | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [inviteAgainId, setInviteAgainId] = useState<string | null>(null);
 
   const { data: channelTypes } = useGetAllChannelTypes();
 
@@ -266,6 +268,39 @@ export default function BusinessPartnersPage() {
       } else {
         console.error('Genuine Spring backend error occurred');
       }
+    }
+  };
+
+  const handleInviteAgain = async (partner: BusinessPartner) => {
+    if (!organizationId) {
+      toast.error('No organization selected');
+      return;
+    }
+
+    setInviteAgainId(partner.id);
+    try {
+      const response = await fetch(
+        `/api/keycloak/organizations/${organizationId}/partners/${partner.id}/invite`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sendPasswordReset: true }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to resend invitation');
+      }
+
+      toast.success(result.message || 'Invitation email sent again');
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to resend invitation';
+      toast.error(errorMessage);
+    } finally {
+      setInviteAgainId(null);
     }
   };
 
@@ -468,14 +503,29 @@ export default function BusinessPartnersPage() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>{' '}
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleEditPartner(partner)}
-                                  className="text-blue-600"
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleInviteAgain(partner)}
+                                    disabled={inviteAgainId === partner.id}
+                                    className="text-green-600"
+                                  >
+                                    {inviteAgainId === partner.id ? (
+                                      <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                      </span>
+                                    ) : (
+                                      <Send className="h-4 w-4 mr-2" />
+                                    )}
+                                    Invite Again
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditPartner(partner)}
+                                    className="text-blue-600"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
                                   Edit Partner
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
