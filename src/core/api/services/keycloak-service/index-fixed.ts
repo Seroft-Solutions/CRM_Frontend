@@ -34,6 +34,184 @@ export class KeycloakService extends BaseService {
   }
 
   /**
+   * Get the admin API path for the configured realm
+   */
+  public getAdminPath(): string {
+    return `/admin/realms/${this.realm}`;
+  }
+
+  /**
+   * Get current realm
+   */
+  public getRealm(): string {
+    return this.realm;
+  }
+
+  /**
+   * FIXED: Override HTTP methods with deduplication and error handling
+   */
+  async adminGet<T>(endpoint: string, config?: any): Promise<T> {
+    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
+    const requestKey = `GET:${url}`;
+
+    return this.executeWithDeduplication(requestKey, async () => {
+      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
+        console.log('Admin GET:', url);
+      }
+      return this.get<T>(url, config);
+    });
+  }
+
+  async adminPost<T>(endpoint: string, data?: any, config?: any): Promise<T> {
+    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
+    const requestKey = `POST:${url}:${JSON.stringify(data)}`;
+
+    return this.executeWithDeduplication(requestKey, async () => {
+      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
+        console.log('Admin POST:', url, data ? 'with data' : 'no data');
+      }
+      return this.post<T>(url, data, config);
+    });
+  }
+
+  async adminPut<T>(endpoint: string, data?: any, config?: any): Promise<T> {
+    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
+    const requestKey = `PUT:${url}:${JSON.stringify(data)}`;
+
+    return this.executeWithDeduplication(requestKey, async () => {
+      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
+        console.log('Admin PUT:', url, data ? 'with data' : 'no data');
+      }
+      return this.put<T>(url, data, config);
+    });
+  }
+
+  async adminPatch<T>(endpoint: string, data?: any, config?: any): Promise<T> {
+    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
+    const requestKey = `PATCH:${url}:${JSON.stringify(data)}`;
+
+    return this.executeWithDeduplication(requestKey, async () => {
+      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
+        console.log('Admin PATCH:', url, data ? 'with data' : 'no data');
+      }
+      return this.patch<T>(url, data, config);
+    });
+  }
+
+  async adminDelete<T>(endpoint: string, config?: any): Promise<T> {
+    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
+    const requestKey = `DELETE:${url}`;
+
+    return this.executeWithDeduplication(requestKey, async () => {
+      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
+        console.log('Admin DELETE:', url);
+      }
+      return this.delete<T>(url, config);
+    });
+  }
+
+  /**
+   * Verify admin permissions
+   */
+  async verifyAdminPermissions(): Promise<{ authorized: boolean; error?: string }> {
+    try {
+      if (typeof window === 'undefined') {
+        const { auth } = await import('@/auth');
+        const session = await auth();
+
+        if (!session?.user) {
+          return { authorized: false, error: 'Not authenticated' };
+        }
+
+        return { authorized: true };
+      } else {
+        return { authorized: false, error: 'Admin verification must be done server-side' };
+      }
+    } catch (error) {
+      console.error('Permission verification error:', error);
+      return { authorized: false, error: 'Permission verification failed' };
+    }
+  }
+
+  /**
+   * FIXED: Enhanced token invalidation with cleanup
+   */
+  public invalidateAdminToken(): void {
+    this.adminAccessToken = null;
+    this.adminTokenExpiry = 0;
+    this.adminTokenRefreshPromise = null;
+    this.requestAttempts.clear();
+    this.resetFailureCount();
+    this.invalidateTokenCache();
+  }
+
+  /**
+   * Health check for admin connectivity
+   */
+  async checkAdminConnectivity(): Promise<boolean> {
+    try {
+      await this.adminGet('/');
+      return true;
+    } catch (error) {
+      console.error('Admin connectivity check failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get realm configuration
+   */
+  async getRealmInfo() {
+    return this.adminGet('/');
+  }
+
+  /**
+   * Test admin authentication without performing actual operations
+   */
+  async testAdminAuth(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const token = await this.getAdminAccessToken();
+      if (token) {
+        return { success: true };
+      } else {
+        return { success: false, error: 'Failed to obtain admin token' };
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get detailed debug information
+   */
+  getDebugInfo() {
+    return {
+      realm: this.realm,
+      baseURL: this.config.baseURL,
+      adminPath: this.getAdminPath(),
+      hasAdminToken: !!this.adminAccessToken,
+      adminTokenExpiry: this.adminTokenExpiry,
+      isAdminTokenValid: this.adminAccessToken && Date.now() < this.adminTokenExpiry,
+      failureCount: this.failureCount,
+      isCircuitOpen: this.isCircuitOpen(),
+      activeRequests: this.requestAttempts.size,
+      config: KEYCLOAK_ADMIN_CONFIG,
+      debug: KEYCLOAK_DEBUG,
+    };
+  }
+
+  /**
+   * FIXED: Override the base auth token method with request deduplication
+   */
+  protected async getAuthTokenFromSession(): Promise<string | null> {
+    if (this.isAdminOperation()) {
+      return this.getAdminAccessToken();
+    }
+
+    return super.getAuthTokenFromSession();
+  }
+
+  /**
    * FIXED: Get admin access token with circuit breaker and retry limits
    */
   private async getAdminAccessToken(): Promise<string | null> {
@@ -288,17 +466,6 @@ export class KeycloakService extends BaseService {
   }
 
   /**
-   * FIXED: Override the base auth token method with request deduplication
-   */
-  protected async getAuthTokenFromSession(): Promise<string | null> {
-    if (this.isAdminOperation()) {
-      return this.getAdminAccessToken();
-    }
-
-    return super.getAuthTokenFromSession();
-  }
-
-  /**
    * FIXED: Better request tracking to prevent duplicate requests
    */
   private async executeWithDeduplication<T>(
@@ -330,173 +497,6 @@ export class KeycloakService extends BaseService {
    */
   private isAdminOperation(): boolean {
     return true;
-  }
-
-  /**
-   * Get the admin API path for the configured realm
-   */
-  public getAdminPath(): string {
-    return `/admin/realms/${this.realm}`;
-  }
-
-  /**
-   * Get current realm
-   */
-  public getRealm(): string {
-    return this.realm;
-  }
-
-  /**
-   * FIXED: Override HTTP methods with deduplication and error handling
-   */
-  async adminGet<T>(endpoint: string, config?: any): Promise<T> {
-    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
-    const requestKey = `GET:${url}`;
-
-    return this.executeWithDeduplication(requestKey, async () => {
-      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
-        console.log('Admin GET:', url);
-      }
-      return this.get<T>(url, config);
-    });
-  }
-
-  async adminPost<T>(endpoint: string, data?: any, config?: any): Promise<T> {
-    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
-    const requestKey = `POST:${url}:${JSON.stringify(data)}`;
-
-    return this.executeWithDeduplication(requestKey, async () => {
-      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
-        console.log('Admin POST:', url, data ? 'with data' : 'no data');
-      }
-      return this.post<T>(url, data, config);
-    });
-  }
-
-  async adminPut<T>(endpoint: string, data?: any, config?: any): Promise<T> {
-    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
-    const requestKey = `PUT:${url}:${JSON.stringify(data)}`;
-
-    return this.executeWithDeduplication(requestKey, async () => {
-      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
-        console.log('Admin PUT:', url, data ? 'with data' : 'no data');
-      }
-      return this.put<T>(url, data, config);
-    });
-  }
-
-  async adminPatch<T>(endpoint: string, data?: any, config?: any): Promise<T> {
-    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
-    const requestKey = `PATCH:${url}:${JSON.stringify(data)}`;
-
-    return this.executeWithDeduplication(requestKey, async () => {
-      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
-        console.log('Admin PATCH:', url, data ? 'with data' : 'no data');
-      }
-      return this.patch<T>(url, data, config);
-    });
-  }
-
-  async adminDelete<T>(endpoint: string, config?: any): Promise<T> {
-    const url = endpoint.startsWith('/admin') ? endpoint : `${this.getAdminPath()}${endpoint}`;
-    const requestKey = `DELETE:${url}`;
-
-    return this.executeWithDeduplication(requestKey, async () => {
-      if (KEYCLOAK_DEBUG.enabled && KEYCLOAK_DEBUG.logRequests) {
-        console.log('Admin DELETE:', url);
-      }
-      return this.delete<T>(url, config);
-    });
-  }
-
-  /**
-   * Verify admin permissions
-   */
-  async verifyAdminPermissions(): Promise<{ authorized: boolean; error?: string }> {
-    try {
-      if (typeof window === 'undefined') {
-        const { auth } = await import('@/auth');
-        const session = await auth();
-
-        if (!session?.user) {
-          return { authorized: false, error: 'Not authenticated' };
-        }
-
-        return { authorized: true };
-      } else {
-        return { authorized: false, error: 'Admin verification must be done server-side' };
-      }
-    } catch (error) {
-      console.error('Permission verification error:', error);
-      return { authorized: false, error: 'Permission verification failed' };
-    }
-  }
-
-  /**
-   * FIXED: Enhanced token invalidation with cleanup
-   */
-  public invalidateAdminToken(): void {
-    this.adminAccessToken = null;
-    this.adminTokenExpiry = 0;
-    this.adminTokenRefreshPromise = null;
-    this.requestAttempts.clear();
-    this.resetFailureCount();
-    this.invalidateTokenCache();
-  }
-
-  /**
-   * Health check for admin connectivity
-   */
-  async checkAdminConnectivity(): Promise<boolean> {
-    try {
-      await this.adminGet('/');
-      return true;
-    } catch (error) {
-      console.error('Admin connectivity check failed:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get realm configuration
-   */
-  async getRealmInfo() {
-    return this.adminGet('/');
-  }
-
-  /**
-   * Test admin authentication without performing actual operations
-   */
-  async testAdminAuth(): Promise<{ success: boolean; error?: string }> {
-    try {
-      const token = await this.getAdminAccessToken();
-      if (token) {
-        return { success: true };
-      } else {
-        return { success: false, error: 'Failed to obtain admin token' };
-      }
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  }
-
-  /**
-   * Get detailed debug information
-   */
-  getDebugInfo() {
-    return {
-      realm: this.realm,
-      baseURL: this.config.baseURL,
-      adminPath: this.getAdminPath(),
-      hasAdminToken: !!this.adminAccessToken,
-      adminTokenExpiry: this.adminTokenExpiry,
-      isAdminTokenValid: this.adminAccessToken && Date.now() < this.adminTokenExpiry,
-      failureCount: this.failureCount,
-      isCircuitOpen: this.isCircuitOpen(),
-      activeRequests: this.requestAttempts.size,
-      config: KEYCLOAK_ADMIN_CONFIG,
-      debug: KEYCLOAK_DEBUG,
-    };
   }
 }
 

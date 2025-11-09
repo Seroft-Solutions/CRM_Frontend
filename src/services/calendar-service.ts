@@ -237,31 +237,6 @@ class IntegratedCalendarService {
   }
 
   /**
-   * Generate meeting invitation email content
-   */
-  private generateMeetingInvitationEmail(data: MeetingNotificationData): string {
-    return `
-Dear ${data.participantName},
-
-You have been invited to a meeting:
-
-Meeting Details:
-- Date & Time: ${data.meetingDateTime}
-- Duration: ${data.duration} minutes
-- Type: ${data.meetingType}
-${data.meetingUrl ? `- Meeting URL: ${data.meetingUrl}` : ''}
-${data.location ? `- Location: ${data.location}` : ''}
-
-Organizer: ${data.organizerName} (${data.organizerEmail})
-
-Please mark your calendar and be prepared for the meeting.
-
-Best regards,
-The Meeting System
-    `.trim();
-  }
-
-  /**
    * FIXED: Check email service status using backend
    */
   async checkEmailServiceStatus(): Promise<boolean> {
@@ -461,6 +436,31 @@ The Meeting System
     }
 
     return results;
+  }
+
+  /**
+   * Generate meeting invitation email content
+   */
+  private generateMeetingInvitationEmail(data: MeetingNotificationData): string {
+    return `
+Dear ${data.participantName},
+
+You have been invited to a meeting:
+
+Meeting Details:
+- Date & Time: ${data.meetingDateTime}
+- Duration: ${data.duration} minutes
+- Type: ${data.meetingType}
+${data.meetingUrl ? `- Meeting URL: ${data.meetingUrl}` : ''}
+${data.location ? `- Location: ${data.location}` : ''}
+
+Organizer: ${data.organizerName} (${data.organizerEmail})
+
+Please mark your calendar and be prepared for the meeting.
+
+Best regards,
+The Meeting System
+    `.trim();
   }
 }
 

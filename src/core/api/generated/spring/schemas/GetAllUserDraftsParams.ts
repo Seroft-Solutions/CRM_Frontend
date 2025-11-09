@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { GetAllUserDraftsStatusEquals } from './GetAllUserDraftsStatusEquals';
-import type { GetAllUserDraftsStatusNotEquals } from './GetAllUserDraftsStatusNotEquals';
-import type { GetAllUserDraftsStatusInItem } from './GetAllUserDraftsStatusInItem';
-import type { GetAllUserDraftsStatusNotInItem } from './GetAllUserDraftsStatusNotInItem';
+import type {GetAllUserDraftsStatusEquals} from './GetAllUserDraftsStatusEquals';
+import type {GetAllUserDraftsStatusNotEquals} from './GetAllUserDraftsStatusNotEquals';
+import type {GetAllUserDraftsStatusInItem} from './GetAllUserDraftsStatusInItem';
+import type {GetAllUserDraftsStatusNotInItem} from './GetAllUserDraftsStatusNotInItem';
 
 export type GetAllUserDraftsParams = {
 'id.greaterThan'?: number;

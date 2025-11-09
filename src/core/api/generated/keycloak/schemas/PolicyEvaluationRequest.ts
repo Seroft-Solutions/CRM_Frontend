@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { PolicyEvaluationRequestContext } from './PolicyEvaluationRequestContext';
-import type { ResourceRepresentation } from './ResourceRepresentation';
+import type {PolicyEvaluationRequestContext} from './PolicyEvaluationRequestContext';
+import type {ResourceRepresentation} from './ResourceRepresentation';
 
 export interface PolicyEvaluationRequest {
   context?: PolicyEvaluationRequestContext;

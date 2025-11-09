@@ -5,7 +5,7 @@
  * and gives users clear guidance on how to resolve them.
  */
 
-import { toast } from 'sonner';
+import {toast} from 'sonner';
 
 export interface ConstraintViolationError {
   type: 'constraint_violation';
@@ -134,29 +134,6 @@ export class CallDeletionErrorHandler {
   }
 
   /**
-   * Show detailed constraint violation information in a modal or detailed toast
-   */
-  private static showConstraintViolationDetails(error: ConstraintViolationError) {
-    const detailsMessage = `
-      **Cannot Delete Call**
-      
-      **Reason:** ${error.userMessage}
-      
-      **Related Data:** ${error.relatedEntities.join(', ')}
-      
-      **Suggested Actions:**
-      ${error.suggestedActions.map((action) => `• ${action}`).join('\n')}
-      
-      **Technical Details:** ${error.message}
-    `;
-
-    toast.info('Deletion Requirements', {
-      description: detailsMessage,
-      duration: 15000,
-    });
-  }
-
-  /**
    * Check if a call can be deleted by validating related data
    */
   static async validateCallDeletion(callId: string | number): Promise<{
@@ -220,6 +197,29 @@ export class CallDeletionErrorHandler {
     }
 
     return this.handleCallDeletion(callId, deleteOperation);
+  }
+
+  /**
+   * Show detailed constraint violation information in a modal or detailed toast
+   */
+  private static showConstraintViolationDetails(error: ConstraintViolationError) {
+    const detailsMessage = `
+      **Cannot Delete Call**
+      
+      **Reason:** ${error.userMessage}
+      
+      **Related Data:** ${error.relatedEntities.join(', ')}
+      
+      **Suggested Actions:**
+      ${error.suggestedActions.map((action) => `• ${action}`).join('\n')}
+      
+      **Technical Details:** ${error.message}
+    `;
+
+    toast.info('Deletion Requirements', {
+      description: detailsMessage,
+      duration: 15000,
+    });
   }
 }
 

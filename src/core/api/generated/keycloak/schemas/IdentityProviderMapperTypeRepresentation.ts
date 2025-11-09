@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ConfigPropertyRepresentation } from './ConfigPropertyRepresentation';
+import type {ConfigPropertyRepresentation} from './ConfigPropertyRepresentation';
 
 export interface IdentityProviderMapperTypeRepresentation {
   id?: string;

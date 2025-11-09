@@ -5,6 +5,6 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { Access } from './Access';
+import type {Access} from './Access';
 
 export type AccessTokenResourceAccess = {[key: string]: Access};

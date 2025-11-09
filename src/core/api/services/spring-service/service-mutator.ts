@@ -25,6 +25,12 @@ class SimpleTokenCache {
     return newToken;
   }
 
+  invalidate() {
+    this.token = null;
+    this.expiry = 0;
+    this.refreshPromise = null;
+  }
+
   private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
     try {
       const newToken = await refreshFn();
@@ -39,12 +45,6 @@ class SimpleTokenCache {
       this.expiry = 0;
       return null;
     }
-  }
-
-  invalidate() {
-    this.token = null;
-    this.expiry = 0;
-    this.refreshPromise = null;
   }
 }
 

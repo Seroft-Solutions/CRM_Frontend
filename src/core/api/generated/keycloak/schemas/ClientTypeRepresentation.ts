@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ClientTypeRepresentationConfig } from './ClientTypeRepresentationConfig';
+import type {ClientTypeRepresentationConfig} from './ClientTypeRepresentationConfig';
 
 export interface ClientTypeRepresentation {
   name?: string;

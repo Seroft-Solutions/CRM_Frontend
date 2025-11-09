@@ -32,6 +32,17 @@ export class OrganizationSyncService {
   }
 
   /**
+   * Check if sync is needed for a user session
+   * Note: This method is deprecated as organizations are now fetched via API
+   */
+  static async checkSyncNeeded(session: Session): Promise<boolean> {
+    console.warn(
+      'OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking'
+    );
+    return false;
+  }
+
+  /**
    * Sync user's organization and profile data from Keycloak to Spring
    * Note: This service will be deprecated as organizations are now fetched via API
    */
@@ -169,16 +180,5 @@ export class OrganizationSyncService {
         error: `Failed to sync user profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
-  }
-
-  /**
-   * Check if sync is needed for a user session
-   * Note: This method is deprecated as organizations are now fetched via API
-   */
-  static async checkSyncNeeded(session: Session): Promise<boolean> {
-    console.warn(
-      'OrganizationSyncService.checkSyncNeeded is deprecated - use API-based organization checking'
-    );
-    return false;
   }
 }

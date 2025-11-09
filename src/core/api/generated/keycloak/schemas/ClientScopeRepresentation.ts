@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ClientScopeRepresentationAttributes } from './ClientScopeRepresentationAttributes';
-import type { ProtocolMapperRepresentation } from './ProtocolMapperRepresentation';
+import type {ClientScopeRepresentationAttributes} from './ClientScopeRepresentationAttributes';
+import type {ProtocolMapperRepresentation} from './ProtocolMapperRepresentation';
 
 export interface ClientScopeRepresentation {
   id?: string;

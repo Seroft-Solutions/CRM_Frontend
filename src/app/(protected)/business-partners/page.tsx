@@ -501,29 +501,29 @@ export default function BusinessPartnersPage() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>{' '}
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => handleInviteAgain(partner)}
-                                    disabled={inviteAgainId === partner.id}
-                                    className="text-green-600"
-                                  >
-                                    {inviteAgainId === partner.id ? (
-                                      <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
-                                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                      </span>
-                                    ) : (
-                                      <Send className="h-4 w-4 mr-2" />
-                                    )}
-                                    Invite Again
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => handleEditPartner(partner)}
-                                    className="text-blue-600"
-                                  >
-                                    <Edit className="h-4 w-4 mr-2" />
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleInviteAgain(partner)}
+                                  disabled={inviteAgainId === partner.id}
+                                  className="text-green-600"
+                                >
+                                  {inviteAgainId === partner.id ? (
+                                    <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    </span>
+                                  ) : (
+                                    <Send className="h-4 w-4 mr-2" />
+                                  )}
+                                  Invite Again
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleEditPartner(partner)}
+                                  className="text-blue-600"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
                                   Edit Partner
                                 </DropdownMenuItem>
                                 <DropdownMenuItem

@@ -5,8 +5,8 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { UserProfileAttributeMetadata } from './UserProfileAttributeMetadata';
-import type { UserProfileAttributeGroupMetadata } from './UserProfileAttributeGroupMetadata';
+import type {UserProfileAttributeMetadata} from './UserProfileAttributeMetadata';
+import type {UserProfileAttributeGroupMetadata} from './UserProfileAttributeGroupMetadata';
 
 export interface UserProfileMetadata {
   attributes?: UserProfileAttributeMetadata[];

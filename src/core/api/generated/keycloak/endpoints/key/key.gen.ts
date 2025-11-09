@@ -5,9 +5,9 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { KeysMetadataRepresentation } from '../../schemas';
+import type {KeysMetadataRepresentation} from '../../schemas';
 
-import { keycloakServiceMutator } from '@/core/api/services/keycloak-service/service-mutator';
+import {keycloakServiceMutator} from '@/core/api/services/keycloak-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

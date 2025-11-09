@@ -5,8 +5,8 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { CustomerDTOStatus } from './CustomerDTOStatus';
-import type { AreaDTO } from './AreaDTO';
+import type {CustomerDTOStatus} from './CustomerDTOStatus';
+import type {AreaDTO} from './AreaDTO';
 
 export interface CustomerDTO {
   id?: number;

@@ -1,4 +1,4 @@
-import type { FormConfig } from './form-types';
+import type {FormConfig} from './form-types';
 
 /**
  * Configuration for MeetingParticipant form

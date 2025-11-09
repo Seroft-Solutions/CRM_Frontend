@@ -5,15 +5,15 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { OAuthClientRepresentationAttributes } from './OAuthClientRepresentationAttributes';
+import type {OAuthClientRepresentationAttributes} from './OAuthClientRepresentationAttributes';
 import type {
-  OAuthClientRepresentationAuthenticationFlowBindingOverrides
+    OAuthClientRepresentationAuthenticationFlowBindingOverrides
 } from './OAuthClientRepresentationAuthenticationFlowBindingOverrides';
-import type { OAuthClientRepresentationRegisteredNodes } from './OAuthClientRepresentationRegisteredNodes';
-import type { ProtocolMapperRepresentation } from './ProtocolMapperRepresentation';
-import type { ResourceServerRepresentation } from './ResourceServerRepresentation';
-import type { OAuthClientRepresentationAccess } from './OAuthClientRepresentationAccess';
-import type { ClaimRepresentation } from './ClaimRepresentation';
+import type {OAuthClientRepresentationRegisteredNodes} from './OAuthClientRepresentationRegisteredNodes';
+import type {ProtocolMapperRepresentation} from './ProtocolMapperRepresentation';
+import type {ResourceServerRepresentation} from './ResourceServerRepresentation';
+import type {OAuthClientRepresentationAccess} from './OAuthClientRepresentationAccess';
+import type {ClaimRepresentation} from './ClaimRepresentation';
 
 /**
  * @deprecated

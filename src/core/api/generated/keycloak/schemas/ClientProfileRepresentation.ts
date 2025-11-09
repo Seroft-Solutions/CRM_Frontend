@@ -5,7 +5,7 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { ClientPolicyExecutorRepresentation } from './ClientPolicyExecutorRepresentation';
+import type {ClientPolicyExecutorRepresentation} from './ClientPolicyExecutorRepresentation';
 
 export interface ClientProfileRepresentation {
   name?: string;

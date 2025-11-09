@@ -95,7 +95,6 @@ export default function InvitePartnersPage() {
       return;
     }
 
-
     setIsInviting(true);
 
     try {

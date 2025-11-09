@@ -5,38 +5,38 @@
  * This is a REST API reference for the Keycloak Admin REST API.
  * OpenAPI spec version: 1.0
  */
-import type { BruteForceStrategy } from './BruteForceStrategy';
-import type { RolesRepresentation } from './RolesRepresentation';
-import type { GroupRepresentation } from './GroupRepresentation';
-import type { RoleRepresentation } from './RoleRepresentation';
-import type { ClientRepresentation } from './ClientRepresentation';
-import type { RealmRepresentationLocalizationTexts } from './RealmRepresentationLocalizationTexts';
-import type { ClientProfilesRepresentation } from './ClientProfilesRepresentation';
-import type { ClientPoliciesRepresentation } from './ClientPoliciesRepresentation';
-import type { UserRepresentation } from './UserRepresentation';
-import type { ScopeMappingRepresentation } from './ScopeMappingRepresentation';
-import type { RealmRepresentationClientScopeMappings } from './RealmRepresentationClientScopeMappings';
-import type { ClientScopeRepresentation } from './ClientScopeRepresentation';
-import type { RealmRepresentationBrowserSecurityHeaders } from './RealmRepresentationBrowserSecurityHeaders';
-import type { RealmRepresentationSmtpServer } from './RealmRepresentationSmtpServer';
-import type { UserFederationProviderRepresentation } from './UserFederationProviderRepresentation';
-import type { UserFederationMapperRepresentation } from './UserFederationMapperRepresentation';
-import type { IdentityProviderRepresentation } from './IdentityProviderRepresentation';
-import type { IdentityProviderMapperRepresentation } from './IdentityProviderMapperRepresentation';
-import type { ProtocolMapperRepresentation } from './ProtocolMapperRepresentation';
+import type {BruteForceStrategy} from './BruteForceStrategy';
+import type {RolesRepresentation} from './RolesRepresentation';
+import type {GroupRepresentation} from './GroupRepresentation';
+import type {RoleRepresentation} from './RoleRepresentation';
+import type {ClientRepresentation} from './ClientRepresentation';
+import type {RealmRepresentationLocalizationTexts} from './RealmRepresentationLocalizationTexts';
+import type {ClientProfilesRepresentation} from './ClientProfilesRepresentation';
+import type {ClientPoliciesRepresentation} from './ClientPoliciesRepresentation';
+import type {UserRepresentation} from './UserRepresentation';
+import type {ScopeMappingRepresentation} from './ScopeMappingRepresentation';
+import type {RealmRepresentationClientScopeMappings} from './RealmRepresentationClientScopeMappings';
+import type {ClientScopeRepresentation} from './ClientScopeRepresentation';
+import type {RealmRepresentationBrowserSecurityHeaders} from './RealmRepresentationBrowserSecurityHeaders';
+import type {RealmRepresentationSmtpServer} from './RealmRepresentationSmtpServer';
+import type {UserFederationProviderRepresentation} from './UserFederationProviderRepresentation';
+import type {UserFederationMapperRepresentation} from './UserFederationMapperRepresentation';
+import type {IdentityProviderRepresentation} from './IdentityProviderRepresentation';
+import type {IdentityProviderMapperRepresentation} from './IdentityProviderMapperRepresentation';
+import type {ProtocolMapperRepresentation} from './ProtocolMapperRepresentation';
 import type {
-  MultivaluedHashMapStringComponentExportRepresentation
+    MultivaluedHashMapStringComponentExportRepresentation
 } from './MultivaluedHashMapStringComponentExportRepresentation';
-import type { AuthenticationFlowRepresentation } from './AuthenticationFlowRepresentation';
-import type { AuthenticatorConfigRepresentation } from './AuthenticatorConfigRepresentation';
-import type { RequiredActionProviderRepresentation } from './RequiredActionProviderRepresentation';
-import type { RealmRepresentationAttributes } from './RealmRepresentationAttributes';
-import type { OrganizationRepresentation } from './OrganizationRepresentation';
-import type { RealmRepresentationSocialProviders } from './RealmRepresentationSocialProviders';
-import type { RealmRepresentationApplicationScopeMappings } from './RealmRepresentationApplicationScopeMappings';
-import type { ApplicationRepresentation } from './ApplicationRepresentation';
-import type { OAuthClientRepresentation } from './OAuthClientRepresentation';
-import type { ClientTemplateRepresentation } from './ClientTemplateRepresentation';
+import type {AuthenticationFlowRepresentation} from './AuthenticationFlowRepresentation';
+import type {AuthenticatorConfigRepresentation} from './AuthenticatorConfigRepresentation';
+import type {RequiredActionProviderRepresentation} from './RequiredActionProviderRepresentation';
+import type {RealmRepresentationAttributes} from './RealmRepresentationAttributes';
+import type {OrganizationRepresentation} from './OrganizationRepresentation';
+import type {RealmRepresentationSocialProviders} from './RealmRepresentationSocialProviders';
+import type {RealmRepresentationApplicationScopeMappings} from './RealmRepresentationApplicationScopeMappings';
+import type {ApplicationRepresentation} from './ApplicationRepresentation';
+import type {OAuthClientRepresentation} from './OAuthClientRepresentation';
+import type {ClientTemplateRepresentation} from './ClientTemplateRepresentation';
 
 export interface RealmRepresentation {
   id?: string;
