@@ -17,15 +17,13 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
-    // Await params in Next.js 15+
     const { userId } = await params;
-    const realm = 'crm'; // Hardcode for now - same as groups work
+    const realm = 'crm';
 
     console.log('API Debug:', { userId, realm, baseURL: process.env.AUTH_KEYCLOAK_ISSUER });
 
@@ -33,7 +31,6 @@ export async function GET(
       throw new Error('Realm configuration missing');
     }
 
-    // Get user's current role mappings using generated endpoint
     const userRoles = await getAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId);
 
     return NextResponse.json(userRoles);
@@ -56,19 +53,16 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    // Verify admin permissions
     const permissionCheck = await keycloakService.verifyAdminPermissions();
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
-    // Await params in Next.js 15+
     const { userId } = await params;
     const body = await request.json();
     const { roles, action } = body;
-    const realm = 'crm'; // Hardcode for now - same as groups work
+    const realm = 'crm';
 
-    // Validate input
     if (!Array.isArray(roles) || roles.length === 0) {
       return NextResponse.json(
         { error: 'Roles array is required and cannot be empty' },
@@ -83,7 +77,6 @@ export async function POST(
       );
     }
 
-    // Type-safe role validation
     const validatedRoles: RoleRepresentation[] = roles.map((role: any) => {
       if (!role.id || !role.name) {
         throw new Error('Each role must have both id and name properties');
@@ -98,7 +91,6 @@ export async function POST(
       };
     });
 
-    // Use generated endpoints for role assignment/unassignment
     if (action === 'assign') {
       await postAdminRealmsRealmUsersUserIdRoleMappingsRealm(realm, userId, validatedRoles);
     } else {

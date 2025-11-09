@@ -11,9 +11,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-// Function to format segment text
 const formatSegmentText = (segment: string): string => {
-  // Replace hyphens with spaces and capitalize each word
   return segment
     .replace(/-/g, ' ')
     .split(' ')
@@ -21,7 +19,6 @@ const formatSegmentText = (segment: string): string => {
     .join(' ');
 };
 
-// Check if a segment is dynamic (e.g., [id], [userId])
 const isDynamicSegment = (segment: string): boolean => {
   return segment.startsWith('[') && segment.endsWith(']');
 };
@@ -29,12 +26,10 @@ const isDynamicSegment = (segment: string): boolean => {
 export function DynamicBreadcrumbs() {
   const pathname = usePathname();
 
-  // Skip rendering breadcrumbs on the root path
   if (pathname === '/') {
     return null;
   }
 
-  // Split the pathname into segments and remove empty segments
   const segments = pathname.split('/').filter(Boolean);
 
   if (segments.length === 0) {
@@ -55,15 +50,10 @@ export function DynamicBreadcrumbs() {
         )}
 
         {segments.map((segment, index) => {
-          // Calculate the href for this breadcrumb
           const href = `/${segments.slice(0, index + 1).join('/')}`;
 
-          // Format the segment text
-          const segmentText = isDynamicSegment(segment)
-            ? 'Details' // Default text for dynamic segments
-            : formatSegmentText(segment);
+          const segmentText = isDynamicSegment(segment) ? 'Details' : formatSegmentText(segment);
 
-          // Determine if this is the last segment (current page)
           const isLastSegment = index === segments.length - 1;
 
           return (

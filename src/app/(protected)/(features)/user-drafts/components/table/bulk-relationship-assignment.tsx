@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import * as React from 'react';
@@ -63,22 +56,18 @@ export function BulkRelationshipAssignment({
   const [relationshipOpen, setRelationshipOpen] = React.useState(false);
   const [valueOpen, setValueOpen] = React.useState(false);
 
-  // Get editable relationships
   const editableRelationships = relationshipConfigs.filter((config) => config.isEditable);
 
-  // Get current relationship config
   const currentRelationshipConfig = editableRelationships.find(
     (config) => config.name === selectedRelationship
   );
 
-  // Get display value for selected relationship
   const getRelationshipDisplayValue = () => {
     if (!selectedRelationship) return 'Select relationship...';
     const config = currentRelationshipConfig;
     return config ? config.displayName : selectedRelationship;
   };
 
-  // Get display value for selected value
   const getValueDisplayValue = () => {
     if (!currentRelationshipConfig) return 'Select relationship first...';
     if (selectedValue === null) return 'None (clear relationship)';
@@ -87,7 +76,6 @@ export function BulkRelationshipAssignment({
     return option ? option[currentRelationshipConfig.displayField] : 'Select value...';
   };
 
-  // Handle bulk update with smooth transitions (no individual toasts)
   const handleBulkUpdate = async () => {
     if (!selectedRelationship) {
       userDraftToast.validationError(['relationship field']);
@@ -99,7 +87,6 @@ export function BulkRelationshipAssignment({
     try {
       await onBulkUpdate(selectedEntityIds, selectedRelationship, selectedValue);
 
-      // Close dialog and reset state - toast will be handled by parent
       onOpenChange(false);
     } catch (error) {
       console.error('Bulk update error:', error);
@@ -112,12 +99,11 @@ export function BulkRelationshipAssignment({
     }
   };
 
-  // Reset form when dialog closes
   React.useEffect(() => {
     if (!open) {
       setSelectedRelationship('');
       setSelectedValue(null);
-      setIsUpdating(false); // Ensure updating state is reset
+      setIsUpdating(false);
     }
   }, [open]);
 
@@ -172,7 +158,7 @@ export function BulkRelationshipAssignment({
                                 value={config.displayName}
                                 onSelect={() => {
                                   setSelectedRelationship(config.name);
-                                  setSelectedValue(null); // Reset value when relationship changes
+                                  setSelectedValue(null);
                                   setRelationshipOpen(false);
                                 }}
                               >

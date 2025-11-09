@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -17,7 +10,7 @@ import { FormStateManager } from './form-state-manager';
 import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
-// Import generated step components (uncommented by step generator)
+
 import { stepComponents } from './steps';
 import {
   useCreateCall,
@@ -39,7 +32,6 @@ function CallFormContent({ id }: CallFormProps) {
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
 
-  // Fetch entity for editing
   const { data: entity, isLoading: isLoadingEntity } = useGetCall(id || 0, {
     query: {
       enabled: !!id,
@@ -47,22 +39,18 @@ function CallFormContent({ id }: CallFormProps) {
     },
   });
 
-  // Update form values when entity data is loaded (for edit mode with generated steps)
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
 
-      // Handle regular fields
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
-          // Convert to datetime-local format for the input
           if (value) {
             try {
               const date = new Date(value);
               if (!isNaN(date.getTime())) {
-                // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const offset = date.getTimezoneOffset();
                 const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
@@ -82,7 +70,6 @@ function CallFormContent({ id }: CallFormProps) {
         }
       });
 
-      // Handle relationships
       config.relationships.forEach((relConfig) => {
         const value = entity[relConfig.name];
 
@@ -99,7 +86,6 @@ function CallFormContent({ id }: CallFormProps) {
     }
   }, [entity, config, form, state.isLoading]);
 
-  // Render generated step components based on current step
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
     if (!currentStepConfig) return null;
@@ -111,17 +97,13 @@ function CallFormContent({ id }: CallFormProps) {
       entity,
     };
 
-    // Use imported step components (requires manual import after generation)
     try {
       const StepComponent = stepComponents[currentStepConfig.id as keyof typeof stepComponents];
       if (StepComponent) {
         return <StepComponent {...stepProps} />;
       }
-    } catch (error) {
-      // Steps not imported yet
-    }
+    } catch (error) {}
 
-    // Fallback message - replace with generated steps
     return (
       <div className="text-center p-8">
         <p className="text-muted-foreground">
@@ -136,17 +118,13 @@ function CallFormContent({ id }: CallFormProps) {
     );
   };
 
-  // Handle cancellation with cross-form navigation support
   const handleCancel = () => {
     if (hasReferrer()) {
-      // Navigate back to referrer without any created entity
       navigateBackToReferrer();
     } else {
-      // Fallback to traditional navigation
       const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
       const backRoute = returnUrl || '/calls';
 
-      // Clean up navigation localStorage (only on client side)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('entityCreationContext');
         localStorage.removeItem('referrerInfo');
@@ -157,7 +135,6 @@ function CallFormContent({ id }: CallFormProps) {
     }
   };
 
-  // Loading state for edit mode
   if (id && isLoadingEntity) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -200,7 +177,6 @@ function CallFormContent({ id }: CallFormProps) {
 
       {/* Form Content */}
       {config?.behavior?.rendering?.useGeneratedSteps ? (
-        // Use generated step components
         <Form {...form}>
           <form className="space-y-6">
             <Card>
@@ -209,15 +185,14 @@ function CallFormContent({ id }: CallFormProps) {
           </form>
         </Form>
       ) : (
-        // Use dynamic step renderer (original approach)
         <FormStepRenderer entity={entity} />
       )}
 
       {/* Navigation */}
       <FormNavigation
         onCancel={handleCancel}
-        onSubmit={async () => {}} // Empty function since submission is handled by form provider
-        isSubmitting={false} // Will be handled by form provider state
+        onSubmit={async () => {}}
+        isSubmitting={false}
         isNew={isNew}
       />
 
@@ -235,21 +210,18 @@ export function CallForm({ id }: CallFormProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const tempRemarksRef = useRef<any[]>([]);
 
-  // API hooks - moved here so they can be used in onSuccess callback
   const { mutate: createEntity, isPending: isCreating } = useCreateCall({
     mutation: {
       onSuccess: async (data) => {
         const entityId = data?.id || data?.id;
 
         try {
-          // Save remarks FIRST if any were added - WAIT for completion
           if (entityId && tempRemarksRef.current.length > 0) {
             await saveRemarksForCall(entityId, tempRemarksRef.current);
-            // Clear the temp remarks after successful save
+
             tempRemarksRef.current = [];
           }
 
-          // Invalidate queries to trigger table refetch
           queryClient.invalidateQueries({
             queryKey: ['getAllCalls'],
             refetchType: 'active',
@@ -264,17 +236,13 @@ export function CallForm({ id }: CallFormProps) {
             refetchType: 'active',
           });
 
-          // Only proceed with redirection after remarks are saved
           if (hasReferrer() && entityId) {
-            // Don't show toast here - success will be shown on the referring form
             setIsRedirecting(true);
             navigateBackToReferrer(entityId, 'Call');
           } else {
-            // Redirect to calls list with meeting dialog data
             callToast.created();
             setIsRedirecting(true);
 
-            // Pass call data via URL parameters for meeting dialog
             const params = new URLSearchParams({
               created: 'true',
               callId: data?.id?.toString() || '',
@@ -286,7 +254,7 @@ export function CallForm({ id }: CallFormProps) {
           }
         } catch (error) {
           console.error('Error in onSuccess flow:', error);
-          // Continue with normal flow even if remarks fail, but show error
+
           callToast.created();
           setIsRedirecting(true);
           router.push('/calls');
@@ -301,7 +269,6 @@ export function CallForm({ id }: CallFormProps) {
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
     mutation: {
       onSuccess: () => {
-        // Invalidate queries to trigger table refetch
         queryClient.invalidateQueries({
           queryKey: ['getAllCalls'],
           refetchType: 'active',
@@ -326,7 +293,6 @@ export function CallForm({ id }: CallFormProps) {
     },
   });
 
-  // Show loading state when redirecting to prevent form validation errors
   if (isRedirecting) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -342,27 +308,20 @@ export function CallForm({ id }: CallFormProps) {
     <CallFormProvider
       id={id}
       onSuccess={async (transformedData) => {
-        // This callback receives the properly transformed data from the form provider
-        // Extract temporary remarks before removing from data
         const tempRemarks = (transformedData as any).tempRemarks || [];
 
-        // Store remarks in ref for saving after call creation
         tempRemarksRef.current = tempRemarks;
 
-        // Remove tempRemarks from the data to be sent to API (as it's not a real call field)
         const { tempRemarks: _, ...callData } = transformedData as any;
 
-        // Ensure status is set to 'ACTIVE' before creating the call record
         const callDataWithStatus = {
           ...callData,
           status: 'ACTIVE',
         };
 
-        // Make the actual API call with the transformed data
         if (isNew) {
           createEntity({ data: callDataWithStatus });
         } else if (id) {
-          // Ensure the entity data includes the ID for updates
           const entityData = { ...callData, id };
           updateEntity({ id, data: entityData });
         }

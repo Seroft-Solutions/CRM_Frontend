@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Product Images Hooks
@@ -20,10 +20,9 @@ import {
   getGetAllProductImagesByProductQueryKey,
   type UploadProductImageMutationResult,
   type UploadProductImagesMutationResult,
-} from "@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen";
-import type { ProductImageDTO } from "@/core/api/generated/spring/schemas";
+} from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
+import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 
-// Re-export the generated DTO type
 export type { ProductImageDTO };
 
 /**
@@ -51,7 +50,11 @@ export function useUploadImage() {
 
   return {
     ...mutation,
-    mutateAsync: async ({ productId, organizationId, file }: {
+    mutateAsync: async ({
+      productId,
+      organizationId,
+      file,
+    }: {
       productId: number;
       organizationId: number;
       file: File;
@@ -83,7 +86,11 @@ export function useUploadImages() {
 
   return {
     ...mutation,
-    mutateAsync: async ({ productId, organizationId, files }: {
+    mutateAsync: async ({
+      productId,
+      organizationId,
+      files,
+    }: {
       productId: number;
       organizationId: number;
       files: File[];
@@ -137,7 +144,10 @@ export function useReorderImages() {
 
   return {
     ...mutation,
-    mutateAsync: async ({ productId, imageIds }: {
+    mutateAsync: async ({
+      productId,
+      imageIds,
+    }: {
       productId: number;
       imageIds: number[];
     }): Promise<void> => {

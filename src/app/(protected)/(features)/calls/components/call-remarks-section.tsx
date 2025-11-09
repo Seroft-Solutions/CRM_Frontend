@@ -80,7 +80,6 @@ interface CallRemarksSectionProps {
 }
 
 export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
-  // State management
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -88,12 +87,10 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const [newRemark, setNewRemark] = useState('');
   const [editRemark, setEditRemark] = useState('');
 
-  // Table state
   const [sorting, setSorting] = useState<SortingState>([{ id: 'dateTime', desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  // Fetch call remarks for this specific call
   const {
     data: callRemarks = [],
     isLoading,
@@ -110,7 +107,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     }
   );
 
-  // Create mutation
   const { mutate: createCallRemark, isPending: isCreating } = useCreateCallRemark({
     mutation: {
       onSuccess: () => {
@@ -125,7 +121,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     },
   });
 
-  // Update mutation
   const { mutate: updateCallRemark, isPending: isUpdating } = useUpdateCallRemark({
     mutation: {
       onSuccess: () => {
@@ -141,7 +136,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     },
   });
 
-  // Delete mutation
   const { mutate: deleteCallRemark, isPending: isDeleting } = useDeleteCallRemark({
     mutation: {
       onSuccess: () => {
@@ -156,7 +150,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     },
   });
 
-  // Action handlers
   const handleAddRemark = () => {
     if (!newRemark.trim()) {
       toast.error('Please enter a remark');
@@ -205,7 +198,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     setShowDeleteDialog(true);
   };
 
-  // Column definitions for the data table
   const columns = useMemo<ColumnDef<CallRemarkDTO>[]>(
     () => [
       {
@@ -257,7 +249,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
             <div className="w-full">
               <div
                 className="text-sm whitespace-pre-wrap break-words p-3 bg-muted/30 rounded-lg border-l-2 border-primary/20"
-                title={remark} // Show full text on hover
+                title={remark}
               >
                 {truncatedRemark || 'No content'}
               </div>
@@ -310,7 +302,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     []
   );
 
-  // Initialize the table
   const table = useReactTable({
     data: callRemarks,
     columns,

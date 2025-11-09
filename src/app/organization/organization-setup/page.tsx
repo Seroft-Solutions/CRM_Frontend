@@ -11,7 +11,6 @@ export default function OrganizationSetupPage() {
 
   useEffect(() => {
     if (!isLoading && organizations !== undefined && organizations.length > 0) {
-      // User has organizations - redirect to main router
       router.replace('/organization');
     }
   }, [organizations, isLoading, router]);

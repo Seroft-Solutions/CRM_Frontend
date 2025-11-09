@@ -9,7 +9,7 @@ interface Calendar20Props {
   onDateTimeSelected?: (date: Date, time: string) => void;
   bookedDates?: Date[];
   availableTimeSlots?: string[];
-  bookedTimeSlots?: string[]; // New prop for booked time slots
+  bookedTimeSlots?: string[];
   initialDate?: Date;
   initialTime?: string;
   showContinueButton?: boolean;
@@ -22,7 +22,7 @@ export default function Calendar20({
   onDateTimeSelected,
   bookedDates = [],
   availableTimeSlots,
-  bookedTimeSlots = [], // New prop with default empty array
+  bookedTimeSlots = [],
   initialDate,
   initialTime,
   showContinueButton = true,
@@ -33,7 +33,6 @@ export default function Calendar20({
   const [date, setDate] = React.useState<Date | undefined>(initialDate || new Date(2025, 5, 12));
   const [selectedTime, setSelectedTime] = React.useState<string | null>(initialTime || null);
 
-  // Use provided time slots or generate default ones
   const timeSlots = React.useMemo(() => {
     if (availableTimeSlots && availableTimeSlots.length > 0) {
       return availableTimeSlots;

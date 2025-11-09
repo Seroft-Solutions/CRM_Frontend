@@ -1,15 +1,8 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createProductCategory,
   updateProductCategory,
@@ -19,10 +12,8 @@ import { productCategoryToast } from '../components/product-category-toast';
 
 export async function createProductCategoryAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createProductCategory(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/product-categories');
     revalidatePath('/product-categories/new');
     productCategoryToast.created();
@@ -37,10 +28,8 @@ export async function createProductCategoryAction(data: any) {
 
 export async function updateProductCategoryAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateProductCategory(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/product-categories');
     revalidatePath(`/product-categories/${id}`);
     revalidatePath(`/product-categories/${id}/edit`);
@@ -128,7 +117,6 @@ export async function bulkArchiveProductCategoryAction(ids: number[], entitiesDa
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/product-categories');
 
     if (errorCount === 0) {
@@ -176,7 +164,6 @@ export async function bulkUpdateStatusProductCategoryAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/product-categories');
 
     if (errorCount === 0) {

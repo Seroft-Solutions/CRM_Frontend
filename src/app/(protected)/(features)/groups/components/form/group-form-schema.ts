@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Group form validation schema with user-friendly messages
  */
@@ -39,7 +32,6 @@ export const groupFormSchema = z.object(groupFormSchemaFields);
 
 export type GroupFormValues = z.infer<typeof groupFormSchema>;
 
-// Individual field schemas for granular validation
 export const groupFieldSchemas = {
   keycloakGroupId: z
     .string({ message: 'Please enter keycloakgroupid' })
@@ -65,7 +57,6 @@ export const groupFieldSchemas = {
   members: z.string().optional(),
 };
 
-// Step-specific validation schemas
 export const groupStepSchemas = {
   basic: z.object({
     keycloakGroupId: groupFieldSchemas.keycloakGroupId,
@@ -82,7 +73,6 @@ export const groupStepSchemas = {
   review: groupFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = groupStepSchemas[stepId as keyof typeof groupStepSchemas];
   if (!schema) return { success: true, data };

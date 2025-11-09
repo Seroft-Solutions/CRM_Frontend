@@ -1,31 +1,42 @@
-// ===============================================================
-// 🛑 NEW FILE – CUSTOMIZATION ALLOWED 🛑
-// - Purpose: Display and edit failed call import entries in a table
-// ===============================================================
-
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-// Data fetching hooks
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
 import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
-import { useGetAllImportHistories, useCountImportHistories, useDeleteImportHistory } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
+import {
+  useGetAllImportHistories,
+  useCountImportHistories,
+  useDeleteImportHistory,
+} from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { useCreateCall } from '@/core/api/generated/spring';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
-import {AdvancedPagination, usePaginationState} from './advanced-pagination';
+import { AdvancedPagination, usePaginationState } from './advanced-pagination';
 
 const tableScrollStyles = `
   .table-scroll::-webkit-scrollbar {
@@ -45,21 +56,21 @@ const tableScrollStyles = `
 `;
 
 const HEADERS = [
-    'Customer name',
-    'Zip Code',
-    'Product Name',
-    'External Id',
-    'Call Type',
-    'Sub Call Type',
-    'Priority',
-    'Call Status',
-    'Issue'
+  'Customer name',
+  'Zip Code',
+  'Product Name',
+  'External Id',
+  'Call Type',
+  'Sub Call Type',
+  'Priority',
+  'Call Status',
+  'Issue',
 ];
 
 
 export function FailedCallsTable() {
-    const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
-    const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
+  const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
+  const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
 
     const apiPage = Math.max(page - 1, 0);
 
@@ -72,112 +83,122 @@ export function FailedCallsTable() {
     const { data: totalCount = 0 } = useCountImportHistories({});
     const totalItems = totalCount ?? 0;
 
-    useEffect(() => {
-        if (importHistoryData) {
-            setEditableData(importHistoryData);
-        }
-    }, [importHistoryData]);
-
-    // Fetch data for dropdowns
-    const { data: priorityOptions = [] } = useGetAllPriorities({ page: 0, size: 1000 });
-    const { data: calltypeOptions = [] } = useGetAllCallTypes({ page: 0, size: 1000 });
-    const { data: subcalltypeOptions = [] } = useGetAllSubCallTypes({ page: 0, size: 1000 });
-    const { data: customerOptions = [] } = useGetAllCustomers({ page: 0, size: 1000 });
-    const { data: productOptions = [] } = useGetAllProducts({ page: 0, size: 1000 });
-    const { data: callstatusOptions = [] } = useGetAllCallStatuses({ page: 0, size: 1000 });
-
-    const { mutate: createCall, isPending: isCreating } = useCreateCall({
-        mutation: {
-            onError: (error) => {
-                toast.error('Failed to update call: ' + error.message);
-            },
-        },
-    });
-
-    const { mutate: deleteImportHistory } = useDeleteImportHistory({});
-
-    const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: any) => {
-        const updatedData = [...editableData];
-        const item = updatedData[rowIndex];
-        if (item) {
-            (item[fieldName] as any) = value;
-
-            if (fieldName === 'callType') {
-                item['subCallType'] = '';
-            }
-            setEditableData(updatedData);
-        }
-    };
-
-    const handleUpdateRow = (rowIndex: number) => {
-        const rowData = editableData[rowIndex];
-        if (!rowData?.id) return;
-
-        const callDTO = {
-            customer: customerOptions.find(c => c.customerBusinessName === rowData.customerBusinessName),
-            product: productOptions.find(p => p.name === rowData.productName),
-            callType: calltypeOptions.find(ct => ct.name === rowData.callType),
-            subCallType: subcalltypeOptions.find(sct => sct.name === rowData.subCallType),
-            priority: priorityOptions.find(p => p.name === rowData.priority),
-            callStatus: callstatusOptions.find(cs => cs.name === rowData.callStatus),
-            externalId: rowData.externalId
-        };
-
-        // @ts-ignore
-        createCall({ data: callDTO }, {
-            onSuccess: () => {
-                toast.success(`Row ${rowIndex + 1} updated and call created.`);
-                deleteImportHistory({ id: rowData.id! }, {
-                    onSuccess: () => {
-                        refetch();
-                    }
-                });
-            }
-        });
-    };
-
-    if (isLoading) {
-        return <div>Loading...</div>;
+  useEffect(() => {
+    if (importHistoryData) {
+      setEditableData(importHistoryData);
     }
+  }, [importHistoryData]);
 
-    if (editableData.length === 0) {
+  const { data: priorityOptions = [] } = useGetAllPriorities({ page: 0, size: 1000 });
+  const { data: calltypeOptions = [] } = useGetAllCallTypes({ page: 0, size: 1000 });
+  const { data: subcalltypeOptions = [] } = useGetAllSubCallTypes({ page: 0, size: 1000 });
+  const { data: customerOptions = [] } = useGetAllCustomers({ page: 0, size: 1000 });
+  const { data: productOptions = [] } = useGetAllProducts({ page: 0, size: 1000 });
+  const { data: callstatusOptions = [] } = useGetAllCallStatuses({ page: 0, size: 1000 });
+
+  const { mutate: createCall, isPending: isCreating } = useCreateCall({
+    mutation: {
+      onError: (error) => {
+        toast.error('Failed to update call: ' + error.message);
+      },
+    },
+  });
+
+  const { mutate: deleteImportHistory } = useDeleteImportHistory({});
+
+  const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: any) => {
+    const updatedData = [...editableData];
+    const item = updatedData[rowIndex];
+    if (item) {
+      (item[fieldName] as any) = value;
+
+      if (fieldName === 'callType') {
+        item['subCallType'] = '';
+      }
+      setEditableData(updatedData);
+    }
+  };
+
+  const handleUpdateRow = (rowIndex: number) => {
+    const rowData = editableData[rowIndex];
+    if (!rowData?.id) return;
+
+    const callDTO = {
+      customer: customerOptions.find(
+        (c) => c.customerBusinessName === rowData.customerBusinessName
+      ),
+      product: productOptions.find((p) => p.name === rowData.productName),
+      callType: calltypeOptions.find((ct) => ct.name === rowData.callType),
+      subCallType: subcalltypeOptions.find((sct) => sct.name === rowData.subCallType),
+      priority: priorityOptions.find((p) => p.name === rowData.priority),
+      callStatus: callstatusOptions.find((cs) => cs.name === rowData.callStatus),
+      externalId: rowData.externalId,
+    };
+
+    // @ts-ignore
+    createCall(
+      { data: callDTO },
+      {
+        onSuccess: () => {
+          toast.success(`Row ${rowIndex + 1} updated and call created.`);
+          deleteImportHistory(
+            { id: rowData.id! },
+            {
+              onSuccess: () => {
+                refetch();
+              },
+            }
+          );
+        },
+      }
+    );
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (editableData.length === 0) {
+    return null;
+  }
+
+  const getColumnOptions = (columnName: string, rowData: any) => {
+    switch (columnName) {
+      case 'Customer name':
+        return customerOptions.map((c) => ({
+          value: c.customerBusinessName,
+          label: c.customerBusinessName,
+        }));
+      case 'Product Name':
+        return productOptions.map((p) => ({ value: p.name, label: p.name }));
+      case 'Call Type':
+        return calltypeOptions.map((ct) => ({ value: ct.name, label: ct.name }));
+      case 'Sub Call Type':
+        const selectedCallType = calltypeOptions.find((ct) => ct.name === rowData['callType']);
+        if (!selectedCallType) return [];
+        return subcalltypeOptions
+          .filter((sct) => sct.callType?.id === selectedCallType.id)
+          .map((sct) => ({ value: sct.name, label: sct.name }));
+      case 'Priority':
+        return priorityOptions.map((p) => ({ value: p.name, label: p.name }));
+      case 'Call Status':
+        return callstatusOptions.map((cs) => ({ value: cs.name, label: cs.name }));
+      default:
         return null;
     }
+  };
 
-    const getColumnOptions = (columnName: string, rowData: any) => {
-        switch (columnName) {
-            case 'Customer name':
-                return customerOptions.map(c => ({ value: c.customerBusinessName, label: c.customerBusinessName }));
-            case 'Product Name':
-                return productOptions.map(p => ({ value: p.name, label: p.name }));
-            case 'Call Type':
-                return calltypeOptions.map(ct => ({ value: ct.name, label: ct.name }));
-            case 'Sub Call Type':
-                const selectedCallType = calltypeOptions.find(ct => ct.name === rowData['callType']);
-                if (!selectedCallType) return [];
-                return subcalltypeOptions
-                    .filter(sct => sct.callType?.id === selectedCallType.id)
-                    .map(sct => ({ value: sct.name, label: sct.name }));
-            case 'Priority':
-                return priorityOptions.map(p => ({ value: p.name, label: p.name }));
-            case 'Call Status':
-                return callstatusOptions.map(cs => ({ value: cs.name, label: cs.name }));
-            default:
-                return null;
-        }
-    };
-
-    const headerMapping: { [key: string]: keyof ImportHistoryDTO } = {
-        'Customer name': 'customerBusinessName',
-        'Zip Code': 'zipCode',
-        'Product Name': 'productName',
-        'External Id': 'externalId',
-        'Call Type': 'callType',
-        'Sub Call Type': 'subCallType',
-        'Priority': 'priority',
-        'Call Status': 'callStatus',
-        'Issue': 'issue'
-    };
+  const headerMapping: { [key: string]: keyof ImportHistoryDTO } = {
+    'Customer name': 'customerBusinessName',
+    'Zip Code': 'zipCode',
+    'Product Name': 'productName',
+    'External Id': 'externalId',
+    'Call Type': 'callType',
+    'Sub Call Type': 'subCallType',
+    Priority: 'priority',
+    'Call Status': 'callStatus',
+    Issue: 'issue',
+  };
 
     return (
         <>

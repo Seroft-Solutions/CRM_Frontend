@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * UserDraft form validation schema with user-friendly messages
  */
@@ -23,7 +16,6 @@ export const userDraftFormSchema = z.object(userDraftFormSchemaFields);
 
 export type UserDraftFormValues = z.infer<typeof userDraftFormSchema>;
 
-// Individual field schemas for granular validation
 export const userDraftFieldSchemas = {
   keycloakUserId: z.string().optional(),
   type: z.string().max(50, { message: 'Please enter no more than 50 characters' }).optional(),
@@ -33,7 +25,6 @@ export const userDraftFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const userDraftStepSchemas = {
   basic: z.object({
     keycloakUserId: userDraftFieldSchemas.keycloakUserId,
@@ -49,7 +40,6 @@ export const userDraftStepSchemas = {
   review: userDraftFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = userDraftStepSchemas[stepId as keyof typeof userDraftStepSchemas];
   if (!schema) return { success: true, data };

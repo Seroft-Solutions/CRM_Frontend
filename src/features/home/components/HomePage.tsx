@@ -15,15 +15,10 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const { data: session, status } = useSession();
 
-  // Cleanup stale auth data when landing on homepage without valid session
-  // Only run this after initial loading is complete
   useEffect(() => {
-    // Wait for authentication status to be determined
     if (status === 'loading') return;
 
-    // Only cleanup if user is definitely unauthenticated (not just loading)
     if (status === 'unauthenticated') {
-      // Check if there's stale data and clean it up
       if (hasStaleAuthData()) {
         console.log('Cleaning up stale auth data on homepage - user is unauthenticated');
         clearAuthStorage();
@@ -39,12 +34,11 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle Start Brewing click - initiate Keycloak sign-in after brief loading animation
   const handleStartBrewing = () => {
     setIsLoading(true);
     setTimeout(() => {
       signIn('keycloak', { redirectTo: '/organization' });
-    }, 800); // Match the loading animation time for consistency
+    }, 800);
   };
 
   if (isLoading) {
@@ -59,7 +53,6 @@ export default function HomePage() {
     );
   }
 
-  // Define features for the FeatureSection
   const features = [
     {
       icon: 'Users',

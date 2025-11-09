@@ -6,10 +6,8 @@
 import { signOut } from 'next-auth/react';
 import type { KeycloakTokenPayload } from '../types';
 
-// Re-export server actions
 export { logoutAction } from './actions';
 
-// Re-export local storage cleanup utilities
 export { localStorageCleanup } from './local-storage-cleanup';
 
 /**
@@ -53,7 +51,7 @@ export async function logout() {
     });
   } catch (error) {
     console.error('Logout error:', error);
-    // Fallback: redirect to home page
+
     window.location.href = '/';
   }
 }
@@ -65,27 +63,24 @@ export async function logout() {
  */
 export async function logoutWithCleanup() {
   try {
-    // Import cleanup utility dynamically to avoid SSR issues
     const { clearAuthStorage } = await import('@/lib/auth-cleanup');
 
-    // Clean up all auth-related storage (cookies, localStorage, sessionStorage)
     clearAuthStorage();
 
-    // Proceed with normal logout
     await signOut({
       callbackUrl: '/',
       redirect: true,
     });
   } catch (error) {
     console.error('Logout with cleanup error:', error);
-    // Try to clear storage even on error
+
     try {
       const { clearAuthStorage } = await import('@/lib/auth-cleanup');
       clearAuthStorage();
     } catch (cleanupError) {
       console.error('Failed to cleanup storage on error:', cleanupError);
     }
-    // Fallback: redirect to home page
+
     window.location.href = '/';
   }
 }

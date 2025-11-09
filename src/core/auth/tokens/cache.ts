@@ -27,7 +27,7 @@ export class TokenCache {
       const newToken = await refreshFn();
       if (newToken) {
         this.token = newToken;
-        this.expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+        this.expiry = Date.now() + 5 * 60 * 1000;
       }
       return newToken;
     } catch (error) {
@@ -45,5 +45,4 @@ export class TokenCache {
   }
 }
 
-// Export singleton instance
 export const tokenCache = new TokenCache();

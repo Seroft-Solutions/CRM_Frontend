@@ -33,7 +33,6 @@ export function PendingInvitations({ className }: PendingInvitationsProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'expired'>('all');
 
-  // Build filters
   const filters: InvitationFilters = {
     search: searchTerm || undefined,
     status: statusFilter === 'all' ? undefined : [statusFilter as any],

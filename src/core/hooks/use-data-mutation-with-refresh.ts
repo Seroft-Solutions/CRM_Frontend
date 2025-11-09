@@ -25,10 +25,8 @@ export function useDataMutationWithRefresh() {
 
   const invalidateQueries = useCallback(
     async (queryKeys: string[]) => {
-      // Invalidate specific query keys with throttling to prevent excessive calls
-      const uniqueKeys = [...new Set(queryKeys)]; // Remove duplicates
+      const uniqueKeys = [...new Set(queryKeys)];
 
-      // Step 1: Invalidate queries (marks them as stale)
       await Promise.all(
         uniqueKeys.map((key) =>
           queryClient.invalidateQueries({
@@ -38,18 +36,17 @@ export function useDataMutationWithRefresh() {
         )
       );
 
-      // Step 2: Only refetch active queries after a small delay to batch operations
       setTimeout(async () => {
         await Promise.all(
           uniqueKeys.map((key) =>
             queryClient.refetchQueries({
               queryKey: [key],
               exact: false,
-              type: 'active', // Only refetch active queries
+              type: 'active',
             })
           )
         );
-      }, 100); // 100ms delay to batch operations
+      }, 100);
     },
     [queryClient]
   );
@@ -59,17 +56,14 @@ export function useDataMutationWithRefresh() {
       try {
         const result = await operation();
 
-        // Invalidate and refetch related queries
         await invalidateQueries(config.queryKeys);
 
-        // Show success message if configured
         if (config.showSuccessToast !== false && config.successMessage) {
           toast.success(config.successMessage);
         }
 
         return result;
       } catch (error: any) {
-        // Show error message if configured
         if (config.showErrorToast !== false) {
           const errorMessage = config.errorMessage || error.message || 'Operation failed';
           toast.error(errorMessage);
@@ -91,7 +85,6 @@ export function useDataMutationWithRefresh() {
  * Specific hooks for common entity operations
  */
 
-// Calls management
 export function useCallsDataMutation() {
   const { executeWithRefresh } = useDataMutationWithRefresh();
 
@@ -131,7 +124,6 @@ export function useCallsDataMutation() {
   return { deleteCall, createCall, updateCall };
 }
 
-// Customers management
 export function useCustomersDataMutation() {
   const { executeWithRefresh } = useDataMutationWithRefresh();
 
@@ -171,7 +163,6 @@ export function useCustomersDataMutation() {
   return { deleteCustomer, createCustomer, updateCustomer };
 }
 
-// Products management
 export function useProductsDataMutation() {
   const { executeWithRefresh } = useDataMutationWithRefresh();
 
@@ -211,7 +202,6 @@ export function useProductsDataMutation() {
   return { deleteProduct, createProduct, updateProduct };
 }
 
-// Business Partners management
 export function useBusinessPartnersDataMutation() {
   const { executeWithRefresh } = useDataMutationWithRefresh();
 
@@ -251,7 +241,6 @@ export function useBusinessPartnersDataMutation() {
   return { deletePartner, updatePartner, invitePartner };
 }
 
-// User management
 export function useUserManagementDataMutation() {
   const { executeWithRefresh } = useDataMutationWithRefresh();
 

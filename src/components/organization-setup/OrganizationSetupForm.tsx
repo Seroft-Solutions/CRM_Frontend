@@ -26,7 +26,7 @@ export function OrganizationSetupForm({
     organizationName: '',
     domain: '',
     organizationCode: '',
-    organizationEmail:session?.user?.email,
+    organizationEmail: session?.user?.email,
   });
   const [validationError, setValidationError] = useState<string>('');
 
@@ -38,13 +38,11 @@ export function OrganizationSetupForm({
       return;
     }
 
-    // Validate organization name - no spaces allowed
     if (formData.organizationName.includes(' ')) {
       setValidationError('Organization name cannot contain spaces');
       return;
     }
 
-    // Validate organization code
     const orgCodeRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{4}$/;
     if (!orgCodeRegex.test(formData.organizationCode as string)) {
       setValidationError(
@@ -53,7 +51,6 @@ export function OrganizationSetupForm({
       return;
     }
 
-    // Auto-generate domain from organization name
     const orgName = formData.organizationName
       .trim()
       .toLowerCase()
@@ -68,7 +65,6 @@ export function OrganizationSetupForm({
     });
   };
 
-
   const handleChange =
     (field: keyof OrganizationSetupRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
       let value = e.target.value;
@@ -76,7 +72,7 @@ export function OrganizationSetupForm({
         value = value.toUpperCase();
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
-      // Clear validation error when user starts typing
+
       if (validationError && (field === 'organizationName' || field === 'organizationCode')) {
         setValidationError('');
       }

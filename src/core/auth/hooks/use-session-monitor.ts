@@ -50,22 +50,18 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     const hasValidSession = !!session?.user;
     const hadSessionBefore = lastSessionState.current;
 
-    // Track login time for grace period
     if (hasValidSession && !hadSessionBefore) {
       loginTime.current = Date.now();
     }
 
-    // Check if we're still in grace period
     const timeSinceLogin = Date.now() - loginTime.current;
     const isInGracePeriod = timeSinceLogin < gracePeriod * 60 * 1000;
 
-    // Skip further checks if in grace period but still update state
     if (isInGracePeriod && hasValidSession) {
       lastSessionState.current = hasValidSession;
       return;
     }
 
-    // Session state changed
     if (hasValidSession !== hadSessionBefore) {
       if (!hasValidSession && hadSessionBefore) {
         onSessionExpired?.();
@@ -76,7 +72,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
       }
     }
 
-    // Check token expiry if we have a session
     if (hasValidSession && session?.access_token) {
       try {
         const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
@@ -85,7 +80,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
         const timeUntilExpiry = expiryTime - currentTime;
         const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60000);
 
-        // Auto-refresh session if user is active and token is about to expire
         if (autoRefreshOnActivity && !isIdle && minutesUntilExpiry <= warningThreshold) {
           try {
             const refreshSuccess = await refreshSession();
@@ -100,13 +94,11 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
           }
         }
 
-        // Reset warning if token has been refreshed
         if (lastTokenExpiry.current !== expiryTime) {
           warningShown.current = false;
           lastTokenExpiry.current = expiryTime;
         }
 
-        // Only show warning if user is idle AND token is expiring
         if (
           isIdle &&
           warningThreshold > 0 &&
@@ -126,7 +118,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
           }, 1000);
         }
 
-        // Token has expired
         if (timeUntilExpiry <= 0) {
           onSessionExpired?.();
         }
@@ -151,15 +142,13 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   ]);
 
   useEffect(() => {
-    // Initial check
     checkSessionValidity();
 
-    // Set up interval for periodic checks
     const interval = setInterval(checkSessionValidity, checkInterval);
 
     return () => {
       clearInterval(interval);
-      // Clear debounce timer on cleanup
+
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }

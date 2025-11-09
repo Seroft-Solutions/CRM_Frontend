@@ -1,15 +1,8 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-// Import the generated API functions directly
+
 import {
   createChannelType,
   updateChannelType,
@@ -19,10 +12,8 @@ import { channelTypeToast } from '../components/channel-type-toast';
 
 export async function createChannelTypeAction(data: any) {
   try {
-    // Create entity using the generated API function
     const result = await createChannelType(data);
 
-    // Revalidate both the main list page and any related pages
     revalidatePath('/channel-types');
     revalidatePath('/channel-types/new');
     channelTypeToast.created();
@@ -37,10 +28,8 @@ export async function createChannelTypeAction(data: any) {
 
 export async function updateChannelTypeAction(id: number, data: any) {
   try {
-    // Update entity using the generated API function with correct signature
     const result = await updateChannelType(id, data);
 
-    // Revalidate all related paths to ensure fresh data
     revalidatePath('/channel-types');
     revalidatePath(`/channel-types/${id}`);
     revalidatePath(`/channel-types/${id}/edit`);
@@ -124,7 +113,6 @@ export async function bulkArchiveChannelTypeAction(ids: number[], entitiesData: 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/channel-types');
 
     if (errorCount === 0) {
@@ -171,7 +159,6 @@ export async function bulkUpdateStatusChannelTypeAction(
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     const errorCount = results.filter((r) => r.status === 'rejected').length;
 
-    // Revalidate to ensure table reflects changes
     revalidatePath('/channel-types');
 
     if (errorCount === 0) {

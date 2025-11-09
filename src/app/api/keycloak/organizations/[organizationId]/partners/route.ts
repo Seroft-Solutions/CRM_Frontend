@@ -36,11 +36,11 @@ interface PartnerInvitation {
   firstName: string;
   lastName: string;
   organizationId: string;
-  channelTypeId: number; // Add channelTypeId
+  channelTypeId: number;
   sendWelcomeEmail: boolean;
-  sendPasswordReset?: boolean; // Send UPDATE_PASSWORD email
+  sendPasswordReset?: boolean;
   invitationNote?: string;
-  redirectUri?: string; // Post-password setup redirect
+  redirectUri?: string;
 }
 
 interface PendingPartnerInvitation {
@@ -57,7 +57,6 @@ interface PendingPartnerInvitation {
   sendWelcomeEmail?: boolean;
 }
 
-// Helper function to ensure Business Partners group assignment and remove Admins group if present
 async function ensureProperPartnerGroupAssignment(
   realm: string,
   userId: string
@@ -69,22 +68,18 @@ async function ensureProperPartnerGroupAssignment(
   let adminsGroupRemoved = false;
 
   try {
-    // Get all groups
     const allGroups = await getAdminRealmsRealmGroups(realm);
     const businessPartnersGroup = allGroups.find((g) => g.name === 'Business Partners');
     const adminsGroup = allGroups.find((g) => g.name === 'Admins');
 
-    // Get user's current groups
     const userGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
 
-    // Assign Business Partners group if not already assigned
     if (businessPartnersGroup && !userGroups.some((g) => g.id === businessPartnersGroup.id)) {
       await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, businessPartnersGroup.id!);
       businessPartnersGroupAssigned = true;
       console.log('Assigned Business Partners group to user:', userId);
     }
 
-    // Remove Admins group if present
     if (adminsGroup && userGroups.some((g) => g.id === adminsGroup.id)) {
       await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, adminsGroup.id!);
       adminsGroupRemoved = true;
@@ -97,12 +92,10 @@ async function ensureProperPartnerGroupAssignment(
   return { businessPartnersGroupAssigned, adminsGroupRemoved };
 }
 
-// Helper function to generate invitation ID
 function generateInvitationId(): string {
   return `partner_inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Helper function to fetch channel type details
 async function fetchChannelTypeDetails(channelTypeId: number): Promise<ChannelTypeDTO | null> {
   try {
     const channelType = await getChannelType(channelTypeId);
@@ -113,7 +106,6 @@ async function fetchChannelTypeDetails(channelTypeId: number): Promise<ChannelTy
   }
 }
 
-// Helper function to store partner invitation metadata in user attributes
 function createPartnerInvitationUserAttributes(
   invitation: PendingPartnerInvitation,
   channelTypeId: number,
@@ -128,26 +120,25 @@ function createPartnerInvitationUserAttributes(
     partner_invitation_organization_id: invitation.organizationId,
     partner_invitation_note: invitation.invitationNote || '',
     partner_invitation_expires_at: invitation.expiresAt?.toString() || '',
-    // Organization details for multi-tenant email templates
+
     organization_id: invitation.organizationId,
     organization_name: organization?.name || 'Organization',
     organization_display_name: organization?.displayName || organization?.name || 'Organization',
-    // Channel type details
+
     channel_type_id: channelTypeId.toString(),
     channel_type_name: channelType?.name || 'Business Partner',
     channel_type_commission_rate: channelType?.commissionRate?.toString() || '0',
-    // User type classification
+
     user_type: 'partner',
     invited_as: 'business_partner',
   };
 }
 
-// Helper function to set default password for newly created users
 async function setDefaultPassword(realm: string, userId: string, password: string = 'temp#123') {
   const credential: CredentialRepresentation = {
     type: 'password',
     value: password,
-    temporary: true, // User will be required to change password
+    temporary: true,
   };
 
   try {
@@ -173,16 +164,13 @@ export async function GET(
     const { organizationId } = await params;
     const realm = keycloakService.getRealm();
 
-    // Get organization members
     const members = await getAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId);
 
-    // ENHANCED: Parallel processing to fetch groups and roles for all members
     const enhancedMembers = await Promise.all(
       members.map(async (member) => {
         try {
           if (!member.id) return member;
 
-          // Fetch groups and roles in parallel for each member
           const [memberGroups, memberRoles] = await Promise.all([
             getAdminRealmsRealmUsersUserIdGroups(realm, member.id).catch((error) => {
               console.warn(`Failed to fetch groups for user ${member.id}:`, error);
@@ -194,13 +182,12 @@ export async function GET(
             }),
           ]);
 
-          // Add groups and roles to member object
           return {
             ...member,
-            groups: memberGroups.map((g) => g.name).filter(Boolean), // Array of group names
-            groupDetails: memberGroups, // Full group objects
-            realmRoles: memberRoles.map((r) => r.name).filter(Boolean), // Array of role names
-            roleDetails: memberRoles, // Full role objects
+            groups: memberGroups.map((g) => g.name).filter(Boolean),
+            groupDetails: memberGroups,
+            realmRoles: memberRoles.map((r) => r.name).filter(Boolean),
+            roleDetails: memberRoles,
           };
         } catch (error) {
           console.warn(`Failed to enhance member data for ${member.id}:`, error);
@@ -209,7 +196,6 @@ export async function GET(
       })
     );
 
-    // Filter for business partners (users with "Business Partners" group)
     const businessPartners = enhancedMembers.filter((member) => {
       const memberGroups = member.groups || [];
       return memberGroups.includes('Business Partners');
@@ -251,11 +237,10 @@ export async function POST(
       channelTypeId: body.channelTypeId,
       invitationNote: body.invitationNote,
       sendWelcomeEmail: body.sendWelcomeEmail !== false,
-      sendPasswordReset: body.sendPasswordReset !== false, // Default to true
+      sendPasswordReset: body.sendPasswordReset !== false,
       redirectUri: body.redirectUri,
     };
 
-    // Validate required fields
     if (!inviteData.email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
@@ -264,7 +249,6 @@ export async function POST(
       return NextResponse.json({ error: 'Channel Type is required' }, { status: 400 });
     }
 
-    // Fetch channel type details and organization info for proper email template data
     const [channelType, organization] = await Promise.all([
       fetchChannelTypeDetails(inviteData.channelTypeId),
       getAdminRealmsRealmOrganizationsOrgId(realm, organizationId),
@@ -286,13 +270,11 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    // CLEAR SCENARIO-BASED FLOW FOR PARTNERS
     let userId: string;
     let invitationId: string;
     let groupManagement = { businessPartnersGroupAssigned: false, adminsGroupRemoved: false };
 
     try {
-      // Check if user exists
       const existingUsers = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
         exact: true,
@@ -304,27 +286,25 @@ export async function POST(
       });
 
       if (existingUsers.length > 0) {
-        // SCENARIO 2: User exists - add to org then invite
         userId = existingUsers[0].id!;
         console.log('Found existing partner user:', userId);
 
-        // Try to update existing user attributes to include channelType (gracefully handle failures)
         try {
           const updatedUserAttributes: UserRepresentation = {
             ...existingUsers[0],
             attributes: {
               ...existingUsers[0].attributes,
               organization: [organizationId],
-              // Organization details for multi-tenant email templates
+
               organization_id: [organizationId],
               organization_name: [organization.name || 'Organization'],
               organization_display_name: [
                 organization.displayName || organization.name || 'Organization',
               ],
-              // User type and partner classification
+
               user_type: ['partner'],
               invited_as: ['business_partner'],
-              // Channel type details for email templates
+
               channel_type_id: [inviteData.channelTypeId.toString()],
               channel_type_name: [channelType.name],
               channel_type_commission_rate: [channelType.commissionRate?.toString() || '0'],
@@ -338,14 +318,11 @@ export async function POST(
             'Failed to update user attributes, but continuing with invitation:',
             attributeError
           );
-          // Continue with the flow - user exists, just without updated custom attributes
         }
 
-        // First add user to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing partner to organization');
 
-        // Ensure proper group assignment for existing partner
         const groupResult = await ensureProperPartnerGroupAssignment(realm, userId);
         groupManagement.businessPartnersGroupAssigned =
           groupResult.businessPartnersGroupAssigned ||
@@ -353,9 +330,7 @@ export async function POST(
         groupManagement.adminsGroupRemoved =
           groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // Send appropriate email
         if (inviteData.sendPasswordReset !== false) {
-          // Send UPDATE_PASSWORD email for partners to set their password
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -363,7 +338,7 @@ export async function POST(
               ['UPDATE_PASSWORD'],
               {
                 client_id: 'web_app',
-                lifespan: 43200, // 12 hours
+                lifespan: 43200,
                 redirect_uri: inviteData.redirectUri,
               }
             );
@@ -372,7 +347,6 @@ export async function POST(
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
           }
         } else {
-          // Send organization invite
           const inviteExistingUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -386,9 +360,6 @@ export async function POST(
           console.log('Invited existing partner to organization');
         }
       } else {
-        // SCENARIO 1: User doesn't exist - create then invite
-
-        // 1. Create Partner User first (without custom attributes initially)
         const newUser: UserRepresentation = {
           username: inviteData.email,
           email: inviteData.email,
@@ -401,7 +372,6 @@ export async function POST(
         await postAdminRealmsRealmUsers(realm, newUser);
         console.log('Created new partner user');
 
-        // Get created user ID
         const createdUsers = await getAdminRealmsRealmUsers(realm, {
           email: inviteData.email,
           exact: true,
@@ -414,7 +384,6 @@ export async function POST(
         userId = createdUsers[0].id!;
         console.log('Found created partner user ID:', userId);
 
-        // 1.5. Set default password for the new partner user
         const passwordSet = await setDefaultPassword(realm, userId);
         if (!passwordSet) {
           console.warn(
@@ -422,23 +391,22 @@ export async function POST(
           );
         }
 
-        // 2. Try to update user with custom attributes (gracefully handle failures)
         try {
           const updatedUser: UserRepresentation = {
             ...createdUsers[0],
             attributes: {
               ...createdUsers[0].attributes,
               organization: [organizationId],
-              // Organization details for multi-tenant email templates
+
               organization_id: [organizationId],
               organization_name: [organization.name || 'Organization'],
               organization_display_name: [
                 organization.displayName || organization.name || 'Organization',
               ],
-              // User type and partner classification
+
               user_type: ['partner'],
               invited_as: ['business_partner'],
-              // Channel type details for email templates
+
               channel_type_id: [inviteData.channelTypeId.toString()],
               channel_type_name: [channelType.name],
               channel_type_commission_rate: [channelType.commissionRate?.toString() || '0'],
@@ -452,10 +420,8 @@ export async function POST(
             'Failed to set custom attributes, but user creation succeeded:',
             attributeError
           );
-          // Continue with the flow - user is created, just without custom attributes
         }
 
-        // 3. Ensure proper group assignment (Business Partners group + remove Admins if present)
         const groupResult1 = await ensureProperPartnerGroupAssignment(realm, userId);
         groupManagement.businessPartnersGroupAssigned =
           groupResult1.businessPartnersGroupAssigned ||
@@ -463,13 +429,10 @@ export async function POST(
         groupManagement.adminsGroupRemoved =
           groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
 
-        // 4. Add Partner to organization
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added partner to organization');
 
-        // 5. Send appropriate email based on configuration
         if (inviteData.sendPasswordReset !== false) {
-          // Send UPDATE_PASSWORD email for new partners to set their password
           try {
             await putAdminRealmsRealmUsersUserIdExecuteActionsEmail(
               realm,
@@ -477,17 +440,15 @@ export async function POST(
               ['UPDATE_PASSWORD'],
               {
                 client_id: 'web_app',
-                lifespan: 43200, // 12 hours
+                lifespan: 43200,
                 redirect_uri: inviteData.redirectUri,
               }
             );
             console.log('Sent UPDATE_PASSWORD email to new partner');
           } catch (emailError) {
             console.warn('Failed to send UPDATE_PASSWORD email:', emailError);
-            // Continue with invitation flow even if email fails
           }
         } else if (inviteData.sendWelcomeEmail !== false) {
-          // Fallback to organization invite email
           const inviteUserData: PostAdminRealmsRealmOrganizationsOrgIdMembersInviteExistingUserBody =
             {
               id: userId,
@@ -502,7 +463,6 @@ export async function POST(
         }
       }
 
-      // Add partner invitation metadata for tracking
       invitationId = generateInvitationId();
       const pendingInvitation: PendingPartnerInvitation = {
         id: invitationId,
@@ -524,7 +484,6 @@ export async function POST(
         organization
       );
 
-      // Update user with partner invitation metadata (gracefully handle failures)
       const currentUser = await getAdminRealmsRealmUsers(realm, {
         email: inviteData.email,
         exact: true,
@@ -547,7 +506,6 @@ export async function POST(
             'Failed to add invitation metadata, but invitation succeeded:',
             metadataError
           );
-          // Continue - the core invitation worked, just missing some metadata
         }
       }
     } catch (error: any) {

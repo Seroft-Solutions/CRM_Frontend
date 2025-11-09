@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Product form validation schema with user-friendly messages
  */
@@ -53,30 +46,26 @@ export const productFormSchemaFields = {
   subCategory: z.number().optional(),
 };
 
-// Base schema without refine (for use with .omit(), .pick(), etc.)
 export const productFormSchemaBase = z.object(productFormSchemaFields);
 
-// Full schema with validation
 export const productFormSchema = productFormSchemaBase.refine(
   (data) => {
     const minPrice = data.minPrice ? Number(data.minPrice) : null;
     const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
 
-    // Only validate if both minPrice and maxPrice are provided
     if (minPrice !== null && maxPrice !== null) {
       return maxPrice > minPrice;
     }
-    return true; // No validation if either is missing
+    return true;
   },
   {
     message: 'Max price must be greater than min price',
-    path: ['maxPrice'], // This will highlight the maxPrice field in the form
+    path: ['maxPrice'],
   }
 );
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
-// Individual field schemas for granular validation
 export const productFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -120,7 +109,6 @@ export const productFieldSchemas = {
   subCategory: z.number().optional(),
 };
 
-// Step-specific validation schemas
 export const productStepSchemas = {
   basic: z
     .object({
@@ -154,7 +142,6 @@ export const productStepSchemas = {
   review: productFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = productStepSchemas[stepId as keyof typeof productStepSchemas];
   if (!schema) return { success: true, data };

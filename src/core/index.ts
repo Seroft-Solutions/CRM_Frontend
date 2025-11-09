@@ -5,5 +5,4 @@
  * It exports all the components, hooks, and utilities from the submodules.
  */
 
-// API Module
 export * from './api';

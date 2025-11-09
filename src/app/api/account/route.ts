@@ -14,7 +14,6 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the current session
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -24,11 +23,9 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
     console.log('Fetching account data for user:', userId);
 
-    // First, try to use session data as fallback
     let userData: UserRepresentation | null = null;
     let useSessionFallback = false;
 
-    // Try to get user details from Keycloak if service is available
     try {
       const realm = keycloakService.getRealm();
       userData = await getAdminRealmsRealmUsersUserId(realm, userId);
@@ -37,7 +34,6 @@ export async function GET(request: NextRequest) {
       console.warn('Keycloak service unavailable, using session fallback:', keycloakError.message);
       useSessionFallback = true;
 
-      // If Keycloak is completely unavailable, use session data
       userData = {
         id: userId,
         username: session.user.email?.split('@')[0] || 'user',
@@ -46,39 +42,33 @@ export async function GET(request: NextRequest) {
         email: session.user.email || '',
         enabled: true,
         attributes: {
-          user_type: ['admin'], // Default to admin for development
+          user_type: ['admin'],
         },
       } as UserRepresentation;
     }
 
-    // Extract user attributes and roles
     const authorities: string[] = [];
 
-    // Add roles from user attributes
     if (userData.attributes?.roles) {
       userData.attributes.roles.forEach((role) => {
         authorities.push(`ROLE_${role.toUpperCase()}`);
       });
     }
 
-    // Add user type as a role
     if (userData.attributes?.user_type) {
       userData.attributes.user_type.forEach((userType) => {
         authorities.push(`ROLE_${userType.toUpperCase()}`);
       });
     }
 
-    // Add organization-based permissions
     if (userData.attributes?.organization) {
       userData.attributes.organization.forEach((orgId) => {
         authorities.push(`GROUP_ORG_${orgId}`);
       });
     }
 
-    // Add basic permissions based on user type
     const userType = userData.attributes?.user_type?.[0];
     if (userType === 'admin') {
-      // Admin gets all permissions
       authorities.push('ROLE_ADMIN');
       authorities.push('ROLE_CALL_CREATE');
       authorities.push('ROLE_CALL_READ');
@@ -93,7 +83,6 @@ export async function GET(request: NextRequest) {
       authorities.push('ROLE_PARTNER_UPDATE');
       authorities.push('ROLE_PARTNER_DELETE');
     } else if (userType === 'partner' || userType === 'business_partner') {
-      // Partners get basic permissions
       authorities.push('ROLE_PARTNER');
       authorities.push('ROLE_CALL_CREATE');
       authorities.push('ROLE_CALL_READ');
@@ -102,13 +91,11 @@ export async function GET(request: NextRequest) {
       authorities.push('ROLE_CUSTOMER_READ');
       authorities.push('ROLE_CUSTOMER_UPDATE');
     } else {
-      // Default user gets read permissions
       authorities.push('ROLE_USER');
       authorities.push('ROLE_CALL_READ');
       authorities.push('ROLE_CUSTOMER_READ');
     }
 
-    // Create account response in the format expected by the frontend
     const accountData = {
       id: userData.id,
       login: userData.username,
@@ -122,7 +109,7 @@ export async function GET(request: NextRequest) {
       createdDate: new Date(userData.createdTimestamp || Date.now()).toISOString(),
       lastModifiedBy: 'system',
       lastModifiedDate: new Date().toISOString(),
-      authorities: [...new Set(authorities)], // Remove duplicates
+      authorities: [...new Set(authorities)],
     };
 
     console.log('Account data prepared:', {

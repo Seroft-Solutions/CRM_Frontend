@@ -16,7 +16,6 @@ const MotionItem = dynamic(
 
 export function OrganizationWelcomePage() {
   const handleLetsBrew = () => {
-    // Don't call onFinish - just redirect directly to avoid re-triggering setup flow
     signIn('keycloak', { redirectTo: '/dashboard' });
   };
 

@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * MeetingReminder form validation schema with user-friendly messages
  */
@@ -40,7 +33,6 @@ export const meetingReminderFormSchema = z.object(meetingReminderFormSchemaField
 
 export type MeetingReminderFormValues = z.infer<typeof meetingReminderFormSchema>;
 
-// Individual field schemas for granular validation
 export const meetingReminderFieldSchemas = {
   reminderType: z
     .string({ message: 'Please enter remindertype' })
@@ -67,7 +59,6 @@ export const meetingReminderFieldSchemas = {
   meeting: z.number().optional(),
 };
 
-// Step-specific validation schemas
 export const meetingReminderStepSchemas = {
   basic: z.object({
     reminderType: meetingReminderFieldSchemas.reminderType,
@@ -84,7 +75,6 @@ export const meetingReminderStepSchemas = {
   review: meetingReminderFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = meetingReminderStepSchemas[stepId as keyof typeof meetingReminderStepSchemas];
   if (!schema) return { success: true, data };

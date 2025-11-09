@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 /**
  * Priority form validation schema with user-friendly messages
  */
@@ -28,7 +21,6 @@ export const priorityFormSchema = z.object(priorityFormSchemaFields);
 
 export type PriorityFormValues = z.infer<typeof priorityFormSchema>;
 
-// Individual field schemas for granular validation
 export const priorityFieldSchemas = {
   name: z
     .string({ message: 'Please enter name' })
@@ -43,7 +35,6 @@ export const priorityFieldSchemas = {
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
 };
 
-// Step-specific validation schemas
 export const priorityStepSchemas = {
   basic: z.object({
     name: priorityFieldSchemas.name,
@@ -59,7 +50,6 @@ export const priorityStepSchemas = {
   review: priorityFormSchema,
 };
 
-// Validation helpers
 export const validateStep = (stepId: string, data: any) => {
   const schema = priorityStepSchemas[stepId as keyof typeof priorityStepSchemas];
   if (!schema) return { success: true, data };

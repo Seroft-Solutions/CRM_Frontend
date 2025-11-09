@@ -1,7 +1,3 @@
-// ===============================================================
-// 🛑 MANUALLY MODIFIED FILE - SAFE TO EDIT 🛑
-// - Enhanced with dynamic button color based on Business Partner toggle
-// ===============================================================
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -29,7 +25,10 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
     window.addEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
 
     return () => {
-      window.removeEventListener('businessPartnerToggle', handleBusinessPartnerToggle as EventListener);
+      window.removeEventListener(
+        'businessPartnerToggle',
+        handleBusinessPartnerToggle as EventListener
+      );
     };
   }, []);
   const handleNext = async () => {
@@ -44,26 +43,21 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
   };
 
   const handleCancel = async () => {
-    // Check if drafts are enabled and form has unsaved changes
     const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
     const hasUnsavedChanges = state.isDirty && draftsEnabled;
 
     if (hasUnsavedChanges && config.behavior?.drafts?.confirmDialog) {
-      // Use the draft system - trigger the draft check through actions
       if (await actions.saveDraft()) {
-        // Show the draft dialog by triggering a "navigation" that calls onCancel
         const draftCheckEvent = new CustomEvent('triggerDraftCheck', {
           detail: { onProceed: onCancel },
         });
         window.dispatchEvent(draftCheckEvent);
       } else {
-        // Fallback to old confirmation
         if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
           onCancel();
         }
       }
     } else if (config.behavior.navigation.confirmOnCancel && state.isDirty) {
-      // Legacy confirmation for when drafts are disabled
       if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
         onCancel();
       }
@@ -73,7 +67,6 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
   };
 
   const handleSubmit = async () => {
-    // Use the form provider's submitForm method which includes transformation
     await actions.submitForm();
   };
 
@@ -115,9 +108,7 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
             type="button"
             onClick={handleNext}
             className={`flex items-center gap-2 justify-center transition-colors ${
-              isBusinessPartner
-                ? 'bg-bp-primary hover:bg-bp-primary-hover'
-                : ''
+              isBusinessPartner ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
             }`}
             disabled={isSubmitting}
           >

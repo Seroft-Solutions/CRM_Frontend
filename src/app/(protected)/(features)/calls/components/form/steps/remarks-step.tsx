@@ -1,10 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
 'use client';
 import React, { useState, useEffect } from 'react';
 import { FormField, FormLabel } from '@/components/ui/form';
@@ -23,10 +16,5 @@ interface CallRemarksStepProps {
 }
 
 export function CallRemarksStep({ form, config, actions }: CallRemarksStepProps) {
-
-  return (
-    <>
-
-    </>
-  );
+  return <></>;
 }

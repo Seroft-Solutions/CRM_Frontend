@@ -15,7 +15,7 @@ import { accountQueryKeys } from '@/core/auth/queries/account-keys';
 export function invalidateAccountCache(queryClient: QueryClient) {
   return queryClient.invalidateQueries({
     queryKey: accountQueryKeys.all,
-    refetchType: 'active', // Only refetch active queries
+    refetchType: 'active',
   });
 }
 
@@ -34,8 +34,6 @@ export function clearAccountCache(queryClient: QueryClient) {
  * Use this to warm up the cache before the user navigates to pages that need account data
  */
 export function prefetchAccountData(queryClient: QueryClient) {
-  // This would need to be implemented when we have the actual query function
-  // For now, we just ensure the cache is properly set up
   return Promise.resolve();
 }
 

@@ -1,11 +1,3 @@
-// ===============================================================
-// 🛑 AUTO-GENERATED FILE – DO NOT EDIT DIRECTLY 🛑
-// - Source: code generation pipeline
-// - To customize: use ./overrides/[filename].ts or feature-level
-//   extensions (e.g., ./src/features/.../extensions/)
-// - Direct edits will be overwritten on regeneration
-// ===============================================================
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -60,13 +52,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
-// Configuration for table features
 const TABLE_CONFIG = {
-  showDraftTab: false, // Set to true to show Draft tab
-  centerAlignActions: true, // Center align action icons
+  showDraftTab: false,
+  centerAlignActions: true,
 };
 
-// Utility function to transform enum values from UPPERCASE to Title Case
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -77,7 +67,6 @@ function transformEnumValue(enumValue: string): string {
     .join(' ');
 }
 
-// Add custom scrollbar styles
 const tableScrollStyles = `
   .table-scroll::-webkit-scrollbar {
     height: 8px;
@@ -112,8 +101,6 @@ import {
   useSearchMeetingParticipants,
 } from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 
-// Relationship data imports
-
 import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 
 import { MeetingParticipantSearchAndFilters } from './table/meeting-participant-search-filters';
@@ -122,11 +109,9 @@ import { MeetingParticipantTableRow } from './table/meeting-participant-table-ro
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
-// Define sort ordering constants
 const ASC = 'asc';
 const DESC = 'desc';
 
-// Define column configuration
 interface ColumnConfig {
   id: string;
   label: string;
@@ -136,7 +121,6 @@ interface ColumnConfig {
   sortable: boolean;
 }
 
-// Define all available columns
 const ALL_COLUMNS: ColumnConfig[] = [
   {
     id: 'id',
@@ -224,7 +208,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Created By',
     accessor: 'createdBy',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -233,7 +217,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Created Date',
     accessor: 'createdDate',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -242,7 +226,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Last Modified By',
     accessor: 'lastModifiedBy',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 
@@ -251,13 +235,12 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Last Modified Date',
     accessor: 'lastModifiedDate',
     type: 'field',
-    visible: false, // Hidden by default
+    visible: false,
     sortable: true,
   },
 ];
 
-// Local storage key for column visibility with version
-const COLUMN_VISIBILITY_KEY = 'meeting-participant-table-columns'; // v2 to force reset for auditing fields
+const COLUMN_VISIBILITY_KEY = 'meeting-participant-table-columns';
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -271,9 +254,8 @@ interface DateRange {
 export function MeetingParticipantTable() {
   const queryClient = useQueryClient();
 
-  // Enhanced pagination state management
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
-    usePaginationState(1, 10); // Default to 25 items per page
+    usePaginationState(1, 10);
 
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
@@ -292,34 +274,27 @@ export function MeetingParticipantTable() {
   const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
-  // Track individual cell updates instead of global state
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
 
-  // Track whether column visibility has been loaded from localStorage
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
 
-  // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
-  // Load column visibility from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     try {
       const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-      const oldKey = 'meeting-participant-table-columns'; // Old key without version
+      const oldKey = 'meeting-participant-table-columns';
 
       if (saved) {
         setColumnVisibility(JSON.parse(saved));
       } else {
-        // Check for old localStorage data and migrate/reset
         const oldSaved = localStorage.getItem(oldKey);
         if (oldSaved) {
-          // Remove old key to force reset for auditing fields
           localStorage.removeItem(oldKey);
         }
 
-        // Set default visibility with auditing fields hidden
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
@@ -331,7 +306,7 @@ export function MeetingParticipantTable() {
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
-      // Fallback to default visibility
+
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
@@ -345,7 +320,6 @@ export function MeetingParticipantTable() {
     }
   }, []);
 
-  // Save column visibility to localStorage whenever it changes
   useEffect(() => {
     if (isColumnVisibilityLoaded && typeof window !== 'undefined') {
       try {
@@ -356,12 +330,10 @@ export function MeetingParticipantTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
-  // Get visible columns
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
-  // Toggle column visibility
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
@@ -369,10 +341,8 @@ export function MeetingParticipantTable() {
     }));
   };
 
-  // Manual refresh functionality
   const handleRefresh = async () => {
     try {
-      // Invalidate all related queries to force fresh data
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
         refetchType: 'active',
@@ -387,7 +357,6 @@ export function MeetingParticipantTable() {
         refetchType: 'active',
       });
 
-      // Also manually trigger refetch
       await refetch();
 
       toast.success('Data refreshed successfully');
@@ -397,7 +366,6 @@ export function MeetingParticipantTable() {
     }
   };
 
-  // Export functionality
   const exportToCSV = () => {
     if (!data || data.length === 0) {
       toast.error('No data to export');
@@ -421,7 +389,7 @@ export function MeetingParticipantTable() {
                 value = relationship.name || '';
               }
             }
-            // Escape CSV values
+
             if (
               typeof value === 'string' &&
               (value.includes(',') || value.includes('"') || value.includes('\n'))
@@ -447,17 +415,13 @@ export function MeetingParticipantTable() {
     toast.success('Data exported successfully');
   };
 
-  // Calculate API pagination parameters (0-indexed)
   const apiPage = page - 1;
-
-  // Fetch relationship data for dropdowns
 
   const { data: meetingOptions = [] } = useGetAllMeetings(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
 
-  // Helper function to find entity ID by name
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
     const entity = entities?.find((e) =>
       e[displayField]?.toLowerCase().includes(name.toLowerCase())
@@ -465,7 +429,6 @@ export function MeetingParticipantTable() {
     return entity?.id;
   };
 
-  // Status configuration
   const statusOptions = [
     {
       value: MeetingParticipantDTOStatus.DRAFT,
@@ -489,7 +452,6 @@ export function MeetingParticipantTable() {
     },
   ];
 
-  // Get status filter based on active tab
   const getStatusFilter = () => {
     switch (activeStatusTab) {
       case 'draft':
@@ -507,13 +469,11 @@ export function MeetingParticipantTable() {
     }
   };
 
-  // Build filter parameters for API
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(), // Add status filtering based on active tab
+      ...getStatusFilter(),
     };
 
-    // Map relationship filters from name-based to ID-based
     const relationshipMappings = {
       'meeting.name': {
         apiParam: 'meetingId.equals',
@@ -522,10 +482,8 @@ export function MeetingParticipantTable() {
       },
     };
 
-    // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
-        // Handle relationship filters
         if (relationshipMappings[key]) {
           const mapping = relationshipMappings[key];
           const entityId = findEntityIdByName(
@@ -536,97 +494,57 @@ export function MeetingParticipantTable() {
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
-        }
-
-        // Handle isRequired boolean filter
-        else if (key === 'isRequired') {
+        } else if (key === 'isRequired') {
           params['isRequired.equals'] = value === 'true';
-        }
-
-        // Handle hasAccepted boolean filter
-        else if (key === 'hasAccepted') {
+        } else if (key === 'hasAccepted') {
           params['hasAccepted.equals'] = value === 'true';
-        }
-
-        // Handle hasDeclined boolean filter
-        else if (key === 'hasDeclined') {
+        } else if (key === 'hasDeclined') {
           params['hasDeclined.equals'] = value === 'true';
-        }
-
-        // Handle responseDateTime date filter
-        else if (key === 'responseDateTime') {
+        } else if (key === 'responseDateTime') {
           if (value instanceof Date) {
             params['responseDateTime.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
             params['responseDateTime.equals'] = value;
           }
-        }
-
-        // Handle createdDate date filter
-        else if (key === 'createdDate') {
+        } else if (key === 'createdDate') {
           if (value instanceof Date) {
             params['createdDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
             params['createdDate.equals'] = value;
           }
-        }
-
-        // Handle lastModifiedDate date filter
-        else if (key === 'lastModifiedDate') {
+        } else if (key === 'lastModifiedDate') {
           if (value instanceof Date) {
             params['lastModifiedDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedDate.equals'] = value;
           }
-        }
-
-        // Handle email text filter with contains
-        else if (key === 'email') {
+        } else if (key === 'email') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['email.contains'] = value;
           }
-        }
-
-        // Handle name text filter with contains
-        else if (key === 'name') {
+        } else if (key === 'name') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
-        }
-
-        // Handle status text filter with contains
-        else if (key === 'status') {
+        } else if (key === 'status') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['status.contains'] = value;
           }
-        }
-
-        // Handle createdBy text filter with contains
-        else if (key === 'createdBy') {
+        } else if (key === 'createdBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['createdBy.contains'] = value;
           }
-        }
-
-        // Handle lastModifiedBy text filter with contains
-        else if (key === 'lastModifiedBy') {
+        } else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
           }
-        }
-
-        // Handle other filters
-        else if (Array.isArray(value) && value.length > 0) {
-          // Handle array values (for multi-select filters)
+        } else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
         } else if (typeof value === 'string' && value.trim() !== '') {
-          // Fallback for unknown string fields - use contains
           params[`${key}.contains`] = value;
         }
       }
     });
-
-    // Add date range filters
 
     if (dateRange.from) {
       params['responseDateTime.greaterThanOrEqual'] = dateRange.from.toISOString();
@@ -654,8 +572,6 @@ export function MeetingParticipantTable() {
 
   const filterParams = buildFilterParams();
 
-  // Fetch data with React Query
-
   const { data, isLoading, refetch } = searchTerm
     ? useSearchMeetingParticipants(
         {
@@ -668,7 +584,7 @@ export function MeetingParticipantTable() {
         {
           query: {
             enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
+            staleTime: 0,
             refetchOnWindowFocus: true,
           },
         }
@@ -683,26 +599,23 @@ export function MeetingParticipantTable() {
         {
           query: {
             enabled: true,
-            staleTime: 0, // Always consider data stale for immediate refetch
+            staleTime: 0,
             refetchOnWindowFocus: true,
           },
         }
       );
 
-  // Get total count for pagination
   const { data: countData } = useCountMeetingParticipants(filterParams, {
     query: {
       enabled: true,
-      staleTime: 0, // Always consider data stale for immediate refetch
+      staleTime: 0,
       refetchOnWindowFocus: true,
     },
   });
 
-  // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateMeetingParticipant({
     mutation: {
       onMutate: async (variables) => {
-        // Cancel any outgoing refetches
         await queryClient.cancelQueries({
           queryKey: ['getAllMeetingParticipants'],
         });
@@ -711,7 +624,6 @@ export function MeetingParticipantTable() {
           queryKey: ['searchMeetingParticipants'],
         });
 
-        // Snapshot the previous value
         const previousData = queryClient.getQueryData([
           'getAllMeetingParticipants',
           {
@@ -722,7 +634,6 @@ export function MeetingParticipantTable() {
           },
         ]);
 
-        // Optimistically update the cache
         if (previousData && Array.isArray(previousData)) {
           queryClient.setQueryData(
             [
@@ -743,7 +654,6 @@ export function MeetingParticipantTable() {
           );
         }
 
-        // Also update search cache if applicable
         if (searchTerm) {
           queryClient.setQueryData(
             [
@@ -768,7 +678,6 @@ export function MeetingParticipantTable() {
         return { previousData };
       },
       onSuccess: (data, variables) => {
-        // CRITICAL: Update cache with server response to ensure UI reflects actual data
         queryClient.setQueryData(
           [
             'getAllMeetingParticipants',
@@ -781,13 +690,10 @@ export function MeetingParticipantTable() {
           ],
           (old: any[]) =>
             old?.map((meetingParticipant) =>
-              meetingParticipant.id === variables.id
-                ? data // Use complete server response
-                : meetingParticipant
+              meetingParticipant.id === variables.id ? data : meetingParticipant
             )
         );
 
-        // Also update search cache if applicable
         if (searchTerm) {
           queryClient.setQueryData(
             [
@@ -802,9 +708,7 @@ export function MeetingParticipantTable() {
             ],
             (old: any[]) =>
               old?.map((meetingParticipant) =>
-                meetingParticipant.id === variables.id
-                  ? data // Use complete server response
-                  : meetingParticipant
+                meetingParticipant.id === variables.id ? data : meetingParticipant
               )
           );
         }
@@ -812,7 +716,6 @@ export function MeetingParticipantTable() {
         meetingParticipantToast.updated();
       },
       onError: (error, variables, context) => {
-        // Rollback on error
         if (context?.previousData) {
           queryClient.setQueryData(
             [
@@ -830,7 +733,6 @@ export function MeetingParticipantTable() {
         handleMeetingParticipantError(error);
       },
       onSettled: async () => {
-        // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
           refetchType: 'active',
@@ -848,7 +750,6 @@ export function MeetingParticipantTable() {
     },
   });
 
-  // Status update mutation for soft delete (archive) with optimistic updates
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateMeetingParticipant({
     mutation: {
       onMutate: async (variables) => {
@@ -864,7 +765,6 @@ export function MeetingParticipantTable() {
           },
         ]);
 
-        // Optimistically update or remove the item based on status change
         queryClient.setQueryData(
           [
             'getAllMeetingParticipants',
@@ -878,13 +778,10 @@ export function MeetingParticipantTable() {
           (old: any[]) => {
             if (!old) return old;
 
-            // If the new status matches the current filter, update in place
-            // Otherwise, remove from current view
             const newStatus = variables.data.status;
             const currentFilter = getStatusFilter();
             const currentStatusFilter = currentFilter['status.equals'];
 
-            // Debug logging to help troubleshoot
             console.log('Optimistic Update Debug:', {
               newStatus,
               currentStatusFilter,
@@ -895,7 +792,6 @@ export function MeetingParticipantTable() {
             });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
-              // Update in place - status matches current tab filter
               console.log(`Updating item ${variables.id} in place`);
               return old.map((meetingParticipant) =>
                 meetingParticipant.id === variables.id
@@ -903,7 +799,6 @@ export function MeetingParticipantTable() {
                   : meetingParticipant
               );
             } else {
-              // Remove from current filtered view - status no longer matches tab filter
               console.log(`Removing item ${variables.id} from current view`);
               return old.filter((meetingParticipant) => meetingParticipant.id !== variables.id);
             }
@@ -921,7 +816,6 @@ export function MeetingParticipantTable() {
           `MeetingParticipant status changed to ${statusLabel}`
         );
 
-        // Update count cache if item was removed from current view
         const currentFilter = getStatusFilter();
         const currentStatusFilter = currentFilter['status.equals'];
         const newStatus = variables.data.status;
@@ -953,7 +847,6 @@ export function MeetingParticipantTable() {
         handleMeetingParticipantError(error);
       },
       onSettled: async () => {
-        // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
           refetchType: 'active',
@@ -971,7 +864,6 @@ export function MeetingParticipantTable() {
     },
   });
 
-  // Handle sort column click
   const handleSort = (column: string) => {
     if (sort === column) {
       setOrder(order === ASC ? DESC : ASC);
@@ -981,7 +873,6 @@ export function MeetingParticipantTable() {
     }
   };
 
-  // Get sort direction icon
   const getSortIcon = (column: string) => {
     if (sort !== column) {
       return 'ChevronsUpDown';
@@ -989,7 +880,6 @@ export function MeetingParticipantTable() {
     return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
-  // Handle status change (archive by default)
   const handleArchive = (id: number) => {
     setArchiveId(id);
     setShowArchiveDialog(true);
@@ -1032,34 +922,29 @@ export function MeetingParticipantTable() {
     setNewStatus(null);
   };
 
-  // Handle filter change
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [column]: value,
     }));
-    resetPagination(); // Reset to page 1 when filters change
+    resetPagination();
   };
 
-  // Clear all filters
   const clearAllFilters = () => {
     setFilters({});
     setSearchTerm('');
     setDateRange({ from: undefined, to: undefined });
-    resetPagination(); // Reset to page 1 when clearing filters
+    resetPagination();
   };
 
-  // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    resetPagination(); // Reset to page 1 when searching
+    resetPagination();
   };
 
-  // Calculate total pages
   const totalItems = countData || 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  // Handle row selection
   const handleSelectRow = (id: number) => {
     const newSelected = new Set(selectedRows);
     if (newSelected.has(id)) {
@@ -1070,7 +955,6 @@ export function MeetingParticipantTable() {
     setSelectedRows(newSelected);
   };
 
-  // Handle select all
   const handleSelectAll = () => {
     if (data && selectedRows.size === data.length) {
       setSelectedRows(new Set());
@@ -1081,22 +965,18 @@ export function MeetingParticipantTable() {
     }
   };
 
-  // Handle bulk archive
   const handleBulkArchive = () => {
     setShowBulkArchiveDialog(true);
   };
 
-  // Handle bulk status change
   const handleBulkStatusChange = (status: string) => {
     setBulkNewStatus(status);
     setShowBulkStatusChangeDialog(true);
   };
 
   const confirmBulkArchive = async () => {
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllMeetingParticipants'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllMeetingParticipants',
       {
@@ -1108,7 +988,6 @@ export function MeetingParticipantTable() {
     ]);
 
     try {
-      // Process status updates to ARCHIVED
       const updatePromises = Array.from(selectedRows).map(async (id) => {
         const currentEntity = data?.find((item) => item.id === id);
         if (currentEntity) {
@@ -1130,7 +1009,6 @@ export function MeetingParticipantTable() {
 
       await Promise.all(updatePromises);
 
-      // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
         refetchType: 'active',
@@ -1151,7 +1029,6 @@ export function MeetingParticipantTable() {
       );
       setSelectedRows(new Set());
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1177,10 +1054,8 @@ export function MeetingParticipantTable() {
   const confirmBulkStatusChange = async () => {
     if (!bulkNewStatus) return;
 
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllMeetingParticipants'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllMeetingParticipants',
       {
@@ -1192,7 +1067,6 @@ export function MeetingParticipantTable() {
     ]);
 
     try {
-      // Process bulk status updates
       const statusValue =
         MeetingParticipantDTOStatus[bulkNewStatus as keyof typeof MeetingParticipantDTOStatus];
       const updatePromises = Array.from(selectedRows).map(async (id) => {
@@ -1216,7 +1090,6 @@ export function MeetingParticipantTable() {
 
       await Promise.all(updatePromises);
 
-      // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
         refetchType: 'active',
@@ -1239,7 +1112,6 @@ export function MeetingParticipantTable() {
       );
       setSelectedRows(new Set());
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1263,7 +1135,6 @@ export function MeetingParticipantTable() {
     setBulkNewStatus(null);
   };
 
-  // Enhanced relationship update handler with individual cell tracking
   const handleRelationshipUpdate = async (
     entityId: number,
     relationshipName: string,
@@ -1272,11 +1143,9 @@ export function MeetingParticipantTable() {
   ) => {
     const cellKey = `${entityId}-${relationshipName}`;
 
-    // Track this specific cell as updating
     setUpdatingCells((prev) => new Set(prev).add(cellKey));
 
     return new Promise<void>((resolve, reject) => {
-      // Get the current entity data first
       const currentEntity = data?.find((item) => item.id === entityId);
       if (!currentEntity) {
         setUpdatingCells((prev) => {
@@ -1288,15 +1157,12 @@ export function MeetingParticipantTable() {
         return;
       }
 
-      // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
         id: entityId,
       };
 
-      // Update only the specific relationship
       if (newValue) {
-        // Find the full relationship object from options
         const relationshipConfig = relationshipConfigs.find(
           (config) => config.name === relationshipName
         );
@@ -1313,9 +1179,7 @@ export function MeetingParticipantTable() {
         },
         {
           onSuccess: (serverResponse) => {
-            // CRITICAL: Ensure individual cache updates with server response for bulk operations
             if (isBulkOperation) {
-              // Update cache with server response for this specific entity
               queryClient.setQueryData(
                 [
                   'getAllMeetingParticipants',
@@ -1328,13 +1192,10 @@ export function MeetingParticipantTable() {
                 ],
                 (old: any[]) =>
                   old?.map((meetingParticipant) =>
-                    meetingParticipant.id === entityId
-                      ? serverResponse // Use server response
-                      : meetingParticipant
+                    meetingParticipant.id === entityId ? serverResponse : meetingParticipant
                   )
               );
 
-              // Also update search cache if applicable
               if (searchTerm) {
                 queryClient.setQueryData(
                   [
@@ -1349,15 +1210,12 @@ export function MeetingParticipantTable() {
                   ],
                   (old: any[]) =>
                     old?.map((meetingParticipant) =>
-                      meetingParticipant.id === entityId
-                        ? serverResponse // Use server response
-                        : meetingParticipant
+                      meetingParticipant.id === entityId ? serverResponse : meetingParticipant
                     )
                 );
               }
             }
 
-            // Only show individual toast if not part of bulk operation
             if (!isBulkOperation) {
               meetingParticipantToast.relationshipUpdated(relationshipName);
             }
@@ -1367,7 +1225,6 @@ export function MeetingParticipantTable() {
             reject(error);
           },
           onSettled: () => {
-            // Remove this cell from updating state
             setUpdatingCells((prev) => {
               const newSet = new Set(prev);
               newSet.delete(cellKey);
@@ -1379,16 +1236,13 @@ export function MeetingParticipantTable() {
     });
   };
 
-  // Handle bulk relationship updates with individual server response syncing
   const handleBulkRelationshipUpdate = async (
     entityIds: number[],
     relationshipName: string,
     newValue: number | null
   ) => {
-    // Cancel any outgoing refetches
     await queryClient.cancelQueries({ queryKey: ['getAllMeetingParticipants'] });
 
-    // Get current data for rollback
     const previousData = queryClient.getQueryData([
       'getAllMeetingParticipants',
       {
@@ -1400,14 +1254,12 @@ export function MeetingParticipantTable() {
     ]);
 
     try {
-      // Process updates sequentially with bulk operation flag
-      // Each individual update will handle its own cache update with server response
       let successCount = 0;
       let errorCount = 0;
 
       for (const id of entityIds) {
         try {
-          await handleRelationshipUpdate(id, relationshipName, newValue, true); // Pass true for bulk operation
+          await handleRelationshipUpdate(id, relationshipName, newValue, true);
           successCount++;
         } catch (error) {
           console.error(`Failed to update entity ${id}:`, error);
@@ -1415,7 +1267,6 @@ export function MeetingParticipantTable() {
         }
       }
 
-      // Show single bulk success toast
       if (successCount > 0) {
         const action = newValue === null ? 'cleared' : 'updated';
         meetingParticipantToast.custom.success(
@@ -1433,7 +1284,6 @@ export function MeetingParticipantTable() {
         );
       }
     } catch (error) {
-      // Rollback optimistic update on error
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1452,18 +1302,16 @@ export function MeetingParticipantTable() {
     }
   };
 
-  // Prepare relationship configurations for components
   const relationshipConfigs = [
     {
       name: 'meeting',
       displayName: 'Meeting',
       options: meetingOptions || [],
       displayField: 'name',
-      isEditable: false, // Disabled by default
+      isEditable: false,
     },
   ];
 
-  // Check if any filters are active
   const hasActiveFilters =
     Object.keys(filters).length > 0 ||
     Boolean(searchTerm) ||
@@ -1472,7 +1320,6 @@ export function MeetingParticipantTable() {
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (data?.length || 0);
 
-  // Don't render the table until column visibility is loaded to prevent flash
   if (!isColumnVisibilityLoaded) {
     return (
       <>
