@@ -342,7 +342,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     if (!currentStepConfig) return null;
 
     if (currentStepConfig.id === 'images') {
-      return <ProductImagesStep form={form} />;
+      return <ProductImagesStep form={form} existingImages={entity?.images} />;
     }
 
     if (currentStepConfig.id === 'review') {
