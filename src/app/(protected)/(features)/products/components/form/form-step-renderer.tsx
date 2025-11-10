@@ -400,6 +400,20 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                       }
 
                       if (fieldConfig.type === 'file') {
+                        // For image files, show preview if available
+                        if (fieldConfig.name?.toLowerCase().includes('image') && value instanceof File) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={URL.createObjectURL(value)}
+                                alt={`${fieldConfig.label} preview`}
+                                className="h-8 w-8 object-cover rounded border"
+                                onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                              />
+                              <span className="text-xs text-muted-foreground">{value.name}</span>
+                            </div>
+                          );
+                        }
                         const fileStr = value && value.name ? value.name : 'No file selected';
                         return fileStr;
                       }
@@ -459,7 +473,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
   return (
     <Form {...form}>
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={form.handleSubmit(() => {})}>
         <Card>
           <CardContent className="p-4 sm:p-6">{renderCurrentStep()}</CardContent>
         </Card>
