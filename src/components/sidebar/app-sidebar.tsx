@@ -18,9 +18,9 @@ import { sidebarItems } from '@/components/sidebar/sidebar-items';
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border/60 bg-sidebar flex items-center justify-between gap-2">
+      <SidebarHeader className="border-b border-sidebar-border/60 bg-sidebar relative group-data-[collapsible=icon]:items-start group-data-[collapsible=icon]:pt-2">
         <OrganizationSwitcher />
-        <SidebarPinButton className="ml-2" />
+        <SidebarPinButton className="absolute right-2 top-2 inline-flex rounded-full bg-sidebar/60 shadow-sm hover:bg-sidebar/80 group-data-[collapsible=icon]:static group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:ml-auto group-data-[collapsible=icon]:bg-transparent" />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={sidebarItems} />
