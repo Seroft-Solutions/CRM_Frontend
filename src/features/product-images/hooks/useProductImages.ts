@@ -19,6 +19,7 @@ import {
   useReorderProductImages,
   useUploadProductImage,
   useUploadProductImages,
+  useHardDeleteProductImage,
 } from '@/core/api/generated/spring/endpoints/product-images/product-images.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 
@@ -114,6 +115,28 @@ export function useUploadImages() {
  */
 export function useDeleteImage() {
   const mutation = useDeleteProductImage();
+
+  return {
+    ...mutation,
+    mutateAsync: async (imageId: number): Promise<void> => {
+      return mutation.mutateAsync({ id: imageId });
+    },
+    mutate: (imageId: number) => {
+      mutation.mutate({ id: imageId });
+    },
+  };
+}
+
+/**
+ * Hard delete an image (removes from GCS)
+ * Wrapper around useHardDeleteProductImage with simplified API
+ *
+ * Usage:
+ * const hardDeleteImage = useHardDeleteImage();
+ * await hardDeleteImage.mutateAsync(imageId);
+ */
+export function useHardDeleteImage() {
+  const mutation = useHardDeleteProductImage();
 
   return {
     ...mutation,
