@@ -130,7 +130,7 @@ export function OrganizationSwitcher() {
               }}
             >
               <div
-                className="flex aspect-square size-10 items-center justify-center rounded-xl border shadow-sm shrink-0"
+                className="flex size-10 items-center justify-center rounded-full border shadow-sm shrink-0"
                 style={{
                   backgroundColor: 'var(--sidebar-accent)',
                   color: 'var(--sidebar-accent-foreground)',
@@ -183,7 +183,7 @@ export function OrganizationSwitcher() {
                   }}
                 >
                   <div
-                    className="flex size-8 items-center justify-center rounded-lg border"
+                    className="flex size-8 items-center justify-center rounded-full border"
                     style={{
                       backgroundColor:
                         displayOrg.id === org.id
