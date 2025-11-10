@@ -8,7 +8,6 @@ import { FormStepRenderer } from './form-step-renderer';
 import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
 import { Form } from '@/components/ui/form';
-import { FormErrorsDisplay } from '@/components/form-errors-display';
 import { Card, CardContent } from '@/components/ui/card';
 
 import {
@@ -156,26 +155,6 @@ function ProductFormContent({ id }: ProductFormProps) {
 
       {/* Progress Bar and Step Indicators */}
       <FormProgressIndicator />
-
-      {/* Form Validation Errors Summary */}
-      <FormErrorsDisplay
-        errors={state.errors}
-        fieldLabels={{
-          'name': 'Name',
-          'code': 'Code',
-          'description': 'Description',
-          'basePrice': 'Base Price',
-          'minPrice': 'Min Price',
-          'maxPrice': 'Max Price',
-          'remark': 'Remark',
-          'status': 'Status',
-          'category': 'Category',
-          'subCategory': 'Sub Category',
-          'frontImage': 'Front Image',
-          'backImage': 'Back Image',
-          'sideImage': 'Side Image',
-        }}
-      />
 
       {/* Form Content */}
       {config?.behavior?.rendering?.useGeneratedSteps ? (

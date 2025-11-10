@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
+import { Camera } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
@@ -24,6 +26,95 @@ import { RelationshipRenderer } from './relationship-renderer';
 import { ProductImagesStep } from './product-images-step';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
+
+const ORIENTATION_FIELDS = [
+  {
+    name: 'frontImage' as const,
+    label: 'Front Image',
+    badge: 'Primary',
+    description: 'Primary hero shot shown first to users.',
+  },
+  {
+    name: 'backImage' as const,
+    label: 'Back Image',
+    badge: 'Detail',
+    description: 'Secondary angle that reveals product back.',
+  },
+  {
+    name: 'sideImage' as const,
+    label: 'Side Image',
+    badge: 'Profile',
+    description: 'Side profile to highlight depth and dimension.',
+  },
+];
+
+function OrientationPreviewCard({
+  field,
+  image,
+}: {
+  field: (typeof ORIENTATION_FIELDS)[number];
+  image?: ProductImageDTO | File;
+}) {
+  const previewUrl = useMemo(() => {
+    if (!image) return null;
+
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    }
+
+    return image.thumbnailUrl || image.cdnUrl;
+  }, [image]);
+
+  const helperText = useMemo(() => {
+    if (!image) return 'No image uploaded';
+
+    if (image instanceof File) {
+      const sizeInMb = (image.size / (1024 * 1024)).toFixed(2);
+      return `${image.name} • ${sizeInMb} MB`;
+    }
+
+    return `${image.originalFilename ?? 'Uploaded image'}${
+      image.fileSizeBytes ? ` • ${(image.fileSizeBytes / 1024).toFixed(1)} KB` : ''
+    }`;
+  }, [image]);
+
+  // Cleanup object URL when component unmounts or image changes
+  useEffect(() => {
+    return () => {
+      if (image instanceof File && previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [image, previewUrl]);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{field.label}</p>
+          <p className="text-xs text-slate-500">{field.description}</p>
+        </div>
+        <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
+          {field.badge}
+        </Badge>
+      </div>
+
+      <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white border border-slate-200">
+        {previewUrl ? (
+          <img src={previewUrl} alt={`${field.label} preview`} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-slate-400">
+            <Camera className="h-10 w-10" />
+            <span className="text-sm font-medium">No image uploaded</span>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs font-medium text-slate-600">{helperText}</p>
+    </div>
+  );
+}
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -40,13 +131,34 @@ interface FormStepRendererProps {
 }
 
 function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
+  // Always call hooks in the same order to avoid React hooks rules violation
+  const { data: categoriesData } = useGetAllProductCategories(
+    { page: 0, size: 1000 },
+    {
+      query: {
+        enabled: relConfig.name === 'category' && !!value,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
+  const { data: subCategoriesData } = useGetAllProductSubCategories(
+    { page: 0, size: 1000 },
+    {
+      query: {
+        enabled: relConfig.name === 'subCategory' && !!value,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
       case 'category':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllProductCategories}
+            allData={categoriesData}
             displayField="name"
             primaryKey="id"
             multiple={false}
@@ -58,7 +170,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllProductSubCategories}
+            allData={subCategoriesData}
             displayField="name"
             primaryKey="id"
             multiple={false}
@@ -76,28 +188,19 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
 
 function RelationshipDisplayValue({
   value,
-  useGetAllHook,
+  allData,
   displayField,
   primaryKey,
   multiple,
   label,
 }: {
   value: any;
-  useGetAllHook: any;
+  allData: any;
   displayField: string;
   primaryKey: string;
   multiple: boolean;
   label: string;
 }) {
-  const { data: allData } = useGetAllHook(
-    { page: 0, size: 1000 },
-    {
-      query: {
-        enabled: !!value,
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
 
   if (!value) {
     return <span className="text-muted-foreground italic">Not selected</span>;
@@ -142,6 +245,44 @@ function RelationshipDisplayValue({
 export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const { config, state, form, actions } = useEntityForm();
   const currentStepConfig = config.steps[state.currentStep];
+
+  const orientationImageMap = useMemo(() => {
+    const result: Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | File | undefined> = {
+      frontImage: undefined,
+      backImage: undefined,
+      sideImage: undefined,
+    };
+
+    // During creation/edit, check for uploaded files in individual fields
+    result.frontImage = form.getValues('frontImage') || undefined;
+    result.backImage = form.getValues('backImage') || undefined;
+    result.sideImage = form.getValues('sideImage') || undefined;
+
+    // If we have existing images (during edit), use those instead
+    if (entity?.images?.length) {
+      const existingMap = entity.images.reduce(
+        (acc: Record<string, ProductImageDTO>, image: ProductImageDTO) => {
+          // Map based on displayOrder or isPrimary flag
+          if (image.isPrimary) {
+            acc.frontImage = image;
+          } else if (image.displayOrder === 1) {
+            acc.backImage = image;
+          } else if (image.displayOrder === 2) {
+            acc.sideImage = image;
+          }
+          return acc;
+        },
+        {} as Record<string, ProductImageDTO>
+      );
+
+      // Override with existing images if they exist
+      if (existingMap.frontImage) result.frontImage = existingMap.frontImage;
+      if (existingMap.backImage) result.backImage = existingMap.backImage;
+      if (existingMap.sideImage) result.sideImage = existingMap.sideImage;
+    }
+
+    return result;
+  }, [form.watch('frontImage'), form.watch('backImage'), form.watch('sideImage'), entity?.images]);
 
   useEffect(() => {
     if (entity && !state.isLoading) {
@@ -351,6 +492,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
           {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
+            const isImagesStep = step.id === 'images';
 
             return (
               <div key={step.id} className="border rounded-lg p-4">
@@ -368,7 +510,18 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     Step {index + 1} of {config.steps.length - 1}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {isImagesStep ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {ORIENTATION_FIELDS.map((field) => (
+                      <OrientationPreviewCard
+                        key={field.name}
+                        field={field}
+                        image={orientationImageMap[field.name]}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {step.fields.map((fieldName) => {
                     const fieldConfig = config.fields.find((f) => f.name === fieldName);
                     if (!fieldConfig) return null;
@@ -447,6 +600,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}
