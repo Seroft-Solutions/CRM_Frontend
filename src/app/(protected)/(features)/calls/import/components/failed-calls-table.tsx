@@ -1,9 +1,6 @@
 'use client';
 
 import {
-  useCreateCall,
-  usePartialUpdateCall,
-  getAllCalls,
   useGetAllPriorities,
   useGetAllCallTypes,
   useGetAllSubCallTypes,
@@ -14,8 +11,8 @@ import {
 import {
   useCountImportHistories,
   useDeleteAllCallImportHistories,
-  useDeleteImportHistory,
   useGetAllImportHistories,
+  useProcessImportHistory,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
@@ -50,8 +47,6 @@ import {
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { callImportConfig } from '../config';
-import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
-import { CallDTO } from '@/core/api/generated/spring/schemas/CallDTO';
 
 const debugLog = (...args: any[]) => {
   if (typeof window !== 'undefined') {
@@ -391,106 +386,6 @@ export function FailedCallsTable() {
     },
     [canResolveReferences]
   );
-
-  const prepareCallPayload = useCallback(
-    (row: ImportHistoryDTO) => {
-      const payload: Partial<CallDTO> = {
-        status: CallDTOStatus.ACTIVE,
-      };
-
-      if (row.externalId?.trim()) {
-        payload.externalId = row.externalId.trim();
-      }
-
-      const customer = customerMap.get(normalizeKey(row.customerBusinessName));
-      const product = productMap.get(normalizeKey(row.productName));
-      const callType =
-        callTypeMap.get(normalizeKey(row.callType)) ||
-        calltypeOptions.find((ct) => normalizeKey(ct.name) === normalizeKey(row.callType));
-      const priority = priorityMap.get(normalizeKey(row.priority));
-      const callStatus = callStatusMap.get(normalizeKey(row.callStatus));
-
-      if (!customer?.id) {
-        throw new Error('Customer could not be resolved. Please re-select the customer.');
-      }
-      if (!product?.id) {
-        throw new Error('Product could not be resolved. Please re-select the product.');
-      }
-      if (!callType?.id) {
-        throw new Error('Call Type could not be resolved. Please re-select the call type.');
-      }
-      if (!priority?.id) {
-        throw new Error('Priority could not be resolved. Please re-select the priority.');
-      }
-      if (!callStatus?.id) {
-        throw new Error('Call Status could not be resolved. Please re-select the call status.');
-      }
-
-      payload.customer = { id: customer.id } as any;
-      payload.product = { id: product.id } as any;
-      payload.callType = { id: callType.id } as any;
-      payload.priority = { id: priority.id } as any;
-      payload.callStatus = { id: callStatus.id } as any;
-
-      if (row.subCallType) {
-        if (!callType?.id) {
-          throw new Error('Please pick a call type before selecting a sub call type.');
-        }
-        const subKey = buildSubCallTypeKey(callType.id, row.subCallType);
-        const subCallType =
-          subCallTypeMap.get(subKey) ||
-          subcalltypeOptions.find(
-            (sct) =>
-              sct.callType?.id === callType.id &&
-              normalizeKey(sct.name) === normalizeKey(row.subCallType)
-          );
-        if (!subCallType?.id) {
-          throw new Error('Sub Call Type could not be resolved. Please re-select the sub call type.');
-        }
-        payload.subCallType = { id: subCallType.id } as any;
-      } else {
-        delete payload.subCallType;
-      }
-
-      return payload as CallDTO;
-    },
-    [
-      customerMap,
-      productMap,
-      callTypeMap,
-      subCallTypeMap,
-      priorityMap,
-      callStatusMap,
-      calltypeOptions,
-      subcalltypeOptions,
-    ]
-  );
-
-
-  const { mutateAsync: createCallAsync, isPending: isCreating } = useCreateCall({
-    mutation: {
-      onError: (error) => {
-        toast.error('Failed to create call: ' + error.message);
-      },
-    },
-  });
-
-  const { mutateAsync: partialUpdateCallAsync, isPending: isUpdating } = usePartialUpdateCall({
-    mutation: {
-      onError: (error) => {
-        toast.error('Failed to update call: ' + error.message);
-      },
-    },
-  });
-
-  const { mutateAsync: deleteImportHistoryAsync } = useDeleteImportHistory({
-    mutation: {
-      onError: (error) => {
-        toast.error('Failed to delete import history entry: ' + error.message);
-      },
-    },
-  });
-
   const {
     mutateAsync: deleteAllCallImportHistoriesAsync,
     isPending: isClearingAllFailedEntries,
@@ -502,6 +397,8 @@ export function FailedCallsTable() {
     },
   });
   const isClearing = isClearingAllFailedEntries;
+
+  const { mutateAsync: processImportHistoryAsync } = useProcessImportHistory();
 
   const handleClearAllFailedEntries = async () => {
     try {
@@ -540,57 +437,50 @@ export function FailedCallsTable() {
   };
 
 
-  const handleUpdateRow = useCallback(
-    async (item: ImportHistoryDTO) => {
-      if (!item?.id) {
-        return null;
+  const processRow = useCallback(
+    async (row: ImportHistoryDTO) => {
+      if (!row?.id) {
+        return;
       }
 
-      if (!canResolveReferences) {
-        debugLog('Reference data not ready for row', { rowId: item.id });
-        toast.info('Reference data is still loading. Please try again once options are ready.');
-        return null;
+      let shouldProcess = true;
+      setPendingRowIds((prev) => {
+        if (prev.has(row.id!)) {
+          shouldProcess = false;
+          return prev;
+        }
+        const next = new Set(prev);
+        next.add(row.id!);
+        return next;
+      });
+
+      if (!shouldProcess) {
+        debugLog('Row already processing, skipping queue', { rowId: row.id });
+        return;
       }
 
-      const payload = prepareCallPayload(item);
-      const externalId = item.externalId?.trim();
-      let existingCall: any = undefined;
-
-      if (externalId) {
-        const existingCallsResponse = await getAllCalls({
-          'externalId.equals': externalId,
-          page: 0,
-          size: 1,
-        } as any);
-        existingCall = existingCallsResponse?.[0];
-      }
-
-      debugLog('Processing row', { rowId: item.id, externalId, action: existingCall ? 'update' : 'create' });
-
-      if (existingCall && existingCall.id) {
-        await partialUpdateCallAsync({
-          id: existingCall.id,
-          data: { ...payload, id: existingCall.id },
+      debugLog('Processing row via processImportHistory', { rowId: row.id, payload: row });
+      try {
+        await processImportHistoryAsync({ id: row.id, data: row });
+        setEditableData((prev) => prev.filter((item) => item.id !== row.id));
+        refetch();
+        debugLog('Row processed successfully', { rowId: row.id });
+      } catch (error: any) {
+        const errorMessage = error?.message || 'Unknown error';
+        toast.error(`Failed to process row ${row.id}: ${errorMessage}`);
+        if (row.id) {
+          setRowErrors((prev) => ({ ...prev, [row.id!]: errorMessage }));
+        }
+        debugLog('Row processing failed', { rowId: row.id, error });
+      } finally {
+        setPendingRowIds((prev) => {
+          const next = new Set(prev);
+          next.delete(row.id!);
+          return next;
         });
-      } else {
-        await createCallAsync({ data: payload });
       }
-
-      await deleteImportHistoryAsync({ id: item.id });
-      setEditableData((prev) => prev.filter((row) => row.id !== item.id));
-      refetch();
-
-      debugLog('Row processed successfully', { rowId: item.id, externalId, action: existingCall ? 'updated' : 'created' });
-      return existingCall ? 'updated' : 'created';
     },
-    [
-      canResolveReferences,
-      prepareCallPayload,
-      partialUpdateCallAsync,
-      createCallAsync,
-      deleteImportHistoryAsync,
-      refetch,
-    ]
+    [processImportHistoryAsync, refetch]
   );
 
   const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: string) => {
@@ -621,60 +511,9 @@ export function FailedCallsTable() {
         return next;
       });
       debugLog('Field updated', { rowId: updatedRow.id, fieldName, value });
-    }
-
-    if (updatedRow?.id && canResolveReferences) {
-      const invalid = computeInvalidFields(updatedRow);
-      if (invalid.size === 0) {
-        debugLog('Auto-save triggered via edit', { rowId: updatedRow.id, externalId: updatedRow.externalId });
-        autoSaveRow(updatedRow);
-      } else {
-        debugLog('Row still invalid after edit', { rowId: updatedRow.id, invalid: Array.from(invalid) });
-      }
+      processRow(updatedRow);
     }
   };
-
-
-  const autoSaveRow = useCallback(
-    async (row: ImportHistoryDTO) => {
-      if (!row.id) {
-        return;
-      }
-      let shouldSave = false;
-      setPendingRowIds((prev) => {
-        if (prev.has(row.id!)) {
-          return prev;
-        }
-        shouldSave = true;
-        const next = new Set(prev);
-        next.add(row.id!);
-        return next;
-      });
-      if (!shouldSave) {
-        return;
-      }
-
-      debugLog('Auto-save queued', { rowId: row.id, externalId: row.externalId });
-      try {
-        await handleUpdateRow(row);
-      } catch (error: any) {
-        debugLog('Row processing failed', { rowId: row.id, error });
-        const errorMessage = error?.message || 'Unknown error';
-        toast.error(`Failed to process row ${row.id}: ${errorMessage}`);
-        if (row.id) {
-          setRowErrors((prev) => ({ ...prev, [row.id!]: errorMessage }));
-        }
-      } finally {
-        debugLog('Auto-save completed', { rowId: row.id, externalId: row.externalId });
-        setPendingRowIds((prev) => {
-          const next = new Set(prev);
-          next.delete(row.id!);
-          return next;
-        });
-      }
-    },
-    [handleUpdateRow]
-  );
 
   useEffect(() => {
     if (!canResolveReferences) {
@@ -697,12 +536,12 @@ export function FailedCallsTable() {
           return next;
         });
         debugLog('Auto-save triggered via effect', { rowId: row.id, externalId: row.externalId });
-        autoSaveRow(row);
+        processRow(row);
       } else {
         debugLog('Row still invalid after refresh', { rowId: row.id, invalid: Array.from(invalid) });
       }
     });
-  }, [canResolveReferences, editableData, computeInvalidFields, autoSaveRow, pendingRowIds]);
+  }, [canResolveReferences, editableData, computeInvalidFields, processRow, pendingRowIds]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -900,7 +739,7 @@ export function FailedCallsTable() {
                                 return next;
                               });
                               debugLog('Manual update clicked', { rowId: row.id });
-                              autoSaveRow(row);
+                              processRow(row);
                             }}
                           >
                             {rowSaving ? (
