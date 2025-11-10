@@ -5,13 +5,22 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type { MutationFunction, QueryClient, UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import {
+  useMutation
+} from '@tanstack/react-query';
+import type {
+  MutationFunction,
+  QueryClient,
+  UseMutationOptions,
+  UseMutationResult
+} from '@tanstack/react-query';
 
-import type { Logout200 } from '../../schemas';
+import type {
+  Logout200
+} from '../../schemas';
 
-import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

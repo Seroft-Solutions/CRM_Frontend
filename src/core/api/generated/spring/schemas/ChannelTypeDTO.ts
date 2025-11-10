@@ -5,7 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {ChannelTypeDTOStatus} from './ChannelTypeDTOStatus';
+import type { ChannelTypeDTOStatus } from './ChannelTypeDTOStatus';
 
 export interface ChannelTypeDTO {
   id?: number;

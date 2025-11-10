@@ -18,7 +18,8 @@ import {
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUploadImages } from '@/features/product-images';
+import { useUploadImages, useDeleteImage, useHardDeleteImage } from '@/features/product-images';
+import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { toast } from 'sonner';
 
@@ -28,7 +29,7 @@ interface ProductFormProps {
 
 const ORIENTATION_UPLOAD_SEQUENCE = ['frontImage', 'backImage', 'sideImage'] as const;
 
-function ProductFormContent({ id }: ProductFormProps) {
+function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: (entity: any) => void }) {
   const router = useRouter();
   const isNew = !id;
   const { state, actions, form, navigation, config } = useEntityForm();
@@ -86,7 +87,12 @@ function ProductFormContent({ id }: ProductFormProps) {
 
       form.reset(formValues);
     }
-  }, [entity, config, form, state.isLoading]);
+
+    // Pass entity data up to parent
+    if (entity && onEntityData) {
+      onEntityData(entity);
+    }
+  }, [entity, config, form, state.isLoading, onEntityData]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -156,23 +162,6 @@ function ProductFormContent({ id }: ProductFormProps) {
       {/* Progress Bar and Step Indicators */}
       <FormProgressIndicator />
 
-      {/* Form Validation Errors Summary - Disabled */}
-      {/* <FormErrorsDisplay 
-        errors={state.errors}
-        fieldLabels={{
-          'name': '',
-          'code': '',
-          'description': '',
-          'basePrice': '',
-          'minPrice': '',
-          'maxPrice': '',
-          'remark': '',
-          'status': '',
-          'category': 'Category',
-          'subCategory': 'Sub Category',
-        }}
-      /> */}
-
       {/* Form Content */}
       {config?.behavior?.rendering?.useGeneratedSteps ? (
         <Form {...form}>
@@ -190,7 +179,7 @@ function ProductFormContent({ id }: ProductFormProps) {
       <FormNavigation
         onCancel={handleCancel}
         onSubmit={async () => {}}
-        isSubmitting={false}
+        isSubmitting={state.isSubmitting}
         isNew={isNew}
       />
 
@@ -208,6 +197,7 @@ export function ProductForm({ id }: ProductFormProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const uploadImagesMutation = useUploadImages();
   const { organizationId } = useOrganizationContext();
+  const [existingEntity, setExistingEntity] = useState<any>(null);
 
   const resolvedOrganizationId = useMemo(() => {
     const parsed = Number(organizationId);
@@ -219,8 +209,10 @@ export function ProductForm({ id }: ProductFormProps) {
       queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' }),
+      // Also invalidate the specific product query if we have an ID
+      ...(id ? [queryClient.invalidateQueries({ queryKey: ['get-product', id], refetchType: 'active' })] : []),
     ]);
-  }, [queryClient]);
+  }, [queryClient, id]);
 
   const handlePostCreateNavigation = useCallback(
     (entityId?: number) => {
@@ -243,32 +235,77 @@ export function ProductForm({ id }: ProductFormProps) {
   }, [router]);
 
   const handleImageUploads = useCallback(
-    async (productId: number | undefined, attachments: Record<string, File | null | undefined>) => {
+    async (productId: number | undefined, attachments: Record<string, File | null | undefined>, existingImages?: ProductImageDTO[]) => {
       if (!productId) return;
 
-      const files = ORIENTATION_UPLOAD_SEQUENCE.map((key) => attachments?.[key])
-        .filter(
-          (file): file is File => !!file && typeof File !== 'undefined' && file instanceof File
-        );
+      const filesToUpload: File[] = [];
+      const imagesToDelete: ProductImageDTO[] = [];
 
-      if (!files.length) return;
+      // Check each orientation for new files
+      ORIENTATION_UPLOAD_SEQUENCE.forEach((orientationKey) => {
+        const newFile = attachments[orientationKey];
 
-      try {
-        await uploadImagesMutation.mutateAsync({
-          productId,
-          organizationId: resolvedOrganizationId,
-          files,
+        // If there's a new file for this orientation
+        if (newFile && newFile instanceof File) {
+          filesToUpload.push(newFile);
+        }
+      });
+
+      // If we're uploading new files, delete ALL existing images
+      // This ensures complete replacement of all product images
+      if (filesToUpload.length > 0 && existingImages && existingImages.length > 0) {
+        imagesToDelete.push(...existingImages);
+      }
+
+      // If no new files were uploaded but we have existing images, check for explicit removals
+      if (filesToUpload.length === 0 && existingImages && existingImages.length > 0) {
+        // Check if any orientation fields have null/undefined values (indicating removal)
+        const hasAnyRemovals = ORIENTATION_UPLOAD_SEQUENCE.some((orientationKey) => {
+          return attachments[orientationKey] === null || attachments[orientationKey] === undefined;
         });
-        toast.success('Product images uploaded', {
-          description: 'Front, back, and side shots are ready.',
-        });
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Unable to upload product images.';
-        toast.error('Image upload failed', { description: message });
+
+        if (hasAnyRemovals) {
+          // Mark all existing images for deletion
+          imagesToDelete.push(...existingImages);
+        }
+      }
+
+      // Delete old images first
+      if (imagesToDelete.length > 0) {
+        const deleteImageMutation = useHardDeleteImage();
+        for (const imageToDelete of imagesToDelete) {
+          if (!imageToDelete.id) continue;
+          try {
+            await deleteImageMutation.mutateAsync(imageToDelete.id);
+            toast.success(`Old ${imageToDelete.originalFilename || 'image'} deleted`, {
+              description: 'Replaced with new image.',
+            });
+          } catch (error) {
+            console.error('Failed to delete old image:', error);
+            toast.error('Failed to delete old image', {
+              description: 'New image was still uploaded.',
+            });
+          }
+        }
+      }
+
+      // Upload new images
+      if (filesToUpload.length > 0) {
+        try {
+          await uploadImagesMutation.mutateAsync({
+            productId,
+            files: filesToUpload,
+          });
+          toast.success('Product images uploaded', {
+            description: `${filesToUpload.length} image${filesToUpload.length > 1 ? 's' : ''} ready.`,
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unable to upload product images.';
+          toast.error('Image upload failed', { description: message });
+        }
       }
     },
-    [resolvedOrganizationId, uploadImagesMutation]
+    [uploadImagesMutation]
   );
 
   const { mutateAsync: createProductAsync } = useCreateProduct({
@@ -323,7 +360,7 @@ export function ProductForm({ id }: ProductFormProps) {
           try {
             const entityData = { ...productDataWithStatus, id };
             await updateProductAsync({ id, data: entityData as any });
-            await handleImageUploads(id, attachments);
+            await handleImageUploads(id, attachments, existingEntity?.images);
             await invalidateProductQueries();
             handlePostUpdateNavigation();
           } catch {
@@ -335,7 +372,7 @@ export function ProductForm({ id }: ProductFormProps) {
         handleProductError(error);
       }}
     >
-      <ProductFormContent id={id} />
+      <ProductFormContent id={id} onEntityData={setExistingEntity} />
     </ProductFormProvider>
   );
 }

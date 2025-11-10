@@ -6,4 +6,4 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type ImportImportHistoriesFromExcel200 = {[key: string]: unknown};
+export type GetImportTemplate10200 = {[key: string]: unknown};

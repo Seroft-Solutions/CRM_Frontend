@@ -5,8 +5,8 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {AvailableTimeSlotDTOStatus} from './AvailableTimeSlotDTOStatus';
-import type {UserProfileDTO} from './UserProfileDTO';
+import type { AvailableTimeSlotDTOStatus } from './AvailableTimeSlotDTOStatus';
+import type { UserProfileDTO } from './UserProfileDTO';
 
 export interface AvailableTimeSlotDTO {
   id?: number;

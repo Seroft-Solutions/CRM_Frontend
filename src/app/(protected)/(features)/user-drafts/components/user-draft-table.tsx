@@ -14,7 +14,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -23,7 +24,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,19 +34,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountUserDrafts,
   useGetAllUserDrafts,
   useSearchUserDrafts,
-  useUpdateUserDraft} from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
+  useUpdateUserDraft,
+} from '@/core/api/generated/spring/endpoints/user-draft-resource/user-draft-resource.gen';
 import { UserDraftTableHeader } from './table/user-draft-table-header';
 import { UserDraftTableRow } from './table/user-draft-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
@@ -52,7 +57,8 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true};
+  centerAlignActions: true,
+};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -108,7 +114,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'leadNo',
     type: 'field',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'currentStep',
@@ -116,7 +123,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'currentStep',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'jsonPayload',
@@ -124,7 +132,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'jsonPayload',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -132,7 +141,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'keycloakUserId',
@@ -140,7 +150,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'keycloakUserId',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdBy',
@@ -148,7 +159,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -156,7 +168,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -164,7 +177,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -172,7 +186,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'user-draft-table-columns';
@@ -247,7 +262,8 @@ export function UserDraftTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -258,7 +274,8 @@ export function UserDraftTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -284,21 +301,25 @@ export function UserDraftTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await refetch();
 
@@ -367,19 +388,23 @@ export function UserDraftTable() {
     {
       value: UserDraftDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: UserDraftDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: UserDraftDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: UserDraftDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   const getStatusFilter = () => {
@@ -401,7 +426,8 @@ export function UserDraftTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter()};
+      ...getStatusFilter(),
+    };
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -481,40 +507,50 @@ export function UserDraftTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllUserDrafts(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   const { data: countData } = useCountUserDrafts(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateUserDraft({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllUserDrafts']});
+          queryKey: ['getAllUserDrafts'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchUserDrafts']});
+          queryKey: ['searchUserDrafts'],
+        });
 
         const previousData = queryClient.getQueryData([
           'getAllUserDrafts',
@@ -522,7 +558,8 @@ export function UserDraftTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -533,7 +570,8 @@ export function UserDraftTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((userDraft) =>
@@ -551,7 +589,8 @@ export function UserDraftTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((userDraft) =>
@@ -570,7 +609,8 @@ export function UserDraftTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) =>
             old?.map((userDraft) => (userDraft.id === variables.id ? data : userDraft))
@@ -585,7 +625,8 @@ export function UserDraftTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((userDraft) => (userDraft.id === variables.id ? data : userDraft))
@@ -603,7 +644,8 @@ export function UserDraftTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -613,15 +655,20 @@ export function UserDraftTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllUserDrafts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countUserDrafts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchUserDrafts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateUserDraft({
     mutation: {
@@ -634,7 +681,8 @@ export function UserDraftTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         queryClient.setQueryData(
@@ -644,7 +692,8 @@ export function UserDraftTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -659,7 +708,8 @@ export function UserDraftTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -706,7 +756,8 @@ export function UserDraftTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -716,15 +767,20 @@ export function UserDraftTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllUserDrafts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countUserDrafts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchUserDrafts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -759,7 +815,8 @@ export function UserDraftTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: UserDraftDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: UserDraftDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -773,7 +830,8 @@ export function UserDraftTable() {
         const statusValue = UserDraftDTOStatus[newStatus as keyof typeof UserDraftDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -784,7 +842,8 @@ export function UserDraftTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination();
   };
 
@@ -841,7 +900,8 @@ export function UserDraftTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -852,10 +912,12 @@ export function UserDraftTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: UserDraftDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: UserDraftDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -866,14 +928,17 @@ export function UserDraftTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       userDraftToast.custom.success(
         'Bulk Archive Complete',
@@ -889,7 +954,8 @@ export function UserDraftTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -913,7 +979,8 @@ export function UserDraftTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -925,10 +992,12 @@ export function UserDraftTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -939,14 +1008,17 @@ export function UserDraftTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserDrafts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -964,7 +1036,8 @@ export function UserDraftTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1002,7 +1075,8 @@ export function UserDraftTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1017,7 +1091,8 @@ export function UserDraftTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1028,7 +1103,8 @@ export function UserDraftTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((userDraft) => (userDraft.id === entityId ? serverResponse : userDraft))
@@ -1043,7 +1119,8 @@ export function UserDraftTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((userDraft) =>
@@ -1067,7 +1144,8 @@ export function UserDraftTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1085,7 +1163,8 @@ export function UserDraftTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1127,7 +1206,8 @@ export function UserDraftTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1224,7 +1304,8 @@ export function UserDraftTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"

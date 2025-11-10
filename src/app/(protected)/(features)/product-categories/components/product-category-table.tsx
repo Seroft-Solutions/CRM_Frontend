@@ -13,7 +13,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -22,7 +23,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,19 +33,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountProductCategories,
   useGetAllProductCategories,
   useSearchProductCategories,
-  useUpdateProductCategory} from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+  useUpdateProductCategory,
+} from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { ProductCategoryTableHeader } from './table/product-category-table-header';
 import { ProductCategoryTableRow } from './table/product-category-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
@@ -51,7 +56,8 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true};
+  centerAlignActions: true,
+};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -112,7 +118,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'name',
@@ -120,7 +127,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'code',
@@ -128,7 +136,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'code',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'description',
@@ -136,7 +145,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'description',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'remark',
@@ -144,7 +154,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'remark',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -152,7 +163,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdBy',
@@ -160,7 +172,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -168,7 +181,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -176,7 +190,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -184,7 +199,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'product-category-table-columns';
@@ -245,7 +261,8 @@ export function ProductCategoryTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -256,7 +273,8 @@ export function ProductCategoryTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -282,21 +300,25 @@ export function ProductCategoryTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await refetch();
 
@@ -365,19 +387,23 @@ export function ProductCategoryTable() {
     {
       value: ProductCategoryDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: ProductCategoryDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: ProductCategoryDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: ProductCategoryDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   const getStatusFilter = () => {
@@ -399,7 +425,8 @@ export function ProductCategoryTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter()};
+      ...getStatusFilter(),
+    };
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -479,40 +506,50 @@ export function ProductCategoryTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllProductCategories(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   const { data: countData } = useCountProductCategories(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateProductCategory({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllProductCategories']});
+          queryKey: ['getAllProductCategories'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchProductCategories']});
+          queryKey: ['searchProductCategories'],
+        });
 
         const previousData = queryClient.getQueryData([
           'getAllProductCategories',
@@ -520,7 +557,8 @@ export function ProductCategoryTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -531,7 +569,8 @@ export function ProductCategoryTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((productCategory) =>
@@ -551,7 +590,8 @@ export function ProductCategoryTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((productCategory) =>
@@ -572,7 +612,8 @@ export function ProductCategoryTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) =>
             old?.map((productCategory) =>
@@ -589,7 +630,8 @@ export function ProductCategoryTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((productCategory) =>
@@ -609,7 +651,8 @@ export function ProductCategoryTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -619,15 +662,20 @@ export function ProductCategoryTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllProductCategories'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countProductCategories'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchProductCategories'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateProductCategory({
     mutation: {
@@ -640,7 +688,8 @@ export function ProductCategoryTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         queryClient.setQueryData(
@@ -650,7 +699,8 @@ export function ProductCategoryTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -665,7 +715,8 @@ export function ProductCategoryTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -714,7 +765,8 @@ export function ProductCategoryTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -724,15 +776,20 @@ export function ProductCategoryTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllProductCategories'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countProductCategories'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchProductCategories'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -767,7 +824,8 @@ export function ProductCategoryTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: ProductCategoryDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: ProductCategoryDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -782,7 +840,8 @@ export function ProductCategoryTable() {
           ProductCategoryDTOStatus[newStatus as keyof typeof ProductCategoryDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -793,7 +852,8 @@ export function ProductCategoryTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination();
   };
 
@@ -850,7 +910,8 @@ export function ProductCategoryTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -861,10 +922,12 @@ export function ProductCategoryTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: ProductCategoryDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: ProductCategoryDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -875,14 +938,17 @@ export function ProductCategoryTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       productCategoryToast.custom.success(
         'Bulk Archive Complete',
@@ -898,7 +964,8 @@ export function ProductCategoryTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -922,7 +989,8 @@ export function ProductCategoryTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -935,10 +1003,12 @@ export function ProductCategoryTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -949,14 +1019,17 @@ export function ProductCategoryTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProductCategories'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -974,7 +1047,8 @@ export function ProductCategoryTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1012,7 +1086,8 @@ export function ProductCategoryTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1027,7 +1102,8 @@ export function ProductCategoryTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1038,7 +1114,8 @@ export function ProductCategoryTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((productCategory) =>
@@ -1055,7 +1132,8 @@ export function ProductCategoryTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((productCategory) =>
@@ -1079,7 +1157,8 @@ export function ProductCategoryTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1097,7 +1176,8 @@ export function ProductCategoryTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1139,7 +1219,8 @@ export function ProductCategoryTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1236,7 +1317,8 @@ export function ProductCategoryTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"

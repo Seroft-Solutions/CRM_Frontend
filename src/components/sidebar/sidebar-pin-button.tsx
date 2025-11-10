@@ -22,9 +22,7 @@ export function SidebarPinButton() {
           {isPinned ? <PinOffIcon className="size-5" /> : <PinIcon className="size-5" />}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="right">
-        {isPinned ? 'Unpin Sidebar' : 'Pin Sidebar'}
-      </TooltipContent>
+      <TooltipContent side="right">{isPinned ? 'Unpin Sidebar' : 'Pin Sidebar'}</TooltipContent>
     </Tooltip>
   );
 }

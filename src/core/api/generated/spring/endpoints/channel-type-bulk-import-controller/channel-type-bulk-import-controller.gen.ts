@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -19,16 +23,15 @@ import type {
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
-import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type {
-  GetImportTemplate6200,
+  GetImportTemplate7200,
   ImportChannelTypesFromExcel200,
   ImportChannelTypesFromExcelBody
 } from '../../schemas';
 
-import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -95,77 +98,77 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const getImportTemplate6 = (
+    export const getImportTemplate7 = (
     
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {
       
       
-      return springServiceMutator<GetImportTemplate6200>(
+      return springServiceMutator<GetImportTemplate7200>(
       {url: `/api/channel-types-bulk-import/import-template`, method: 'GET', signal
     },
       options);
     }
   
 
-export const getGetImportTemplate6QueryKey = () => {
+export const getGetImportTemplate7QueryKey = () => {
     return [`/api/channel-types-bulk-import/import-template`] as const;
     }
 
     
-export const getGetImportTemplate6QueryOptions = <TData = Awaited<ReturnType<typeof getImportTemplate6>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export const getGetImportTemplate7QueryOptions = <TData = Awaited<ReturnType<typeof getImportTemplate7>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportTemplate6QueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetImportTemplate7QueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportTemplate6>>> = ({ signal }) => getImportTemplate6(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportTemplate7>>> = ({ signal }) => getImportTemplate7(requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportTemplate6QueryResult = NonNullable<Awaited<ReturnType<typeof getImportTemplate6>>>
-export type GetImportTemplate6QueryError = ErrorType<unknown>
+export type GetImportTemplate7QueryResult = NonNullable<Awaited<ReturnType<typeof getImportTemplate7>>>
+export type GetImportTemplate7QueryError = ErrorType<unknown>
 
 
-export function useGetImportTemplate6<TData = Awaited<ReturnType<typeof getImportTemplate6>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData>> & Pick<
+export function useGetImportTemplate7<TData = Awaited<ReturnType<typeof getImportTemplate7>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportTemplate6>>,
+          Awaited<ReturnType<typeof getImportTemplate7>>,
           TError,
-          Awaited<ReturnType<typeof getImportTemplate6>>
+          Awaited<ReturnType<typeof getImportTemplate7>>
         > , 'initialData'
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportTemplate6<TData = Awaited<ReturnType<typeof getImportTemplate6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData>> & Pick<
+export function useGetImportTemplate7<TData = Awaited<ReturnType<typeof getImportTemplate7>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportTemplate6>>,
+          Awaited<ReturnType<typeof getImportTemplate7>>,
           TError,
-          Awaited<ReturnType<typeof getImportTemplate6>>
+          Awaited<ReturnType<typeof getImportTemplate7>>
         > , 'initialData'
       >, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportTemplate6<TData = Awaited<ReturnType<typeof getImportTemplate6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export function useGetImportTemplate7<TData = Awaited<ReturnType<typeof getImportTemplate7>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetImportTemplate6<TData = Awaited<ReturnType<typeof getImportTemplate6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate6>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+export function useGetImportTemplate7<TData = Awaited<ReturnType<typeof getImportTemplate7>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportTemplate7>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportTemplate6QueryOptions(options)
+  const queryOptions = getGetImportTemplate7QueryOptions(options)
 
   const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

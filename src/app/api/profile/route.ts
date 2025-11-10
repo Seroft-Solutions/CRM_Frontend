@@ -7,7 +7,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import type { UserRepresentation } from '@/core/api/generated/keycloak';
-import { getAdminRealmsRealmUsers, getAdminRealmsRealmUsersUserId, } from '@/core/api/generated/keycloak';
+import {
+  getAdminRealmsRealmUsers,
+  getAdminRealmsRealmUsersUserId,
+} from '@/core/api/generated/keycloak';
 import { SPRING_API_URL } from '@/core/api/config/constants';
 
 /**

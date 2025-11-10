@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Pencil } from 'lucide-react';
+import { Camera, Pencil } from 'lucide-react';
 import { handleProductError, productToast } from './product-toast';
 import { productFormConfig } from './form/product-form-config';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ import {
   useDeleteProduct,
   useGetProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
@@ -30,6 +32,28 @@ import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpo
 interface ProductDetailsProps {
   id: number;
 }
+
+const ORIENTATION_FIELDS = [
+  {
+    name: 'frontImage' as const,
+    label: 'Front Image',
+    badge: 'Primary',
+    description: 'Primary hero shot shown first to users.',
+  },
+  {
+    name: 'backImage' as const,
+    label: 'Back Image',
+    badge: 'Detail',
+    description: 'Secondary angle that reveals product back.',
+  },
+  {
+    name: 'sideImage' as const,
+    label: 'Side Image',
+    badge: 'Profile',
+    description: 'Side profile to highlight depth and dimension.',
+  },
+];
+
 
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   const { data: categoryData } =
@@ -183,9 +207,81 @@ export function ProductDetails({ id }: ProductDetailsProps) {
     return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
+function OrientationPreviewCard({
+  field,
+  image,
+}: {
+  field: (typeof ORIENTATION_FIELDS)[number];
+  image?: ProductImageDTO;
+}) {
+  const previewUrl = image?.thumbnailUrl || image?.cdnUrl;
+  const helperText = image
+    ? `${image.originalFilename ?? 'Uploaded image'}${
+        image.fileSizeBytes ? ` • ${(image.fileSizeBytes / 1024).toFixed(1)} KB` : ''
+      }`
+    : 'No image uploaded';
+
+  return (
+    <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{field.label}</p>
+          <p className="text-xs text-slate-500">{field.description}</p>
+        </div>
+        <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
+          {field.badge}
+        </Badge>
+      </div>
+
+      <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white border border-slate-200">
+        {previewUrl ? (
+          <img src={previewUrl} alt={`${field.label} preview`} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-slate-400">
+            <Camera className="h-10 w-10" />
+            <span className="text-sm font-medium">No image uploaded</span>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs font-medium text-slate-600">{helperText}</p>
+    </div>
+  );
+}
+
   const renderRelationshipValue = (relConfig: any, value: any) => {
     return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
+
+  const orientationImageMap = useMemo(() => {
+    const result: Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | undefined> = {
+      frontImage: undefined,
+      backImage: undefined,
+      sideImage: undefined,
+    };
+
+    if (!entity?.images?.length) {
+      return result;
+    }
+
+    const sorted = [...entity.images].sort((a, b) => {
+      const orderA = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
+
+    const primaryIndex = sorted.findIndex((img) => Boolean(img.isPrimary));
+    if (primaryIndex >= 0) {
+      result.frontImage = sorted.splice(primaryIndex, 1)[0];
+    } else {
+      result.frontImage = sorted.shift();
+    }
+
+    result.backImage = sorted.shift();
+    result.sideImage = sorted.shift();
+
+    return result;
+  }, [entity?.images]);
 
   if (isLoading) {
     return (
@@ -213,6 +309,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
         {displaySteps.map((step, index) => {
           const stepFields = [...step.fields, ...step.relationships];
           if (stepFields.length === 0) return null;
+          const isImagesStep = step.id === 'images';
 
           return (
             <div key={step.id} className="border rounded-lg p-4">
@@ -230,7 +327,18 @@ export function ProductDetails({ id }: ProductDetailsProps) {
                   Step {index + 1} of {displaySteps.length}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {isImagesStep ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {ORIENTATION_FIELDS.map((field) => (
+                    <OrientationPreviewCard
+                      key={field.name}
+                      field={field}
+                      image={orientationImageMap[field.name]}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Render Fields */}
                 {step.fields.map((fieldName) => {
                   const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
@@ -270,7 +378,8 @@ export function ProductDetails({ id }: ProductDetailsProps) {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
             </div>
           );
         })}

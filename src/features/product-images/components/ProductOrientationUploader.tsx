@@ -34,7 +34,6 @@ interface OrientationSelection {
 
 interface ProductOrientationUploaderProps {
   productId: number;
-  organizationId: number;
   onUploadComplete?: () => void;
 }
 
@@ -46,7 +45,6 @@ const createEmptySelection = () =>
 
 export function ProductOrientationUploader({
   productId,
-  organizationId,
   onUploadComplete,
 }: ProductOrientationUploaderProps) {
   const [selectedFiles, setSelectedFiles] = useState<OrientationSelection>(createEmptySelection);
@@ -89,15 +87,12 @@ export function ProductOrientationUploader({
     [selectedFiles]
   );
 
-  const handleSelectFile = useCallback(
-    (name: OrientationFieldName, file: File | null) => {
-      setSelectedFiles((prev) => ({
-        ...prev,
-        [name]: file,
-      }));
-    },
-    []
-  );
+  const handleSelectFile = useCallback((name: OrientationFieldName, file: File | null) => {
+    setSelectedFiles((prev) => ({
+      ...prev,
+      [name]: file,
+    }));
+  }, []);
 
   const handleUpload = useCallback(async () => {
     if (isUploading) return;
@@ -118,7 +113,6 @@ export function ProductOrientationUploader({
     try {
       await uploadImagesMutation.mutateAsync({
         productId,
-        organizationId,
         files: filesToUpload,
       });
 
@@ -137,14 +131,7 @@ export function ProductOrientationUploader({
       setIsUploading(false);
       setTimeout(() => setProgress(0), 400);
     }
-  }, [
-    isUploading,
-    selectedFiles,
-    uploadImagesMutation,
-    productId,
-    organizationId,
-    onUploadComplete,
-  ]);
+  }, [isUploading, selectedFiles, uploadImagesMutation, productId, onUploadComplete]);
 
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm transition hover:border-slate-300">
@@ -231,7 +218,11 @@ const OrientationSlot = React.memo(
 
         <div className="relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-200 bg-slate-50 transition group-hover:border-blue-100">
           {preview ? (
-            <img src={preview} alt={`${field.label} preview`} className="h-full w-full object-cover" />
+            <img
+              src={preview}
+              alt={`${field.label} preview`}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex flex-col items-center gap-2 text-slate-400">
               <Camera className="h-6 w-6" />

@@ -15,4 +15,5 @@ export const ProductDTOStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
   ARCHIVED: 'ARCHIVED',
+  DELETE: 'DELETE',
 } as const;

@@ -5,7 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {UserDraftDTOStatus} from './UserDraftDTOStatus';
+import type { UserDraftDTOStatus } from './UserDraftDTOStatus';
 
 export interface UserDraftDTO {
   id?: number;

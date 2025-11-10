@@ -21,7 +21,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -30,7 +31,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,19 +41,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountDistricts,
   useGetAllDistricts,
   useSearchDistricts,
-  useUpdateDistrict} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
+  useUpdateDistrict,
+} from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
 
 // Relationship data imports
 import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
@@ -125,7 +130,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'name',
@@ -133,7 +139,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -141,7 +148,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'state',
@@ -149,7 +157,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'state',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'createdBy',
@@ -157,7 +166,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false, // Hidden by default
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -165,7 +175,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false, // Hidden by default
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -173,7 +184,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false, // Hidden by default
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -181,7 +193,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false, // Hidden by default
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 // Local storage key for column visibility with version
@@ -251,7 +264,8 @@ export function DistrictTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -262,7 +276,8 @@ export function DistrictTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -291,7 +306,8 @@ export function DistrictTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   // Manual refresh functionality
@@ -300,14 +316,17 @@ export function DistrictTable() {
       // Invalidate all related queries to force fresh data
       await queryClient.invalidateQueries({
         queryKey: ['getAllDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       // Also manually trigger refetch
       await refetch();
@@ -392,19 +411,23 @@ export function DistrictTable() {
     {
       value: DistrictDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: DistrictDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: DistrictDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: DistrictDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   // Get status filter based on active tab
@@ -436,7 +459,9 @@ export function DistrictTable() {
       'state.name': {
         apiParam: 'stateId.equals',
         options: stateOptions,
-        displayField: 'name'}};
+        displayField: 'name',
+      },
+    };
 
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
@@ -541,24 +566,30 @@ export function DistrictTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0, // Always consider data stale for immediate refetch
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllDistricts(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0, // Always consider data stale for immediate refetch
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   // Get total count for pagination
@@ -566,7 +597,9 @@ export function DistrictTable() {
     query: {
       enabled: true,
       staleTime: 0, // Always consider data stale for immediate refetch
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   // Full update mutation for relationship editing with optimistic updates
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateDistrict({
@@ -574,10 +607,12 @@ export function DistrictTable() {
       onMutate: async (variables) => {
         // Cancel any outgoing refetches
         await queryClient.cancelQueries({
-          queryKey: ['getAllDistricts']});
+          queryKey: ['getAllDistricts'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchDistricts']});
+          queryKey: ['searchDistricts'],
+        });
 
         // Snapshot the previous value
         const previousData = queryClient.getQueryData([
@@ -586,7 +621,8 @@ export function DistrictTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         // Optimistically update the cache
@@ -598,7 +634,8 @@ export function DistrictTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((district) =>
@@ -617,7 +654,8 @@ export function DistrictTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((district) =>
@@ -637,7 +675,8 @@ export function DistrictTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) =>
             old?.map((district) =>
@@ -657,7 +696,8 @@ export function DistrictTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((district) =>
@@ -680,7 +720,8 @@ export function DistrictTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -691,15 +732,20 @@ export function DistrictTable() {
         // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllDistricts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countDistricts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchDistricts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   // Status update mutation for soft delete (archive) with optimistic updates
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateDistrict({
@@ -713,7 +759,8 @@ export function DistrictTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         // Optimistically update or remove the item based on status change
@@ -724,7 +771,8 @@ export function DistrictTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -742,7 +790,8 @@ export function DistrictTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               // Update in place - status matches current tab filter
@@ -789,7 +838,8 @@ export function DistrictTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -800,15 +850,20 @@ export function DistrictTable() {
         // Force active refetch to ensure immediate consistency
         await queryClient.invalidateQueries({
           queryKey: ['getAllDistricts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countDistricts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchDistricts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   // Handle sort column click
   const handleSort = (column: string) => {
@@ -846,7 +901,8 @@ export function DistrictTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: DistrictDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: DistrictDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -860,7 +916,8 @@ export function DistrictTable() {
         const statusValue = DistrictDTOStatus[newStatus as keyof typeof DistrictDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -872,7 +929,8 @@ export function DistrictTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination(); // Reset to page 1 when filters change
   };
 
@@ -938,7 +996,8 @@ export function DistrictTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -950,10 +1009,12 @@ export function DistrictTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: DistrictDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: DistrictDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -965,14 +1026,17 @@ export function DistrictTable() {
       // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       districtToast.custom.success(
         'Bulk Archive Complete',
@@ -989,7 +1053,8 @@ export function DistrictTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1015,7 +1080,8 @@ export function DistrictTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1028,10 +1094,12 @@ export function DistrictTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -1043,14 +1111,17 @@ export function DistrictTable() {
       // Force refetch to ensure table is up to date
       await queryClient.invalidateQueries({
         queryKey: ['getAllDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchDistricts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1069,7 +1140,8 @@ export function DistrictTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1111,7 +1183,8 @@ export function DistrictTable() {
       // Create complete update data with current values, then update the specific relationship
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       // Update only the specific relationship
       if (newValue) {
@@ -1128,7 +1201,8 @@ export function DistrictTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             // CRITICAL: Ensure individual cache updates with server response for bulk operations
@@ -1141,7 +1215,8 @@ export function DistrictTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((district) =>
@@ -1161,7 +1236,8 @@ export function DistrictTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((district) =>
@@ -1189,7 +1265,8 @@ export function DistrictTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1210,7 +1287,8 @@ export function DistrictTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1256,7 +1334,8 @@ export function DistrictTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1364,7 +1443,8 @@ export function DistrictTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"
