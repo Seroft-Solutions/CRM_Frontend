@@ -18,7 +18,7 @@ import {
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUploadImages, useDeleteImage } from '@/features/product-images';
+import { useUploadImages, useDeleteImage, useHardDeleteImage } from '@/features/product-images';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { toast } from 'sonner';
@@ -209,8 +209,10 @@ export function ProductForm({ id }: ProductFormProps) {
       queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' }),
+      // Also invalidate the specific product query if we have an ID
+      ...(id ? [queryClient.invalidateQueries({ queryKey: ['get-product', id], refetchType: 'active' })] : []),
     ]);
-  }, [queryClient]);
+  }, [queryClient, id]);
 
   const handlePostCreateNavigation = useCallback(
     (entityId?: number) => {
@@ -246,31 +248,33 @@ export function ProductForm({ id }: ProductFormProps) {
         // If there's a new file for this orientation
         if (newFile && newFile instanceof File) {
           filesToUpload.push(newFile);
-
-          // Find existing image for this orientation and mark it for deletion
-          if (existingImages) {
-            const existingImageForOrientation = existingImages.find((img) => {
-              // Map orientation to display order
-              const orientationOrder = {
-                frontImage: 0,
-                backImage: 1,
-                sideImage: 2,
-              }[orientationKey];
-
-              return img.displayOrder === orientationOrder;
-            });
-
-            if (existingImageForOrientation) {
-              imagesToDelete.push(existingImageForOrientation);
-            }
-          }
         }
       });
 
+      // If we're uploading new files, delete ALL existing images
+      // This ensures complete replacement of all product images
+      if (filesToUpload.length > 0 && existingImages && existingImages.length > 0) {
+        imagesToDelete.push(...existingImages);
+      }
+
+      // If no new files were uploaded but we have existing images, check for explicit removals
+      if (filesToUpload.length === 0 && existingImages && existingImages.length > 0) {
+        // Check if any orientation fields have null/undefined values (indicating removal)
+        const hasAnyRemovals = ORIENTATION_UPLOAD_SEQUENCE.some((orientationKey) => {
+          return attachments[orientationKey] === null || attachments[orientationKey] === undefined;
+        });
+
+        if (hasAnyRemovals) {
+          // Mark all existing images for deletion
+          imagesToDelete.push(...existingImages);
+        }
+      }
+
       // Delete old images first
       if (imagesToDelete.length > 0) {
-        const deleteImageMutation = useDeleteImage();
+        const deleteImageMutation = useHardDeleteImage();
         for (const imageToDelete of imagesToDelete) {
+          if (!imageToDelete.id) continue;
           try {
             await deleteImageMutation.mutateAsync(imageToDelete.id);
             toast.success(`Old ${imageToDelete.originalFilename || 'image'} deleted`, {
