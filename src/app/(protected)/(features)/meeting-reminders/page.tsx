@@ -7,7 +7,8 @@ import { MeetingReminderTable } from './components/meeting-reminder-table';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: 'MeetingReminders'};
+  title: 'MeetingReminders',
+};
 
 export default function MeetingReminderPage() {
   return (
@@ -24,7 +25,8 @@ export default function MeetingReminderPage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'}}
+              backgroundSize: '20px 20px',
+            }}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">

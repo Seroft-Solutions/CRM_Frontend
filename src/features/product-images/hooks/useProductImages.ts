@@ -4,7 +4,7 @@
  * Product Images Hooks
  *
  * This file provides simplified wrappers around the auto-generated OpenAPI hooks
- * from @/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen.ts
+ * from @/core/api/generated/spring/endpoints/product-images/product-images.gen.ts
  *
  * These wrappers maintain a clean, consistent API while ensuring we use the generated
  * clients as required by the project's API-First Development principle.
@@ -19,7 +19,8 @@ import {
   useReorderProductImages,
   useUploadProductImage,
   useUploadProductImages,
-} from '@/core/api/generated/spring/endpoints/product-image-resource/product-image-resource.gen';
+  useHardDeleteProductImage,
+} from '@/core/api/generated/spring/endpoints/product-images/product-images.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 
 export type { ProductImageDTO };
@@ -42,7 +43,7 @@ export function useProductImages(productId: number) {
  *
  * Usage:
  * const upload = useUploadImage();
- * await upload.mutateAsync({ productId, organizationId, file });
+ * await upload.mutateAsync({ productId, file });
  */
 export function useUploadImage() {
   const mutation = useUploadProductImage();
@@ -51,22 +52,20 @@ export function useUploadImage() {
     ...mutation,
     mutateAsync: async ({
       productId,
-      organizationId,
       file,
     }: {
       productId: number;
-      organizationId: number;
       file: File;
     }): Promise<UploadProductImageMutationResult> => {
       return mutation.mutateAsync({
         data: { file },
-        params: { productId, organizationId },
+        params: { productId },
       });
     },
-    mutate: (variables: { productId: number; organizationId: number; file: File }) => {
+    mutate: (variables: { productId: number; file: File }) => {
       mutation.mutate({
         data: { file: variables.file },
-        params: { productId: variables.productId, organizationId: variables.organizationId },
+        params: { productId: variables.productId },
       });
     },
   };
@@ -78,7 +77,7 @@ export function useUploadImage() {
  *
  * Usage:
  * const upload = useUploadImages();
- * await upload.mutateAsync({ productId, organizationId, files });
+ * await upload.mutateAsync({ productId, files });
  */
 export function useUploadImages() {
   const mutation = useUploadProductImages();
@@ -87,22 +86,20 @@ export function useUploadImages() {
     ...mutation,
     mutateAsync: async ({
       productId,
-      organizationId,
       files,
     }: {
       productId: number;
-      organizationId: number;
       files: File[];
     }): Promise<UploadProductImagesMutationResult> => {
       return mutation.mutateAsync({
         data: { files },
-        params: { productId, organizationId },
+        params: { productId },
       });
     },
-    mutate: (variables: { productId: number; organizationId: number; files: File[] }) => {
+    mutate: (variables: { productId: number; files: File[] }) => {
       mutation.mutate({
         data: { files: variables.files },
-        params: { productId: variables.productId, organizationId: variables.organizationId },
+        params: { productId: variables.productId },
       });
     },
   };
@@ -118,6 +115,28 @@ export function useUploadImages() {
  */
 export function useDeleteImage() {
   const mutation = useDeleteProductImage();
+
+  return {
+    ...mutation,
+    mutateAsync: async (imageId: number): Promise<void> => {
+      return mutation.mutateAsync({ id: imageId });
+    },
+    mutate: (imageId: number) => {
+      mutation.mutate({ id: imageId });
+    },
+  };
+}
+
+/**
+ * Hard delete an image (removes from GCS)
+ * Wrapper around useHardDeleteProductImage with simplified API
+ *
+ * Usage:
+ * const hardDeleteImage = useHardDeleteImage();
+ * await hardDeleteImage.mutateAsync(imageId);
+ */
+export function useHardDeleteImage() {
+  const mutation = useHardDeleteProductImage();
 
   return {
     ...mutation,

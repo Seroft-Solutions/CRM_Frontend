@@ -5,7 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {RoleDTOStatus} from './RoleDTOStatus';
+import type { RoleDTOStatus } from './RoleDTOStatus';
 
 export interface RoleDTO {
   id?: number;

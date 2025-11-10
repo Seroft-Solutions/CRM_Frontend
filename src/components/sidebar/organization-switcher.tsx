@@ -178,7 +178,8 @@ export function OrganizationSwitcher() {
                       displayOrg.id === org.id
                         ? 'color-mix(in srgb, var(--sidebar-accent) 20%, var(--sidebar))'
                         : 'var(--sidebar)',
-                    borderColor: displayOrg.id === org.id ? 'var(--sidebar-accent)' : 'var(--sidebar-border)',
+                    borderColor:
+                      displayOrg.id === org.id ? 'var(--sidebar-accent)' : 'var(--sidebar-border)',
                     color: 'var(--sidebar-foreground)',
                   }}
                 >
@@ -190,7 +191,9 @@ export function OrganizationSwitcher() {
                           ? 'color-mix(in srgb, var(--sidebar-accent) 35%, transparent)'
                           : 'color-mix(in srgb, var(--sidebar-foreground) 10%, transparent)',
                       borderColor:
-                        displayOrg.id === org.id ? 'var(--sidebar-accent)' : 'var(--sidebar-border)',
+                        displayOrg.id === org.id
+                          ? 'var(--sidebar-accent)'
+                          : 'var(--sidebar-border)',
                       color: 'var(--sidebar-foreground)',
                     }}
                   >
@@ -198,12 +201,17 @@ export function OrganizationSwitcher() {
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="font-semibold truncate">{org.name}</span>
-                    <span className="text-xs text-sidebar-foreground/70">Organization #{index + 1}</span>
+                    <span className="text-xs text-sidebar-foreground/70">
+                      Organization #{index + 1}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {displayOrg.id === org.id && (
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#22c55e' }}></div>
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: '#22c55e' }}
+                        ></div>
                         <span className="text-xs text-green-400 font-medium">Active</span>
                       </div>
                     )}

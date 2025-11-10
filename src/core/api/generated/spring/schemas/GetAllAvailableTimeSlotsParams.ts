@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {GetAllAvailableTimeSlotsStatusEquals} from './GetAllAvailableTimeSlotsStatusEquals';
-import type {GetAllAvailableTimeSlotsStatusNotEquals} from './GetAllAvailableTimeSlotsStatusNotEquals';
-import type {GetAllAvailableTimeSlotsStatusInItem} from './GetAllAvailableTimeSlotsStatusInItem';
-import type {GetAllAvailableTimeSlotsStatusNotInItem} from './GetAllAvailableTimeSlotsStatusNotInItem';
+import type { GetAllAvailableTimeSlotsStatusEquals } from './GetAllAvailableTimeSlotsStatusEquals';
+import type { GetAllAvailableTimeSlotsStatusNotEquals } from './GetAllAvailableTimeSlotsStatusNotEquals';
+import type { GetAllAvailableTimeSlotsStatusInItem } from './GetAllAvailableTimeSlotsStatusInItem';
+import type { GetAllAvailableTimeSlotsStatusNotInItem } from './GetAllAvailableTimeSlotsStatusNotInItem';
 
 export type GetAllAvailableTimeSlotsParams = {
 'id.greaterThan'?: number;

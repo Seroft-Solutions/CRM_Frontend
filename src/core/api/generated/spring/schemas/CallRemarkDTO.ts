@@ -5,8 +5,8 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {CallRemarkDTOStatus} from './CallRemarkDTOStatus';
-import type {CallDTO} from './CallDTO';
+import type { CallRemarkDTOStatus } from './CallRemarkDTOStatus';
+import type { CallDTO } from './CallDTO';
 
 export interface CallRemarkDTO {
   id?: number;

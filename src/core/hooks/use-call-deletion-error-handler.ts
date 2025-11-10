@@ -5,7 +5,7 @@
  * and gives users clear guidance on how to resolve them.
  */
 
-import {toast} from 'sonner';
+import { toast } from 'sonner';
 
 export interface ConstraintViolationError {
   type: 'constraint_violation';

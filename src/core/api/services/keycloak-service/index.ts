@@ -1,9 +1,9 @@
-import {BaseService} from '@/core/api/services/base/base-service';
+import { BaseService } from '@/core/api/services/base/base-service';
 import {
-    KEYCLOAK_ADMIN_CONFIG,
-    KEYCLOAK_DEBUG,
-    KEYCLOAK_REALM,
-    KEYCLOAK_SERVICE_CONFIG,
+  KEYCLOAK_ADMIN_CONFIG,
+  KEYCLOAK_DEBUG,
+  KEYCLOAK_REALM,
+  KEYCLOAK_SERVICE_CONFIG,
 } from '@/core/api/services/keycloak-service/config';
 
 /**

@@ -5,14 +5,14 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {GetAllMeetingRemindersReminderTypeEquals} from './GetAllMeetingRemindersReminderTypeEquals';
-import type {GetAllMeetingRemindersReminderTypeNotEquals} from './GetAllMeetingRemindersReminderTypeNotEquals';
-import type {GetAllMeetingRemindersReminderTypeInItem} from './GetAllMeetingRemindersReminderTypeInItem';
-import type {GetAllMeetingRemindersReminderTypeNotInItem} from './GetAllMeetingRemindersReminderTypeNotInItem';
-import type {GetAllMeetingRemindersStatusEquals} from './GetAllMeetingRemindersStatusEquals';
-import type {GetAllMeetingRemindersStatusNotEquals} from './GetAllMeetingRemindersStatusNotEquals';
-import type {GetAllMeetingRemindersStatusInItem} from './GetAllMeetingRemindersStatusInItem';
-import type {GetAllMeetingRemindersStatusNotInItem} from './GetAllMeetingRemindersStatusNotInItem';
+import type { GetAllMeetingRemindersReminderTypeEquals } from './GetAllMeetingRemindersReminderTypeEquals';
+import type { GetAllMeetingRemindersReminderTypeNotEquals } from './GetAllMeetingRemindersReminderTypeNotEquals';
+import type { GetAllMeetingRemindersReminderTypeInItem } from './GetAllMeetingRemindersReminderTypeInItem';
+import type { GetAllMeetingRemindersReminderTypeNotInItem } from './GetAllMeetingRemindersReminderTypeNotInItem';
+import type { GetAllMeetingRemindersStatusEquals } from './GetAllMeetingRemindersStatusEquals';
+import type { GetAllMeetingRemindersStatusNotEquals } from './GetAllMeetingRemindersStatusNotEquals';
+import type { GetAllMeetingRemindersStatusInItem } from './GetAllMeetingRemindersStatusInItem';
+import type { GetAllMeetingRemindersStatusNotInItem } from './GetAllMeetingRemindersStatusNotInItem';
 
 export type GetAllMeetingRemindersParams = {
 'id.greaterThan'?: number;

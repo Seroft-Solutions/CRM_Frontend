@@ -15,4 +15,5 @@ export const CountProductsStatusEquals = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
   ARCHIVED: 'ARCHIVED',
+  DELETE: 'DELETE',
 } as const;

@@ -7,5 +7,6 @@
  */
 
 export type UploadProductImageBody = {
+  /** Image file to upload (JPEG, PNG, or WEBP, max 5MB) */
   file: Blob;
 };

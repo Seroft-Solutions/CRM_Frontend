@@ -8,6 +8,7 @@
 import type { ProductDTOStatus } from './ProductDTOStatus';
 import type { ProductCategoryDTO } from './ProductCategoryDTO';
 import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
+import type { ProductImageDTO } from './ProductImageDTO';
 
 export interface ProductDTO {
   id?: number;
@@ -62,4 +63,5 @@ export interface ProductDTO {
   lastModifiedDate?: string;
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
+  images?: ProductImageDTO[];
 }

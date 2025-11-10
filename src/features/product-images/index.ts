@@ -7,6 +7,7 @@ export {
   useUploadImage,
   useUploadImages,
   useDeleteImage,
+  useHardDeleteImage,
   useReorderImages,
   useProductImageCount,
   type ProductImageDTO,

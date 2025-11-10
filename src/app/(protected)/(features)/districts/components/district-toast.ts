@@ -5,7 +5,7 @@
 //   extensions (e.g., ./src/features/.../extensions/)
 // - Direct edits will be overwritten on regeneration
 // ===============================================================
-import {toast} from 'sonner';
+import { toast } from 'sonner';
 
 // Toast notification utilities for District
 export const districtToast = {

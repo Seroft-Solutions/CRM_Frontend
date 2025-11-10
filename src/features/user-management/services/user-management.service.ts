@@ -18,7 +18,11 @@ import type {
   UserListResponse,
 } from '../types';
 
-import type { GroupRepresentation, RoleRepresentation, UserRepresentation, } from '@/core/api/generated/keycloak';
+import type {
+  GroupRepresentation,
+  RoleRepresentation,
+  UserRepresentation,
+} from '@/core/api/generated/keycloak';
 
 /**
  * Unified User Management Service

@@ -5,13 +5,25 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { AlertCircle, CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { masterDataImportConfig } from '../constants';
 
-type CellStatus = 'SUCCESS' | 'DUPLICATE' | 'FAILED_VALIDATION' | 'FAILED_DEPENDENCY' | 'SYSTEM_ERROR';
+type CellStatus =
+  | 'SUCCESS'
+  | 'DUPLICATE'
+  | 'FAILED_VALIDATION'
+  | 'FAILED_DEPENDENCY'
+  | 'SYSTEM_ERROR';
 
 interface CellResult {
   column: string;
@@ -98,7 +110,9 @@ export default function MasterDataImportResultsPage() {
 
     const headers = [...masterDataImportConfig.columns.map((c) => c.header), 'Reason'];
     const sheetRows = tableRows.map((row) => {
-      const values = masterDataImportConfig.columns.map((col) => row.cellsByColumn[col.column]?.value ?? '');
+      const values = masterDataImportConfig.columns.map(
+        (col) => row.cellsByColumn[col.column]?.value ?? ''
+      );
       values.push(row.reason);
       return values;
     });
@@ -120,7 +134,10 @@ export default function MasterDataImportResultsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-yellow-900">
-            <p>The latest master data import summary could not be located. Please upload a file to view results.</p>
+            <p>
+              The latest master data import summary could not be located. Please upload a file to
+              view results.
+            </p>
             <Button asChild variant="outline">
               <Link href="/import">Go to Master Data Import</Link>
             </Button>
@@ -138,7 +155,9 @@ export default function MasterDataImportResultsPage() {
             <CheckCircle className="h-5 w-5 text-green-500" />
             <div>
               <CardTitle className="text-xl">Master Data Import Results</CardTitle>
-              <p className="text-sm text-muted-foreground">Review totals, download the report, and fix issues.</p>
+              <p className="text-sm text-muted-foreground">
+                Review totals, download the report, and fix issues.
+              </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -155,8 +174,16 @@ export default function MasterDataImportResultsPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <SummaryCard label="Total Rows" value={responseData.totalRows} />
             <SummaryCard label="Total Items" value={responseData.totalItems} />
-            <SummaryCard label="Successfully Imported" value={responseData.successCount} badgeTone="success" />
-            <SummaryCard label="Duplicates" value={responseData.duplicateCount} badgeTone="warning" />
+            <SummaryCard
+              label="Successfully Imported"
+              value={responseData.successCount}
+              badgeTone="success"
+            />
+            <SummaryCard
+              label="Duplicates"
+              value={responseData.duplicateCount}
+              badgeTone="warning"
+            />
             <SummaryCard label="Failed Items" value={responseData.errorCount} badgeTone="error" />
           </div>
           {responseData.errors.length > 0 && (
@@ -210,8 +237,8 @@ export default function MasterDataImportResultsPage() {
                                   cell.status === 'SUCCESS'
                                     ? 'outline'
                                     : cell.status === 'DUPLICATE'
-                                    ? 'secondary'
-                                    : 'destructive'
+                                      ? 'secondary'
+                                      : 'destructive'
                                 }
                                 className="w-fit text-[10px]"
                               >
@@ -229,7 +256,10 @@ export default function MasterDataImportResultsPage() {
                 ))}
                 {tableRows.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={masterDataImportConfig.columns.length + 2} className="text-center py-6">
+                    <TableCell
+                      colSpan={masterDataImportConfig.columns.length + 2}
+                      className="text-center py-6"
+                    >
                       <p className="text-sm text-muted-foreground">No rows processed.</p>
                     </TableCell>
                   </TableRow>
@@ -253,7 +283,13 @@ function SummaryCard({
   badgeTone?: 'success' | 'warning' | 'error';
 }) {
   const badgeVariant =
-    badgeTone === 'success' ? 'default' : badgeTone === 'warning' ? 'secondary' : badgeTone === 'error' ? 'destructive' : undefined;
+    badgeTone === 'success'
+      ? 'default'
+      : badgeTone === 'warning'
+        ? 'secondary'
+        : badgeTone === 'error'
+          ? 'destructive'
+          : undefined;
 
   return (
     <div className="flex flex-col p-3 border rounded-lg bg-muted/20">
@@ -268,4 +304,3 @@ function SummaryCard({
     </div>
   );
 }
-
