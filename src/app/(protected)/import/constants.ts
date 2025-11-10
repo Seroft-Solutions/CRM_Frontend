@@ -49,4 +49,3 @@ export const masterDataImportConfig = {
     },
   ] as MasterDataImportColumn[],
 };
-

@@ -13,7 +13,6 @@ import { ImagePreviewGrid } from './ImagePreviewGrid';
 
 interface ProductImageUploaderProps {
   productId: number;
-  organizationId: number;
   onUploadComplete?: () => void;
   maxFiles?: number;
   maxFileSize?: number;
@@ -29,7 +28,6 @@ const DEFAULT_MAX_FILE_SIZE = 5;
  */
 export function ProductImageUploader({
   productId,
-  organizationId,
   onUploadComplete,
   maxFiles = DEFAULT_MAX_FILES,
   maxFileSize = DEFAULT_MAX_FILE_SIZE,
@@ -71,7 +69,6 @@ export function ProductImageUploader({
 
       await uploadMutation.mutateAsync({
         productId,
-        organizationId,
         files,
       });
 

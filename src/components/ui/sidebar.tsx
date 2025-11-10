@@ -74,8 +74,12 @@ function SidebarProvider({
     return match[1] === 'true';
   }, []);
 
-  const [_open, _setOpen] = React.useState(() => getCookieBoolean(SIDEBAR_COOKIE_NAME, defaultOpen));
-  const [pinned, _setPinned] = React.useState(() => getCookieBoolean(SIDEBAR_PIN_COOKIE_NAME, false));
+  const [_open, _setOpen] = React.useState(() =>
+    getCookieBoolean(SIDEBAR_COOKIE_NAME, defaultOpen)
+  );
+  const [pinned, _setPinned] = React.useState(() =>
+    getCookieBoolean(SIDEBAR_PIN_COOKIE_NAME, false)
+  );
   const open = openProp ?? _open;
 
   const applyOpenState = React.useCallback(
@@ -326,7 +330,11 @@ function SidebarPinButton({ className, onClick, ...props }: React.ComponentProps
       data-slot="sidebar-pin-toggle"
       variant="ghost"
       size="icon"
-      className={cn('size-7', pinned ? 'text-sidebar-accent' : 'text-sidebar-foreground/70', className)}
+      className={cn(
+        'size-7',
+        pinned ? 'text-sidebar-accent' : 'text-sidebar-foreground/70',
+        className
+      )}
       onClick={(event) => {
         onClick?.(event);
         togglePinned();

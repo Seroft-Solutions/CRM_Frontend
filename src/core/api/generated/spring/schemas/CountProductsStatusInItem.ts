@@ -15,4 +15,5 @@ export const CountProductsStatusInItem = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
   ARCHIVED: 'ARCHIVED',
+  DELETE: 'DELETE',
 } as const;

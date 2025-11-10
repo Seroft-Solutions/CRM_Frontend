@@ -7,7 +7,8 @@ import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Customers'};
+  title: 'Customers',
+};
 
 export default function CustomerPage() {
   return (
@@ -24,7 +25,8 @@ export default function CustomerPage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'}}
+              backgroundSize: '20px 20px',
+            }}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">

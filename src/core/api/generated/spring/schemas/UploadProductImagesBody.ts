@@ -7,5 +7,6 @@
  */
 
 export type UploadProductImagesBody = {
+  /** List of image files to upload (max 10 files) */
   files: Blob[];
 };

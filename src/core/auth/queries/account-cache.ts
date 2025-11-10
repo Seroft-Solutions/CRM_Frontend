@@ -5,8 +5,8 @@
  * including invalidation, prefetching, and synchronization.
  */
 
-import {QueryClient} from '@tanstack/react-query';
-import {accountQueryKeys} from '@/core/auth/queries/account-keys';
+import { QueryClient } from '@tanstack/react-query';
+import { accountQueryKeys } from '@/core/auth/queries/account-keys';
 
 /**
  * Invalidates all account-related queries

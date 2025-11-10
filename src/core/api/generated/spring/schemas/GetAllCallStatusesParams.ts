@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {GetAllCallStatusesStatusEquals} from './GetAllCallStatusesStatusEquals';
-import type {GetAllCallStatusesStatusNotEquals} from './GetAllCallStatusesStatusNotEquals';
-import type {GetAllCallStatusesStatusInItem} from './GetAllCallStatusesStatusInItem';
-import type {GetAllCallStatusesStatusNotInItem} from './GetAllCallStatusesStatusNotInItem';
+import type { GetAllCallStatusesStatusEquals } from './GetAllCallStatusesStatusEquals';
+import type { GetAllCallStatusesStatusNotEquals } from './GetAllCallStatusesStatusNotEquals';
+import type { GetAllCallStatusesStatusInItem } from './GetAllCallStatusesStatusInItem';
+import type { GetAllCallStatusesStatusNotInItem } from './GetAllCallStatusesStatusNotInItem';
 
 export type GetAllCallStatusesParams = {
 'id.greaterThan'?: number;

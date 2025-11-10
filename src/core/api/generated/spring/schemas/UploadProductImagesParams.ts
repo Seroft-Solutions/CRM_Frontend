@@ -7,6 +7,8 @@
  */
 
 export type UploadProductImagesParams = {
+/**
+ * ID of the product to upload images for
+ */
 productId: number;
-organizationId: number;
 };

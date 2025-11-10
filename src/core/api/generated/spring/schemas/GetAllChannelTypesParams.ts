@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {GetAllChannelTypesStatusEquals} from './GetAllChannelTypesStatusEquals';
-import type {GetAllChannelTypesStatusNotEquals} from './GetAllChannelTypesStatusNotEquals';
-import type {GetAllChannelTypesStatusInItem} from './GetAllChannelTypesStatusInItem';
-import type {GetAllChannelTypesStatusNotInItem} from './GetAllChannelTypesStatusNotInItem';
+import type { GetAllChannelTypesStatusEquals } from './GetAllChannelTypesStatusEquals';
+import type { GetAllChannelTypesStatusNotEquals } from './GetAllChannelTypesStatusNotEquals';
+import type { GetAllChannelTypesStatusInItem } from './GetAllChannelTypesStatusInItem';
+import type { GetAllChannelTypesStatusNotInItem } from './GetAllChannelTypesStatusNotInItem';
 
 export type GetAllChannelTypesParams = {
 'id.greaterThan'?: number;

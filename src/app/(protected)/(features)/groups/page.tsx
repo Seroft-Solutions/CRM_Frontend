@@ -7,7 +7,8 @@ import { GroupTable } from './components/group-table';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: 'Groups'};
+  title: 'Groups',
+};
 
 export default function GroupPage() {
   return (
@@ -24,7 +25,8 @@ export default function GroupPage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'}}
+              backgroundSize: '20px 20px',
+            }}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">

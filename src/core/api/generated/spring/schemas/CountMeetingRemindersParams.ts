@@ -5,14 +5,14 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {CountMeetingRemindersReminderTypeEquals} from './CountMeetingRemindersReminderTypeEquals';
-import type {CountMeetingRemindersReminderTypeNotEquals} from './CountMeetingRemindersReminderTypeNotEquals';
-import type {CountMeetingRemindersReminderTypeInItem} from './CountMeetingRemindersReminderTypeInItem';
-import type {CountMeetingRemindersReminderTypeNotInItem} from './CountMeetingRemindersReminderTypeNotInItem';
-import type {CountMeetingRemindersStatusEquals} from './CountMeetingRemindersStatusEquals';
-import type {CountMeetingRemindersStatusNotEquals} from './CountMeetingRemindersStatusNotEquals';
-import type {CountMeetingRemindersStatusInItem} from './CountMeetingRemindersStatusInItem';
-import type {CountMeetingRemindersStatusNotInItem} from './CountMeetingRemindersStatusNotInItem';
+import type { CountMeetingRemindersReminderTypeEquals } from './CountMeetingRemindersReminderTypeEquals';
+import type { CountMeetingRemindersReminderTypeNotEquals } from './CountMeetingRemindersReminderTypeNotEquals';
+import type { CountMeetingRemindersReminderTypeInItem } from './CountMeetingRemindersReminderTypeInItem';
+import type { CountMeetingRemindersReminderTypeNotInItem } from './CountMeetingRemindersReminderTypeNotInItem';
+import type { CountMeetingRemindersStatusEquals } from './CountMeetingRemindersStatusEquals';
+import type { CountMeetingRemindersStatusNotEquals } from './CountMeetingRemindersStatusNotEquals';
+import type { CountMeetingRemindersStatusInItem } from './CountMeetingRemindersStatusInItem';
+import type { CountMeetingRemindersStatusNotInItem } from './CountMeetingRemindersStatusNotInItem';
 
 export type CountMeetingRemindersParams = {
 'id.greaterThan'?: number;

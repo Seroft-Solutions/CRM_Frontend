@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
-import { useImportMasterDataFromFile } from '@/core/api/generated/spring/endpoints/import-master-data-controller/import-master-data-controller.gen';
+import { useImportMasterDataFromFile } from '@/core/api/generated/spring/endpoints/master-data-import-controller/master-data-import-controller.gen';
 import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useRouter } from 'next/navigation';
@@ -135,7 +135,7 @@ export function MasterDataImport({}: MasterDataImportProps) {
                       </tr>
                     </thead>
                     <tbody>
-                  {masterDataImportConfig.columns.map((column, index) => (
+                      {masterDataImportConfig.columns.map((column, index) => (
                         <tr key={index} className="even:bg-muted/50">
                           <td className="border border-border p-2 text-sm">{column.column}</td>
                           <td className="border border-border p-2 text-sm">{column.header}</td>

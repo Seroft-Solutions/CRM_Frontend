@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -19,7 +23,6 @@ import type {
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
-import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type {
   ProductImageDTO,
@@ -29,8 +32,8 @@ import type {
   UploadProductImagesParams
 } from '../../schemas';
 
-import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -347,7 +350,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const uploadProductImage = (
+    /**
+ * Upload a single image file (JPEG, PNG, WEBP) for a product. The image will be uploaded to Gumlet CDN and metadata will be stored in the database. Maximum file size is 5MB.
+ * @summary Upload a product image
+ */
+export const uploadProductImage = (
     uploadProductImageBody: UploadProductImageBody,
     params: UploadProductImageParams,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
@@ -396,7 +403,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UploadProductImageMutationBody = UploadProductImageBody
     export type UploadProductImageMutationError = ErrorType<unknown>
 
-    export const useUploadProductImage = <TError = ErrorType<unknown>,
+    /**
+ * @summary Upload a product image
+ */
+export const useUploadProductImage = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadProductImage>>, TError,{data: UploadProductImageBody;params: UploadProductImageParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof uploadProductImage>>,
@@ -409,7 +419,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const uploadProductImages = (
+    /**
+ * Batch upload multiple image files (JPEG, PNG, WEBP) for a product. Maximum 10 images per batch, 5MB per file, and 20 images total per product.
+ * @summary Upload multiple product images
+ */
+export const uploadProductImages = (
     uploadProductImagesBody: UploadProductImagesBody,
     params: UploadProductImagesParams,
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
@@ -418,7 +432,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       const formData = new FormData();
 uploadProductImagesBody.files.forEach(value => formData.append('files', value));
 
-      return springServiceMutator<ProductImageDTO[]>(
+      return springServiceMutator<ProductImageDTO>(
       {url: `/api/product-images/upload-batch`, method: 'POST',
       headers: {'Content-Type': 'multipart/form-data', },
        data: formData,
@@ -458,7 +472,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UploadProductImagesMutationBody = UploadProductImagesBody
     export type UploadProductImagesMutationError = ErrorType<unknown>
 
-    export const useUploadProductImages = <TError = ErrorType<unknown>,
+    /**
+ * @summary Upload multiple product images
+ */
+export const useUploadProductImages = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadProductImages>>, TError,{data: UploadProductImagesBody;params: UploadProductImagesParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof uploadProductImages>>,

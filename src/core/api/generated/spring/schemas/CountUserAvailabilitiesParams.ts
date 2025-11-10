@@ -5,14 +5,14 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {CountUserAvailabilitiesDayOfWeekEquals} from './CountUserAvailabilitiesDayOfWeekEquals';
-import type {CountUserAvailabilitiesDayOfWeekNotEquals} from './CountUserAvailabilitiesDayOfWeekNotEquals';
-import type {CountUserAvailabilitiesDayOfWeekInItem} from './CountUserAvailabilitiesDayOfWeekInItem';
-import type {CountUserAvailabilitiesDayOfWeekNotInItem} from './CountUserAvailabilitiesDayOfWeekNotInItem';
-import type {CountUserAvailabilitiesStatusEquals} from './CountUserAvailabilitiesStatusEquals';
-import type {CountUserAvailabilitiesStatusNotEquals} from './CountUserAvailabilitiesStatusNotEquals';
-import type {CountUserAvailabilitiesStatusInItem} from './CountUserAvailabilitiesStatusInItem';
-import type {CountUserAvailabilitiesStatusNotInItem} from './CountUserAvailabilitiesStatusNotInItem';
+import type { CountUserAvailabilitiesDayOfWeekEquals } from './CountUserAvailabilitiesDayOfWeekEquals';
+import type { CountUserAvailabilitiesDayOfWeekNotEquals } from './CountUserAvailabilitiesDayOfWeekNotEquals';
+import type { CountUserAvailabilitiesDayOfWeekInItem } from './CountUserAvailabilitiesDayOfWeekInItem';
+import type { CountUserAvailabilitiesDayOfWeekNotInItem } from './CountUserAvailabilitiesDayOfWeekNotInItem';
+import type { CountUserAvailabilitiesStatusEquals } from './CountUserAvailabilitiesStatusEquals';
+import type { CountUserAvailabilitiesStatusNotEquals } from './CountUserAvailabilitiesStatusNotEquals';
+import type { CountUserAvailabilitiesStatusInItem } from './CountUserAvailabilitiesStatusInItem';
+import type { CountUserAvailabilitiesStatusNotInItem } from './CountUserAvailabilitiesStatusNotInItem';
 
 export type CountUserAvailabilitiesParams = {
 'id.greaterThan'?: number;

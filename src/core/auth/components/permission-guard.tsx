@@ -5,12 +5,12 @@
 
 'use client';
 
-import {ReactNode} from 'react';
-import {useAuth} from '@/core/auth/providers/session-provider';
-import {useUserRoles} from '@/core/auth/hooks/use-user-roles';
-import {UnauthorizedPage} from '@/core/auth/components/unauthorized-page';
-import {normalizeRole} from '@/core/auth/utils';
-import type {PermissionGuardProps} from '../types';
+import { ReactNode } from 'react';
+import { useAuth } from '@/core/auth/providers/session-provider';
+import { useUserRoles } from '@/core/auth/hooks/use-user-roles';
+import { UnauthorizedPage } from '@/core/auth/components/unauthorized-page';
+import { normalizeRole } from '@/core/auth/utils';
+import type { PermissionGuardProps } from '../types';
 
 /**
  * Permission Guard Component
