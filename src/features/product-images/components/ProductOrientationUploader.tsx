@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Camera } from 'lucide-react';
@@ -13,20 +12,17 @@ const ORIENTATION_FIELDS = [
   {
     name: 'frontImage',
     label: 'Front Image',
-    badge: 'Primary',
-    description: 'Primary hero shot shown first to users.',
+    subtext: 'Hero shot shown first to users.',
   },
   {
     name: 'backImage',
     label: 'Back Image',
-    badge: 'Detail',
-    description: 'Secondary angle that highlights the rear.',
+    subtext: 'Reveals the back view.',
   },
   {
     name: 'sideImage',
     label: 'Side Image',
-    badge: 'Profile',
-    description: 'Side profile to show product depth.',
+    subtext: 'Profile shot that captures depth.',
   },
 ] as const;
 
@@ -48,19 +44,18 @@ const createEmptySelection = () =>
     return acc;
   }, {});
 
-const createEmptyPreviewMap = () =>
-  ORIENTATION_FIELDS.reduce<Record<string, string | null>>((acc, field) => {
-    acc[field.name] = null;
-    return acc;
-  }, {});
-
 export function ProductOrientationUploader({
   productId,
   organizationId,
   onUploadComplete,
 }: ProductOrientationUploaderProps) {
   const [selectedFiles, setSelectedFiles] = useState<OrientationSelection>(createEmptySelection);
-  const [previews, setPreviews] = useState<Record<string, string | null>>(createEmptyPreviewMap);
+  const [previews, setPreviews] = useState<Record<string, string | null>>(() =>
+    ORIENTATION_FIELDS.reduce<Record<string, string | null>>((acc, field) => {
+      acc[field.name] = null;
+      return acc;
+    }, {})
+  );
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -129,7 +124,7 @@ export function ProductOrientationUploader({
 
       setProgress(100);
       toast.success('Orientation images uploaded', {
-        description: 'Front, back, and side shots are synced.',
+        description: 'Front, back, and side shots are now synced.',
       });
       setSelectedFiles(createEmptySelection());
       onUploadComplete?.();
@@ -152,20 +147,20 @@ export function ProductOrientationUploader({
   ]);
 
   return (
-    <div className="space-y-4 rounded-2xl border border-dashed border-slate-200 bg-white/80 p-4 shadow-sm">
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm transition hover:border-slate-300">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Orientation Upload</h3>
-          <p className="text-sm text-slate-500">
-            Upload up to three orientation-specific shots that define the gallery order.
+          <p className="text-sm font-semibold text-slate-900">Orientation shots</p>
+          <p className="text-xs text-slate-500">
+            Drop the hero, back, and profile images that determine the gallery order.
           </p>
         </div>
-        <Badge variant="outline" className="text-[11px] uppercase tracking-wider">
-          Front · Back · Side
-        </Badge>
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          Required
+        </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {ORIENTATION_FIELDS.map((field) => (
           <OrientationSlot
             key={field.name}
@@ -186,15 +181,15 @@ export function ProductOrientationUploader({
 
       {isUploading && progress > 0 && <Progress value={progress} className="h-2" />}
 
-      <div className="flex flex-wrap items-center gap-2 pt-2">
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         <Button
           onClick={handleUpload}
           disabled={isUploading || totalSelected === 0}
-          className="flex-1"
+          className="flex-1 min-w-[180px]"
         >
-          {isUploading ? 'Uploading...' : 'Upload Selected Images'}
+          {isUploading ? 'Uploading...' : 'Upload orientation shots'}
         </Button>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs font-medium text-slate-500">
           {totalSelected} of {ORIENTATION_FIELDS.length} selected
         </span>
       </div>
@@ -216,58 +211,38 @@ const OrientationSlot = React.memo(
   }) => {
     const helperText = useMemo(() => {
       if (!file) {
-        return 'Upload an image for this perspective.';
+        return 'Click to upload.';
       }
       const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
       return `${file.name} • ${sizeMb} MB`;
     }, [file]);
 
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
+      <label className="group cursor-pointer space-y-2 rounded-xl border border-slate-200 bg-white/90 p-3 transition hover:border-blue-200">
+        <div className="flex items-center justify-between text-xs text-slate-500">
           <div>
-            <p className="text-sm font-medium text-slate-900">{field.label}</p>
-            <p className="text-xs text-slate-500">{field.description}</p>
+            <p className="text-sm font-semibold text-slate-900">{field.label}</p>
+            <p className="text-[11px] text-slate-400">{field.subtext}</p>
           </div>
-          <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
-            {field.badge}
-          </Badge>
+          <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">
+            {file ? 'Updated' : 'Required'}
+          </span>
         </div>
 
-        <div className="mt-4 flex flex-col items-center gap-3">
-          <div className="relative flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
-            {preview ? (
-              <img src={preview} alt={`${field.label} preview`} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-slate-400">
-                <Camera className="h-8 w-8" />
-                <span className="text-xs font-medium">Drag & drop or browse</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <label
-              className="cursor-pointer rounded-full border border-slate-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600 transition hover:bg-slate-100"
-              htmlFor={`${field.name}-input`}
-            >
-              {file ? 'Replace' : 'Upload'}
-            </label>
-            {file && (
-              <button
-                type="button"
-                className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:text-slate-700"
-                onClick={() => onFileChange(null)}
-              >
-                Remove
-              </button>
-            )}
-          </div>
-          <p className="text-[11px] text-slate-500">{helperText}</p>
+        <div className="relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-200 bg-slate-50 transition group-hover:border-blue-100">
+          {preview ? (
+            <img src={preview} alt={`${field.label} preview`} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-slate-400">
+              <Camera className="h-6 w-6" />
+              <span className="text-xs font-medium uppercase tracking-wide">Drag & drop</span>
+            </div>
+          )}
         </div>
+
+        <p className="text-[11px] text-slate-500">{helperText}</p>
 
         <input
-          id={`${field.name}-input`}
           type="file"
           accept="image/png,image/jpeg,image/webp"
           className="hidden"
@@ -276,7 +251,7 @@ const OrientationSlot = React.memo(
             onFileChange(selectedFile);
           }}
         />
-      </div>
+      </label>
     );
   }
 );
