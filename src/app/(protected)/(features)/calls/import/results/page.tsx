@@ -1,16 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FailedCallsTable } from '../components/failed-calls-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import {
   useGetAllImportHistories
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
+import * as XLSX from 'xlsx';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { callImportConfig } from '../config';
 
 type RowStatus = 'SUCCESS' | 'DUPLICATE' | 'VALIDATION_FAILED' | 'MASTER_DATA_MISSING' | 'SYSTEM_ERROR';
 
@@ -62,13 +65,13 @@ export default function ImportResultsPage() {
     const hasBackendHistory = (importHistoryPreview?.length ?? 0) > 0;
 
     useEffect(() => {
-        const storedData = sessionStorage.getItem('importResponse');
+        const storedData = sessionStorage.getItem('callImportResponse');
         if (storedData) {
             try {
                 const data = JSON.parse(storedData);
                 setResponseData(data);
                 // Clear the data from session storage after reading it
-                sessionStorage.removeItem('importResponse');
+                sessionStorage.removeItem('callImportResponse');
             } catch (error) {
                 console.error("Failed to parse import response data:", error);
                 router.push('/calls/import');
@@ -138,6 +141,34 @@ export default function ImportResultsPage() {
         return <FailedCallsTable />;
     };
 
+  const tableRows = useMemo(() => {
+    if (!responseData) return [];
+
+    return responseData.rows.map((row) => ({
+      rowNumber: row.rowNumber,
+      values: row.data ?? [],
+      status: row.status,
+      reason: row.message,
+    }));
+  }, [responseData]);
+
+  const handleDownloadReport = () => {
+    if (!responseData) return;
+
+    const headers = ['Row #', ...callImportConfig.columns.map((c) => c.header), 'Status', 'Reason'];
+    const sheetRows = tableRows.map((row) => [
+      row.rowNumber,
+      ...callImportConfig.columns.map((_, idx) => row.values[idx] ?? ''),
+      row.status,
+      row.reason,
+    ]);
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sheetRows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Call Import Results');
+    XLSX.writeFile(workbook, 'call-import-results.xlsx');
+  };
+
   if (!responseData) {
     return (
       <div className="space-y-6">
@@ -167,36 +198,30 @@ export default function ImportResultsPage() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Import Results
-          </CardTitle>
+            <div>
+              <CardTitle>Import Results</CardTitle>
+              <p className="text-sm text-muted-foreground">Review your bulk upload summary and fix issues.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleDownloadReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Report
+            </Button>
+            <Button asChild>
+              <Link href="/calls/import">Import Another File</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="flex flex-col p-4 border rounded-lg">
-              <span className="text-muted-foreground">Total Rows</span>
-              <span className="font-semibold text-2xl">{responseData.summary.totalRows}</span>
-            </div>
-            <div className="flex flex-col p-4 border rounded-lg bg-green-50">
-              <span className="text-muted-foreground">✅ Successful Rows</span>
-              <Badge variant="default" className="mt-1 bg-green-100 text-green-800 w-fit">
-                {responseData.summary.successCount}
-              </Badge>
-            </div>
-            <div className="flex flex-col p-4 border rounded-lg bg-yellow-50">
-              <span className="text-muted-foreground">⚠️ Duplicates</span>
-              <Badge variant="secondary" className="mt-1 bg-yellow-100 text-yellow-800 w-fit">
-                {responseData.summary.duplicateCount}
-              </Badge>
-            </div>
-            <div className="flex flex-col p-4 border rounded-lg bg-red-50">
-              <span className="text-muted-foreground">❌ Failed Rows</span>
-              <Badge variant="destructive" className="mt-1 bg-red-100 text-red-800 w-fit">
-                {responseData.summary.failedCount}
-              </Badge>
-            </div>
+            <SummaryCard label="Total Rows" value={responseData.summary.totalRows} />
+            <SummaryCard label="Successful" value={responseData.summary.successCount} tone="success" />
+            <SummaryCard label="Duplicates" value={responseData.summary.duplicateCount} tone="warning" />
+            <SummaryCard label="Failed" value={responseData.summary.failedCount} tone="error" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
             <div className="p-3 border rounded-lg">
@@ -216,51 +241,83 @@ export default function ImportResultsPage() {
             <p className="text-sm font-medium mb-1">Message</p>
             <p className="text-sm text-muted-foreground">{responseData.message}</p>
           </div>
-          {responseData.rows.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Row breakdown</p>
-              <div className="overflow-x-auto rounded-md border">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-muted/40">
-                    <tr>
-                      <th className="px-3 py-2 text-left border-r">Row #</th>
-                      <th className="px-3 py-2 text-left border-r">Status</th>
-                      <th className="px-3 py-2 text-left">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {responseData.rows.map((row) => (
-                      <tr key={row.rowNumber} className="border-t">
-                        <td className="px-3 py-2 border-r font-semibold">{row.rowNumber}</td>
-                        <td className="px-3 py-2 border-r">
-                          <Badge
-                            variant={
-                              row.status === 'SUCCESS'
-                                ? 'default'
-                                : row.status === 'DUPLICATE'
-                                ? 'secondary'
-                                : 'destructive'
-                            }
-                            className="uppercase tracking-wide text-[10px]"
-                          >
-                            {row.status}
-                          </Badge>
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">{row.message}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
-      <Button asChild className="mt-4">
-        <Link href="/calls/import">Import Another File</Link>
-      </Button>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Row-by-row details</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">Row #</TableHead>
+                  {callImportConfig.columns.map((col) => (
+                    <TableHead key={col.column}>{col.header}</TableHead>
+                  ))}
+                  <TableHead>Status</TableHead>
+                  <TableHead>Reason</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tableRows.map((row) => (
+                  <TableRow key={row.rowNumber}>
+                    <TableCell className="font-semibold">{row.rowNumber}</TableCell>
+                    {callImportConfig.columns.map((col, idx) => (
+                      <TableCell key={`${row.rowNumber}-${col.column}`}>
+                        <span className="font-medium">{row.values[idx] || '—'}</span>
+                      </TableCell>
+                    ))}
+                    <TableCell>
+                      <Badge
+                        variant={
+                          row.status === 'SUCCESS'
+                            ? 'default'
+                            : row.status === 'DUPLICATE'
+                            ? 'secondary'
+                            : 'destructive'
+                        }
+                        className="uppercase tracking-wide text-[10px]"
+                      >
+                        {row.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{row.reason}</TableCell>
+                  </TableRow>
+                ))}
+                {tableRows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={callImportConfig.columns.length + 2} className="text-center py-6">
+                      <p className="text-sm text-muted-foreground">No row level detail available.</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {renderImportHistorySection()}
+    </div>
+  );
+}
+
+function SummaryCard({ label, value, tone }: { label: string; value: number; tone?: 'success' | 'warning' | 'error' }) {
+  const variant =
+    tone === 'success' ? 'default' : tone === 'warning' ? 'secondary' : tone === 'error' ? 'destructive' : undefined;
+  return (
+    <div className="flex flex-col p-4 border rounded-lg">
+      <span className="text-muted-foreground">{label}</span>
+      {variant ? (
+        <Badge variant={variant} className="mt-1 w-fit">
+          {value}
+        </Badge>
+      ) : (
+        <span className="font-semibold text-2xl">{value}</span>
+      )}
     </div>
   );
 }

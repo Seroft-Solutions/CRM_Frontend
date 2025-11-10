@@ -17,13 +17,13 @@ import { sidebarItems } from '@/components/sidebar/sidebar-items';
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-gray-200/40 bg-white/50 backdrop-blur-sm">
+      <SidebarHeader className="border-b border-sidebar-border/60 bg-sidebar">
         <OrganizationSwitcher />
       </SidebarHeader>
-      <SidebarContent className="bg-gradient-to-b from-transparent via-white/20 to-white/40">
+      <SidebarContent>
         <NavMain items={sidebarItems} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-gray-200/40 bg-white/50 backdrop-blur-sm">
+      <SidebarFooter className="border-t border-sidebar-border/60 bg-sidebar">
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

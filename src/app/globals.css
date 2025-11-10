@@ -76,13 +76,13 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.141 0.005 285.823);
+    --sidebar: oklch(0.29 0.06 243);
+    --sidebar-foreground: #f8fafc;
     --sidebar-primary: oklch(0.623 0.214 259.815);
     --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-    --sidebar-accent: oklch(0.967 0.001 286.375);
-    --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-    --sidebar-border: oklch(0.92 0.004 286.32);
+    --sidebar-accent: #f5b81d;
+    --sidebar-accent-foreground: #0f172a;
+    --sidebar-border: #0b1425;
     --sidebar-ring: oklch(0.623 0.214 259.815);
 
     --business-partner-primary: 48 90% 40%;
@@ -204,51 +204,42 @@
         transition: backdrop-filter 0.2s ease-in-out;
     }
 
-    /* Enhanced Sidebar Styling */
-    [data-sidebar='sidebar'] {
-        /* Add subtle shadow and border enhancement */
-        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1),
-        0 4px 12px -2px rgba(0, 0, 0, 0.05),
-        0 2px 8px -1px rgba(59, 130, 246, 0.1);
-        border-right: 1px solid rgba(59, 130, 246, 0.15);
+    /* Solid sidebar styling */
+    [data-sidebar='sidebar'],
+    [data-sidebar='header'],
+    [data-sidebar='footer'],
+    [data-sidebar='content'] {
+        background-color: var(--sidebar);
+        color: var(--sidebar-foreground);
+        border-color: var(--sidebar-border);
+        box-shadow: none;
     }
 
-    /* Organization switcher enhanced styling */
-    [data-sidebar='menu-button'][data-size='lg'] {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
-        border: 1px solid rgba(59, 130, 246, 0.1);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05),
-        0 1px 2px rgba(59, 130, 246, 0.1);
-        transition: all 0.2s ease-in-out;
+    [data-sidebar='menu-button'],
+    [data-sidebar='menu-sub-button'] {
+        background-color: var(--sidebar);
+        color: var(--sidebar-foreground);
+        border: none;
+        box-shadow: none;
     }
 
-    [data-sidebar='menu-button'][data-size='lg']:hover {
-        background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.95) 0%,
-                rgba(239, 246, 255, 0.9) 100%
-        );
-        border-color: rgba(59, 130, 246, 0.2);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
-        0 1px 3px rgba(59, 130, 246, 0.15);
-        transform: translateY(-1px);
+    [data-sidebar='menu-button']:hover,
+    [data-sidebar='menu-sub-button']:hover {
+        background-color: color-mix(in srgb, var(--sidebar) 85%, black 15%);
+        color: var(--sidebar-foreground);
     }
 
-    /* Menu items enhanced hover effects */
-    [data-sidebar='menu-button']:not([data-size='lg']):hover {
-        background: linear-gradient(135deg, rgba(239, 246, 255, 0.6) 0%, rgba(219, 234, 254, 0.4) 100%);
-        border-left: 3px solid rgba(59, 130, 246, 0.5);
-        padding-left: calc(0.5rem - 3px);
-        transition: all 0.2s ease-in-out;
-    }
-
-    /* Active menu item styling */
-    [data-sidebar='menu-button'][data-active='true'] {
-        background: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(219, 234, 254, 0.6) 100%);
-        border-left: 3px solid rgb(59, 130, 246);
-        padding-left: calc(0.5rem - 3px);
-        color: rgb(59, 130, 246);
+    [data-sidebar='menu-button'][data-active='true'],
+    [data-sidebar='menu-sub-button'][data-active='true'] {
+        background-color: var(--sidebar-accent);
+        color: var(--sidebar-accent-foreground);
+        border-color: var(--sidebar-accent);
         font-weight: 600;
+    }
+
+    [data-sidebar='menu-button'][data-active='true']:hover,
+    [data-sidebar='menu-sub-button'][data-active='true']:hover {
+        color: var(--sidebar-accent-foreground);
     }
 
     /* Responsive table scrolling utilities */

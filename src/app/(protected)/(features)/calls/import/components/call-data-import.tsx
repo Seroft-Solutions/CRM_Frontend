@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useImportCallsFromExcel } from '@/core/api/generated/spring';
 import * as XLSX from 'xlsx';
+import { callImportConfig } from '../config';
 
 interface CallDataImportProps {}
 
@@ -46,70 +47,7 @@ interface ImportResponse {
   message: string;
 }
 
-const importConfig = {
-  instructions: [
-    'Fill in the data starting from row 2 (row 1 contains headers)',
-    'Maximum 500 data rows per upload',
-    'If a Customer or Product does not exist, it will be automatically created.',
-    'For new customers, Zip Code is required to determine the area.',
-    'All other fields are required except External ID and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)',
-    'Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped',
-    'Download error report CSV from response for failed rows details',
-    'Save the file as .xlsx or .xls format',
-  ],
-  filename: 'call_import_template.xlsx',
-  columns: [
-    {
-      column: 'A',
-      header: 'External ID',
-      description: 'External ID (Optional) - Unique identifier. If empty, a UUID will be generated',
-      example: '81d9fe86-22d4-4b1b-9a26-f837d364b6d4',
-    },
-    {
-      column: 'B',
-      header: 'Customer name',
-      description: 'Customer business name (Required) - If the customer does not exist, it will be created.',
-      example: 'ABC Enterprises',
-    },
-    {
-      column: 'C',
-      header: 'Zip code',
-      description: 'Zip code (Required for new customers)',
-      example: '12345',
-    },
-    {
-      column: 'D',
-      header: 'Product Name',
-      description: 'Product name (Required) - If the product does not exist, it will be created.',
-      example: 'Software XYZ',
-    },
-    {
-      column: 'E',
-      header: 'Call Type',
-      description: 'CallType name (Required) - must match existing CallType exactly',
-      example: 'Customer Support',
-    },
-    {
-      column: 'F',
-      header: 'Sub Call Type',
-      description:
-        'SubCallType name (Optional) - must match existing SubCallType and belong to the CallType if provided',
-      example: 'Technical Support',
-    },
-    {
-      column: 'G',
-      header: 'Priority',
-      description: 'Priority name (Required) - must match existing Priority exactly',
-      example: 'High',
-    },
-    {
-      column: 'H',
-      header: 'Call Status',
-      description: 'CallStatus name (Required) - must match existing CallStatus exactly',
-      example: 'Open',
-    },
-  ],
-};
+
 
 export function CallDataImport({}: CallDataImportProps) {
   const form = useForm({
@@ -128,7 +66,7 @@ export function CallDataImport({}: CallDataImportProps) {
       onSuccess: (data) => {
         console.log('Import successful:', data);
 
-        sessionStorage.setItem('importResponse', JSON.stringify(data));
+        sessionStorage.setItem('callImportResponse', JSON.stringify(data));
 
         router.push('/calls/import/results');
         form.reset();
@@ -151,36 +89,8 @@ export function CallDataImport({}: CallDataImportProps) {
 
   const handleDownloadTemplate = () => {
     const wsData = [
-      [
-        'External ID',
-        'Customer name',
-        'Zip code',
-        'Product Name',
-        'Call Type',
-        'Sub Call Type',
-        'Priority',
-        'Call Status',
-      ],
-      [
-        '81d9fe86-22d4-4b1b-9a26-f837d364b6d4',
-        'ABC Enterprises',
-        '12345',
-        'Software XYZ',
-        'Customer Support',
-        'Technical Support',
-        'High',
-        'Open',
-      ],
-      [
-        'EXT-123',
-        'Wood Business',
-        '67890',
-        'iPhone 15 Pro',
-        'Billing Inquiry',
-        '',
-        'Medium',
-        'In Progress',
-      ],
+      callImportConfig.columns.map((column) => column.header),
+      callImportConfig.columns.map((column) => column.example),
     ];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
@@ -192,7 +102,7 @@ export function CallDataImport({}: CallDataImportProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = importConfig.filename;
+    link.download = callImportConfig.filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -210,7 +120,7 @@ export function CallDataImport({}: CallDataImportProps) {
               <div>
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">Instructions:</h5>
                 <ul className="list-disc pl-5 text-sm text-foreground">
-                  {importConfig.instructions.map((instruction, index) => (
+                  {callImportConfig.instructions.map((instruction, index) => (
                     <li key={index}>{instruction}</li>
                   ))}
                 </ul>
@@ -220,7 +130,7 @@ export function CallDataImport({}: CallDataImportProps) {
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">
                   Template Filename:
                 </h5>
-                <p className="text-sm text-foreground">{importConfig.filename}</p>
+                <p className="text-sm text-foreground">{callImportConfig.filename}</p>
                 {/* Download Template Button */}
                 <div className="mt-3">
                   <Button
@@ -256,7 +166,7 @@ export function CallDataImport({}: CallDataImportProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {importConfig.columns.map((column, index) => (
+                  {callImportConfig.columns.map((column, index) => (
                         <tr key={index} className="even:bg-muted/50">
                           <td className="border border-border p-2 text-sm">{column.column}</td>
                           <td className="border border-border p-2 text-sm">{column.header}</td>
