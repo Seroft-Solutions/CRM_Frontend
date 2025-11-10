@@ -163,6 +163,7 @@ export function FailedCallsTable() {
   const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
   const [isClearing, setIsClearing] = useState(false);
   const [pendingRowIds, setPendingRowIds] = useState<Set<number>>(new Set());
+  const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
 
   const apiPage = Math.max(page - 1, 0);
 
@@ -538,42 +539,36 @@ export function FailedCallsTable() {
         return null;
       }
 
-      try {
-        const payload = prepareCallPayload(item);
-        const externalId = item.externalId?.trim();
-        let existingCall: any = undefined;
+      const payload = prepareCallPayload(item);
+      const externalId = item.externalId?.trim();
+      let existingCall: any = undefined;
 
-        if (externalId) {
-          const existingCallsResponse = await getAllCalls({
-            'externalId.equals': externalId,
-            page: 0,
-            size: 1,
-          } as any);
-          existingCall = existingCallsResponse?.[0];
-        }
-
-        debugLog('Processing row', { rowId: item.id, externalId, action: existingCall ? 'update' : 'create' });
-
-        if (existingCall && existingCall.id) {
-          await partialUpdateCallAsync({
-            id: existingCall.id,
-            data: { ...payload, id: existingCall.id },
-          });
-        } else {
-          await createCallAsync({ data: payload });
-        }
-
-        await deleteImportHistoryAsync({ id: item.id });
-        setEditableData((prev) => prev.filter((row) => row.id !== item.id));
-        refetch();
-
-        debugLog('Row processed successfully', { rowId: item.id, externalId, action: existingCall ? 'updated' : 'created' });
-        return existingCall ? 'updated' : 'created';
-      } catch (error: any) {
-        debugLog('Row processing failed', { rowId: item.id, error });
-        toast.error('Failed to process call: ' + (error?.message || 'Unknown error'));
-        return null;
+      if (externalId) {
+        const existingCallsResponse = await getAllCalls({
+          'externalId.equals': externalId,
+          page: 0,
+          size: 1,
+        } as any);
+        existingCall = existingCallsResponse?.[0];
       }
+
+      debugLog('Processing row', { rowId: item.id, externalId, action: existingCall ? 'update' : 'create' });
+
+      if (existingCall && existingCall.id) {
+        await partialUpdateCallAsync({
+          id: existingCall.id,
+          data: { ...payload, id: existingCall.id },
+        });
+      } else {
+        await createCallAsync({ data: payload });
+      }
+
+      await deleteImportHistoryAsync({ id: item.id });
+      setEditableData((prev) => prev.filter((row) => row.id !== item.id));
+      refetch();
+
+      debugLog('Row processed successfully', { rowId: item.id, externalId, action: existingCall ? 'updated' : 'created' });
+      return existingCall ? 'updated' : 'created';
     },
     [
       canResolveReferences,
@@ -604,6 +599,14 @@ export function FailedCallsTable() {
     });
 
     if (updatedRow?.id) {
+      setRowErrors((prev) => {
+        if (!updatedRow?.id || !prev[updatedRow.id]) {
+          return prev;
+        }
+        const next = { ...prev };
+        delete next[updatedRow.id];
+        return next;
+      });
       debugLog('Field updated', { rowId: updatedRow.id, fieldName, value });
     }
 
@@ -639,14 +642,23 @@ export function FailedCallsTable() {
       }
 
       debugLog('Auto-save queued', { rowId: row.id, externalId: row.externalId });
-      await handleUpdateRow(row);
-      debugLog('Auto-save completed', { rowId: row.id, externalId: row.externalId });
-
-      setPendingRowIds((prev) => {
-        const next = new Set(prev);
-        next.delete(row.id!);
-        return next;
-      });
+      try {
+        await handleUpdateRow(row);
+      } catch (error: any) {
+        debugLog('Row processing failed', { rowId: row.id, error });
+        const errorMessage = error?.message || 'Unknown error';
+        toast.error(`Failed to process row ${row.id}: ${errorMessage}`);
+        if (row.id) {
+          setRowErrors((prev) => ({ ...prev, [row.id!]: errorMessage }));
+        }
+      } finally {
+        debugLog('Auto-save completed', { rowId: row.id, externalId: row.externalId });
+        setPendingRowIds((prev) => {
+          const next = new Set(prev);
+          next.delete(row.id!);
+          return next;
+        });
+      }
     },
     [handleUpdateRow]
   );
@@ -663,6 +675,14 @@ export function FailedCallsTable() {
       }
       const invalid = computeInvalidFields(row);
       if (invalid.size === 0) {
+        setRowErrors((prev) => {
+          if (!row.id || !prev[row.id]) {
+            return prev;
+          }
+          const next = { ...prev };
+          delete next[row.id];
+          return next;
+        });
         debugLog('Auto-save triggered via effect', { rowId: row.id, externalId: row.externalId });
         autoSaveRow(row);
       } else {
@@ -758,15 +778,24 @@ export function FailedCallsTable() {
                         {header}
                       </TableHead>
                     ))}
+                    <TableHead className="px-2 sm:px-3 py-2 whitespace-nowrap font-medium text-gray-700 text-sm">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {editableData.map((row, rowIndex) => {
                     const invalidFields = computeInvalidFields(row);
                     const computedIssues = getComputedIssues(row, invalidFields);
+                    const rowError = row.id ? rowErrors[row.id] : undefined;
+                    const allIssues = [...computedIssues];
+                    if (rowError && !allIssues.includes(rowError)) {
+                      allIssues.push(rowError);
+                    }
+
                     const rowSaving = row.id ? pendingRowIds.has(row.id) : false;
                     const rowHasInvalid = invalidFields.size > 0;
-                    const rowNeedsAttention = computedIssues.length > 0;
+                    const rowNeedsAttention = allIssues.length > 0;
                     return (
                       <TableRow
                         key={row.id}
@@ -794,12 +823,12 @@ export function FailedCallsTable() {
                                 <span
                                   className={cn(
                                     'text-sm whitespace-pre-line',
-                                    computedIssues.length
+                                    allIssues.length
                                       ? 'text-red-600 font-medium'
                                       : 'text-muted-foreground'
                                   )}
                                 >
-                                  {computedIssues.length ? computedIssues.join('\n') : row.issue || '—'}
+                                  {allIssues.length ? allIssues.join('\n') : row.issue || '—'}
                                 </span>
                               ) : options ? (
                                 <SearchableSelect
@@ -825,6 +854,35 @@ export function FailedCallsTable() {
                             </TableCell>
                           );
                         })}
+                        <TableCell className="px-2 sm:px-3 py-2 text-sm min-w-[140px]">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={rowHasInvalid || rowSaving || !canResolveReferences}
+                            onClick={() => {
+                              if (!row.id) return;
+                              setRowErrors((prev) => {
+                                if (!row.id || !prev[row.id]) {
+                                  return prev;
+                                }
+                                const next = { ...prev };
+                                delete next[row.id];
+                                return next;
+                              });
+                              debugLog('Manual update clicked', { rowId: row.id });
+                              autoSaveRow(row);
+                            }}
+                          >
+                            {rowSaving ? (
+                              <span className="flex items-center gap-1">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Saving
+                              </span>
+                            ) : (
+                              'Update Row'
+                            )}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}

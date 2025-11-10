@@ -10,6 +10,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarPinButton,
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { sidebarItems } from '@/components/sidebar/sidebar-items';
@@ -17,8 +18,9 @@ import { sidebarItems } from '@/components/sidebar/sidebar-items';
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border/60 bg-sidebar">
+      <SidebarHeader className="border-b border-sidebar-border/60 bg-sidebar flex items-center justify-between gap-2">
         <OrganizationSwitcher />
+        <SidebarPinButton className="ml-2" />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={sidebarItems} />

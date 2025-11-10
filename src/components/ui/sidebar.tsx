@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, VariantProps } from 'class-variance-authority';
-import { PanelLeftIcon } from 'lucide-react';
+import { PanelLeftIcon, PinIcon, PinOffIcon } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
+const SIDEBAR_PIN_COOKIE_NAME = 'sidebar_pinned';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '16rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
@@ -35,6 +36,8 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
+  pinned: boolean;
+  togglePinned: () => void;
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
@@ -64,25 +67,73 @@ function SidebarProvider({
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
 
-  const [_open, _setOpen] = React.useState(defaultOpen);
+  const getCookieBoolean = React.useCallback((name: string, fallback: boolean) => {
+    if (typeof document === 'undefined') return fallback;
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+    if (!match) return fallback;
+    return match[1] === 'true';
+  }, []);
+
+  const [_open, _setOpen] = React.useState(() => getCookieBoolean(SIDEBAR_COOKIE_NAME, defaultOpen));
+  const [pinned, _setPinned] = React.useState(() => getCookieBoolean(SIDEBAR_PIN_COOKIE_NAME, false));
   const open = openProp ?? _open;
+
+  const applyOpenState = React.useCallback(
+    (next: boolean) => {
+      if (setOpenProp) {
+        setOpenProp(next);
+      } else {
+        _setOpen(next);
+      }
+      if (typeof document !== 'undefined') {
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      }
+    },
+    [setOpenProp]
+  );
+
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === 'function' ? value(open) : value;
-      if (setOpenProp) {
-        setOpenProp(openState);
-      } else {
-        _setOpen(openState);
+      if (pinned && !isMobile && !openState) {
+        return;
       }
-
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      applyOpenState(openState);
     },
-    [setOpenProp, open]
+    [applyOpenState, open, pinned, isMobile]
+  );
+
+  const updatePinnedState = React.useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const next = typeof value === 'function' ? value(pinned) : value;
+      _setPinned(next);
+      if (typeof document !== 'undefined') {
+        document.cookie = `${SIDEBAR_PIN_COOKIE_NAME}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      }
+      if (next) {
+        applyOpenState(true);
+      }
+    },
+    [pinned, applyOpenState]
   );
 
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-  }, [isMobile, setOpen, setOpenMobile]);
+    if (isMobile) {
+      return setOpenMobile((value) => !value);
+    }
+    if (pinned) return;
+    return setOpen((value) => !value);
+  }, [isMobile, pinned, setOpen, setOpenMobile]);
+
+  const togglePinned = React.useCallback(() => {
+    updatePinnedState((prev) => !prev);
+  }, [updatePinnedState]);
+
+  React.useEffect(() => {
+    if (!isMobile && pinned) {
+      applyOpenState(true);
+    }
+  }, [isMobile, pinned, applyOpenState]);
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -107,8 +158,10 @@ function SidebarProvider({
       openMobile,
       setOpenMobile,
       toggleSidebar,
+      pinned,
+      togglePinned,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, pinned, togglePinned]
   );
 
   return (
@@ -148,7 +201,7 @@ function Sidebar({
   variant?: 'sidebar' | 'floating' | 'inset';
   collapsible?: 'offcanvas' | 'icon' | 'none';
 }) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, state, openMobile, setOpenMobile, pinned } = useSidebar();
 
   if (collapsible === 'none') {
     return (
@@ -195,6 +248,7 @@ function Sidebar({
       className="group peer text-sidebar-foreground hidden md:block"
       data-state={state}
       data-collapsible={state === 'collapsed' ? collapsible : ''}
+      data-pinned={pinned ? 'true' : 'false'}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
@@ -239,7 +293,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, pinned } = useSidebar();
 
   return (
     <Button
@@ -247,15 +301,40 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn('size-7', className)}
+      className={cn('size-7', pinned && 'text-sidebar-foreground/40', className)}
+      disabled={pinned}
       onClick={(event) => {
         onClick?.(event);
+        if (pinned) return;
         toggleSidebar();
       }}
       {...props}
     >
       <PanelLeftIcon />
       <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  );
+}
+
+function SidebarPinButton({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
+  const { pinned, togglePinned } = useSidebar();
+  const Icon = pinned ? PinIcon : PinOffIcon;
+
+  return (
+    <Button
+      data-sidebar="pin-toggle"
+      data-slot="sidebar-pin-toggle"
+      variant="ghost"
+      size="icon"
+      className={cn('size-7', pinned ? 'text-sidebar-accent' : 'text-sidebar-foreground/70', className)}
+      onClick={(event) => {
+        onClick?.(event);
+        togglePinned();
+      }}
+      {...props}
+    >
+      <Icon className="size-4" />
+      <span className="sr-only">{pinned ? 'Unpin sidebar' : 'Pin sidebar'}</span>
     </Button>
   );
 }
@@ -679,6 +758,7 @@ export {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarProvider,
+  SidebarPinButton,
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
