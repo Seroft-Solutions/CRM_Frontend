@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -15,10 +22,15 @@ import { DraftRestorationDialog, SaveDraftDialog } from '@/components/form-draft
 
 const FormContext = createContext<FormContextValue | null>(null);
 
+export interface ProductFormSubmissionPayload {
+  entity: Record<string, any>;
+  attachments: Record<string, File | null | undefined>;
+}
+
 interface ProductFormProviderProps {
   children: React.ReactNode;
   id?: number;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: ProductFormSubmissionPayload) => void | Promise<void>;
   onError?: (error: any) => void;
 }
 
@@ -31,6 +43,10 @@ export function ProductFormProvider({
   const router = useRouter();
   const isNew = !id;
   const config = productFormConfig;
+  const fileFieldNames = useMemo(
+    () => config.fields.filter((field) => field.type === 'file').map((field) => field.name),
+    [config.fields]
+  );
 
   const { navigationState, hasReferrer, registerDraftCheck, unregisterDraftCheck } =
     useCrossFormNavigation();
@@ -121,12 +137,29 @@ export function ProductFormProvider({
     return defaults;
   }
 
+  const sanitizeFormValues = useCallback(
+    (values: Record<string, any>) => {
+      if (!fileFieldNames.length) {
+        return { ...values };
+      }
+
+      const sanitized = { ...values };
+      fileFieldNames.forEach((fieldName) => {
+        if (fieldName in sanitized) {
+          delete sanitized[fieldName];
+        }
+      });
+      return sanitized;
+    },
+    [fileFieldNames]
+  );
+
   const saveFormState = useCallback(
     (forCrossNavigation = false) => {
       if (!isNew || !config.behavior.persistence.enabled || !forCrossNavigation) return;
       if (typeof window === 'undefined') return;
 
-      const formData = form.getValues();
+      const formData = sanitizeFormValues(form.getValues());
       const formState = {
         data: formData,
         currentStep,
@@ -139,7 +172,7 @@ export function ProductFormProvider({
       const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
       localStorage.setItem(storageKey, JSON.stringify(formState));
     },
-    [form, currentStep, isNew, formSessionId, config]
+    [form, currentStep, isNew, formSessionId, config, sanitizeFormValues]
   );
 
   const restoreFormState = useCallback(
@@ -324,10 +357,10 @@ export function ProductFormProvider({
     try {
       const formData = form.getValues();
 
-      const entityToSave = transformFormDataForSubmission(formData);
+      const { entityToSave, attachmentData } = transformFormDataForSubmission(formData);
 
       if (onSuccess) {
-        await onSuccess(entityToSave);
+        await onSuccess({ entity: entityToSave, attachments: attachmentData });
       }
 
       cleanupFormState();
@@ -344,9 +377,16 @@ export function ProductFormProvider({
 
   function transformFormDataForSubmission(data: Record<string, any>) {
     const entityToSave: Record<string, any> = {};
+    const attachmentData: Record<string, File | null | undefined> = {};
 
     config.fields.forEach((fieldConfig) => {
       const value = data[fieldConfig.name];
+
+      if (fieldConfig.type === 'file') {
+        attachmentData[fieldConfig.name] =
+          typeof File !== 'undefined' && value instanceof File ? value : value ?? null;
+        return;
+      }
 
       if (fieldConfig.type === 'number') {
         if (value !== '' && value != null && !isNaN(Number(value))) {
@@ -405,7 +445,7 @@ export function ProductFormProvider({
       }
     });
 
-    return entityToSave;
+    return { entityToSave, attachmentData };
   }
 
   const cleanupFormState = useCallback(() => {
@@ -574,7 +614,7 @@ export function ProductFormProvider({
 
     try {
       const currentFormValues = form.getValues();
-      const completeFormData = { ...allFormData, ...currentFormValues };
+      const completeFormData = sanitizeFormValues({ ...allFormData, ...currentFormValues });
 
       const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
 
@@ -599,6 +639,7 @@ export function ProductFormProvider({
     formSessionId,
     currentDraftId,
     saveDraft,
+    sanitizeFormValues,
   ]);
 
   const handleLoadDraft = useCallback(
