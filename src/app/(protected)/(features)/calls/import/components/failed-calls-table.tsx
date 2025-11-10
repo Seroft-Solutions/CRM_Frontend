@@ -13,9 +13,9 @@ import {
 } from '@/core/api/generated/spring';
 import {
   useCountImportHistories,
+  useDeleteAllCallImportHistories,
   useDeleteImportHistory,
   useGetAllImportHistories,
-  getAllImportHistories,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
@@ -36,6 +36,17 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { callImportConfig } from '../config';
@@ -161,7 +172,6 @@ function SearchableSelect({
 export function FailedCallsTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
   const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
-  const [isClearing, setIsClearing] = useState(false);
   const [pendingRowIds, setPendingRowIds] = useState<Set<number>>(new Set());
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
 
@@ -481,29 +491,32 @@ export function FailedCallsTable() {
     },
   });
 
-  // Debounce utility function
-  const handleClearAllFailedEntries = async () => {
-    setIsClearing(true);
-    try {
-      // Fetch all import history entries
-      const allFailedEntries = await getAllImportHistories({ page: 0, size: 1000000 });
+  const {
+    mutateAsync: deleteAllCallImportHistoriesAsync,
+    isPending: isClearingAllFailedEntries,
+  } = useDeleteAllCallImportHistories({
+    mutation: {
+      onError: (error) => {
+        toast.error('Failed to clear all failed import entries: ' + error.message);
+      },
+    },
+  });
+  const isClearing = isClearingAllFailedEntries;
 
-      if (allFailedEntries && allFailedEntries.length > 0) {
-        // Delete each entry
-        for (const entry of allFailedEntries) {
-          if (entry.id) {
-            await deleteImportHistoryAsync({ id: entry.id });
-          }
-        }
-        toast.success('All failed import entries cleared successfully.');
+  const handleClearAllFailedEntries = async () => {
+    try {
+      const response = await deleteAllCallImportHistoriesAsync();
+      const deletedCount = Number((response as any)?.deletedCount ?? 0);
+      const message = typeof (response as any)?.message === 'string' ? (response as any).message : undefined;
+
+      if (deletedCount > 0) {
+        toast.success(message ?? `Deleted ${deletedCount} failed import entr${deletedCount === 1 ? 'y' : 'ies'}.`);
       } else {
-        toast.info('No failed import entries to clear.');
+        toast.info(message ?? 'No failed import entries to clear.');
       }
-      refetch(); // Refetch the list to update the table
-    } catch (error: any) {
-      toast.error('Failed to clear all failed import entries: ' + error.message);
-    } finally {
-      setIsClearing(false);
+      refetch();
+    } catch (error) {
+      debugLog('Failed to clear all failed import entries', error);
     }
   };
 
@@ -754,14 +767,31 @@ export function FailedCallsTable() {
               <Download className="h-4 w-4 mr-2" />
               Download Report
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearAllFailedEntries}
-              disabled={isClearing || isLoading}
-            >
-              {isClearing ? 'Clearing...' : 'Clear All Failed Entries'}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isClearing || isLoading}
+                >
+                  {isClearing ? 'Clearing...' : 'Clear All Failed Entries'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete failed entries?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    It would delete all your history this action cannot be undo.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isClearing}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAllFailedEntries} disabled={isClearing}>
+                    {isClearing ? 'Clearing...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardHeader>
         <CardContent>

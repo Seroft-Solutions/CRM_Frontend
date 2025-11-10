@@ -244,61 +244,61 @@ export default function ImportResultsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Row-by-row details</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Row #</TableHead>
-                  {callImportConfig.columns.map((col) => (
-                    <TableHead key={col.column}>{col.header}</TableHead>
-                  ))}
-                  <TableHead>Status</TableHead>
-                  <TableHead>Reason</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tableRows.map((row) => (
-                  <TableRow key={row.rowNumber}>
-                    <TableCell className="font-semibold">{row.rowNumber}</TableCell>
-                    {callImportConfig.columns.map((col, idx) => (
-                      <TableCell key={`${row.rowNumber}-${col.column}`}>
-                        <span className="font-medium">{row.values[idx] || '—'}</span>
-                      </TableCell>
-                    ))}
-                    <TableCell>
-                      <Badge
-                        variant={
-                          row.status === 'SUCCESS'
-                            ? 'default'
-                            : row.status === 'DUPLICATE'
-                            ? 'secondary'
-                            : 'destructive'
-                        }
-                        className="uppercase tracking-wide text-[10px]"
-                      >
-                        {row.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{row.reason}</TableCell>
-                  </TableRow>
-                ))}
-                {tableRows.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={callImportConfig.columns.length + 2} className="text-center py-6">
-                      <p className="text-sm text-muted-foreground">No row level detail available.</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/*<Card>*/}
+      {/*  <CardHeader>*/}
+      {/*    <CardTitle>Row-by-row details</CardTitle>*/}
+      {/*  </CardHeader>*/}
+      {/*  <CardContent className="p-0">*/}
+      {/*    <div className="overflow-x-auto">*/}
+      {/*      <Table>*/}
+      {/*        <TableHeader>*/}
+      {/*          <TableRow>*/}
+      {/*            <TableHead className="w-16">Row #</TableHead>*/}
+      {/*            {callImportConfig.columns.map((col) => (*/}
+      {/*              <TableHead key={col.column}>{col.header}</TableHead>*/}
+      {/*            ))}*/}
+      {/*            <TableHead>Status</TableHead>*/}
+      {/*            <TableHead>Reason</TableHead>*/}
+      {/*          </TableRow>*/}
+      {/*        </TableHeader>*/}
+      {/*        <TableBody>*/}
+      {/*          {tableRows.map((row) => (*/}
+      {/*            <TableRow key={row.rowNumber}>*/}
+      {/*              <TableCell className="font-semibold">{row.rowNumber}</TableCell>*/}
+      {/*              {callImportConfig.columns.map((col, idx) => (*/}
+      {/*                <TableCell key={`${row.rowNumber}-${col.column}`}>*/}
+      {/*                  <span className="font-medium">{row.values[idx] || '—'}</span>*/}
+      {/*                </TableCell>*/}
+      {/*              ))}*/}
+      {/*              <TableCell>*/}
+      {/*                <Badge*/}
+      {/*                  variant={*/}
+      {/*                    row.status === 'SUCCESS'*/}
+      {/*                      ? 'default'*/}
+      {/*                      : row.status === 'DUPLICATE'*/}
+      {/*                      ? 'secondary'*/}
+      {/*                      : 'destructive'*/}
+      {/*                  }*/}
+      {/*                  className="uppercase tracking-wide text-[10px]"*/}
+      {/*                >*/}
+      {/*                  {row.status}*/}
+      {/*                </Badge>*/}
+      {/*              </TableCell>*/}
+      {/*              <TableCell className="text-sm text-muted-foreground">{row.reason}</TableCell>*/}
+      {/*            </TableRow>*/}
+      {/*          ))}*/}
+      {/*          {tableRows.length === 0 && (*/}
+      {/*            <TableRow>*/}
+      {/*              <TableCell colSpan={callImportConfig.columns.length + 2} className="text-center py-6">*/}
+      {/*                <p className="text-sm text-muted-foreground">No row level detail available.</p>*/}
+      {/*              </TableCell>*/}
+      {/*            </TableRow>*/}
+      {/*          )}*/}
+      {/*        </TableBody>*/}
+      {/*      </Table>*/}
+      {/*    </div>*/}
+      {/*  </CardContent>*/}
+      {/*</Card>*/}
 
       {renderImportHistorySection()}
     </div>
