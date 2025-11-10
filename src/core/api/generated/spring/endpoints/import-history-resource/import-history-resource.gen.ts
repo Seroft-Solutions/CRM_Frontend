@@ -233,6 +233,59 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
+    export const deleteAllCallImportHistories = (
+ options?: SecondParameter<typeof springServiceMutator>,) => {
+      
+      
+      return springServiceMutator<Record<string, unknown>>(
+      {url: `/api/import-history/delete-all`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDeleteAllCallImportHistoriesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext> => {
+    
+const mutationKey = ['deleteAllCallImportHistories'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, void> = () => {
+
+          return  deleteAllCallImportHistories(requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAllCallImportHistoriesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAllCallImportHistories>>>
+    
+    export type DeleteAllCallImportHistoriesMutationError = ErrorType<unknown>
+
+    export const useDeleteAllCallImportHistories = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAllCallImportHistories>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteAllCallImportHistoriesMutationOptions(options);
+
+      return useMutation(mutationOptions , queryClient);
+    }
     export const partialUpdateImportHistory = (
     id: number,
     importHistoryDTO: ImportHistoryDTO,
