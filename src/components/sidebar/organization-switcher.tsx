@@ -124,57 +124,90 @@ export function OrganizationSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-50 data-[state=open]:to-indigo-50 data-[state=open]:text-blue-900 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-200 border border-transparent data-[state=open]:border-blue-200 hover:border-blue-100 h-auto py-3"
+              className="!border !bg-sidebar !text-sidebar-foreground shadow-sm transition-shadow duration-200 h-auto py-3 hover:shadow-md data-[state=open]:!bg-sidebar-accent data-[state=open]:!text-sidebar-accent-foreground data-[state=open]:shadow-md"
+              style={{
+                borderColor: 'var(--sidebar-accent)',
+              }}
             >
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white flex aspect-square size-10 items-center justify-center rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 shrink-0">
+              <div
+                className="flex aspect-square size-10 items-center justify-center rounded-xl border shadow-sm shrink-0"
+                style={{
+                  backgroundColor: 'var(--sidebar-accent)',
+                  color: 'var(--sidebar-accent-foreground)',
+                  borderColor: 'var(--sidebar-border)',
+                }}
+              >
                 <CupIcon className="size-5" />
               </div>
               <div className="grid flex-1 text-left leading-tight gap-0.5 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-base tracking-tight">CRM Cup</span>
+                  <span className="font-bold text-base tracking-tight text-sidebar-foreground">
+                    CRM Cup
+                  </span>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <span className="truncate text-sm text-gray-900 font-semibold">
+                <span className="truncate text-sm font-semibold text-sidebar-foreground">
                   {displayOrg.name}
                 </span>
                 {session?.user?.email && (
-                  <span className="truncate text-xs text-gray-500">{session.user.email}</span>
+                  <span className="truncate text-xs text-sidebar-foreground/70">
+                    {session.user.email}
+                  </span>
                 )}
               </div>
-              <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" />
+              <ChevronsUpDown className="ml-auto text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-72 rounded-xl shadow-lg border-gray-200/60 bg-white/95 backdrop-blur-sm"
+            className="w-72 rounded-xl border border-sidebar-border/60 bg-sidebar text-sidebar-foreground shadow-xl p-3 space-y-2"
             align="start"
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={8}
           >
-            <DropdownMenuLabel className="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4 py-3 bg-gray-50/80 rounded-t-xl">
+            <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wider px-4 py-3 border-b border-sidebar-border/40 text-sidebar-foreground/80">
               Switch Organization
             </DropdownMenuLabel>
-            <div className="p-2 space-y-1">
+            <div className="space-y-2">
               {organizations.map((org, index) => (
                 <DropdownMenuItem
                   key={org.id}
                   onClick={() => handleOrganizationSwitch(org)}
-                  className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-200 cursor-pointer border border-transparent"
+                  className="gap-3 p-3 rounded-xl border flex items-center cursor-pointer transition-all duration-150 hover:translate-x-0.5 focus:bg-sidebar focus:text-sidebar-foreground"
+                  style={{
+                    backgroundColor:
+                      displayOrg.id === org.id
+                        ? 'color-mix(in srgb, var(--sidebar-accent) 20%, var(--sidebar))'
+                        : 'var(--sidebar)',
+                    borderColor: displayOrg.id === org.id ? 'var(--sidebar-accent)' : 'var(--sidebar-border)',
+                    color: 'var(--sidebar-foreground)',
+                  }}
                 >
-                  <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-200/60">
-                    <CupIcon className="size-4 text-blue-700" />
+                  <div
+                    className="flex size-8 items-center justify-center rounded-lg border"
+                    style={{
+                      backgroundColor:
+                        displayOrg.id === org.id
+                          ? 'color-mix(in srgb, var(--sidebar-accent) 35%, transparent)'
+                          : 'color-mix(in srgb, var(--sidebar-foreground) 10%, transparent)',
+                      borderColor:
+                        displayOrg.id === org.id ? 'var(--sidebar-accent)' : 'var(--sidebar-border)',
+                      color: 'var(--sidebar-foreground)',
+                    }}
+                  >
+                    <CupIcon className="size-4" />
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="font-semibold text-gray-900 truncate">{org.name}</span>
-                    <span className="text-xs text-gray-500">Organization #{index + 1}</span>
+                    <span className="font-semibold truncate">{org.name}</span>
+                    <span className="text-xs text-sidebar-foreground/70">Organization #{index + 1}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {displayOrg.id === org.id && (
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs text-green-600 font-medium">Active</span>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#22c55e' }}></div>
+                        <span className="text-xs text-green-400 font-medium">Active</span>
                       </div>
                     )}
-                    {displayOrg.id === org.id && <Check className="size-4 text-green-600" />}
+                    {displayOrg.id === org.id && <Check className="size-4 text-green-400" />}
                   </div>
                 </DropdownMenuItem>
               ))}

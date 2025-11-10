@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserRoles } from '@/core/auth/hooks/use-user-roles';
 import { normalizeRole } from '@/core/auth/utils';
+import { cn } from '@/lib/utils';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -113,7 +114,15 @@ function NavItem({
       >
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton tooltip={item.label} data-active={active} onClick={handleClick}>
+            <SidebarMenuButton
+              tooltip={item.label}
+              isActive={active}
+              onClick={handleClick}
+              className={cn(
+                '!border !border-sidebar-border/40 !bg-sidebar !text-sidebar-foreground hover:!bg-sidebar hover:!text-sidebar-foreground',
+                active && '!bg-sidebar-accent !text-sidebar-accent-foreground'
+              )}
+            >
               {item.icon && <item.icon />}
               <span>{item.label}</span>
               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -125,8 +134,9 @@ function NavItem({
                 <SidebarMenuSubItem key={subItem.key}>
                   <SidebarMenuSubButton
                     asChild
-                    data-active={subItem.path && pathname === subItem.path}
+                    isActive={Boolean(subItem.path && pathname === subItem.path)}
                     onClick={handleNavigation}
+                    className="!bg-sidebar !text-sidebar-foreground hover:!bg-sidebar data-[active=true]:!bg-sidebar-accent data-[active=true]:!text-sidebar-accent-foreground"
                   >
                     <Link href={subItem.path || '#'}>
                       <span>{subItem.label}</span>
@@ -144,11 +154,12 @@ function NavItem({
       <SidebarMenuButton
         asChild
         tooltip={item.label}
-        data-active={active}
+        isActive={active}
         onClick={() => {
           handleClick();
           handleNavigation();
         }}
+        className="!border !border-sidebar-border/40 !bg-sidebar !text-sidebar-foreground hover:!bg-sidebar hover:!text-sidebar-foreground data-[active=true]:!bg-sidebar-accent data-[active=true]:!text-sidebar-accent-foreground"
       >
         <Link href={item.path || '#'}>
           {item.icon && <item.icon />}
