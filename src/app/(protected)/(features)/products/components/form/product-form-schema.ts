@@ -3,6 +3,39 @@
  */
 import { z } from 'zod';
 
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+const productImageFieldSchema = z
+  .custom<File | null | undefined>((value) => {
+    if (value == null) {
+      return true;
+    }
+    if (typeof File === 'undefined') {
+      return true;
+    }
+    return value instanceof File;
+  }, { message: 'Please upload a valid image file' })
+  .refine((file) => {
+    if (!file) {
+      return true;
+    }
+    if (typeof File !== 'undefined' && file instanceof File) {
+      return ACCEPTED_IMAGE_TYPES.includes(file.type);
+    }
+    return true;
+  }, { message: 'Only JPG, PNG or WebP files are allowed' })
+  .refine((file) => {
+    if (!file) {
+      return true;
+    }
+    if (typeof File !== 'undefined' && file instanceof File) {
+      return file.size <= MAX_IMAGE_SIZE_BYTES;
+    }
+    return true;
+  }, { message: 'Images must be 5 MB or smaller' })
+  .optional();
+
 export const productFormSchemaFields = {
   name: z
     .string({ message: 'Please enter name' })
@@ -44,6 +77,9 @@ export const productFormSchemaFields = {
   status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
+  frontImage: productImageFieldSchema,
+  backImage: productImageFieldSchema,
+  sideImage: productImageFieldSchema,
 };
 
 export const productFormSchemaBase = z.object(productFormSchemaFields);
@@ -107,6 +143,9 @@ export const productFieldSchemas = {
   status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
+  frontImage: productImageFieldSchema,
+  backImage: productImageFieldSchema,
+  sideImage: productImageFieldSchema,
 };
 
 export const productStepSchemas = {

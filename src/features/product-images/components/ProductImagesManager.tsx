@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   ProductImageGallery,
   ProductImageUploader,
+  ProductOrientationUploader,
   useDeleteImage,
   useProductImages,
   useReorderImages,
@@ -92,15 +93,25 @@ export function ProductImagesManager({ productId, organizationId }: ProductImage
             <CardHeader>
               <CardTitle>Upload Images</CardTitle>
               <CardDescription>
-                Upload up to 10 images at once. Supports JPG, PNG, and WebP formats.
+                Upload front, back, and side views, or add additional angles if needed.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ProductImageUploader
+            <CardContent className="space-y-6">
+              <ProductOrientationUploader
                 productId={productId}
                 organizationId={organizationId}
                 onUploadComplete={handleUploadComplete}
               />
+              <div className="space-y-3 border-t border-dashed border-gray-200 pt-4">
+                <p className="text-sm font-medium text-gray-700">
+                  Need more than three angles?
+                </p>
+                <ProductImageUploader
+                  productId={productId}
+                  organizationId={organizationId}
+                  onUploadComplete={handleUploadComplete}
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -40,6 +40,17 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
+      id: 'images',
+      title: 'Product Images',
+      description: 'Upload front, back, and side views',
+      fields: ['frontImage', 'backImage', 'sideImage'],
+      relationships: [],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
@@ -146,6 +157,42 @@ export const productFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 1000,
+      },
+      ui: {},
+    },
+    {
+      name: 'frontImage',
+      type: 'file',
+      label: 'Front Image',
+      placeholder: 'Upload the primary/front view',
+      required: false,
+      accept: 'image/jpeg,image/png,image/webp',
+      validation: {
+        required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'backImage',
+      type: 'file',
+      label: 'Back Image',
+      placeholder: 'Upload the back view',
+      required: false,
+      accept: 'image/jpeg,image/png,image/webp',
+      validation: {
+        required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'sideImage',
+      type: 'file',
+      label: 'Side Image',
+      placeholder: 'Upload the side profile',
+      required: false,
+      accept: 'image/jpeg,image/png,image/webp',
+      validation: {
+        required: false,
       },
       ui: {},
     },

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './product-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { ProductImagesStep } from './product-images-step';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 
@@ -339,6 +340,10 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
   const renderCurrentStep = () => {
     if (!currentStepConfig) return null;
+
+    if (currentStepConfig.id === 'images') {
+      return <ProductImagesStep form={form} />;
+    }
 
     if (currentStepConfig.id === 'review') {
       return (

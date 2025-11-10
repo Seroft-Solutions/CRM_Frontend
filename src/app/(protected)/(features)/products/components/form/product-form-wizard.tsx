@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProductFormProvider, useEntityForm } from './product-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
@@ -18,10 +18,15 @@ import {
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUploadImages } from '@/features/product-images';
+import { useOrganizationContext } from '@/features/user-management/hooks';
+import { toast } from 'sonner';
 
 interface ProductFormProps {
   id?: number;
 }
+
+const ORIENTATION_UPLOAD_SEQUENCE = ['frontImage', 'backImage', 'sideImage'] as const;
 
 function ProductFormContent({ id }: ProductFormProps) {
   const router = useRouter();
@@ -201,62 +206,81 @@ export function ProductForm({ id }: ProductFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const uploadImagesMutation = useUploadImages();
+  const { organizationId } = useOrganizationContext();
 
-  const { mutate: createEntity, isPending: isCreating } = useCreateProduct({
+  const resolvedOrganizationId = useMemo(() => {
+    const parsed = Number(organizationId);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  }, [organizationId]);
+
+  const invalidateProductQueries = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' }),
+      queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' }),
+      queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' }),
+    ]);
+  }, [queryClient]);
+
+  const handlePostCreateNavigation = useCallback(
+    (entityId?: number) => {
+      if (hasReferrer() && entityId) {
+        setIsRedirecting(true);
+        navigateBackToReferrer(entityId, 'Product');
+      } else {
+        setIsRedirecting(true);
+        productToast.created();
+        router.push('/products');
+      }
+    },
+    [hasReferrer, navigateBackToReferrer, router]
+  );
+
+  const handlePostUpdateNavigation = useCallback(() => {
+    setIsRedirecting(true);
+    productToast.updated();
+    router.push('/products');
+  }, [router]);
+
+  const handleImageUploads = useCallback(
+    async (productId: number | undefined, attachments: Record<string, File | null | undefined>) => {
+      if (!productId) return;
+
+      const files = ORIENTATION_UPLOAD_SEQUENCE.map((key) => attachments?.[key])
+        .filter(
+          (file): file is File => !!file && typeof File !== 'undefined' && file instanceof File
+        );
+
+      if (!files.length) return;
+
+      try {
+        await uploadImagesMutation.mutateAsync({
+          productId,
+          organizationId: resolvedOrganizationId,
+          files,
+        });
+        toast.success('Product images uploaded', {
+          description: 'Front, back, and side shots are ready.',
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unable to upload product images.';
+        toast.error('Image upload failed', { description: message });
+      }
+    },
+    [resolvedOrganizationId, uploadImagesMutation]
+  );
+
+  const { mutateAsync: createProductAsync } = useCreateProduct({
     mutation: {
-      onSuccess: (data) => {
-        const entityId = data?.id || data?.id;
-
-        queryClient.invalidateQueries({
-          queryKey: ['getAllProducts'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countProducts'],
-          refetchType: 'active',
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ['searchProducts'],
-          refetchType: 'active',
-        });
-
-        if (hasReferrer() && entityId) {
-          setIsRedirecting(true);
-          navigateBackToReferrer(entityId, 'Product');
-        } else {
-          setIsRedirecting(true);
-          productToast.created();
-          router.push('/products');
-        }
-      },
       onError: (error) => {
         handleProductError(error);
       },
     },
   });
 
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateProduct({
+  const { mutateAsync: updateProductAsync } = useUpdateProduct({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['getAllProducts'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countProducts'],
-          refetchType: 'active',
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ['searchProducts'],
-          refetchType: 'active',
-        });
-
-        setIsRedirecting(true);
-        productToast.updated();
-        router.push('/products');
-      },
       onError: (error) => {
         handleProductError(error);
       },
@@ -277,18 +301,34 @@ export function ProductForm({ id }: ProductFormProps) {
   return (
     <ProductFormProvider
       id={id}
-      onSuccess={async (transformedData) => {
-        const { ...productData } = transformedData as any;
+      onSuccess={async ({ entity, attachments }) => {
+        const productData = entity as Record<string, any>;
         const productDataWithStatus = {
           ...productData,
           status: 'ACTIVE',
         };
 
         if (isNew) {
-          createEntity({ data: productDataWithStatus as any });
+          try {
+            const createdProduct = await createProductAsync({
+              data: productDataWithStatus as any,
+            });
+            await handleImageUploads(createdProduct?.id, attachments);
+            await invalidateProductQueries();
+            handlePostCreateNavigation(createdProduct?.id);
+          } catch {
+            // Error already handled via mutation onError
+          }
         } else if (id) {
-          const entityData = { ...productDataWithStatus, id };
-          updateEntity({ id, data: entityData as any });
+          try {
+            const entityData = { ...productDataWithStatus, id };
+            await updateProductAsync({ id, data: entityData as any });
+            await handleImageUploads(id, attachments);
+            await invalidateProductQueries();
+            handlePostUpdateNavigation();
+          } catch {
+            // Error already handled via mutation onError
+          }
         }
       }}
       onError={(error) => {
