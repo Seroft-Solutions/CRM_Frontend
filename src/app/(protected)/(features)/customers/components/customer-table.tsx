@@ -13,7 +13,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -22,7 +23,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,19 +33,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountCustomers,
   useGetAllCustomers,
   useSearchCustomers,
-  useUpdateCustomer} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+  useUpdateCustomer,
+} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
 import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { CustomerTableHeader } from './table/customer-table-header';
@@ -54,7 +59,8 @@ import { useAccount, useUserAuthorities } from '@/core/auth';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true};
+  centerAlignActions: true,
+};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -115,7 +121,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'customerBusinessName',
@@ -123,7 +130,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'customerBusinessName',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'email',
@@ -131,7 +139,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'email',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'mobile',
@@ -139,7 +148,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'mobile',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'whatsApp',
@@ -147,7 +157,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'whatsApp',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'contactPerson',
@@ -155,7 +166,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'contactPerson',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -163,7 +175,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'area',
@@ -171,7 +184,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'area',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'createdBy',
@@ -179,7 +193,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -187,7 +202,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -195,7 +211,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -203,7 +220,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'customer-table-columns';
@@ -267,7 +285,8 @@ export function CustomerTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -278,7 +297,8 @@ export function CustomerTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -304,21 +324,25 @@ export function CustomerTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await refetch();
 
@@ -396,19 +420,23 @@ export function CustomerTable() {
     {
       value: CustomerDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: CustomerDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: CustomerDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: CustomerDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   const getStatusFilter = () => {
@@ -430,13 +458,16 @@ export function CustomerTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter()};
+      ...getStatusFilter(),
+    };
 
     const relationshipMappings = {
       'area.name': {
         apiParam: 'areaId.equals',
         options: areaOptions,
-        displayField: 'name'}};
+        displayField: 'name',
+      },
+    };
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -532,40 +563,50 @@ export function CustomerTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllCustomers(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   const { data: countData } = useCountCustomers(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCustomer({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllCustomers']});
+          queryKey: ['getAllCustomers'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchCustomers']});
+          queryKey: ['searchCustomers'],
+        });
 
         const previousData = queryClient.getQueryData([
           'getAllCustomers',
@@ -573,7 +614,8 @@ export function CustomerTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -584,7 +626,8 @@ export function CustomerTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((customer) =>
@@ -602,7 +645,8 @@ export function CustomerTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((customer) =>
@@ -621,7 +665,8 @@ export function CustomerTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => old?.map((customer) => (customer.id === variables.id ? data : customer))
         );
@@ -635,7 +680,8 @@ export function CustomerTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) => old?.map((customer) => (customer.id === variables.id ? data : customer))
           );
@@ -652,7 +698,8 @@ export function CustomerTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -662,15 +709,20 @@ export function CustomerTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCustomers'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countCustomers'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCustomers'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateCustomer({
     mutation: {
@@ -683,7 +735,8 @@ export function CustomerTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         queryClient.setQueryData(
@@ -693,7 +746,8 @@ export function CustomerTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -708,7 +762,8 @@ export function CustomerTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -752,7 +807,8 @@ export function CustomerTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -762,15 +818,20 @@ export function CustomerTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCustomers'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countCustomers'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCustomers'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -805,7 +866,8 @@ export function CustomerTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: CustomerDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: CustomerDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -819,7 +881,8 @@ export function CustomerTable() {
         const statusValue = CustomerDTOStatus[newStatus as keyof typeof CustomerDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -830,7 +893,8 @@ export function CustomerTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination();
   };
 
@@ -887,7 +951,8 @@ export function CustomerTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -898,10 +963,12 @@ export function CustomerTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: CustomerDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: CustomerDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -912,14 +979,17 @@ export function CustomerTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       customerToast.custom.success(
         'Bulk Archive Complete',
@@ -935,7 +1005,8 @@ export function CustomerTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -959,7 +1030,8 @@ export function CustomerTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -971,10 +1043,12 @@ export function CustomerTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -985,14 +1059,17 @@ export function CustomerTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCustomers'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1010,7 +1087,8 @@ export function CustomerTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1048,7 +1126,8 @@ export function CustomerTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1063,7 +1142,8 @@ export function CustomerTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1074,7 +1154,8 @@ export function CustomerTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((customer) => (customer.id === entityId ? serverResponse : customer))
@@ -1089,7 +1170,8 @@ export function CustomerTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((customer) => (customer.id === entityId ? serverResponse : customer))
@@ -1111,7 +1193,8 @@ export function CustomerTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1129,7 +1212,8 @@ export function CustomerTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1171,7 +1255,8 @@ export function CustomerTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1186,7 +1271,8 @@ export function CustomerTable() {
       displayName: 'Area',
       options: areaOptions || [],
       displayField: 'name',
-      isEditable: false},
+      isEditable: false,
+    },
   ];
 
   const hasActiveFilters =
@@ -1275,7 +1361,8 @@ export function CustomerTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"

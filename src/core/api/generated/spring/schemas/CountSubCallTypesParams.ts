@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {CountSubCallTypesStatusEquals} from './CountSubCallTypesStatusEquals';
-import type {CountSubCallTypesStatusNotEquals} from './CountSubCallTypesStatusNotEquals';
-import type {CountSubCallTypesStatusInItem} from './CountSubCallTypesStatusInItem';
-import type {CountSubCallTypesStatusNotInItem} from './CountSubCallTypesStatusNotInItem';
+import type { CountSubCallTypesStatusEquals } from './CountSubCallTypesStatusEquals';
+import type { CountSubCallTypesStatusNotEquals } from './CountSubCallTypesStatusNotEquals';
+import type { CountSubCallTypesStatusInItem } from './CountSubCallTypesStatusInItem';
+import type { CountSubCallTypesStatusNotInItem } from './CountSubCallTypesStatusNotInItem';
 
 export type CountSubCallTypesParams = {
 'id.greaterThan'?: number;

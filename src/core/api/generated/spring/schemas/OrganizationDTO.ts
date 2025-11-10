@@ -5,8 +5,8 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {OrganizationDTOStatus} from './OrganizationDTOStatus';
-import type {UserProfileDTO} from './UserProfileDTO';
+import type { OrganizationDTOStatus } from './OrganizationDTOStatus';
+import type { UserProfileDTO } from './UserProfileDTO';
 
 /**
  * Organization is a tenant and maps to a DB schema.

@@ -11,9 +11,7 @@ import {
   useGetAllUserAvailabilities,
 } from '@/core/api/generated/spring/endpoints/user-availability-resource/user-availability-resource.gen';
 
-import {
-  useCreateAvailableTimeSlot
-} from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
+import { useCreateAvailableTimeSlot } from '@/core/api/generated/spring/endpoints/available-time-slot-resource/available-time-slot-resource.gen';
 
 /**
  * React hook to handle real availability creation for specific users

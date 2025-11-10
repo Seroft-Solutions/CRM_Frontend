@@ -5,7 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {PriorityDTOStatus} from './PriorityDTOStatus';
+import type { PriorityDTOStatus } from './PriorityDTOStatus';
 
 export interface PriorityDTO {
   id?: number;

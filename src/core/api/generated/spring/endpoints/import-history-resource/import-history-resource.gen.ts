@@ -5,6 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -19,7 +23,6 @@ import type {
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
-import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type {
   CountImportHistoriesParams,
@@ -28,8 +31,8 @@ import type {
   SearchImportHistoriesParams
 } from '../../schemas';
 
-import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -517,7 +520,7 @@ export const searchImportHistories = (
       
       
       return springServiceMutator<ImportHistoryDTO[]>(
-      {url: `/api/import-histories/_search`, method: 'GET',
+      {url: `/api/_search/import-histories`, method: 'GET',
         params, signal
     },
       options);
@@ -525,7 +528,7 @@ export const searchImportHistories = (
   
 
 export const getSearchImportHistoriesQueryKey = (params: SearchImportHistoriesParams,) => {
-    return [`/api/import-histories/_search`, ...(params ? [params]: [])] as const;
+    return [`/api/_search/import-histories`, ...(params ? [params]: [])] as const;
     }
 
     
@@ -589,3 +592,6 @@ export function useSearchImportHistories<TData = Awaited<ReturnType<typeof searc
 
   return query;
 }
+
+
+

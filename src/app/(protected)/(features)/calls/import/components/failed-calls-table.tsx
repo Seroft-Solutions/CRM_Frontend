@@ -21,7 +21,14 @@ import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -91,7 +98,8 @@ const TEMPLATE_FIELD_ORDER: Array<keyof ImportHistoryDTO> = [
 ];
 
 const normalizeKey = (value?: string | null) => value?.trim().toLowerCase() ?? '';
-const buildSubCallTypeKey = (callTypeId: number, name: string) => `${callTypeId}:${normalizeKey(name)}`;
+const buildSubCallTypeKey = (callTypeId: number, name: string) =>
+  `${callTypeId}:${normalizeKey(name)}`;
 
 function SearchableSelect({
   value,
@@ -146,7 +154,12 @@ function SearchableSelect({
                     setOpen(false);
                   }}
                 >
-                  <Check className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')} />
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === option.value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
                   {option.label}
                 </CommandItem>
               ))}
@@ -182,7 +195,7 @@ export function FailedCallsTable() {
 
   useEffect(() => {
     if (importHistoryData) {
-      setEditableData(importHistoryData.filter(item => item.issue && item.issue.trim() !== ''));
+      setEditableData(importHistoryData.filter((item) => item.issue && item.issue.trim() !== ''));
     }
   }, [importHistoryData]);
 
@@ -260,10 +273,10 @@ export function FailedCallsTable() {
 
   const canResolveReferences = Boolean(
     customerOptions.length &&
-    productOptions.length &&
-    calltypeOptions.length &&
-    priorityOptions.length &&
-    callstatusOptions.length
+      productOptions.length &&
+      calltypeOptions.length &&
+      priorityOptions.length &&
+      callstatusOptions.length
   );
 
   const computeInvalidFields = useCallback(
@@ -435,7 +448,9 @@ export function FailedCallsTable() {
               normalizeKey(sct.name) === normalizeKey(row.subCallType)
           );
         if (!subCallType?.id) {
-          throw new Error('Sub Call Type could not be resolved. Please re-select the sub call type.');
+          throw new Error(
+            'Sub Call Type could not be resolved. Please re-select the sub call type.'
+          );
         }
         payload.subCallType = { id: subCallType.id } as any;
       } else {
@@ -455,7 +470,6 @@ export function FailedCallsTable() {
       subcalltypeOptions,
     ]
   );
-
 
   const { mutateAsync: createCallAsync, isPending: isCreating } = useCreateCall({
     mutation: {
@@ -526,7 +540,6 @@ export function FailedCallsTable() {
     XLSX.writeFile(workbook, 'call-import-failed-rows.xlsx');
   };
 
-
   const handleUpdateRow = useCallback(
     async (item: ImportHistoryDTO) => {
       if (!item?.id) {
@@ -552,7 +565,11 @@ export function FailedCallsTable() {
         existingCall = existingCallsResponse?.[0];
       }
 
-      debugLog('Processing row', { rowId: item.id, externalId, action: existingCall ? 'update' : 'create' });
+      debugLog('Processing row', {
+        rowId: item.id,
+        externalId,
+        action: existingCall ? 'update' : 'create',
+      });
 
       if (existingCall && existingCall.id) {
         await partialUpdateCallAsync({
@@ -567,7 +584,11 @@ export function FailedCallsTable() {
       setEditableData((prev) => prev.filter((row) => row.id !== item.id));
       refetch();
 
-      debugLog('Row processed successfully', { rowId: item.id, externalId, action: existingCall ? 'updated' : 'created' });
+      debugLog('Row processed successfully', {
+        rowId: item.id,
+        externalId,
+        action: existingCall ? 'updated' : 'created',
+      });
       return existingCall ? 'updated' : 'created';
     },
     [
@@ -580,7 +601,11 @@ export function FailedCallsTable() {
     ]
   );
 
-  const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: string) => {
+  const handleFieldChange = (
+    rowIndex: number,
+    fieldName: keyof ImportHistoryDTO,
+    value: string
+  ) => {
     let updatedRow: ImportHistoryDTO | null = null;
     setEditableData((prev) => {
       const updated = [...prev];
@@ -613,14 +638,19 @@ export function FailedCallsTable() {
     if (updatedRow?.id && canResolveReferences) {
       const invalid = computeInvalidFields(updatedRow);
       if (invalid.size === 0) {
-        debugLog('Auto-save triggered via edit', { rowId: updatedRow.id, externalId: updatedRow.externalId });
+        debugLog('Auto-save triggered via edit', {
+          rowId: updatedRow.id,
+          externalId: updatedRow.externalId,
+        });
         autoSaveRow(updatedRow);
       } else {
-        debugLog('Row still invalid after edit', { rowId: updatedRow.id, invalid: Array.from(invalid) });
+        debugLog('Row still invalid after edit', {
+          rowId: updatedRow.id,
+          invalid: Array.from(invalid),
+        });
       }
     }
   };
-
 
   const autoSaveRow = useCallback(
     async (row: ImportHistoryDTO) => {
@@ -686,7 +716,10 @@ export function FailedCallsTable() {
         debugLog('Auto-save triggered via effect', { rowId: row.id, externalId: row.externalId });
         autoSaveRow(row);
       } else {
-        debugLog('Row still invalid after refresh', { rowId: row.id, invalid: Array.from(invalid) });
+        debugLog('Row still invalid after refresh', {
+          rowId: row.id,
+          invalid: Array.from(invalid),
+        });
       }
     });
   }, [canResolveReferences, editableData, computeInvalidFields, autoSaveRow, pendingRowIds]);
@@ -750,7 +783,12 @@ export function FailedCallsTable() {
             </CardTitle>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleDownloadReport} disabled={!editableData.length}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadReport}
+              disabled={!editableData.length}
+            >
               <Download className="h-4 w-4 mr-2" />
               Download Report
             </Button>
@@ -835,14 +873,18 @@ export function FailedCallsTable() {
                                   value={(row[fieldName] as string) || ''}
                                   options={options}
                                   placeholder={`Select ${header}`}
-                                  onSelect={(value) => handleFieldChange(rowIndex, fieldName, value)}
+                                  onSelect={(value) =>
+                                    handleFieldChange(rowIndex, fieldName, value)
+                                  }
                                   disabled={rowSaving}
                                   invalid={invalidFields.has(fieldName)}
                                 />
                               ) : (
                                 <Input
                                   value={(row[fieldName] as string) || ''}
-                                  onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(rowIndex, fieldName, e.target.value)
+                                  }
                                   className={cn(
                                     'h-8 text-xs',
                                     invalidFields.has(fieldName) &&

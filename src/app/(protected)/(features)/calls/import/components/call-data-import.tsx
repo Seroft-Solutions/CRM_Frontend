@@ -21,7 +21,12 @@ import { callImportConfig } from '../config';
 
 interface CallDataImportProps {}
 
-type RowStatus = 'SUCCESS' | 'DUPLICATE' | 'VALIDATION_FAILED' | 'MASTER_DATA_MISSING' | 'SYSTEM_ERROR';
+type RowStatus =
+  | 'SUCCESS'
+  | 'DUPLICATE'
+  | 'VALIDATION_FAILED'
+  | 'MASTER_DATA_MISSING'
+  | 'SYSTEM_ERROR';
 
 interface ImportSummary {
   totalRows: number;
@@ -46,8 +51,6 @@ interface ImportResponse {
   rows: RowResult[];
   message: string;
 }
-
-
 
 export function CallDataImport({}: CallDataImportProps) {
   const form = useForm({
@@ -166,7 +169,7 @@ export function CallDataImport({}: CallDataImportProps) {
                       </tr>
                     </thead>
                     <tbody>
-                  {callImportConfig.columns.map((column, index) => (
+                      {callImportConfig.columns.map((column, index) => (
                         <tr key={index} className="even:bg-muted/50">
                           <td className="border border-border p-2 text-sm">{column.column}</td>
                           <td className="border border-border p-2 text-sm">{column.header}</td>

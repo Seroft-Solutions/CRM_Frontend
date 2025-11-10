@@ -7,7 +7,8 @@ import { UserProfileTable } from './components/user-profile-table';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: 'UserProfiles'};
+  title: 'UserProfiles',
+};
 
 export default function UserProfilePage() {
   return (
@@ -24,7 +25,8 @@ export default function UserProfilePage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'}}
+              backgroundSize: '20px 20px',
+            }}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">

@@ -2,13 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { UseFormReturn, useWatch } from 'react-hook-form';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';

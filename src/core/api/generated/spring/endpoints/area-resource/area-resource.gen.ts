@@ -5,32 +5,35 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {
-    DataTag,
-    DefinedInitialDataOptions,
-    DefinedUseQueryResult,
-    MutationFunction,
-    QueryClient,
-    QueryFunction,
-    QueryKey,
-    UndefinedInitialDataOptions,
-    UseMutationOptions,
-    UseMutationResult,
-    UseQueryOptions,
-    UseQueryResult
+import {
+  useMutation,
+  useQuery
 } from '@tanstack/react-query';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  MutationFunction,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
+} from '@tanstack/react-query';
 
 import type {
-    AreaDTO,
-    CountAreasParams,
-    GetAllAreasParams,
-    SearchAreasParams,
-    SearchGeographyParams
+  AreaDTO,
+  CountAreasParams,
+  GetAllAreasParams,
+  SearchAreasParams,
+  SearchGeographyParams
 } from '../../schemas';
 
-import type {ErrorType} from '../../../../services/spring-service/service-mutator';
-import {springServiceMutator} from '../../../../services/spring-service/service-mutator';
+import { springServiceMutator } from '../../../../services/spring-service/service-mutator';
+import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

@@ -7,7 +7,8 @@ import { CallTypeTable } from './components/call-type-table';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: 'CallTypes'};
+  title: 'CallTypes',
+};
 
 export default function CallTypePage() {
   return (
@@ -24,7 +25,8 @@ export default function CallTypePage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'}}
+              backgroundSize: '20px 20px',
+            }}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">

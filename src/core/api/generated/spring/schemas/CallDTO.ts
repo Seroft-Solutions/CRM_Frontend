@@ -20,7 +20,7 @@ export interface CallDTO {
   id?: number;
   leadNo?: string;
   externalId?: string;
-  status: CallDTOStatus;
+  status?: CallDTOStatus;
   /**
    * @minLength 0
    * @maxLength 50

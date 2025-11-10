@@ -96,7 +96,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
           <div className="p-6">
-            <ProductImagesManager productId={id} organizationId={1} />
+            <ProductImagesManager productId={id} />
           </div>
         </div>
       </div>

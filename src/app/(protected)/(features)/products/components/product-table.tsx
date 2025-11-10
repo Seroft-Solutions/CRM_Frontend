@@ -13,7 +13,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -22,7 +23,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,19 +33,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountProducts,
   useGetAllProducts,
   useSearchProducts,
-  useUpdateProduct} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+  useUpdateProduct,
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 
@@ -55,7 +60,8 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true};
+  centerAlignActions: true,
+};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -116,7 +122,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'image',
@@ -124,7 +131,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'images',
     type: 'field',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'name',
@@ -132,7 +140,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'code',
@@ -140,7 +149,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'code',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'description',
@@ -148,7 +158,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'description',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'basePrice',
@@ -156,7 +167,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'basePrice',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'minPrice',
@@ -164,7 +176,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'minPrice',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'maxPrice',
@@ -172,7 +185,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'maxPrice',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'remark',
@@ -180,7 +194,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'remark',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -188,7 +203,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'category',
@@ -196,7 +212,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'category',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'subCategory',
@@ -204,7 +221,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'subCategory',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'createdBy',
@@ -212,7 +230,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -220,7 +239,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -228,7 +248,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -236,7 +257,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'product-table-columns';
@@ -297,7 +319,8 @@ export function ProductTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -308,7 +331,8 @@ export function ProductTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -334,21 +358,25 @@ export function ProductTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await refetch();
 
@@ -435,19 +463,23 @@ export function ProductTable() {
     {
       value: ProductDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: ProductDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: ProductDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: ProductDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   const getStatusFilter = () => {
@@ -469,18 +501,22 @@ export function ProductTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter()};
+      ...getStatusFilter(),
+    };
 
     const relationshipMappings = {
       'category.name': {
         apiParam: 'categoryId.equals',
         options: productcategoryOptions,
-        displayField: 'name'},
+        displayField: 'name',
+      },
 
       'subCategory.name': {
         apiParam: 'subCategoryId.equals',
         options: productsubcategoryOptions,
-        displayField: 'name'}};
+        displayField: 'name',
+      },
+    };
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -580,40 +616,50 @@ export function ProductTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllProducts(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   const { data: countData } = useCountProducts(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateProduct({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllProducts']});
+          queryKey: ['getAllProducts'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchProducts']});
+          queryKey: ['searchProducts'],
+        });
 
         const previousData = queryClient.getQueryData([
           'getAllProducts',
@@ -621,7 +667,8 @@ export function ProductTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -632,7 +679,8 @@ export function ProductTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((product) =>
@@ -650,7 +698,8 @@ export function ProductTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((product) =>
@@ -669,7 +718,8 @@ export function ProductTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
         );
@@ -683,7 +733,8 @@ export function ProductTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
           );
@@ -700,7 +751,8 @@ export function ProductTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -710,15 +762,20 @@ export function ProductTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllProducts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countProducts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchProducts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateProduct({
     mutation: {
@@ -731,7 +788,8 @@ export function ProductTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         queryClient.setQueryData(
@@ -741,7 +799,8 @@ export function ProductTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -756,7 +815,8 @@ export function ProductTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -800,7 +860,8 @@ export function ProductTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -810,15 +871,20 @@ export function ProductTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllProducts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countProducts'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchProducts'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -853,7 +919,8 @@ export function ProductTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: ProductDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: ProductDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -867,7 +934,8 @@ export function ProductTable() {
         const statusValue = ProductDTOStatus[newStatus as keyof typeof ProductDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -878,7 +946,8 @@ export function ProductTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination();
   };
 
@@ -935,7 +1004,8 @@ export function ProductTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -946,10 +1016,12 @@ export function ProductTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: ProductDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: ProductDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -960,14 +1032,17 @@ export function ProductTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       productToast.custom.success(
         'Bulk Archive Complete',
@@ -983,7 +1058,8 @@ export function ProductTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1007,7 +1083,8 @@ export function ProductTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1019,10 +1096,12 @@ export function ProductTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -1033,14 +1112,17 @@ export function ProductTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchProducts'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1058,7 +1140,8 @@ export function ProductTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1096,7 +1179,8 @@ export function ProductTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1111,7 +1195,8 @@ export function ProductTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1122,7 +1207,8 @@ export function ProductTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((product) => (product.id === entityId ? serverResponse : product))
@@ -1137,7 +1223,8 @@ export function ProductTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((product) => (product.id === entityId ? serverResponse : product))
@@ -1159,7 +1246,8 @@ export function ProductTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1177,7 +1265,8 @@ export function ProductTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1219,7 +1308,8 @@ export function ProductTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1234,14 +1324,16 @@ export function ProductTable() {
       displayName: 'Category',
       options: productcategoryOptions || [],
       displayField: 'name',
-      isEditable: false},
+      isEditable: false,
+    },
 
     {
       name: 'subCategory',
       displayName: 'SubCategory',
       options: productsubcategoryOptions || [],
       displayField: 'name',
-      isEditable: false},
+      isEditable: false,
+    },
   ];
 
   const hasActiveFilters =
@@ -1330,7 +1422,8 @@ export function ProductTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"

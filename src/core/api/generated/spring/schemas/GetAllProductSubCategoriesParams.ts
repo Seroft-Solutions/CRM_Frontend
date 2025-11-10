@@ -5,10 +5,10 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import type {GetAllProductSubCategoriesStatusEquals} from './GetAllProductSubCategoriesStatusEquals';
-import type {GetAllProductSubCategoriesStatusNotEquals} from './GetAllProductSubCategoriesStatusNotEquals';
-import type {GetAllProductSubCategoriesStatusInItem} from './GetAllProductSubCategoriesStatusInItem';
-import type {GetAllProductSubCategoriesStatusNotInItem} from './GetAllProductSubCategoriesStatusNotInItem';
+import type { GetAllProductSubCategoriesStatusEquals } from './GetAllProductSubCategoriesStatusEquals';
+import type { GetAllProductSubCategoriesStatusNotEquals } from './GetAllProductSubCategoriesStatusNotEquals';
+import type { GetAllProductSubCategoriesStatusInItem } from './GetAllProductSubCategoriesStatusInItem';
+import type { GetAllProductSubCategoriesStatusNotInItem } from './GetAllProductSubCategoriesStatusNotInItem';
 
 export type GetAllProductSubCategoriesParams = {
 'id.greaterThan'?: number;

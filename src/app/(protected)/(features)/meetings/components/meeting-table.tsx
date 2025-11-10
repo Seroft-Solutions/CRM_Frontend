@@ -13,7 +13,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings2,
-  X} from 'lucide-react';
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -22,7 +23,8 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,19 +33,22 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from '@/components/ui/alert-dialog';
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from '@/components/ui/select';
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountMeetings,
   useGetAllMeetings,
   useSearchMeetings,
-  useUpdateMeeting} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
+  useUpdateMeeting,
+} from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 
 import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
@@ -57,7 +62,8 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true};
+  centerAlignActions: true,
+};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -113,7 +119,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'meetingDateTime',
@@ -121,7 +128,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'meetingDateTime',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'duration',
@@ -129,7 +137,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'duration',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'title',
@@ -137,7 +146,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'title',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'description',
@@ -145,7 +155,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'description',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'meetingUrl',
@@ -153,7 +164,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'meetingUrl',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'googleCalendarEventId',
@@ -161,7 +173,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'googleCalendarEventId',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'notes',
@@ -169,7 +182,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'notes',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'isRecurring',
@@ -177,7 +191,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'isRecurring',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'timeZone',
@@ -185,7 +200,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'timeZone',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'meetingStatus',
@@ -193,7 +209,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'meetingStatus',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'meetingType',
@@ -201,7 +218,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'meetingType',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'status',
@@ -209,7 +227,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdAt',
@@ -217,7 +236,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdAt',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'updatedAt',
@@ -225,7 +245,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'updatedAt',
     type: 'field',
     visible: true,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'organizer',
@@ -233,7 +254,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'organizer',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'assignedCustomer',
@@ -241,7 +263,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'assignedCustomer',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'call',
@@ -249,7 +272,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'call',
     type: 'relationship',
     visible: true,
-    sortable: false},
+    sortable: false,
+  },
 
   {
     id: 'createdBy',
@@ -257,7 +281,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'createdDate',
@@ -265,7 +290,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedBy',
@@ -273,7 +299,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 
   {
     id: 'lastModifiedDate',
@@ -281,7 +308,8 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true},
+    sortable: true,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'meeting-table-columns';
@@ -342,7 +370,8 @@ export function MeetingTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible}),
+            [col.id]: col.visible,
+          }),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -353,7 +382,8 @@ export function MeetingTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible}),
+          [col.id]: col.visible,
+        }),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -379,21 +409,25 @@ export function MeetingTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId]}));
+      [columnId]: !prev[columnId],
+    }));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await refetch();
 
@@ -489,19 +523,23 @@ export function MeetingTable() {
     {
       value: MeetingDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800'},
+      color: 'bg-gray-100 text-gray-800',
+    },
     {
       value: MeetingDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800'},
+      color: 'bg-green-100 text-green-800',
+    },
     {
       value: MeetingDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800'},
+      color: 'bg-yellow-100 text-yellow-800',
+    },
     {
       value: MeetingDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800'},
+      color: 'bg-red-100 text-red-800',
+    },
   ];
 
   const getStatusFilter = () => {
@@ -523,23 +561,28 @@ export function MeetingTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter()};
+      ...getStatusFilter(),
+    };
 
     const relationshipMappings = {
       'organizer.displayName': {
         apiParam: 'organizerId.equals',
         options: userprofileOptions,
-        displayField: 'displayName'},
+        displayField: 'displayName',
+      },
 
       'assignedCustomer.customerBusinessName': {
         apiParam: 'assignedCustomerId.equals',
         options: customerOptions,
-        displayField: 'customerBusinessName'},
+        displayField: 'customerBusinessName',
+      },
 
       'call.name': {
         apiParam: 'callId.equals',
         options: callOptions,
-        displayField: 'name'}};
+        displayField: 'name',
+      },
+    };
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -688,40 +731,50 @@ export function MeetingTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       )
     : useGetAllMeetings(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams},
+          ...filterParams,
+        },
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true}}
+            refetchOnWindowFocus: true,
+          },
+        }
       );
 
   const { data: countData } = useCountMeetings(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true}});
+      refetchOnWindowFocus: true,
+    },
+  });
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateMeeting({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllMeetings']});
+          queryKey: ['getAllMeetings'],
+        });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchMeetings']});
+          queryKey: ['searchMeetings'],
+        });
 
         const previousData = queryClient.getQueryData([
           'getAllMeetings',
@@ -729,7 +782,8 @@ export function MeetingTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -740,7 +794,8 @@ export function MeetingTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old.map((meeting) =>
@@ -758,7 +813,8 @@ export function MeetingTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) =>
               old?.map((meeting) =>
@@ -777,7 +833,8 @@ export function MeetingTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => old?.map((meeting) => (meeting.id === variables.id ? data : meeting))
         );
@@ -791,7 +848,8 @@ export function MeetingTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             (old: any[]) => old?.map((meeting) => (meeting.id === variables.id ? data : meeting))
           );
@@ -808,7 +866,8 @@ export function MeetingTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -818,15 +877,20 @@ export function MeetingTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetings'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countMeetings'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchMeetings'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateMeeting({
     mutation: {
@@ -839,7 +903,8 @@ export function MeetingTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams},
+            ...filterParams,
+          },
         ]);
 
         queryClient.setQueryData(
@@ -849,7 +914,8 @@ export function MeetingTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -864,7 +930,8 @@ export function MeetingTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id});
+              entityId: variables.id,
+            });
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -908,7 +975,8 @@ export function MeetingTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams},
+                ...filterParams,
+              },
             ],
             context.previousData
           );
@@ -918,15 +986,20 @@ export function MeetingTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetings'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
         await queryClient.invalidateQueries({
           queryKey: ['countMeetings'],
-          refetchType: 'active'});
+          refetchType: 'active',
+        });
 
         await queryClient.invalidateQueries({
           queryKey: ['searchMeetings'],
-          refetchType: 'active'});
-      }}});
+          refetchType: 'active',
+        });
+      },
+    },
+  });
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -961,7 +1034,8 @@ export function MeetingTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: MeetingDTOStatus.ARCHIVED }});
+          data: { ...currentEntity, status: MeetingDTOStatus.ARCHIVED },
+        });
       }
     }
     setShowArchiveDialog(false);
@@ -975,7 +1049,8 @@ export function MeetingTable() {
         const statusValue = MeetingDTOStatus[newStatus as keyof typeof MeetingDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue }});
+          data: { ...currentEntity, status: statusValue },
+        });
       }
     }
     setShowStatusChangeDialog(false);
@@ -986,7 +1061,8 @@ export function MeetingTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value}));
+      [column]: value,
+    }));
     resetPagination();
   };
 
@@ -1043,7 +1119,8 @@ export function MeetingTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1054,10 +1131,12 @@ export function MeetingTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: MeetingDTOStatus.ARCHIVED }},
+                data: { ...currentEntity, status: MeetingDTOStatus.ARCHIVED },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -1068,14 +1147,17 @@ export function MeetingTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       meetingToast.custom.success(
         'Bulk Archive Complete',
@@ -1091,7 +1173,8 @@ export function MeetingTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1115,7 +1198,8 @@ export function MeetingTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1127,10 +1211,12 @@ export function MeetingTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue }},
+                data: { ...currentEntity, status: statusValue },
+              },
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error)}
+                onError: (error) => reject(error),
+              }
             );
           });
         }
@@ -1141,14 +1227,17 @@ export function MeetingTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
       await queryClient.invalidateQueries({
         queryKey: ['countMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetings'],
-        refetchType: 'active'});
+        refetchType: 'active',
+      });
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1166,7 +1255,8 @@ export function MeetingTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1204,7 +1294,8 @@ export function MeetingTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId};
+        id: entityId,
+      };
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1219,7 +1310,8 @@ export function MeetingTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData},
+          data: updateData,
+        },
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1230,7 +1322,8 @@ export function MeetingTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams},
+                    ...filterParams,
+                  },
                 ],
                 (old: any[]) =>
                   old?.map((meeting) => (meeting.id === entityId ? serverResponse : meeting))
@@ -1245,7 +1338,8 @@ export function MeetingTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams},
+                      ...filterParams,
+                    },
                   ],
                   (old: any[]) =>
                     old?.map((meeting) => (meeting.id === entityId ? serverResponse : meeting))
@@ -1267,7 +1361,8 @@ export function MeetingTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          }}
+          },
+        }
       );
     });
   };
@@ -1285,7 +1380,8 @@ export function MeetingTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams},
+        ...filterParams,
+      },
     ]);
 
     try {
@@ -1327,7 +1423,8 @@ export function MeetingTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams},
+              ...filterParams,
+            },
           ],
           previousData
         );
@@ -1342,21 +1439,24 @@ export function MeetingTable() {
       displayName: 'Organizer',
       options: userprofileOptions || [],
       displayField: 'displayName',
-      isEditable: false},
+      isEditable: false,
+    },
 
     {
       name: 'assignedCustomer',
       displayName: 'AssignedCustomer',
       options: customerOptions || [],
       displayField: 'customerBusinessName',
-      isEditable: false},
+      isEditable: false,
+    },
 
     {
       name: 'call',
       displayName: 'Call',
       options: callOptions || [],
       displayField: 'name',
-      isEditable: false},
+      isEditable: false,
+    },
   ];
 
   const hasActiveFilters =
@@ -1445,7 +1545,8 @@ export function MeetingTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>{/* Export Button */}
+            </DropdownMenu>
+            {/* Export Button */}
             <Button
               variant="outline"
               size="sm"

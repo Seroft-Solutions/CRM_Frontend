@@ -20,7 +20,8 @@ export const callImportConfig = {
     {
       column: 'B',
       header: 'Customer name',
-      description: 'Customer business name (Required) - If the customer does not exist, it will be created.',
+      description:
+        'Customer business name (Required) - If the customer does not exist, it will be created.',
       example: 'ABC Enterprises',
     },
     {
@@ -62,4 +63,3 @@ export const callImportConfig = {
     },
   ],
 };
-

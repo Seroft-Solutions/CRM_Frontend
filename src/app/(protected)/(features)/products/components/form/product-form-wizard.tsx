@@ -246,10 +246,9 @@ export function ProductForm({ id }: ProductFormProps) {
     async (productId: number | undefined, attachments: Record<string, File | null | undefined>) => {
       if (!productId) return;
 
-      const files = ORIENTATION_UPLOAD_SEQUENCE.map((key) => attachments?.[key])
-        .filter(
-          (file): file is File => !!file && typeof File !== 'undefined' && file instanceof File
-        );
+      const files = ORIENTATION_UPLOAD_SEQUENCE.map((key) => attachments?.[key]).filter(
+        (file): file is File => !!file && typeof File !== 'undefined' && file instanceof File
+      );
 
       if (!files.length) return;
 
@@ -263,8 +262,7 @@ export function ProductForm({ id }: ProductFormProps) {
           description: 'Front, back, and side shots are ready.',
         });
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Unable to upload product images.';
+        const message = error instanceof Error ? error.message : 'Unable to upload product images.';
         toast.error('Image upload failed', { description: message });
       }
     },

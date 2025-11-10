@@ -7,33 +7,42 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const productImageFieldSchema = z
-  .custom<File | null | undefined>((value) => {
-    if (value == null) {
+  .custom<File | null | undefined>(
+    (value) => {
+      if (value == null) {
+        return true;
+      }
+      if (typeof File === 'undefined') {
+        return true;
+      }
+      return value instanceof File;
+    },
+    { message: 'Please upload a valid image file' }
+  )
+  .refine(
+    (file) => {
+      if (!file) {
+        return true;
+      }
+      if (typeof File !== 'undefined' && file instanceof File) {
+        return ACCEPTED_IMAGE_TYPES.includes(file.type);
+      }
       return true;
-    }
-    if (typeof File === 'undefined') {
+    },
+    { message: 'Only JPG, PNG or WebP files are allowed' }
+  )
+  .refine(
+    (file) => {
+      if (!file) {
+        return true;
+      }
+      if (typeof File !== 'undefined' && file instanceof File) {
+        return file.size <= MAX_IMAGE_SIZE_BYTES;
+      }
       return true;
-    }
-    return value instanceof File;
-  }, { message: 'Please upload a valid image file' })
-  .refine((file) => {
-    if (!file) {
-      return true;
-    }
-    if (typeof File !== 'undefined' && file instanceof File) {
-      return ACCEPTED_IMAGE_TYPES.includes(file.type);
-    }
-    return true;
-  }, { message: 'Only JPG, PNG or WebP files are allowed' })
-  .refine((file) => {
-    if (!file) {
-      return true;
-    }
-    if (typeof File !== 'undefined' && file instanceof File) {
-      return file.size <= MAX_IMAGE_SIZE_BYTES;
-    }
-    return true;
-  }, { message: 'Images must be 5 MB or smaller' })
+    },
+    { message: 'Images must be 5 MB or smaller' }
+  )
   .optional();
 
 export const productFormSchemaFields = {
