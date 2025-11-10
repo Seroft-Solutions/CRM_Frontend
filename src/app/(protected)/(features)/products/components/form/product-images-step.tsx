@@ -178,7 +178,7 @@ function OrientationField({ form, name, label, badge, description, existingImage
                     variant="default"
                     onClick={triggerFilePicker}
                   >
-                    {watchedFile ? 'Replace Image' : 'Upload Image'}
+                    {watchedFile || existingImage ? 'Replace Image' : 'Upload Image'}
                   </Button>
                   {watchedFile && (
                     <Button

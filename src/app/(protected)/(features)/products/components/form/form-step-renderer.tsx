@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Camera } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,6 +49,12 @@ const ORIENTATION_FIELDS = [
   },
 ];
 
+const ORIENTATION_DISPLAY_ORDER: Record<(typeof ORIENTATION_FIELDS)[number]['name'], number> = {
+  frontImage: 0,
+  backImage: 1,
+  sideImage: 2,
+};
+
 function OrientationPreviewCard({
   field,
   image,
@@ -56,14 +62,21 @@ function OrientationPreviewCard({
   field: (typeof ORIENTATION_FIELDS)[number];
   image?: ProductImageDTO | File;
 }) {
-  const previewUrl = useMemo(() => {
-    if (!image) return null;
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    if (image instanceof File) {
-      return URL.createObjectURL(image);
+  useEffect(() => {
+    if (!image) {
+      setPreviewUrl(null);
+      return;
     }
 
-    return image.thumbnailUrl || image.cdnUrl;
+    if (image instanceof File) {
+      const url = URL.createObjectURL(image);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(image.thumbnailUrl || image.cdnUrl || null);
+    }
   }, [image]);
 
   const helperText = useMemo(() => {
@@ -78,15 +91,6 @@ function OrientationPreviewCard({
       image.fileSizeBytes ? ` • ${(image.fileSizeBytes / 1024).toFixed(1)} KB` : ''
     }`;
   }, [image]);
-
-  // Cleanup object URL when component unmounts or image changes
-  useEffect(() => {
-    return () => {
-      if (image instanceof File && previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [image, previewUrl]);
 
   return (
     <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
@@ -253,32 +257,36 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
       sideImage: undefined,
     };
 
-    // During creation/edit, check for uploaded files in individual fields
+    // During creation/edit, check for uploaded files in individual fields first
     result.frontImage = form.getValues('frontImage') || undefined;
     result.backImage = form.getValues('backImage') || undefined;
     result.sideImage = form.getValues('sideImage') || undefined;
 
-    // If we have existing images (during edit), use those instead
+    // If we have existing images (during edit) AND no new file was uploaded for that position, use those instead
     if (entity?.images?.length) {
       const existingMap = entity.images.reduce(
-        (acc: Record<string, ProductImageDTO>, image: ProductImageDTO) => {
-          // Map based on displayOrder or isPrimary flag
-          if (image.isPrimary) {
-            acc.frontImage = image;
-          } else if (image.displayOrder === 1) {
-            acc.backImage = image;
-          } else if (image.displayOrder === 2) {
-            acc.sideImage = image;
+        (acc, image) => {
+          if (image.displayOrder === undefined || image.displayOrder === null) {
+            return acc;
           }
+
+          const entry = Object.entries(ORIENTATION_DISPLAY_ORDER).find(
+            ([, order]) => order === image.displayOrder
+          );
+
+          if (entry) {
+            acc[entry[0] as (typeof ORIENTATION_FIELDS)[number]['name']] = image;
+          }
+
           return acc;
         },
-        {} as Record<string, ProductImageDTO>
+        {} as Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO>
       );
 
-      // Override with existing images if they exist
-      if (existingMap.frontImage) result.frontImage = existingMap.frontImage;
-      if (existingMap.backImage) result.backImage = existingMap.backImage;
-      if (existingMap.sideImage) result.sideImage = existingMap.sideImage;
+      // Only use existing images if no new file was uploaded for that position
+      if (!result.frontImage && existingMap.frontImage) result.frontImage = existingMap.frontImage;
+      if (!result.backImage && existingMap.backImage) result.backImage = existingMap.backImage;
+      if (!result.sideImage && existingMap.sideImage) result.sideImage = existingMap.sideImage;
     }
 
     return result;
