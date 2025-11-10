@@ -11,11 +11,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -24,8 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,22 +31,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountStates,
   useGetAllStates,
   useSearchStates,
-  useUpdateState,
-} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
+  useUpdateState} from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 import { StateTableHeader } from './table/state-table-header';
 import { StateTableRow } from './table/state-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
@@ -57,8 +51,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -114,8 +107,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'name',
@@ -123,8 +115,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'country',
@@ -132,8 +123,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'country',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -141,8 +131,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdBy',
@@ -150,8 +139,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -159,8 +147,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -168,8 +155,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -177,8 +163,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'state-table-columns';
@@ -239,8 +224,7 @@ export function StateTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -251,8 +235,7 @@ export function StateTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -278,25 +261,21 @@ export function StateTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -365,23 +344,19 @@ export function StateTable() {
     {
       value: StateDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: StateDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: StateDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: StateDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -403,8 +378,7 @@ export function StateTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -476,50 +450,40 @@ export function StateTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       )
     : useGetAllStates(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       );
 
   const { data: countData } = useCountStates(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateState({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllStates'],
-        });
+          queryKey: ['getAllStates']});
 
         await queryClient.cancelQueries({
-          queryKey: ['searchStates'],
-        });
+          queryKey: ['searchStates']});
 
         const previousData = queryClient.getQueryData([
           'getAllStates',
@@ -527,8 +491,7 @@ export function StateTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -539,8 +502,7 @@ export function StateTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old.map((state) =>
@@ -558,8 +520,7 @@ export function StateTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((state) =>
@@ -578,8 +539,7 @@ export function StateTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => old?.map((state) => (state.id === variables.id ? data : state))
         );
@@ -593,8 +553,7 @@ export function StateTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) => old?.map((state) => (state.id === variables.id ? data : state))
           );
@@ -611,8 +570,7 @@ export function StateTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -622,20 +580,15 @@ export function StateTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllStates'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countStates'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchStates'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateState({
     mutation: {
@@ -648,8 +601,7 @@ export function StateTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         queryClient.setQueryData(
@@ -659,8 +611,7 @@ export function StateTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -675,8 +626,7 @@ export function StateTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -720,8 +670,7 @@ export function StateTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -731,20 +680,15 @@ export function StateTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllStates'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countStates'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchStates'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -779,8 +723,7 @@ export function StateTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: StateDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: StateDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -794,8 +737,7 @@ export function StateTable() {
         const statusValue = StateDTOStatus[newStatus as keyof typeof StateDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -806,8 +748,7 @@ export function StateTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -864,8 +805,7 @@ export function StateTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -876,12 +816,10 @@ export function StateTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: StateDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: StateDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -892,17 +830,14 @@ export function StateTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       stateToast.custom.success(
         'Bulk Archive Complete',
@@ -918,8 +853,7 @@ export function StateTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -943,8 +877,7 @@ export function StateTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -956,12 +889,10 @@ export function StateTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -972,17 +903,14 @@ export function StateTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchStates'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1000,8 +928,7 @@ export function StateTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1039,8 +966,7 @@ export function StateTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1055,8 +981,7 @@ export function StateTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1067,8 +992,7 @@ export function StateTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
-                  },
+                    ...filterParams},
                 ],
                 (old: any[]) =>
                   old?.map((state) => (state.id === entityId ? serverResponse : state))
@@ -1083,8 +1007,7 @@ export function StateTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
+                      ...filterParams},
                   ],
                   (old: any[]) =>
                     old?.map((state) => (state.id === entityId ? serverResponse : state))
@@ -1106,8 +1029,7 @@ export function StateTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1125,8 +1047,7 @@ export function StateTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1168,8 +1089,7 @@ export function StateTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1266,22 +1186,7 @@ export function StateTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"

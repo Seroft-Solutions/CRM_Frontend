@@ -12,11 +12,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -25,8 +23,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,22 +32,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountCalls,
   useGetAllCalls,
   useSearchCalls,
-  useUpdateCall,
-} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+  useUpdateCall} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 
@@ -76,8 +70,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -138,8 +131,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'leadNo',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'externalId',
@@ -147,8 +139,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'externalId',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -156,8 +147,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'priority',
@@ -165,8 +155,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'priority',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'callType',
@@ -174,8 +163,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'callType',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'subCallType',
@@ -183,8 +171,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'subCallType',
     type: 'relationship',
     visible: false,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'source',
@@ -192,8 +179,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'source',
     type: 'relationship',
     visible: false,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'customer',
@@ -201,8 +187,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'customer',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'product',
@@ -210,8 +195,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'product',
     type: 'relationship',
     visible: false,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'channelType',
@@ -219,8 +203,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'channelType',
     type: 'relationship',
     visible: false,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'channelParties',
@@ -228,8 +211,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'channelParties',
     type: 'relationship',
     visible: false,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'assignedTo',
@@ -237,8 +219,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'assignedTo',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'callStatus',
@@ -246,8 +227,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'callStatus',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'createdBy',
@@ -255,8 +235,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -264,8 +243,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -273,8 +251,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -282,8 +259,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'call-table-columns';
@@ -358,8 +334,7 @@ export function CallTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -370,8 +345,7 @@ export function CallTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -415,8 +389,7 @@ export function CallTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const exportToCSV = () => {
@@ -569,23 +542,19 @@ export function CallTable() {
     {
       value: CallDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: CallDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: CallDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: CallDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -609,70 +578,58 @@ export function CallTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     const relationshipMappings = {
       'priority.name': {
         apiParam: 'priorityId.equals',
         options: priorityOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'callType.name': {
         apiParam: 'callTypeId.equals',
         options: calltypeOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'subCallType.name': {
         apiParam: 'subCallTypeId.equals',
         options: subcalltypeOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'source.name': {
         apiParam: 'sourceId.equals',
         options: sourceOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'customer.customerBusinessName': {
         apiParam: 'customerId.equals',
         options: customerOptions,
-        displayField: 'customerBusinessName',
-      },
+        displayField: 'customerBusinessName'},
 
       'product.name': {
         apiParam: 'productId.equals',
         options: productOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'channelType.name': {
         apiParam: 'channelTypeId.equals',
         options: channeltypeOptions,
-        displayField: 'name',
-      },
+        displayField: 'name'},
 
       'channelParties.displayName': {
         apiParam: 'channelPartiesId.equals',
         options: userprofileOptions,
-        displayField: 'displayName',
-      },
+        displayField: 'displayName'},
 
       'assignedTo.displayName': {
         apiParam: 'assignedToId.equals',
         options: userprofileOptions,
-        displayField: 'displayName',
-      },
+        displayField: 'displayName'},
 
       'callStatus.name': {
         apiParam: 'callStatusId.equals',
         options: callstatusOptions,
-        displayField: 'name',
-      },
-    };
+        displayField: 'name'}};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -752,47 +709,38 @@ export function CallTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       )
     : useGetAllCalls(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       );
 
   const handleRefresh = useCallback(async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -814,9 +762,7 @@ export function CallTable() {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const filteredData = useMemo(() => {
     if (!data) return data;
@@ -846,12 +792,10 @@ export function CallTable() {
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllCalls'],
-        });
+          queryKey: ['getAllCalls']});
 
         await queryClient.cancelQueries({
-          queryKey: ['searchCalls'],
-        });
+          queryKey: ['searchCalls']});
 
         const previousData = queryClient.getQueryData([
           'getAllCalls',
@@ -859,8 +803,7 @@ export function CallTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -871,8 +814,7 @@ export function CallTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old.map((call) => (call.id === variables.id ? { ...call, ...variables.data } : call))
@@ -888,8 +830,7 @@ export function CallTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((call) => (call.id === variables.id ? { ...call, ...variables.data } : call))
@@ -906,8 +847,7 @@ export function CallTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => old?.map((call) => (call.id === variables.id ? data : call))
         );
@@ -921,8 +861,7 @@ export function CallTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) => old?.map((call) => (call.id === variables.id ? data : call))
           );
@@ -939,8 +878,7 @@ export function CallTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -950,20 +888,15 @@ export function CallTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCalls'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countCalls'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCalls'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateCall({
     mutation: {
@@ -976,8 +909,7 @@ export function CallTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         queryClient.setQueryData(
@@ -987,8 +919,7 @@ export function CallTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -1003,8 +934,7 @@ export function CallTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -1052,8 +982,7 @@ export function CallTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -1063,20 +992,15 @@ export function CallTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCalls'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countCalls'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCalls'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -1111,8 +1035,7 @@ export function CallTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: CallDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: CallDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -1126,8 +1049,7 @@ export function CallTable() {
         const statusValue = CallDTOStatus[newStatus as keyof typeof CallDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -1138,8 +1060,7 @@ export function CallTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -1196,8 +1117,7 @@ export function CallTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1208,12 +1128,10 @@ export function CallTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: CallDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: CallDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1224,17 +1142,14 @@ export function CallTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       callToast.custom.success(
         'Bulk Archive Complete',
@@ -1250,8 +1165,7 @@ export function CallTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1275,8 +1189,7 @@ export function CallTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1288,12 +1201,10 @@ export function CallTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1304,17 +1215,14 @@ export function CallTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCalls'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1332,8 +1240,7 @@ export function CallTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1371,8 +1278,7 @@ export function CallTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1387,8 +1293,7 @@ export function CallTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1399,8 +1304,7 @@ export function CallTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
-                  },
+                    ...filterParams},
                 ],
                 (old: any[]) => old?.map((call) => (call.id === entityId ? serverResponse : call))
               );
@@ -1414,8 +1318,7 @@ export function CallTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
+                      ...filterParams},
                   ],
                   (old: any[]) => old?.map((call) => (call.id === entityId ? serverResponse : call))
                 );
@@ -1436,8 +1339,7 @@ export function CallTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1455,8 +1357,7 @@ export function CallTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1498,8 +1399,7 @@ export function CallTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1514,80 +1414,70 @@ export function CallTable() {
       displayName: 'Priority',
       options: priorityOptions || [],
       displayField: 'name',
-      isEditable: true,
-    },
+      isEditable: true},
 
     {
       name: 'callType',
       displayName: 'CallType',
       options: calltypeOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'subCallType',
       displayName: 'SubCallType',
       options: subcalltypeOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'source',
       displayName: 'Source',
       options: sourceOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'customer',
       displayName: 'Customer',
       options: customerOptions || [],
       displayField: 'customerBusinessName',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'product',
       displayName: 'Product',
       options: productOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'channelType',
       displayName: 'ChannelType',
       options: channeltypeOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'channelParties',
       displayName: 'ChannelParties',
       options: userprofileOptions || [],
       displayField: 'displayName',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'assignedTo',
       displayName: 'AssignedTo',
       options: userprofileOptions || [],
       displayField: 'displayName',
-      isEditable: true,
-    },
+      isEditable: true},
 
     {
       name: 'callStatus',
       displayName: 'CallStatus',
       options: callstatusOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
   ];
 
   const hasActiveFilters =
@@ -1714,22 +1604,7 @@ export function CallTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"

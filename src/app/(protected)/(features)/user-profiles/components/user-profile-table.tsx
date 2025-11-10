@@ -11,11 +11,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -24,8 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,22 +31,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountUserProfiles,
   useGetAllUserProfiles,
   useSearchUserProfiles,
-  useUpdateUserProfile,
-} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
+  useUpdateUserProfile} from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
 
 import { useGetAllPublicUsers } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 
@@ -61,8 +55,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -118,8 +111,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'keycloakId',
@@ -127,8 +119,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'keycloakId',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'firstName',
@@ -136,8 +127,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'firstName',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastName',
@@ -145,8 +135,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastName',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'email',
@@ -154,8 +143,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'email',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'phone',
@@ -163,8 +151,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'phone',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'displayName',
@@ -172,8 +159,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'displayName',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -181,8 +167,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'internalUser',
@@ -190,8 +175,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'internalUser',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'channelType',
@@ -199,8 +183,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'channelType',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'createdBy',
@@ -208,8 +191,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -217,8 +199,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -226,8 +207,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -235,8 +215,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'user-profile-table-columns';
@@ -297,8 +276,7 @@ export function UserProfileTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -309,8 +287,7 @@ export function UserProfileTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -336,25 +313,21 @@ export function UserProfileTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -441,23 +414,19 @@ export function UserProfileTable() {
     {
       value: UserProfileDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: UserProfileDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: UserProfileDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: UserProfileDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -479,22 +448,18 @@ export function UserProfileTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     const relationshipMappings = {
       'internalUser.login': {
         apiParam: 'internalUserId.equals',
         options: userOptions,
-        displayField: 'login',
-      },
+        displayField: 'login'},
 
       'channelType.name': {
         apiParam: 'channelTypeId.equals',
         options: channeltypeOptions,
-        displayField: 'name',
-      },
-    };
+        displayField: 'name'}};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -590,50 +555,40 @@ export function UserProfileTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       )
     : useGetAllUserProfiles(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       );
 
   const { data: countData } = useCountUserProfiles(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateUserProfile({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllUserProfiles'],
-        });
+          queryKey: ['getAllUserProfiles']});
 
         await queryClient.cancelQueries({
-          queryKey: ['searchUserProfiles'],
-        });
+          queryKey: ['searchUserProfiles']});
 
         const previousData = queryClient.getQueryData([
           'getAllUserProfiles',
@@ -641,8 +596,7 @@ export function UserProfileTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -653,8 +607,7 @@ export function UserProfileTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old.map((userProfile) =>
@@ -674,8 +627,7 @@ export function UserProfileTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((userProfile) =>
@@ -696,8 +648,7 @@ export function UserProfileTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) =>
             old?.map((userProfile) => (userProfile.id === variables.id ? data : userProfile))
@@ -712,8 +663,7 @@ export function UserProfileTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((userProfile) => (userProfile.id === variables.id ? data : userProfile))
@@ -731,8 +681,7 @@ export function UserProfileTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -742,20 +691,15 @@ export function UserProfileTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllUserProfiles'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countUserProfiles'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchUserProfiles'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateUserProfile({
     mutation: {
@@ -768,8 +712,7 @@ export function UserProfileTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         queryClient.setQueryData(
@@ -779,8 +722,7 @@ export function UserProfileTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -795,8 +737,7 @@ export function UserProfileTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -845,8 +786,7 @@ export function UserProfileTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -856,20 +796,15 @@ export function UserProfileTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllUserProfiles'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countUserProfiles'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchUserProfiles'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -904,8 +839,7 @@ export function UserProfileTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: UserProfileDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: UserProfileDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -919,8 +853,7 @@ export function UserProfileTable() {
         const statusValue = UserProfileDTOStatus[newStatus as keyof typeof UserProfileDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -931,8 +864,7 @@ export function UserProfileTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -989,8 +921,7 @@ export function UserProfileTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1001,12 +932,10 @@ export function UserProfileTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: UserProfileDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: UserProfileDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1017,17 +946,14 @@ export function UserProfileTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       userProfileToast.custom.success(
         'Bulk Archive Complete',
@@ -1043,8 +969,7 @@ export function UserProfileTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1068,8 +993,7 @@ export function UserProfileTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1081,12 +1005,10 @@ export function UserProfileTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1097,17 +1019,14 @@ export function UserProfileTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchUserProfiles'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1125,8 +1044,7 @@ export function UserProfileTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1164,8 +1082,7 @@ export function UserProfileTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1180,8 +1097,7 @@ export function UserProfileTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1192,8 +1108,7 @@ export function UserProfileTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
-                  },
+                    ...filterParams},
                 ],
                 (old: any[]) =>
                   old?.map((userProfile) =>
@@ -1210,8 +1125,7 @@ export function UserProfileTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
+                      ...filterParams},
                   ],
                   (old: any[]) =>
                     old?.map((userProfile) =>
@@ -1235,8 +1149,7 @@ export function UserProfileTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1254,8 +1167,7 @@ export function UserProfileTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1297,8 +1209,7 @@ export function UserProfileTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1313,16 +1224,14 @@ export function UserProfileTable() {
       displayName: 'InternalUser',
       options: userOptions || [],
       displayField: 'login',
-      isEditable: false,
-    },
+      isEditable: false},
 
     {
       name: 'channelType',
       displayName: 'ChannelType',
       options: channeltypeOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
   ];
 
   const hasActiveFilters =
@@ -1411,22 +1320,7 @@ export function UserProfileTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"

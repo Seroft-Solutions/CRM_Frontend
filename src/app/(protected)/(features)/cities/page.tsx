@@ -1,14 +1,13 @@
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 import { CityTable } from './components/city-table';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
-  title: 'Cities',
-};
+  title: 'Cities'};
 
 export default function CityPage() {
   return (
@@ -25,8 +24,7 @@ export default function CityPage() {
             className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
-            }}
+              backgroundSize: '20px 20px'}}
           ></div>
 
           <div className="flex items-center justify-between relative z-10">
@@ -55,23 +53,14 @@ export default function CityPage() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-                aria-label="Refresh List"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
               <InlinePermissionGuard requiredPermission="city:create">
                 <Button
                   asChild
                   size="sm"
-                  className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
+                  className="h-10 gap-2 bg-yellow-400 text-black hover:bg-yellow-500 text-sm font-semibold px-8 shadow-md min-w-32"
                 >
                   <Link href="/cities/new">
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">Create</span>
                   </Link>
                 </Button>

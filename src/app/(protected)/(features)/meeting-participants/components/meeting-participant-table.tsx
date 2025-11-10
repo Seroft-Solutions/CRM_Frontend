@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   handleMeetingParticipantError,
-  meetingParticipantToast,
-} from './meeting-participant-toast';
+  meetingParticipantToast} from './meeting-participant-toast';
 import { MeetingParticipantDTOStatus } from '@/core/api/generated/spring/schemas/MeetingParticipantDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -14,11 +13,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -27,8 +24,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,22 +33,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountMeetingParticipants,
   useGetAllMeetingParticipants,
   useSearchMeetingParticipants,
-  useUpdateMeetingParticipant,
-} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
+  useUpdateMeetingParticipant} from '@/core/api/generated/spring/endpoints/meeting-participant-resource/meeting-participant-resource.gen';
 
 import { useGetAllMeetings } from '@/core/api/generated/spring/endpoints/meeting-resource/meeting-resource.gen';
 import { MeetingParticipantTableHeader } from './table/meeting-participant-table-header';
@@ -62,8 +55,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -119,8 +111,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'email',
@@ -128,8 +119,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'email',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'name',
@@ -137,8 +127,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'isRequired',
@@ -146,8 +135,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'isRequired',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'hasAccepted',
@@ -155,8 +143,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'hasAccepted',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'hasDeclined',
@@ -164,8 +151,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'hasDeclined',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'responseDateTime',
@@ -173,8 +159,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'responseDateTime',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -182,8 +167,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'meeting',
@@ -191,8 +175,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'meeting',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'createdBy',
@@ -200,8 +183,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -209,8 +191,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -218,8 +199,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -227,8 +207,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'meeting-participant-table-columns';
@@ -289,8 +268,7 @@ export function MeetingParticipantTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -301,8 +279,7 @@ export function MeetingParticipantTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -328,25 +305,21 @@ export function MeetingParticipantTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -424,23 +397,19 @@ export function MeetingParticipantTable() {
     {
       value: MeetingParticipantDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: MeetingParticipantDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: MeetingParticipantDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: MeetingParticipantDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -462,16 +431,13 @@ export function MeetingParticipantTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     const relationshipMappings = {
       'meeting.name': {
         apiParam: 'meetingId.equals',
         options: meetingOptions,
-        displayField: 'name',
-      },
-    };
+        displayField: 'name'}};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -570,50 +536,40 @@ export function MeetingParticipantTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       )
     : useGetAllMeetingParticipants(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       );
 
   const { data: countData } = useCountMeetingParticipants(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateMeetingParticipant({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllMeetingParticipants'],
-        });
+          queryKey: ['getAllMeetingParticipants']});
 
         await queryClient.cancelQueries({
-          queryKey: ['searchMeetingParticipants'],
-        });
+          queryKey: ['searchMeetingParticipants']});
 
         const previousData = queryClient.getQueryData([
           'getAllMeetingParticipants',
@@ -621,8 +577,7 @@ export function MeetingParticipantTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -633,8 +588,7 @@ export function MeetingParticipantTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old.map((meetingParticipant) =>
@@ -654,8 +608,7 @@ export function MeetingParticipantTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((meetingParticipant) =>
@@ -676,8 +629,7 @@ export function MeetingParticipantTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) =>
             old?.map((meetingParticipant) =>
@@ -694,8 +646,7 @@ export function MeetingParticipantTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((meetingParticipant) =>
@@ -715,8 +666,7 @@ export function MeetingParticipantTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -726,20 +676,15 @@ export function MeetingParticipantTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countMeetingParticipants'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchMeetingParticipants'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateMeetingParticipant({
     mutation: {
@@ -752,8 +697,7 @@ export function MeetingParticipantTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         queryClient.setQueryData(
@@ -763,8 +707,7 @@ export function MeetingParticipantTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -779,8 +722,7 @@ export function MeetingParticipantTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -829,8 +771,7 @@ export function MeetingParticipantTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -840,20 +781,15 @@ export function MeetingParticipantTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllMeetingParticipants'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countMeetingParticipants'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchMeetingParticipants'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -888,8 +824,7 @@ export function MeetingParticipantTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: MeetingParticipantDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: MeetingParticipantDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -904,8 +839,7 @@ export function MeetingParticipantTable() {
           MeetingParticipantDTOStatus[newStatus as keyof typeof MeetingParticipantDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -916,8 +850,7 @@ export function MeetingParticipantTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -974,8 +907,7 @@ export function MeetingParticipantTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -986,12 +918,10 @@ export function MeetingParticipantTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: MeetingParticipantDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: MeetingParticipantDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1002,17 +932,14 @@ export function MeetingParticipantTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       meetingParticipantToast.custom.success(
         'Bulk Archive Complete',
@@ -1028,8 +955,7 @@ export function MeetingParticipantTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1053,8 +979,7 @@ export function MeetingParticipantTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1067,12 +992,10 @@ export function MeetingParticipantTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1083,17 +1006,14 @@ export function MeetingParticipantTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchMeetingParticipants'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1111,8 +1031,7 @@ export function MeetingParticipantTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1150,8 +1069,7 @@ export function MeetingParticipantTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1166,8 +1084,7 @@ export function MeetingParticipantTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1178,8 +1095,7 @@ export function MeetingParticipantTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
-                  },
+                    ...filterParams},
                 ],
                 (old: any[]) =>
                   old?.map((meetingParticipant) =>
@@ -1196,8 +1112,7 @@ export function MeetingParticipantTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
+                      ...filterParams},
                   ],
                   (old: any[]) =>
                     old?.map((meetingParticipant) =>
@@ -1221,8 +1136,7 @@ export function MeetingParticipantTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1240,8 +1154,7 @@ export function MeetingParticipantTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1283,8 +1196,7 @@ export function MeetingParticipantTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1299,8 +1211,7 @@ export function MeetingParticipantTable() {
       displayName: 'Meeting',
       options: meetingOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
   ];
 
   const hasActiveFilters =
@@ -1389,22 +1300,7 @@ export function MeetingParticipantTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"

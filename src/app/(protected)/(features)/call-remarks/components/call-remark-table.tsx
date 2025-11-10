@@ -11,11 +11,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -24,8 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,22 +31,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountCallRemarks,
   useGetAllCallRemarks,
   useSearchCallRemarks,
-  useUpdateCallRemark,
-} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
+  useUpdateCallRemark} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
 
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import { CallRemarkTableHeader } from './table/call-remark-table-header';
@@ -59,8 +53,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -116,8 +109,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'remark',
@@ -125,8 +117,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'remark',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'dateTime',
@@ -134,8 +125,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'dateTime',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -143,8 +133,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'call',
@@ -152,8 +141,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'call',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'createdBy',
@@ -161,8 +149,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -170,8 +157,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -179,8 +165,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -188,8 +173,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'call-remark-table-columns';
@@ -250,8 +234,7 @@ export function CallRemarkTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -262,8 +245,7 @@ export function CallRemarkTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -289,25 +271,21 @@ export function CallRemarkTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['getAllCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -385,23 +363,19 @@ export function CallRemarkTable() {
     {
       value: CallRemarkDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: CallRemarkDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: CallRemarkDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: CallRemarkDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -423,16 +397,13 @@ export function CallRemarkTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     const relationshipMappings = {
       'call.name': {
         apiParam: 'callId.equals',
         options: callOptions,
-        displayField: 'name',
-      },
-    };
+        displayField: 'name'}};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -521,50 +492,40 @@ export function CallRemarkTable() {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       )
     : useGetAllCallRemarks(
         {
           page: apiPage,
           size: pageSize,
           sort: [`${sort},${order}`],
-          ...filterParams,
-        },
+          ...filterParams},
         {
           query: {
             enabled: true,
             staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
+            refetchOnWindowFocus: true}}
       );
 
   const { data: countData } = useCountCallRemarks(filterParams, {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCallRemark({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllCallRemarks'],
-        });
+          queryKey: ['getAllCallRemarks']});
 
         await queryClient.cancelQueries({
-          queryKey: ['searchCallRemarks'],
-        });
+          queryKey: ['searchCallRemarks']});
 
         const previousData = queryClient.getQueryData([
           'getAllCallRemarks',
@@ -572,8 +533,7 @@ export function CallRemarkTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -584,8 +544,7 @@ export function CallRemarkTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old.map((callRemark) =>
@@ -603,8 +562,7 @@ export function CallRemarkTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((callRemark) =>
@@ -623,8 +581,7 @@ export function CallRemarkTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) =>
             old?.map((callRemark) => (callRemark.id === variables.id ? data : callRemark))
@@ -639,8 +596,7 @@ export function CallRemarkTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             (old: any[]) =>
               old?.map((callRemark) => (callRemark.id === variables.id ? data : callRemark))
@@ -658,8 +614,7 @@ export function CallRemarkTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -669,20 +624,15 @@ export function CallRemarkTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCallRemarks'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countCallRemarks'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCallRemarks'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateCallRemark({
     mutation: {
@@ -695,8 +645,7 @@ export function CallRemarkTable() {
             page: apiPage,
             size: pageSize,
             sort: [`${sort},${order}`],
-            ...filterParams,
-          },
+            ...filterParams},
         ]);
 
         queryClient.setQueryData(
@@ -706,8 +655,7 @@ export function CallRemarkTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -722,8 +670,7 @@ export function CallRemarkTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -770,8 +717,7 @@ export function CallRemarkTable() {
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
-                ...filterParams,
-              },
+                ...filterParams},
             ],
             context.previousData
           );
@@ -781,20 +727,15 @@ export function CallRemarkTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['getAllCallRemarks'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countCallRemarks'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
 
         await queryClient.invalidateQueries({
           queryKey: ['searchCallRemarks'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -829,8 +770,7 @@ export function CallRemarkTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: CallRemarkDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: CallRemarkDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -844,8 +784,7 @@ export function CallRemarkTable() {
         const statusValue = CallRemarkDTOStatus[newStatus as keyof typeof CallRemarkDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -856,8 +795,7 @@ export function CallRemarkTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -914,8 +852,7 @@ export function CallRemarkTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -926,12 +863,10 @@ export function CallRemarkTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: CallRemarkDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: CallRemarkDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -942,17 +877,14 @@ export function CallRemarkTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       callRemarkToast.custom.success(
         'Bulk Archive Complete',
@@ -968,8 +900,7 @@ export function CallRemarkTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -993,8 +924,7 @@ export function CallRemarkTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1006,12 +936,10 @@ export function CallRemarkTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -1022,17 +950,14 @@ export function CallRemarkTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['getAllCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await queryClient.invalidateQueries({
         queryKey: ['searchCallRemarks'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1050,8 +975,7 @@ export function CallRemarkTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1089,8 +1013,7 @@ export function CallRemarkTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1105,8 +1028,7 @@ export function CallRemarkTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1117,8 +1039,7 @@ export function CallRemarkTable() {
                     page: apiPage,
                     size: pageSize,
                     sort: [`${sort},${order}`],
-                    ...filterParams,
-                  },
+                    ...filterParams},
                 ],
                 (old: any[]) =>
                   old?.map((callRemark) =>
@@ -1135,8 +1056,7 @@ export function CallRemarkTable() {
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
-                      ...filterParams,
-                    },
+                      ...filterParams},
                   ],
                   (old: any[]) =>
                     old?.map((callRemark) =>
@@ -1160,8 +1080,7 @@ export function CallRemarkTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1179,8 +1098,7 @@ export function CallRemarkTable() {
         page: apiPage,
         size: pageSize,
         sort: [`${sort},${order}`],
-        ...filterParams,
-      },
+        ...filterParams},
     ]);
 
     try {
@@ -1222,8 +1140,7 @@ export function CallRemarkTable() {
               page: apiPage,
               size: pageSize,
               sort: [`${sort},${order}`],
-              ...filterParams,
-            },
+              ...filterParams},
           ],
           previousData
         );
@@ -1238,8 +1155,7 @@ export function CallRemarkTable() {
       displayName: 'Call',
       options: callOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
   ];
 
   const hasActiveFilters =
@@ -1328,22 +1244,7 @@ export function CallRemarkTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"

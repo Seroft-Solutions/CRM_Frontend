@@ -11,11 +11,9 @@ import {
   Download,
   Eye,
   EyeOff,
-  RefreshCw,
   RotateCcw,
   Settings2,
-  X,
-} from 'lucide-react';
+  X} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
@@ -24,8 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,21 +31,18 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountAreas,
   useSearchGeography,
-  useUpdateArea,
-} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+  useUpdateArea} from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
 import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import { AreaTableHeader } from './table/area-table-header';
@@ -58,8 +52,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 
 const TABLE_CONFIG = {
   showDraftTab: false,
-  centerAlignActions: true,
-};
+  centerAlignActions: true};
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -115,8 +108,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'id',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'name',
@@ -124,8 +116,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'name',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'pincode',
@@ -133,8 +124,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'pincode',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'status',
@@ -142,8 +132,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'status',
     type: 'field',
     visible: true,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'city',
@@ -151,8 +140,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'city',
     type: 'relationship',
     visible: true,
-    sortable: false,
-  },
+    sortable: false},
 
   {
     id: 'createdBy',
@@ -160,8 +148,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'createdDate',
@@ -169,8 +156,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'createdDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedBy',
@@ -178,8 +164,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedBy',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 
   {
     id: 'lastModifiedDate',
@@ -187,8 +172,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'lastModifiedDate',
     type: 'field',
     visible: false,
-    sortable: true,
-  },
+    sortable: true},
 ];
 
 const COLUMN_VISIBILITY_KEY = 'area-table-columns';
@@ -249,8 +233,7 @@ export function AreaTable() {
         const defaultVisibility = ALL_COLUMNS.reduce(
           (acc, col) => ({
             ...acc,
-            [col.id]: col.visible,
-          }),
+            [col.id]: col.visible}),
           {}
         );
         setColumnVisibility(defaultVisibility);
@@ -261,8 +244,7 @@ export function AreaTable() {
       const defaultVisibility = ALL_COLUMNS.reduce(
         (acc, col) => ({
           ...acc,
-          [col.id]: col.visible,
-        }),
+          [col.id]: col.visible}),
         {}
       );
       setColumnVisibility(defaultVisibility);
@@ -288,20 +270,17 @@ export function AreaTable() {
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
-      [columnId]: !prev[columnId],
-    }));
+      [columnId]: !prev[columnId]}));
   };
 
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
         queryKey: ['/api/areas/search-geography'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       await refetch();
 
@@ -384,23 +363,19 @@ export function AreaTable() {
     {
       value: AreaDTOStatus.DRAFT,
       label: transformEnumValue('DRAFT'),
-      color: 'bg-gray-100 text-gray-800',
-    },
+      color: 'bg-gray-100 text-gray-800'},
     {
       value: AreaDTOStatus.ACTIVE,
       label: transformEnumValue('ACTIVE'),
-      color: 'bg-green-100 text-green-800',
-    },
+      color: 'bg-green-100 text-green-800'},
     {
       value: AreaDTOStatus.INACTIVE,
       label: transformEnumValue('INACTIVE'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
+      color: 'bg-yellow-100 text-yellow-800'},
     {
       value: AreaDTOStatus.ARCHIVED,
       label: transformEnumValue('ARCHIVED'),
-      color: 'bg-red-100 text-red-800',
-    },
+      color: 'bg-red-100 text-red-800'},
   ];
 
   const getStatusFilter = () => {
@@ -422,16 +397,13 @@ export function AreaTable() {
 
   const buildFilterParams = () => {
     const params: Record<string, any> = {
-      ...getStatusFilter(),
-    };
+      ...getStatusFilter()};
 
     const relationshipMappings = {
       'city.name': {
         apiParam: 'cityId.equals',
         options: cityOptions,
-        displayField: 'name',
-      },
-    };
+        displayField: 'name'}};
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
@@ -509,15 +481,12 @@ export function AreaTable() {
       term: searchTerm || '',
       page: apiPage,
       size: pageSize,
-      sort: [`${sort},${order}`],
-    },
+      sort: [`${sort},${order}`]},
     {
       query: {
         enabled: true,
         staleTime: 0,
-        refetchOnWindowFocus: true,
-      },
-    }
+        refetchOnWindowFocus: true}}
   );
 
   useEffect(() => {
@@ -528,16 +497,13 @@ export function AreaTable() {
     query: {
       enabled: true,
       staleTime: 0,
-      refetchOnWindowFocus: true,
-    },
-  });
+      refetchOnWindowFocus: true}});
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateArea({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['/api/areas/search-geography'],
-        });
+          queryKey: ['/api/areas/search-geography']});
 
         const previousData = queryClient.getQueryData([
           '/api/areas/search-geography',
@@ -545,8 +511,7 @@ export function AreaTable() {
             term: searchTerm || '',
             page: apiPage,
             size: pageSize,
-            sort: [`${sort},${order}`],
-          },
+            sort: [`${sort},${order}`]},
         ]);
 
         if (previousData && Array.isArray(previousData)) {
@@ -557,8 +522,7 @@ export function AreaTable() {
                 term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
-                sort: [`${sort},${order}`],
-              },
+                sort: [`${sort},${order}`]},
             ],
             (old: any[]) =>
               old.map((area) => (area.id === variables.id ? { ...area, ...variables.data } : area))
@@ -575,8 +539,7 @@ export function AreaTable() {
               term: searchTerm || '',
               page: apiPage,
               size: pageSize,
-              sort: [`${sort},${order}`],
-            },
+              sort: [`${sort},${order}`]},
           ],
           (old: any[]) => old?.map((area) => (area.id === variables.id ? data : area))
         );
@@ -592,8 +555,7 @@ export function AreaTable() {
                 term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
-                sort: [`${sort},${order}`],
-              },
+                sort: [`${sort},${order}`]},
             ],
             context.previousData
           );
@@ -603,15 +565,11 @@ export function AreaTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['/api/areas/search-geography'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countAreas'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateArea({
     mutation: {
@@ -624,8 +582,7 @@ export function AreaTable() {
             term: searchTerm || '',
             page: apiPage,
             size: pageSize,
-            sort: [`${sort},${order}`],
-          },
+            sort: [`${sort},${order}`]},
         ]);
 
         queryClient.setQueryData(
@@ -635,8 +592,7 @@ export function AreaTable() {
               term: searchTerm || '',
               page: apiPage,
               size: pageSize,
-              sort: [`${sort},${order}`],
-            },
+              sort: [`${sort},${order}`]},
           ],
           (old: any[]) => {
             if (!old) return old;
@@ -651,8 +607,7 @@ export function AreaTable() {
               activeStatusTab,
               shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
               comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
+              entityId: variables.id});
 
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
               console.log(`Updating item ${variables.id} in place`);
@@ -696,8 +651,7 @@ export function AreaTable() {
                 term: searchTerm || '',
                 page: apiPage,
                 size: pageSize,
-                sort: [`${sort},${order}`],
-              },
+                sort: [`${sort},${order}`]},
             ],
             context.previousData
           );
@@ -707,15 +661,11 @@ export function AreaTable() {
       onSettled: async () => {
         await queryClient.invalidateQueries({
           queryKey: ['/api/areas/search-geography'],
-          refetchType: 'active',
-        });
+          refetchType: 'active'});
         await queryClient.invalidateQueries({
           queryKey: ['countAreas'],
-          refetchType: 'active',
-        });
-      },
-    },
-  });
+          refetchType: 'active'});
+      }}});
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -750,8 +700,7 @@ export function AreaTable() {
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
-          data: { ...currentEntity, status: AreaDTOStatus.ARCHIVED },
-        });
+          data: { ...currentEntity, status: AreaDTOStatus.ARCHIVED }});
       }
     }
     setShowArchiveDialog(false);
@@ -765,8 +714,7 @@ export function AreaTable() {
         const statusValue = AreaDTOStatus[newStatus as keyof typeof AreaDTOStatus];
         updateEntityStatus({
           id: statusChangeId,
-          data: { ...currentEntity, status: statusValue },
-        });
+          data: { ...currentEntity, status: statusValue }});
       }
     }
     setShowStatusChangeDialog(false);
@@ -777,8 +725,7 @@ export function AreaTable() {
   const handleFilterChange = (column: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [column]: value,
-    }));
+      [column]: value}));
     resetPagination();
   };
 
@@ -835,8 +782,7 @@ export function AreaTable() {
         term: searchTerm || '',
         page: apiPage,
         size: pageSize,
-        sort: [`${sort},${order}`],
-      },
+        sort: [`${sort},${order}`]},
     ]);
 
     try {
@@ -847,12 +793,10 @@ export function AreaTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: AreaDTOStatus.ARCHIVED },
-              },
+                data: { ...currentEntity, status: AreaDTOStatus.ARCHIVED }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -863,12 +807,10 @@ export function AreaTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['/api/areas/search-geography'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       areaToast.custom.success(
         'Bulk Archive Complete',
@@ -884,8 +826,7 @@ export function AreaTable() {
               term: searchTerm || '',
               page: apiPage,
               size: pageSize,
-              sort: [`${sort},${order}`],
-            },
+              sort: [`${sort},${order}`]},
           ],
           previousData
         );
@@ -909,8 +850,7 @@ export function AreaTable() {
         term: searchTerm || '',
         page: apiPage,
         size: pageSize,
-        sort: [`${sort},${order}`],
-      },
+        sort: [`${sort},${order}`]},
     ]);
 
     try {
@@ -922,12 +862,10 @@ export function AreaTable() {
             updateEntityStatus(
               {
                 id,
-                data: { ...currentEntity, status: statusValue },
-              },
+                data: { ...currentEntity, status: statusValue }},
               {
                 onSuccess: () => resolve(),
-                onError: (error) => reject(error),
-              }
+                onError: (error) => reject(error)}
             );
           });
         }
@@ -938,12 +876,10 @@ export function AreaTable() {
 
       await queryClient.invalidateQueries({
         queryKey: ['/api/areas/search-geography'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
       await queryClient.invalidateQueries({
         queryKey: ['countAreas'],
-        refetchType: 'active',
-      });
+        refetchType: 'active'});
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -961,8 +897,7 @@ export function AreaTable() {
               term: searchTerm || '',
               page: apiPage,
               size: pageSize,
-              sort: [`${sort},${order}`],
-            },
+              sort: [`${sort},${order}`]},
           ],
           previousData
         );
@@ -1000,8 +935,7 @@ export function AreaTable() {
 
       const updateData: any = {
         ...currentEntity,
-        id: entityId,
-      };
+        id: entityId};
 
       if (newValue) {
         const relationshipConfig = relationshipConfigs.find(
@@ -1016,8 +950,7 @@ export function AreaTable() {
       updateEntity(
         {
           id: entityId,
-          data: updateData,
-        },
+          data: updateData},
         {
           onSuccess: (serverResponse) => {
             if (isBulkOperation) {
@@ -1028,8 +961,7 @@ export function AreaTable() {
                     term: searchTerm || '',
                     page: apiPage,
                     size: pageSize,
-                    sort: [`${sort},${order}`],
-                  },
+                    sort: [`${sort},${order}`]},
                 ],
                 (old: any[]) => old?.map((area) => (area.id === entityId ? serverResponse : area))
               );
@@ -1049,8 +981,7 @@ export function AreaTable() {
               newSet.delete(cellKey);
               return newSet;
             });
-          },
-        }
+          }}
       );
     });
   };
@@ -1068,8 +999,7 @@ export function AreaTable() {
         term: searchTerm || '',
         page: apiPage,
         size: pageSize,
-        sort: [`${sort},${order}`],
-      },
+        sort: [`${sort},${order}`]},
     ]);
 
     try {
@@ -1111,8 +1041,7 @@ export function AreaTable() {
               term: searchTerm || '',
               page: apiPage,
               size: pageSize,
-              sort: [`${sort},${order}`],
-            },
+              sort: [`${sort},${order}`]},
           ],
           previousData
         );
@@ -1127,8 +1056,7 @@ export function AreaTable() {
       displayName: 'City',
       options: cityOptions || [],
       displayField: 'name',
-      isEditable: false,
-    },
+      isEditable: false},
   ];
 
   const hasActiveFilters =
@@ -1217,22 +1145,7 @@ export function AreaTable() {
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 text-xs sm:text-sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">⟳</span>
-            </Button>
-
-            {/* Export Button */}
+            </DropdownMenu>{/* Export Button */}
             <Button
               variant="outline"
               size="sm"
