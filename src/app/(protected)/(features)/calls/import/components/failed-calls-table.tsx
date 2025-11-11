@@ -575,9 +575,13 @@ export function FailedCallsTable() {
       case 'Sub Call Type':
         const selectedCallType = calltypeOptions.find((ct) => ct.name === rowData['callType']);
         if (!selectedCallType) return [];
-        return subcalltypeOptions
+        const subOptions = subcalltypeOptions
           .filter((sct) => sct.callType?.id === selectedCallType.id)
           .map((sct) => ({ value: sct.name, label: sct.name }));
+        if (subOptions.length === 0) {
+          return [{ value: '', label: 'N/A' }];
+        }
+        return subOptions;
       case 'Priority':
         return priorityOptions.map((p) => ({ value: p.name, label: p.name }));
       case 'Call Status':
@@ -716,7 +720,11 @@ export function FailedCallsTable() {
                                 <SearchableSelect
                                   value={(row[fieldName] as string) || ''}
                                   options={options}
-                                  placeholder={`Select ${header}`}
+                          placeholder={
+                            header === 'Sub Call Type' && options.length === 1 && !options[0].value
+                              ? 'N/A'
+                              : `Select ${header}`
+                          }
                                   onSelect={(value) => handleFieldChange(rowIndex, fieldName, value)}
                                   disabled={rowSaving}
                                   invalid={invalidFields.has(fieldName)}

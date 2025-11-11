@@ -590,7 +590,7 @@ export function CallTable() {
   const getStatusFilter = () => {
     switch (activeStatusTab) {
       case 'business-partners':
-        return { 'status.equals': CallDTOStatus.ACTIVE };
+        return { 'status.equals': CallDTOStatus.ACTIVE, 'externalId.specified': false };
       case 'draft':
         return { 'status.equals': CallDTOStatus.DRAFT };
       case 'active':
@@ -599,6 +599,8 @@ export function CallTable() {
         return { 'status.equals': CallDTOStatus.INACTIVE };
       case 'archived':
         return { 'status.equals': CallDTOStatus.ARCHIVED };
+      case 'external':
+        return {};
       case 'all':
         return {};
       default:
@@ -610,6 +612,10 @@ export function CallTable() {
     const params: Record<string, any> = {
       ...getStatusFilter(),
     };
+
+    if (activeStatusTab === 'external') {
+      params['externalId.specified'] = true;
+    }
 
     const relationshipMappings = {
       'priority.name': {
@@ -825,7 +831,11 @@ export function CallTable() {
     }
 
     if (activeStatusTab === 'active') {
-      return data.filter((call) => !isBusinessPartnerCall(call));
+      return data.filter((call) => !isBusinessPartnerCall(call) && !call.externalId);
+    }
+
+    if (activeStatusTab === 'external') {
+      return data.filter((call) => !!call.externalId);
     }
 
     return data;
@@ -1620,7 +1630,7 @@ export function CallTable() {
         {/* Status Filter Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
           <TabsList
-            className={`grid w-full ${isBusinessPartner ? 'grid-cols-4' : 'grid-cols-5'} bg-gray-100 p-1`}
+            className={`grid w-full ${isBusinessPartner ? 'grid-cols-5' : 'grid-cols-6'} bg-gray-100 p-1`}
           >
             <TabsTrigger
               value="business-partners"
@@ -1658,6 +1668,12 @@ export function CallTable() {
               className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               All
+            </TabsTrigger>
+            <TabsTrigger
+              value="external"
+              className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              External Data
             </TabsTrigger>
           </TabsList>
         </Tabs>

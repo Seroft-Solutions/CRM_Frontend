@@ -190,61 +190,11 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'callType') {
-                  const cellKey = `${call.id}-callType`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="callType"
-                      currentValue={call.callType}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'callType')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'callType')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="call-types"
-                      showNavigationIcon={true}
-                    />
-                  );
+                  return call.callType?.name || '';
                 }
 
                 if (column.id === 'subCallType') {
-                  const cellKey = `${call.id}-subCallType`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="subCallType"
-                      currentValue={call.subCallType}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'subCallType')
-                          ?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'subCallType')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="sub-call-types"
-                      showNavigationIcon={true}
-                    />
-                  );
+                  return call.subCallType?.name || '';
                 }
 
                 if (column.id === 'source') {
@@ -422,32 +372,7 @@ export function CallTableRow({
                 }
 
                 if (column.id === 'callStatus') {
-                  const cellKey = `${call.id}-callStatus`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="callStatus"
-                      currentValue={call.callStatus}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'callStatus')
-                          ?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'callStatus')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="call-statuses"
-                      showNavigationIcon={true}
-                    />
-                  );
+                  return call.callStatus?.name || '';
                 }
 
                 return null;
