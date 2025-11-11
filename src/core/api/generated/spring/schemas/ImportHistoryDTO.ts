@@ -9,8 +9,10 @@
 export interface ImportHistoryDTO {
   id?: number;
   customerBusinessName?: string;
+  phoneNumber?: string;
   zipCode?: string;
   productName?: string;
+  productCode?: string;
   externalId?: string;
   callType?: string;
   subCallType?: string;

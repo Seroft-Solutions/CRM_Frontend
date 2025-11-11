@@ -73,8 +73,10 @@ const tableScrollStyles = `
 
 const HEADERS = [
   'Customer name',
+  'Customer Phone Number',
   'Zip Code',
   'Product Name',
+  'Product Code',
   'External Id',
   'Call Type',
   'Sub Call Type',
@@ -88,8 +90,10 @@ type Option = { value: string; label: string };
 const TEMPLATE_FIELD_ORDER: Array<keyof ImportHistoryDTO> = [
   'externalId',
   'customerBusinessName',
+  'phoneNumber',
   'zipCode',
   'productName',
+  'productCode',
   'callType',
   'subCallType',
   'priority',
@@ -579,8 +583,10 @@ export function FailedCallsTable() {
 
   const headerMapping: { [key: string]: keyof ImportHistoryDTO } = {
     'Customer name': 'customerBusinessName',
+    'Customer Phone Number': 'phoneNumber',
     'Zip Code': 'zipCode',
     'Product Name': 'productName',
+    'Product Code': 'productCode',
     'External Id': 'externalId',
     'Call Type': 'callType',
     'Sub Call Type': 'subCallType',
