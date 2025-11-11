@@ -470,6 +470,7 @@ export function FailedCallsTable() {
         await processImportHistoryAsync({ id: row.id, data: row });
         setEditableData((prev) => prev.filter((item) => item.id !== row.id));
         refetch();
+        toast.success('Call data saved successfully.');
         debugLog('Row processed successfully', { rowId: row.id });
       } catch (error: any) {
         const errorMessage = error?.message || 'Unknown error';
