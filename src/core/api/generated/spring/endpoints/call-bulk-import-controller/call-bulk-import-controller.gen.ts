@@ -98,7 +98,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const getImportTemplate8 = (
+export const getImportTemplate8 = (
     
  options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
 ) => {
@@ -108,6 +108,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       {url: `/api/calls-bulk-import/import-template`, method: 'GET', signal
     },
       options);
+    }
+  
+export const downloadCallImportTemplate = (
+    
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<Blob>(
+      {url: `/api/calls-bulk-import/import-template/download`, method: 'GET'
+    },
+      { ...options, responseType: 'blob', signal });
     }
   
 
@@ -136,6 +148,32 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetImportTemplate8QueryResult = NonNullable<Awaited<ReturnType<typeof getImportTemplate8>>>
 export type GetImportTemplate8QueryError = ErrorType<unknown>
+
+export const getDownloadCallImportTemplateQueryKey = () => {
+    return [`/api/calls-bulk-import/import-template/download`] as const;
+    }
+
+    
+export const getDownloadCallImportTemplateQueryOptions = <TData = Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadCallImportTemplateQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadCallImportTemplate>>> = ({ signal }) => downloadCallImportTemplate(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadCallImportTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof downloadCallImportTemplate>>>
+export type DownloadCallImportTemplateQueryError = ErrorType<unknown>
 
 
 export function useGetImportTemplate8<TData = Awaited<ReturnType<typeof getImportTemplate8>>, TError = ErrorType<unknown>>(
@@ -177,5 +215,41 @@ export function useGetImportTemplate8<TData = Awaited<ReturnType<typeof getImpor
   return query;
 }
 
+export function useDownloadCallImportTemplate<TData = Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadCallImportTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof downloadCallImportTemplate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadCallImportTemplate<TData = Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadCallImportTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof downloadCallImportTemplate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadCallImportTemplate<TData = Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
+export function useDownloadCallImportTemplate<TData = Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadCallImportTemplate>>, TError, TData>>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
+  const queryOptions = getDownloadCallImportTemplateQueryOptions(options)
+
+  const query = useQuery(queryOptions , queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
