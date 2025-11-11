@@ -15,8 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useImportCallsFromExcel } from '@/core/api/generated/spring';
-import * as XLSX from 'xlsx';
+import { useDownloadCallImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
 import { callImportConfig } from '../config';
 
 interface CallDataImportProps {}
@@ -81,6 +80,15 @@ export function CallDataImport({}: CallDataImportProps) {
     },
   });
 
+  const {
+    refetch: fetchTemplate,
+    isFetching: isDownloadingTemplate,
+  } = useDownloadCallImportTemplate({
+    query: {
+      enabled: false,
+    },
+  });
+
   const handleSubmit = (data: any) => {
     if (!data.importFile) {
       alert('Please select a file');
@@ -90,26 +98,25 @@ export function CallDataImport({}: CallDataImportProps) {
     importCalls({ data: { file: data.importFile } });
   };
 
-  const handleDownloadTemplate = () => {
-    const wsData = [
-      callImportConfig.columns.map((column) => column.header),
-      callImportConfig.columns.map((column) => column.example),
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Calls');
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = callImportConfig.filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownloadTemplate = async () => {
+    try {
+      const result = await fetchTemplate();
+      if (!result.data) {
+        throw result.error ?? new Error('Unable to download template');
+      }
+      const blob = result.data;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = callImportConfig.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (downloadError) {
+      console.error('Failed to download template', downloadError);
+      alert('Unable to download template. Please try again.');
+    }
   };
 
   return (
@@ -141,9 +148,10 @@ export function CallDataImport({}: CallDataImportProps) {
                     variant="outline"
                     className="flex items-center gap-2"
                     type="button"
+                    disabled={isDownloadingTemplate}
                   >
                     <Download className="h-4 w-4" />
-                    Download Template (.xlsx)
+                    {isDownloadingTemplate ? 'Downloading…' : 'Download Template (.xlsx)'}
                   </Button>
                 </div>
               </div>
