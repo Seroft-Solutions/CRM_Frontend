@@ -19,4 +19,5 @@ export interface ImportHistoryDTO {
   priority?: string;
   callStatus?: string;
   issue?: string;
+  remark?: string;
 }

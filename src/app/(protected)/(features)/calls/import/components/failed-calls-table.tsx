@@ -82,6 +82,7 @@ const HEADERS = [
   'Sub Call Type',
   'Priority',
   'Call Status',
+  'Remark',
   'Reason',
 ];
 
@@ -98,6 +99,7 @@ const TEMPLATE_FIELD_ORDER: Array<keyof ImportHistoryDTO> = [
   'subCallType',
   'priority',
   'callStatus',
+  'remark',
 ];
 
 const normalizeKey = (value?: string | null) => value?.trim().toLowerCase() ?? '';
@@ -595,6 +597,7 @@ export function FailedCallsTable() {
     'Sub Call Type': 'subCallType',
     Priority: 'priority',
     'Call Status': 'callStatus',
+    Remark: 'remark',
     Reason: 'issue',
   };
 
