@@ -498,6 +498,7 @@ export function FailedCallsTable() {
       if (!original) {
         return prev;
       }
+
       const current = { ...original } as ImportHistoryDTO;
       (current[fieldName] as any) = value;
       if (fieldName === 'callType') {
