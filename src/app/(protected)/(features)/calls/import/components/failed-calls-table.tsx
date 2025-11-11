@@ -515,7 +515,9 @@ export function FailedCallsTable() {
         return next;
       });
       debugLog('Field updated', { rowId: updatedRow.id, fieldName, value });
-      processRow(updatedRow);
+      if (fieldName !== 'callType') {
+        processRow(updatedRow);
+      }
     }
   };
 
@@ -526,7 +528,8 @@ export function FailedCallsTable() {
     }
 
     editableData.forEach((row) => {
-      if (!row.id || pendingRowIds.has(row.id)) {
+      const hasError = row.id ? Boolean(rowErrors[row.id]) : false;
+      if (!row.id || pendingRowIds.has(row.id) || hasError) {
         return;
       }
       const invalid = computeInvalidFields(row);
@@ -545,7 +548,7 @@ export function FailedCallsTable() {
         debugLog('Row still invalid after refresh', { rowId: row.id, invalid: Array.from(invalid) });
       }
     });
-  }, [canResolveReferences, editableData, computeInvalidFields, processRow, pendingRowIds]);
+  }, [canResolveReferences, editableData, computeInvalidFields, processRow, pendingRowIds, rowErrors]);
 
   if (isLoading) {
     return <div>Loading...</div>;
