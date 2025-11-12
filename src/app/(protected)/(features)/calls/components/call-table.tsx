@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
+import type { GetAllCallRemarksParams } from '@/core/api/generated/spring/schemas/GetAllCallRemarksParams';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
@@ -50,6 +51,10 @@ import {
   useSearchCalls,
   useUpdateCall,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import {
+  getAllCallRemarks,
+  useGetAllCallRemarks,
+} from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
 
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 
@@ -69,7 +74,7 @@ import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/use
 
 import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/call-status-resource/call-status-resource.gen';
 import { CallTableHeader } from './table/call-table-header';
-import { CallTableRow } from './table/call-table-row';
+import { CallTableRow, type LatestRemarksMap } from './table/call-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
@@ -125,7 +130,7 @@ interface ColumnConfig {
   id: string;
   label: string;
   accessor: string;
-  type: 'field' | 'relationship';
+  type: 'field' | 'relationship' | 'custom';
   visible: boolean;
   sortable: boolean;
 }
@@ -283,6 +288,14 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: false,
     sortable: true,
   },
+  {
+    id: 'remarks',
+    label: 'Remarks',
+    accessor: 'remarks',
+    type: 'custom',
+    visible: true,
+    sortable: false,
+  },
 ];
 
 const COLUMN_VISIBILITY_KEY = 'call-table-columns';
@@ -370,6 +383,8 @@ export function CallTable() {
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
 
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
+  const [fallbackRemarks, setFallbackRemarks] = useState<LatestRemarksMap>({});
+  const [isFallbackRemarksLoading, setIsFallbackRemarksLoading] = useState(false);
 
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
   const [isExternalColumnVisibilityLoaded, setIsExternalColumnVisibilityLoaded] = useState(false);
@@ -573,6 +588,13 @@ export function CallTable() {
 
               if (col.id === 'callStatus' && relationship) {
                 value = relationship.name || '';
+              }
+            } else if (col.id === 'remarks') {
+              const callId = item.id;
+              if (typeof callId === 'number') {
+                value = latestRemarksMap[callId]?.remark || '';
+              } else {
+                value = '';
               }
             }
 
@@ -960,6 +982,187 @@ export function CallTable() {
 
     return countData;
   }, [countData, filteredData, activeStatusTab]);
+
+  const callIdsForRemarks = useMemo(
+    () =>
+      (filteredData ?? [])
+        .map((call) => call.id)
+        .filter((id): id is number => typeof id === 'number'),
+    [filteredData]
+  );
+
+  useEffect(() => {
+    if (!callIdsForRemarks.length) {
+      setFallbackRemarks({});
+      return;
+    }
+
+    setFallbackRemarks((prev) => {
+      const allowedIds = new Set(callIdsForRemarks);
+      const nextEntries = Object.entries(prev).filter(([id]) => allowedIds.has(Number(id)));
+
+      if (nextEntries.length === Object.keys(prev).length) {
+        return prev;
+      }
+
+      return nextEntries.reduce<LatestRemarksMap>((acc, [id, value]) => {
+        acc[Number(id)] = value;
+        return acc;
+      }, {});
+    });
+  }, [callIdsForRemarks]);
+
+  const remarkBatchSize = useMemo(() => {
+    if (!callIdsForRemarks.length) return undefined;
+    const calculatedSize = callIdsForRemarks.length * 5;
+    const minSize = 25;
+    const maxSize = 1000;
+    return Math.min(Math.max(calculatedSize, minSize), maxSize);
+  }, [callIdsForRemarks]);
+
+  const remarkBatchParams = useMemo<GetAllCallRemarksParams | undefined>(() => {
+    if (!callIdsForRemarks.length || !remarkBatchSize) {
+      return undefined;
+    }
+
+    return {
+      'callId.in': callIdsForRemarks,
+      page: 0,
+      size: remarkBatchSize,
+      sort: ['dateTime,desc'],
+    };
+  }, [callIdsForRemarks, remarkBatchSize]);
+
+  const {
+    data: remarkBatchData = [],
+    isFetching: isRemarkBatchFetching,
+  } = useGetAllCallRemarks(remarkBatchParams, {
+    query: {
+      enabled: !!remarkBatchParams,
+      keepPreviousData: true,
+      staleTime: 1000 * 15,
+    },
+  });
+
+  const baseLatestRemarksMap = useMemo<LatestRemarksMap>(() => {
+    const map: LatestRemarksMap = {};
+    if (!remarkBatchData.length || !callIdsForRemarks.length) {
+      return map;
+    }
+
+    const allowedCallIds = new Set(callIdsForRemarks);
+    remarkBatchData.forEach((remark) => {
+      const callId = remark.call?.id;
+      if (
+        typeof callId === 'number' &&
+        allowedCallIds.has(callId) &&
+        !map[callId] &&
+        remark.remark
+      ) {
+        map[callId] = {
+          remark: remark.remark,
+          dateTime: remark.dateTime,
+        };
+      }
+    });
+
+    return map;
+  }, [remarkBatchData, callIdsForRemarks]);
+
+  const missingCallIds = useMemo(() => {
+    if (!callIdsForRemarks.length) {
+      return [];
+    }
+
+    return callIdsForRemarks.filter(
+      (callId) => !baseLatestRemarksMap[callId] && !fallbackRemarks[callId]
+    );
+  }, [callIdsForRemarks, baseLatestRemarksMap, fallbackRemarks]);
+
+  useEffect(() => {
+    if (!missingCallIds.length || isRemarkBatchFetching) {
+      if (!missingCallIds.length) {
+        setIsFallbackRemarksLoading(false);
+      }
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchFallbackRemarks = async () => {
+      setIsFallbackRemarksLoading(true);
+
+      try {
+        const results = await Promise.all(
+          missingCallIds.map((callId) =>
+            getAllCallRemarks(
+              {
+                'callId.equals': callId,
+                page: 0,
+                size: 1,
+                sort: ['dateTime,desc'],
+              },
+              undefined
+            )
+          )
+        );
+
+        if (isCancelled) {
+          return;
+        }
+
+        setFallbackRemarks((prev) => {
+          const next = { ...prev };
+          let hasChanges = false;
+
+          results.forEach((remarks, index) => {
+            const remark = remarks?.[0];
+            const callId = missingCallIds[index];
+            if (
+              remark?.remark &&
+              typeof callId === 'number' &&
+              (!next[callId] || next[callId]?.remark !== remark.remark)
+            ) {
+              next[callId] = {
+                remark: remark.remark,
+                dateTime: remark.dateTime,
+              };
+              hasChanges = true;
+            }
+          });
+
+          return hasChanges ? next : prev;
+        });
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Failed to fetch fallback remarks', error);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsFallbackRemarksLoading(false);
+        }
+      }
+    };
+
+    fetchFallbackRemarks();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [missingCallIds, isRemarkBatchFetching]);
+
+  const latestRemarksMap = useMemo<LatestRemarksMap>(() => {
+    if (!Object.keys(fallbackRemarks).length) {
+      return baseLatestRemarksMap;
+    }
+
+    return {
+      ...baseLatestRemarksMap,
+      ...fallbackRemarks,
+    };
+  }, [baseLatestRemarksMap, fallbackRemarks]);
+
+  const isLatestRemarksLoading = isRemarkBatchFetching || isFallbackRemarksLoading;
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
     mutation: {
@@ -1964,6 +2167,8 @@ export function CallTable() {
                       relationshipConfigs={relationshipConfigs}
                       onRelationshipUpdate={handleRelationshipUpdate}
                       updatingCells={updatingCells}
+                      latestRemarksMap={latestRemarksMap}
+                      isLatestRemarksLoading={isLatestRemarksLoading}
                       visibleColumns={visibleColumns}
                     />
                   ))

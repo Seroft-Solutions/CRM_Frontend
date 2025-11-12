@@ -22,7 +22,7 @@ interface CallTableHeaderProps {
     id: string;
     label: string;
     accessor: string;
-    type: 'field' | 'relationship';
+    type: 'field' | 'relationship' | 'custom';
     visible: boolean;
     sortable: boolean;
   }>;
@@ -192,7 +192,8 @@ export function CallTableHeader({
 
                   return null;
                 })()
-              : (() => {
+              : column.type === 'relationship'
+                ? (() => {
                   if (column.accessor === 'priority') {
                     return (
                       <Input
@@ -325,7 +326,8 @@ export function CallTableHeader({
                   }
 
                   return null;
-                })()}
+                })()
+                : null}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

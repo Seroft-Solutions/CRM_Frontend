@@ -170,29 +170,7 @@ export default function ImportResultsPage() {
   };
 
   if (!responseData) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-              No Session Summary Available
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              We could not locate the latest summary in session storage. The table below still reflects the current import
-              history stored in the backend.
-            </p>
-            <Button asChild variant="outline">
-              <Link href="/calls/import">Start a New Import</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {renderImportHistorySection()}
-      </div>
-    );
+    return <div className="space-y-6">{renderImportHistorySection()}</div>;
   }
 
   return (

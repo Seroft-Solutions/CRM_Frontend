@@ -17,7 +17,7 @@ import {
 import { useSearchGeography } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -180,7 +180,8 @@ export function FailedCallsTable() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [rowToSave, setRowToSave] = useState<(ImportHistoryDTO & { customerIsNew?: boolean; productIsNew?: boolean }) | null>(null);
   const [pincodeValidationCache, setPincodeValidationCache] = useState<Record<string, boolean>>({});
-  const [validatedRowIds, setValidatedRowIds] = useState<Set<number>>(new Set());
+  const [autoTriggeredRows, setAutoTriggeredRows] = useState<Set<number>>(new Set());
+  const isProcessingAutoTrigger = useRef(false);
 
   const apiPage = Math.max(page - 1, 0);
 
@@ -319,14 +320,13 @@ export function FailedCallsTable() {
     (row: ImportHistoryDTO) => {
       const invalid = new Set<keyof ImportHistoryDTO>();
 
-      const customer =
-        customerMap.size === 0 ? null : customerMap.get(normalizeKey(row.customerBusinessName));
-      if (!row.customerBusinessName || (customerMap.size > 0 && !customer)) {
+      // Customer validation: Only check if name is provided (auto-create if not exists)
+      if (!row.customerBusinessName || row.customerBusinessName.trim().length === 0) {
         invalid.add('customerBusinessName');
       }
 
-      const product = productMap.size === 0 ? null : productMap.get(normalizeKey(row.productName));
-      if (!row.productName || (productMap.size > 0 && !product)) {
+      // Product validation: Only check if name is provided (auto-create if not exists)
+      if (!row.productName || row.productName.trim().length === 0) {
         invalid.add('productName');
       }
 
@@ -339,24 +339,34 @@ export function FailedCallsTable() {
         invalid.add('callType');
       }
 
-      if (row.subCallType) {
-        const resolvedSubCallType = (() => {
-          if (callType?.id) {
+      // SubCallType validation: Check if subcalltypes are available for the CallType
+      if (callType?.id) {
+        const availableSubCallTypes = subcalltypeOptions.filter(
+          (sct) => sct.callType?.id === callType.id
+        );
+
+        if (availableSubCallTypes.length > 0) {
+          // SubCallTypes exist for this CallType - SubCallType is REQUIRED
+          if (!row.subCallType || row.subCallType.trim().length === 0) {
+            invalid.add('subCallType');
+          } else {
+            // Validate the provided SubCallType matches
             const subKey = buildSubCallTypeKey(callType.id, row.subCallType);
-            const match = subCallTypeMap.get(subKey);
-            if (match) {
-              return match;
+            const match = subCallTypeMap.get(subKey) ||
+              availableSubCallTypes.find(
+                (sct) => normalizeKey(sct.name) === normalizeKey(row.subCallType)
+              );
+            if (!match) {
+              invalid.add('subCallType');
             }
-            return subcalltypeOptions.find(
-              (sct) =>
-                sct.callType?.id === callType.id &&
-                normalizeKey(sct.name) === normalizeKey(row.subCallType)
-            );
           }
-          return subcalltypeOptions.find(
-            (sct) => normalizeKey(sct.name) === normalizeKey(row.subCallType)
-          );
-        })();
+        }
+        // If no subcalltypes available, SubCallType is not required (N/A case)
+      } else if (row.subCallType) {
+        // No callType selected yet but subCallType is provided
+        const resolvedSubCallType = subcalltypeOptions.find(
+          (sct) => normalizeKey(sct.name) === normalizeKey(row.subCallType)
+        );
         if (!resolvedSubCallType) {
           invalid.add('subCallType');
         }
@@ -373,21 +383,23 @@ export function FailedCallsTable() {
         invalid.add('callStatus');
       }
 
-      // Enhanced zipcode validation
-      if (!row.zipCode || row.zipCode.trim().length === 0) {
-        invalid.add('zipCode');
-      } else if (!validatePincodeFormat(row.zipCode)) {
-        invalid.add('zipCode');
+      // Enhanced zipcode validation: Only required for NEW customers
+      const isNewCustomer = !customerMap.has(normalizeKey(row.customerBusinessName));
+      if (isNewCustomer) {
+        // Zipcode is required for new customers
+        if (!row.zipCode || row.zipCode.trim().length === 0) {
+          invalid.add('zipCode');
+        } else if (!validatePincodeFormat(row.zipCode)) {
+          invalid.add('zipCode');
+        }
+        // Note: Async pincode existence check will be done in handleSaveRow
       }
-      // Note: Async pincode existence check will be done in getComputedIssues
 
       // External ID is optional in the template; leave it blank if importer didn't supply one
 
       return invalid;
     },
     [
-      customerMap,
-      productMap,
       callTypeMap,
       subCallTypeMap,
       priorityMap,
@@ -395,6 +407,7 @@ export function FailedCallsTable() {
       calltypeOptions,
       subcalltypeOptions,
       validatePincodeFormat,
+      customerMap,
     ]
   );
 
@@ -407,16 +420,20 @@ export function FailedCallsTable() {
       invalid.forEach((field) => {
         switch (field) {
           case 'customerBusinessName':
-            issues.push('Customer name not found in master data.');
+            issues.push('Customer name is required.');
             break;
           case 'productName':
-            issues.push('Product name does not match existing products.');
+            issues.push('Product name is required.');
             break;
           case 'callType':
             issues.push('Call Type mismatch. Please select a valid Call Type.');
             break;
           case 'subCallType':
-            issues.push('Sub Call Type must belong to the selected Call Type.');
+            if (!row.subCallType || row.subCallType.trim().length === 0) {
+              issues.push('Sub Call Type is required for the selected Call Type.');
+            } else {
+              issues.push('Sub Call Type must belong to the selected Call Type.');
+            }
             break;
           case 'priority':
             issues.push('Priority is required and must match master data.');
@@ -426,7 +443,7 @@ export function FailedCallsTable() {
             break;
           case 'zipCode':
             if (!row.zipCode || row.zipCode.trim().length === 0) {
-              issues.push('Zip Code is required.');
+              issues.push('Zip Code is required for new customers.');
             } else if (!validatePincodeFormat(row.zipCode)) {
               issues.push('Zip Code must be exactly 6 digits.');
             }
@@ -548,9 +565,30 @@ export function FailedCallsTable() {
 
       const current = { ...original } as ImportHistoryDTO;
       (current[fieldName] as any) = value;
+
+      // When CallType changes, update SubCallType accordingly
       if (fieldName === 'callType') {
-        current.subCallType = '';
+        const selectedCallType = calltypeOptions.find(
+          (ct) => normalizeKey(ct.name) === normalizeKey(value)
+        );
+
+        if (selectedCallType?.id) {
+          const availableSubCallTypes = subcalltypeOptions.filter(
+            (sct) => sct.callType?.id === selectedCallType.id
+          );
+
+          if (availableSubCallTypes.length === 0) {
+            // No subcalltypes available - set to empty (will display as N/A)
+            current.subCallType = '';
+          } else {
+            // Subcalltypes available - clear to force user selection
+            current.subCallType = '';
+          }
+        } else {
+          current.subCallType = '';
+        }
       }
+
       updated[rowIndex] = current;
       return updated;
     });
@@ -617,13 +655,6 @@ export function FailedCallsTable() {
       // Remove from local state
       setEditableData((prev) => prev.filter((item) => item.id !== rowToSave.id));
 
-      // Remove from validated set
-      setValidatedRowIds((prev) => {
-        const next = new Set(prev);
-        next.delete(rowToSave.id!);
-        return next;
-      });
-
       // Update pagination if needed
       const newTotalItems = totalItems - 1;
       if (editableData.length === 1 && page > 1) {
@@ -654,83 +685,52 @@ export function FailedCallsTable() {
     }
   }, [rowToSave, processImportHistoryAsync, editableData, totalItems, page, handlePageChange, refetch]);
 
-  // Auto-trigger save dialog when row becomes fully validated
+  // Auto-trigger save dialog for rows with N/A subcalltype that become valid
   useEffect(() => {
-    if (!canResolveReferences || showSaveDialog || pendingRowIds.size > 0) {
+    // Prevent infinite loops and duplicate processing
+    if (!canResolveReferences || showSaveDialog || editableData.length === 0 || isProcessingAutoTrigger.current) {
       return;
     }
 
-    const checkAndAutoSave = async () => {
-      for (const row of editableData) {
-        if (!row.id || pendingRowIds.has(row.id) || validatedRowIds.has(row.id)) {
-          continue;
-        }
+    // Find first row that is valid and has N/A subcalltype (not already auto-triggered)
+    for (const row of editableData) {
+      if (!row.id || autoTriggeredRows.has(row.id) || pendingRowIds.has(row.id)) {
+        continue;
+      }
 
-        const invalid = computeInvalidFields(row);
-        if (invalid.size === 0) {
-          // Mark as validated to prevent repeated checks
-          setValidatedRowIds((prev) => {
-            const next = new Set(prev);
-            next.add(row.id!);
-            return next;
-          });
+      // Check if row is valid
+      const invalid = computeInvalidFields(row);
+      if (invalid.size > 0) {
+        continue;
+      }
 
-          // Check if customer/product will be auto-created
-          const customerIsNew = !customerMap.has(normalizeKey(row.customerBusinessName));
-          const productIsNew = !productMap.has(normalizeKey(row.productName));
+      // Check if this row has N/A subcalltype scenario
+      const callType = calltypeOptions.find(
+        (ct) => normalizeKey(ct.name) === normalizeKey(row.callType)
+      );
 
-          // Async pincode validation for new customers
-          if (customerIsNew && row.zipCode) {
-            const pincodeValid = await validatePincodeExists(row.zipCode);
-            if (!pincodeValid) {
-              setRowErrors((prev) => ({
-                ...prev,
-                [row.id!]: 'Zip Code is not a valid area pincode in the system.',
-              }));
-              // Remove from validated set so it can be checked again after fix
-              setValidatedRowIds((prev) => {
-                const next = new Set(prev);
-                next.delete(row.id!);
-                return next;
-              });
-              continue;
-            }
-          }
+      if (callType?.id) {
+        const availableSubCallTypes = subcalltypeOptions.filter(
+          (sct) => sct.callType?.id === callType.id
+        );
 
-          // Show confirmation dialog
-          setRowToSave({ ...row, customerIsNew, productIsNew });
-          setShowSaveDialog(true);
-          break; // Only show one dialog at a time
+        if (availableSubCallTypes.length === 0 && (!row.subCallType || row.subCallType.trim().length === 0)) {
+          // This row is valid with N/A subcalltype - auto-trigger save dialog
+          isProcessingAutoTrigger.current = true;
+          setAutoTriggeredRows((prev) => new Set(prev).add(row.id!));
+          handleSaveRow(row);
+          // Reset flag after a short delay to allow for next processing
+          setTimeout(() => {
+            isProcessingAutoTrigger.current = false;
+          }, 500);
+          break; // Only trigger one at a time
         }
       }
-    };
-
-    checkAndAutoSave();
-  }, [
-    canResolveReferences,
-    editableData,
-    computeInvalidFields,
-    customerMap,
-    productMap,
-    validatePincodeExists,
-    pendingRowIds,
-    showSaveDialog,
-    validatedRowIds,
-  ]);
-
-  // Clear validated row IDs when dialog closes without saving
-  useEffect(() => {
-    if (!showSaveDialog && rowToSave) {
-      // Dialog was closed, allow re-checking this row
-      setValidatedRowIds((prev) => {
-        const next = new Set(prev);
-        if (rowToSave.id) {
-          next.delete(rowToSave.id);
-        }
-        return next;
-      });
     }
-  }, [showSaveDialog, rowToSave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editableData, canResolveReferences, showSaveDialog, autoTriggeredRows, pendingRowIds, calltypeOptions, subcalltypeOptions]);
+
+  // Removed general auto-trigger functionality - user must manually click "Save Row" button
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -862,20 +862,22 @@ export function FailedCallsTable() {
                     const rowHasInvalid = invalidFields.size > 0;
                     const rowNeedsAttention = allIssues.length > 0;
                     const isValidated = !rowHasInvalid && !rowNeedsAttention;
+
                     return (
                       <TableRow
                         key={row.id}
                         className={cn(
-                          'hover:bg-gray-50 transition-colors',
-                          rowHasInvalid && 'bg-red-50/40',
-                          !rowHasInvalid && rowNeedsAttention && 'bg-amber-50/80',
-                          isValidated && 'bg-green-50/30'
+                          'transition-colors',
+                          rowHasInvalid && 'bg-red-50/40 hover:bg-red-50/50',
+                          !rowHasInvalid && rowNeedsAttention && 'bg-amber-50/80 hover:bg-amber-50/90',
+                          isValidated && 'bg-green-100/60 hover:bg-green-100/70'
                         )}
                       >
                         {HEADERS.map((header, cellIndex) => {
                           const fieldName = headerMapping[header];
                           const options = getColumnOptions(header, row);
                           const isReasonColumn = header === 'Reason';
+                          const isRemarkColumn = header === 'Remark';
 
                           return (
                             <TableCell
@@ -919,8 +921,8 @@ export function FailedCallsTable() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 ) : (
-                                  <span className="text-sm text-muted-foreground italic">
-                                    null
+                                  <span className="text-sm text-green-600 font-medium">
+                                    No Failures
                                   </span>
                                 )
                               ) : options ? (
@@ -952,6 +954,57 @@ export function FailedCallsTable() {
                                       </Badge>
                                     )}
                                 </div>
+                              ) : isRemarkColumn ? (
+                                // Special rendering for Remark column with truncation and tooltip
+                                row.remark && row.remark.trim().length > 0 ? (
+                                  <TooltipProvider delayDuration={300}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="relative">
+                                          <Input
+                                            value={row.remark || ''}
+                                            onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
+                                            className={cn(
+                                              'h-8 text-xs cursor-help truncate pr-8',
+                                              invalidFields.has(fieldName) &&
+                                                'border-destructive text-destructive placeholder:text-destructive bg-red-50'
+                                            )}
+                                            disabled={rowSaving}
+                                            placeholder="Add remark..."
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                            ...
+                                          </span>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="left"
+                                        className="max-w-md p-3 bg-white border shadow-lg"
+                                      >
+                                        <div className="space-y-1">
+                                          <p className="font-semibold text-sm text-gray-800 mb-2">
+                                            Full Remark:
+                                          </p>
+                                          <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                            {row.remark}
+                                          </p>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  <Input
+                                    value={row.remark || ''}
+                                    onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
+                                    className={cn(
+                                      'h-8 text-xs',
+                                      invalidFields.has(fieldName) &&
+                                        'border-destructive text-destructive placeholder:text-destructive bg-red-50'
+                                    )}
+                                    disabled={rowSaving}
+                                    placeholder="Add remark..."
+                                  />
+                                )
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <Input
