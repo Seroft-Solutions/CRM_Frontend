@@ -288,8 +288,28 @@ const ALL_COLUMNS: ColumnConfig[] = [
 const COLUMN_VISIBILITY_KEY = 'call-table-columns';
 const EXTERNAL_COLUMN_VISIBILITY_KEY = 'call-table-external-columns';
 const EXTERNAL_COLUMN_OVERRIDES: Record<string, boolean> = {
-  leadNo: false,
+  leadNo: true,
   externalId: true,
+};
+// Tab-specific column visibility requirements (e.g., CRM vs Business Partner vs External).
+const TAB_COLUMN_RULES: Record<
+  string,
+  {
+    forceShow?: string[];
+    forceHide?: string[];
+  }
+> = {
+  'crm-leads': {
+    forceHide: ['externalId', 'channelType', 'channelParties'],
+  },
+  'business-partners': {
+    forceShow: ['channelType', 'channelParties'],
+    forceHide: ['externalId'],
+  },
+  external: {
+    forceShow: ['externalId', 'leadNo'],
+    forceHide: ['channelType', 'channelParties'],
+  },
 };
 
 const getDefaultColumnVisibility = (overrides: Record<string, boolean> = {}) =>
@@ -429,29 +449,59 @@ export function CallTable() {
   const columnVisibilityMap =
     activeStatusTab === 'external' ? externalColumnVisibility : columnVisibility;
 
+  const getColumnVisibilityForCurrentTab = useCallback(
+    (columnId: string) => {
+      const tabRules = TAB_COLUMN_RULES[activeStatusTab] || {};
+
+      if (tabRules.forceHide?.includes(columnId)) {
+        return false;
+      }
+
+      if (tabRules.forceShow?.includes(columnId)) {
+        return true;
+      }
+
+      if (
+        (activeStatusTab === 'business-partners' || isBusinessPartner) &&
+        columnId === 'assignedTo'
+      ) {
+        return false;
+      }
+
+      return columnVisibilityMap[columnId] !== false;
+    },
+    [activeStatusTab, columnVisibilityMap, isBusinessPartner]
+  );
+
+  const isColumnVisibilityLocked = useCallback(
+    (columnId: string) => {
+      const tabRules = TAB_COLUMN_RULES[activeStatusTab] || {};
+
+      if (tabRules.forceHide?.includes(columnId) || tabRules.forceShow?.includes(columnId)) {
+        return true;
+      }
+
+      if (
+        (activeStatusTab === 'business-partners' || isBusinessPartner) &&
+        columnId === 'assignedTo'
+      ) {
+        return true;
+      }
+
+      return false;
+    },
+    [activeStatusTab, isBusinessPartner]
+  );
+
   const visibleColumns = useMemo(() => {
-    return ALL_COLUMNS.filter((col) => {
-      if (columnVisibilityMap[col.id] === false) return false;
-
-      if (
-        activeStatusTab === 'business-partners' &&
-        (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
-      ) {
-        return false;
-      }
-
-      if (
-        isBusinessPartner &&
-        (col.id === 'channelType' || col.id === 'channelParties' || col.id === 'assignedTo')
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [columnVisibilityMap, isBusinessPartner, activeStatusTab]);
+    return ALL_COLUMNS.filter((col) => getColumnVisibilityForCurrentTab(col.id));
+  }, [getColumnVisibilityForCurrentTab]);
 
   const toggleColumnVisibility = (columnId: string) => {
+    if (isColumnVisibilityLocked(columnId)) {
+      return;
+    }
+
     if (activeStatusTab === 'external') {
       setExternalColumnVisibility((prev) => ({
         ...prev,
@@ -1761,41 +1811,24 @@ export function CallTable() {
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {ALL_COLUMNS.filter((column) => {
-                  if (
-                    activeStatusTab === 'business-partners' &&
-                    (column.id === 'channelType' ||
-                      column.id === 'channelParties' ||
-                      column.id === 'assignedTo')
-                  ) {
-                    return false;
-                  }
+                {ALL_COLUMNS.map((column) => {
+                  const isVisible = getColumnVisibilityForCurrentTab(column.id);
+                  const isLocked = isColumnVisibilityLocked(column.id);
 
-                  if (
-                    isBusinessPartner &&
-                    (column.id === 'channelType' ||
-                      column.id === 'channelParties' ||
-                      column.id === 'assignedTo')
-                  ) {
-                    return false;
-                  }
-                  return true;
-                }).map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={columnVisibilityMap[column.id] !== false}
-                    onCheckedChange={() => toggleColumnVisibility(column.id)}
-                    onSelect={(e) => e.preventDefault()}
-                    className="flex items-center gap-2"
-                  >
-                    {columnVisibilityMap[column.id] !== false ? (
-                      <Eye className="h-4 w-4" />
-                    ) : (
-                      <EyeOff className="h-4 w-4" />
-                    )}
-                    {column.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={isVisible}
+                      disabled={isLocked}
+                      onCheckedChange={() => toggleColumnVisibility(column.id)}
+                      onSelect={(e) => e.preventDefault()}
+                      className={`flex items-center gap-2 ${isLocked ? 'opacity-60' : ''}`}
+                    >
+                      {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      {column.label}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
             {/* Export Button */}
