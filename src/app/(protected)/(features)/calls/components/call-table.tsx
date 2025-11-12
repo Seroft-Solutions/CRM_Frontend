@@ -286,6 +286,20 @@ const ALL_COLUMNS: ColumnConfig[] = [
 ];
 
 const COLUMN_VISIBILITY_KEY = 'call-table-columns';
+const EXTERNAL_COLUMN_VISIBILITY_KEY = 'call-table-external-columns';
+const EXTERNAL_COLUMN_OVERRIDES: Record<string, boolean> = {
+  leadNo: false,
+  externalId: true,
+};
+
+const getDefaultColumnVisibility = (overrides: Record<string, boolean> = {}) =>
+  ALL_COLUMNS.reduce(
+    (acc, col) => ({
+      ...acc,
+      [col.id]: overrides[col.id] ?? col.visible,
+    }),
+    {}
+  );
 
 interface FilterState {
   [key: string]: string | string[] | Date | undefined;
@@ -338,8 +352,12 @@ export function CallTable() {
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
 
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
+  const [isExternalColumnVisibilityLoaded, setIsExternalColumnVisibilityLoaded] = useState(false);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const [externalColumnVisibility, setExternalColumnVisibility] = useState<Record<string, boolean>>(
+    {}
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -356,26 +374,12 @@ export function CallTable() {
           localStorage.removeItem(oldKey);
         }
 
-        const defaultVisibility = ALL_COLUMNS.reduce(
-          (acc, col) => ({
-            ...acc,
-            [col.id]: col.visible,
-          }),
-          {}
-        );
-        setColumnVisibility(defaultVisibility);
+        setColumnVisibility(getDefaultColumnVisibility());
       }
     } catch (error) {
       console.warn('Failed to load column visibility from localStorage:', error);
 
-      const defaultVisibility = ALL_COLUMNS.reduce(
-        (acc, col) => ({
-          ...acc,
-          [col.id]: col.visible,
-        }),
-        {}
-      );
-      setColumnVisibility(defaultVisibility);
+      setColumnVisibility(getDefaultColumnVisibility());
     } finally {
       setIsColumnVisibilityLoaded(true);
     }
@@ -391,9 +395,43 @@ export function CallTable() {
     }
   }, [columnVisibility, isColumnVisibilityLoaded]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const saved = localStorage.getItem(EXTERNAL_COLUMN_VISIBILITY_KEY);
+      if (saved) {
+        setExternalColumnVisibility(JSON.parse(saved));
+      } else {
+        setExternalColumnVisibility(getDefaultColumnVisibility(EXTERNAL_COLUMN_OVERRIDES));
+      }
+    } catch (error) {
+      console.warn('Failed to load external column visibility from localStorage:', error);
+      setExternalColumnVisibility(getDefaultColumnVisibility(EXTERNAL_COLUMN_OVERRIDES));
+    } finally {
+      setIsExternalColumnVisibilityLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isExternalColumnVisibilityLoaded && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          EXTERNAL_COLUMN_VISIBILITY_KEY,
+          JSON.stringify(externalColumnVisibility)
+        );
+      } catch (error) {
+        console.warn('Failed to save external column visibility to localStorage:', error);
+      }
+    }
+  }, [externalColumnVisibility, isExternalColumnVisibilityLoaded]);
+
+  const columnVisibilityMap =
+    activeStatusTab === 'external' ? externalColumnVisibility : columnVisibility;
+
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => {
-      if (columnVisibility[col.id] === false) return false;
+      if (columnVisibilityMap[col.id] === false) return false;
 
       if (
         activeStatusTab === 'business-partners' &&
@@ -411,9 +449,17 @@ export function CallTable() {
 
       return true;
     });
-  }, [columnVisibility, isBusinessPartner, activeStatusTab]);
+  }, [columnVisibilityMap, isBusinessPartner, activeStatusTab]);
 
   const toggleColumnVisibility = (columnId: string) => {
+    if (activeStatusTab === 'external') {
+      setExternalColumnVisibility((prev) => ({
+        ...prev,
+        [columnId]: !prev[columnId],
+      }));
+      return;
+    }
+
     setColumnVisibility((prev) => ({
       ...prev,
       [columnId]: !prev[columnId],
@@ -1622,7 +1668,11 @@ export function CallTable() {
     filteredData && filteredData.length > 0 && selectedRows.size === filteredData.length;
   const isIndeterminate = selectedRows.size > 0 && selectedRows.size < (filteredData?.length || 0);
 
-  if (!isColumnVisibilityLoaded) {
+  const shouldDelayRender =
+    !isColumnVisibilityLoaded ||
+    (activeStatusTab === 'external' && !isExternalColumnVisibilityLoaded);
+
+  if (shouldDelayRender) {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
@@ -1733,12 +1783,12 @@ export function CallTable() {
                 }).map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    checked={columnVisibility[column.id] !== false}
+                    checked={columnVisibilityMap[column.id] !== false}
                     onCheckedChange={() => toggleColumnVisibility(column.id)}
                     onSelect={(e) => e.preventDefault()}
                     className="flex items-center gap-2"
                   >
-                    {columnVisibility[column.id] !== false ? (
+                    {columnVisibilityMap[column.id] !== false ? (
                       <Eye className="h-4 w-4" />
                     ) : (
                       <EyeOff className="h-4 w-4" />
