@@ -16,6 +16,7 @@ import {
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
+import { ClickableId } from '@/components/clickable-id';
 import type { CustomerDTO } from '@/core/api/generated/spring/schemas/CustomerDTO';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
 
@@ -158,6 +159,15 @@ export function CustomerTableRow({
 
                 if (column.id === 'lastModifiedDate') {
                   return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="customers"
+                    />
+                  );
                 }
 
                 return field?.toString() || '';
