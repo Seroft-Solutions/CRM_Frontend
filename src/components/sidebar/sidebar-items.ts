@@ -153,13 +153,14 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'channelType:sidebar',
       },
       { key: 'areas', label: 'Areas Master', path: '/areas', requiredPermission: 'area:sidebar' },
-      {
-        key: 'customer',
-        label: 'Customer Master',
-        path: '/customers',
-        requiredPermission: 'customer:sidebar',
-      },
     ],
+  },
+  {
+    key: 'CustomerManagement',
+    label: 'Customers Management',
+    path: '/customers',
+    icon: Users,
+    requiredPermission: 'customer:sidebar',
   },
   {
     key: 'productManagement',

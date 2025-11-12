@@ -16,6 +16,7 @@ import {
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
+import { ClickableId } from '@/components/clickable-id';
 import type { GroupDTO } from '@/core/api/generated/spring/schemas/GroupDTO';
 import { GroupDTOStatus } from '@/core/api/generated/spring/schemas/GroupDTOStatus';
 

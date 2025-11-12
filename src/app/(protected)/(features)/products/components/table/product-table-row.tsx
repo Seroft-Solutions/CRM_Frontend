@@ -16,6 +16,7 @@ import {
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
+import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
@@ -190,6 +191,15 @@ export function ProductTableRow({
 
                   if (column.id === 'lastModifiedDate') {
                     return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'id') {
+                    return (
+                      <ClickableId
+                        id={field as string | number}
+                        entityType="products"
+                      />
+                    );
                   }
 
                   if (column.id === 'image') {
